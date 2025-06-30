@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            position: relative; /* Needed for absolute positioning of the arrow and time tracker buttons */
+            overflow: hidden; /* Ensures the arrow doesn't spill out initially */
+            cursor: pointer; /* Indicate clickable */
+            transition: all 0.3s ease-in-out; /* Smooth transition for highlight */
+            border: 2px solid transparent; /* Default transparent border */
+        }
+        .card.highlighted {
+            border-color: #3b82f6; /* Blue border when highlighted */
+            box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3); /* Stronger blue shadow */
+            transform: translateY(-2px); /* Slight lift */
+        }
+        .progress-ring {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: conic-gradient(#3b82f6 0%, #3b82f6 var(--progress), #e5e7eb var(--progress), #e5e7eb 100%);
+        }
+        .progress-ring-circle {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .progress-ring-text {
+            position: relative;
+            z-index: 10;
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 600; /* font-semibold */
+            color: #1f2937; /* text-gray-900 */
+        }
+
+        /* Pointer animation styles */
+        .pointer-arrow {
+            position: absolute;
+            top: 1.5rem; /* Adjust as needed */
+            right: 1.5rem; /* Adjust as needed */
+            opacity: 0;
+            transform: translateX(10px); /* Start slightly to the right */
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out; /* Slow animation */
+        }
+
+        .card:hover .pointer-arrow {
+            opacity: 1;
+            transform: translateX(0); /* Move to original position */
+        }
+
+        /* Custom style to ensure text doesn't wrap during expansion */
+        .day-label-span {
+            white-space: nowrap;
+            overflow: hidden; /* Hide overflow during width transition */
+        }
+
+        /* Styles from circle.html */
+        /* Overriding .card style to match original circle.html card aesthetics */
+        .card-circle {
+            background: white;
+            border-radius: 34px; /* Original border-radius from circle.html */
+            width: 358px; /* Original width from circle.html */
+            padding: 19px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            /* Ensure it doesn't inherit dashboard .card styles that conflict */
+            position: relative;
+            overflow: hidden;
+            cursor: default; /* Not clickable for highlight */
+            transition: none;
+            border: none;
+        }
+
+        .card-header-circle { /* Renamed to avoid conflict with dashboard .card-header */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .card-header-circle h2 {
+            font-size: 18px;
+            margin: 0;
+        }
+        .nav-icons button {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .balance-box {
+            background: #9ef9a0; /* Original background from circle.html */
+            border-radius: 28px; /* Original border-radius from circle.html */
+            padding: 0px;
+            position: relative;
+            display: flex; /* Use flexbox to center content */
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center horizontally */
+        }
+        canvas {
+            display: block;
+            background-color: transparent; /* Canvas background is transparent */
+            border-radius: 50%; /* Ensure canvas maintains circular shape */
+            margin: auto; /* Center the canvas within its parent */
+        }
+
+        .progress-info {
+            text-align: left;
+            font-size: 14px;
+            margin-top: -10px; /* Changed from 0 to -10px to move it further up */
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .progress-info img {
+            width: 16px;
+            height: 16px;
+        }
+        .avg-score {
+            font-size: 12px;
+            color: #555;
+            margin-top: 0px; /* Adjusted to keep it close to the percentage */
+        }
+        .icon-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Styles from timetracker.html */
+        /* Custom button styles for better visual appeal */
+        .control-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 64px; /* Fixed width for circular buttons */
+            height: 64px; /* Fixed height for circular buttons */
+            border-radius: 9999px; /* Fully rounded */
+            font-size: 2rem; /* Large icon size */
+            cursor: pointer;
+            transition: transform 0.1s ease-in-out, background-color 0.1s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+        }
+        .control-button:active {
+            transform: scale(0.95); /* Slight press effect */
+        }
+        /* Specific button colors */
+        .pause-button {
+            background-color: #ffffff; /* White background */
+            color: #333333; /* Dark text/icon */
+        }
+        .stop-button {
+            background-color: #ef4444; /* Red background */
+            color: #ffffff; /* White text/icon */
+        }
+        /* Styles for the time tracker container to use the image as background */
+        .time-tracker-card-container { /* Renamed from .time-tracker-container to avoid conflict */
+            background-image: url('https://img.freepik.com/premium-photo/full-frame-shot-plant-night_1048944-18636599.jpg?w=826');
+            background-size: cover; /* Cover the entire background of the div */
+            background-position: center; /* Center the background image */
+            background-repeat: no-repeat; /* Do not repeat the image */
+            background-color: #2a523a; /* Fallback background color */
+            /* Removed position: relative here as it's on .card now */
+        }
+        /* Style for the top-right SVG button */
+        #top-right-button {
+            background: none; /* No background */
+            border: none; /* No border */
+            padding: 0; /* No padding */
+            cursor: pointer; /* Indicate it's clickable */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 1rem; /* 4 units from top */
+            right: 1rem; /* 4 units from right */
+            z-index: 10; /* Ensure it's above other content */
+        }
+        #top-right-button svg {
+            fill: #ffffff; /* Ensure SVG color is white */
+            width: 30px;
+            height: 30px;
+        }
+        /* Style for the top-left SVG button in countdown section */
+        #countdown-back-button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            top: 1rem; /* 4 units from top */
+            left: 1rem; /* 4 units from left */
+            z-index: 10;
+        }
+        #countdown-back-button svg {
+            fill: #ffffff; /* Ensure SVG color is white */
+            width: 30px;
+            height: 30px;
+        }
+        /* Common styling for both sections */
+        .section-card {
+            background-image: url('https://img.freepik.com/premium-photo/full-frame-shot-plant-night_1048944-18636599.jpg?w=826');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #2a523a; /* Fallback */
+            padding: 2rem;
+            border-radius: 1.5rem; /* rounded-3xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+            color: white;
+            position: relative;
+            width: 100%; /* Make it take full width of its parent */
+            height: 100%; /* Make it take full height of its parent */
+            display: flex; /* Use flexbox for centering content */
+            flex-direction: column; /* Stack items vertically */
+            align-items: center; /* Center horizontally */
+            justify-content: center; /* Center vertically */
+        }
+        /* Hidden class to toggle visibility */
+        .hidden {
+            display: none;
+        }
+        /* Style for the new bottom-right SVG button */
+        .bottom-right-button {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            bottom: 1rem; /* 4 units from bottom */
+            right: 1rem; /* 4 units from right */
+            z-index: 10;
+        }
+        .bottom-right-button svg {
+            fill: none; /* Set fill to none as stroke is used */
+            stroke: #ffffff; /* Ensure SVG color is white */
+            width: 30px; /* Decreased size */
+            height: 30px; /* Decreased size */
+        }
+    </style>
+</head>
+<body class="p-6 md:p-10">
+    <div class="max-w-7xl mx-auto">
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+                <p class="text-gray-600">Plan, prioritize, and accomplish your tasks with ease.</p>
+            </div>
+            <!-- Removed Add Project and Import Data buttons -->
+            <div class="flex space-x-4 mt-4 md:mt-0">
+                <!-- Buttons were here, now removed -->
+            </div>
+        </div>
+
+        <!-- Reminders Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Reminders Card -->
+            <div class="card bg-blue-700 text-white flex flex-col justify-between group">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium">Total Reminders</h3>
+                    <!-- Pointer arrow added -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 pointer-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </div>
+                <p class="text-5xl font-bold mb-2">0</p>
+                <div class="flex items-center text-sm opacity-80">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l-6 6m0 0l6 6m-6-6h14" />
+                    </svg>
+                    Increased from last month
+                </div>
+            </div>
+
+            <!-- Ended Reminders Card -->
+            <div class="card group">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-700">Ended Reminders</h3>
+                    <!-- Pointer arrow added -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 pointer-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </div>
+                <p class="text-5xl font-bold text-gray-900 mb-2">0</p>
+                <div class="flex items-center text-sm text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l-6 6m0 0l6 6m-6-6h14" />
+                    </svg>
+                    Increased from last month
+                </div>
+            </div>
+
+            <!-- Running Reminders Card -->
+            <div class="card group">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-700">Running Reminders</h3>
+                    <!-- Pointer arrow added -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 pointer-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </div>
+                <p class="text-5xl font-bold text-gray-900 mb-2">0</p>
+                <div class="flex items-center text-sm text-gray-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l-6 6m0 0l6 6m-6-6h14" />
+                    </svg>
+                    Increased from last month
+                </div>
+            </div>
+
+            <!-- Pending Reminder Card -->
+            <div class="card group">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-700">Pending Reminder</h3>
+                    <!-- Pointer arrow added -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 pointer-arrow" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </div>
+                <p class="text-5xl font-bold text-gray-900 mb-2">0</p>
+                <p class="text-sm text-gray-500">On Discuss</p>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- FIRST WIDER COLUMN (Day Analytics, Reminders, Reminders List) -->
+            <div class="lg:col-span-2 flex flex-col space-y-6">
+                <!-- Day Analytics Card -->
+                <div class="card group" data-no-highlight="true">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Day Analytics</h2>
+                    <div id="chart-container" class="flex justify-center items-end gap-x-4 h-64">
+                        <!-- Chart bars will be rendered here by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Reminders Card -->
+                <div class="card group lg:max-w-xs lg:ml-auto" data-no-highlight="true">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Reminders</h2>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-lg font-medium text-gray-900">Just a quick reminder that the deadline for task is coming up</p>
+                            <p class="text-sm text-gray-500"></p>
+                        </div>
+                    </div>
+                    <button class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-md hover:bg-blue-700 transition-colors w-full flex items-center justify-center">
+                        Check here
+                        <svg fill="#ffffff" class="ml-2 h-5 w-5" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                            <title>popout</title>
+                            <path d="M15.694 13.541l2.666 2.665 5.016-5.017 2.59 2.59 0.004-7.734-7.785-0.046 2.526 2.525-5.017 5.017zM25.926 16.945l-1.92-1.947 0.035 9.007-16.015 0.009 0.016-15.973 8.958-0.040-2-2h-7c-1.104 0-2 0.896-2 2v16c0 1.104 0.896 2 2 2h16c1.104 0 2-0.896 2-2l-0.074-7.056z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Reminders List Card -->
+                <div class="card group" data-no-highlight="true">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-900">Reminders</h2>
+                        <button class="text-blue-600 text-sm font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            New
+                        </button>
+                    </div>
+                    <!-- Emptied Project list -->
+                    <ul class="space-y-4">
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SECOND NARROWER COLUMN (Team Collaboration, Reminders Progress, Time Tracker) -->
+            <div class="lg:col-span-1 flex flex-col space-y-6">
+                <!-- Team Collaboration Card -->
+                <div class="card group" data-no-highlight="true">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold text-gray-900">Team Collaboration</h2>
+                        <button class="text-blue-600 text-sm font-medium flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                            </svg>
+                            Add Member
+                        </button>
+                    </div>
+                    <!-- Emptied Team Collaboration list -->
+                    <ul class="space-y-4">
+                    </ul>
+                </div>
+
+                <!-- Reminders Progress Card (Circular Gauge) -->
+                <div class="card group" data-no-highlight="true">
+                    <!-- Content from circle.html body excluding the outer body and html tags -->
+                    <div class="card-header-circle">
+                        <h2>Completed reminders</h2>
+                        <div class="nav-icons">
+                            <button>←</button>
+                            <button>→</button>
+                        </div>
+                    </div>
+                    <div class="balance-box">
+                        <button class="icon-btn">🖼</button>
+                        <!-- Circular Gauge Canvas -->
+                        <canvas id="gaugeCanvas"></canvas>
+
+                        <div class="progress-info">
+                            <strong id="progressPercentage">0%</strong>
+                            <span>⬆</span>
+                        </div>
+                        <div class="avg-score">Completed reminders: 0</div>
+                    </div>
+                </div>
+
+                <!-- Time Tracker Card -->
+                <div class="card group time-tracker-card-container" data-no-highlight="true">
+                    <!-- The content from timetracker.html body, excluding the outer body and html tags -->
+                    <div class="relative">
+                        <!-- SVG icon for switching to Countdown (top-right) -->
+                        <button id="top-right-button">
+                            <svg viewBox="0 0 200 200" data-name="Layer 1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"><title/><path d="M100,15a85,85,0,1,0,85,85A84.93,84.93,0,0,0,100,15Zm0,150a65,65,0,1,1,65-65A64.87,64.87,0,0,1,100,165ZM97.5,57.5a9.9,9.9,0,0,0-14,14L112,100,83.5,128.5a9.9,9.9,0,0,0,14,14L126,114a19.92,19.92,0,0,0,0-28.5Z"/></svg>
+                        </button>
+
+                        <!-- Time Tracker Section -->
+                        <div id="time-tracker-section" class="section-card">
+                            <h1 class="text-2xl font-semibold mb-4">Time Tracker</h1>
+                            <!-- Initial display for MM:SS.ms format -->
+                            <div id="timer-display" class="text-5xl font-bold mb-8">00:00.000</div>
+                            <div class="flex justify-center space-x-6">
+                                <button id="pause-resume-button" class="control-button pause-button">
+                                    <!-- Pause icon (two vertical bars) -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 17V7m4 10V7" />
+                                    </svg>
+                                </button>
+                                <button id="stop-button" class="control-button stop-button">
+                                    <!-- Stop icon (square) -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18h12V6H6z" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <!-- New clock button for Time Tracker section -->
+                            <button id="time-tracker-clock-button" class="bottom-right-button">
+                                <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 8V12L14.5 14.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C21.5093 4.43821 21.8356 5.80655 21.9449 8" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            </button>
+                        </div>
+
+                        <!-- Countdown Section (initially hidden) -->
+                        <div id="countdown-section" class="section-card hidden">
+                            <h1 class="text-2xl font-semibold mb-4">Countdown</h1>
+                            <!-- SVG icon for switching back to Time Tracker (top-left) -->
+                            <button id="countdown-back-button">
+                                <svg fill="#000000" width="800px" height="800px" viewBox="0 0 200 200" data-name="Layer 1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"><title/><path d="M100,15a85,85,0,1,0,85,85A84.93,84.93,0,0,0,100,15Zm0,150a65,65,0,1,1,65-65A64.87,64.87,0,0,1,100,165ZM116.5,57.5a9.67,9.67,0,0,0-14,0L74,86a19.92,19.92,0,0,0,0,28.5L102.5,143a9.9,9.9,0,0,0,14-14l-28-29L117,71.5C120.5,68,120.5,61.5,116.5,57.5Z"/></svg>
+                            </button>
+                            <div id="countdown-display" class="text-5xl font-bold mb-8">00:00.000</div>
+                            <div class="flex justify-center space-x-6">
+                                <button id="countdown-start-button" class="control-button pause-button">
+                                    <!-- Play icon -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z" />
+                                    </svg>
+                                </button>
+                                <button id="countdown-reset-button" class="control-button stop-button">
+                                    <!-- Reset icon (circular arrow) -->
+                                    <svg width="30px" height="30px" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                                        <title>time-history-solid</title>
+                                        <g id="Layer_2" data-name="Layer 2">
+                                            <g id="invisible_box" data-name="invisible box">
+                                                <rect width="48" height="48" fill="none"/>
+                                            </g>
+                                            <g id="icons_Q2" data-name="icons Q2">
+                                                <path fill="#ffffff" d="M46,24A22,22,0,0,1,4.3,33.7a2,2,0,0,1,.5-2.6,2,2,0,0,1,3,.7A18,18,0,1,0,10.6,12h5.3A2.1,2.1,0,0,1,18,13.7,2,2,0,0,1,16,16H6a2,2,0,0,1-2-2V4.1A2.1,2.1,0,0,1,5.7,2,2,2,0,0,1,8,4V8.9A22,22,0,0,1,46,24Z"/>
+                                                <path fill="#ffffff" d="M34,32a1.7,1.7,0,0,1-1-.3L22,25.1V14a2,2,0,0,1,4,0v8.9l9,5.4a1.9,1.9,0,0,1,.7,2.7A1.9,1.9,0,0,1,34,32Z"/>
+                                            </g>
+                                        </g>
+                                    </svg>
+                            </button>
+                        </div>
+                        <!-- New clock button for Countdown section -->
+                        <button id="countdown-clock-button" class="bottom-right-button">
+                            <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 8V12L14.5 14.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C21.5093 4.43821 21.8356 5.80655 21.9449 8" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data for the chart bars, including day abbreviation, full name, and a numerical value for calculation.
+        // All values are now set to 0 to make percentages 0%.
+        const chartData = [
+            { day: 'S', fullName: 'Sunday', value: 0 },
+            { day: 'M', fullName: 'Monday', value: 0 },
+            { day: 'T', fullName: 'Tuesday', value: 0 },
+            { day: 'W', fullName: 'Wednesday', value: 0 },
+            { day: 'T', fullName: 'Thursday', value: 0 },
+            { day: 'F', fullName: 'Friday', value: 0 },
+            { day: 'S', fullName: 'Saturday', value: 0 },
+        ];
+
+        // Find the maximum value from the chartData, which corresponds to the 'W' column (100%).
+        // Note: If all values are 0, maxValue will also be 0. We'll handle division by zero for pixelHeight calculation if needed.
+        const maxValue = chartData.find(item => item.day === 'W').value;
+
+        // The height of the chart container in pixels (h-64 in Tailwind is 256px).
+        const containerHeightPx = 256;
+
+        // Calculate the percentage and pixel height for each column based on its value relative to the maxValue.
+        chartData.forEach(item => {
+            // Handle division by zero if maxValue is 0 (all values are 0).
+            item.percentage = (maxValue === 0) ? '0%' : ((item.value / maxValue) * 100).toFixed(0) + '%';
+            item.pixelHeight = (maxValue === 0) ? 0 : (item.value / maxValue) * containerHeightPx;
+        });
+
+        // Global variable to keep track of the currently highlighted column's index
+        let highlightedColumnIndex = -1;
+
+        // Get the container element for the chart
+        const chartContainer = document.getElementById('chart-container');
+
+        // Function to create and append chart bars dynamically
+        function renderChart() {
+            // Clear any existing content in the container to prevent duplicates on re-render
+            chartContainer.innerHTML = '';
+
+            // Iterate over the chartData to create each column
+            chartData.forEach((item, index) => {
+                // Create the main column div for each day
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'flex flex-col items-center cursor-pointer flex-1';
+                columnDiv.dataset.index = index;
+
+                // Create the percentage span, initially hidden (opacity-0)
+                const percentageSpan = document.createElement('span');
+                percentageSpan.className = 'mb-2 text-sm font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full shadow-sm opacity-0 transition-opacity duration-300';
+                percentageSpan.textContent = item.percentage;
+                columnDiv.appendChild(percentageSpan);
+
+                // Create the bar div
+                const barDiv = document.createElement('div');
+                barDiv.className = `
+                    w-full rounded-full flex-shrink-0
+                    bg-blue-400
+                    relative overflow-hidden
+                    transition-all duration-700 ease-out
+                `;
+                barDiv.style.height = '0px'; // Initial height for animation
+                columnDiv.appendChild(barDiv);
+
+                // Create the day label span
+                const daySpan = document.createElement('span');
+                daySpan.className = 'mt-3 text-gray-600 font-medium text-sm day-label-span transition-all duration-1000 ease-out';
+                daySpan.textContent = item.day; // Initially show abbreviation
+                daySpan.style.maxWidth = '20px'; // Initial max-width to make expansion more noticeable
+                columnDiv.appendChild(daySpan);
+
+                // Append the complete column to the chart container
+                chartContainer.appendChild(columnDiv);
+
+                // Trigger the height animation after a small delay
+                setTimeout(() => {
+                    barDiv.style.height = `${item.pixelHeight}px`;
+                }, 50 + (index * 50));
+            });
+        }
+
+        // Add click event listener to the chart container using event delegation
+        chartContainer.addEventListener('click', (event) => {
+            const columnDiv = event.target.closest('[data-index]');
+
+            if (columnDiv) {
+                const clickedIndex = parseInt(columnDiv.dataset.index);
+                const currentItem = chartData[clickedIndex];
+
+                // --- Handle previous highlighted column ---
+                if (highlightedColumnIndex !== -1 && highlightedColumnIndex !== clickedIndex) {
+                    const prevColumn = chartContainer.querySelector(`[data-index="${highlightedColumnIndex}"]`);
+                    if (prevColumn) {
+                        const prevBar = prevColumn.querySelector('div:nth-child(2)');
+                        const prevPercentage = prevColumn.querySelector('span:first-child');
+                        const prevDaySpan = prevColumn.querySelector('.day-label-span');
+
+                        // Revert previous column's styles
+                        prevBar.classList.remove('bg-blue-700');
+                        prevBar.classList.add('bg-blue-400');
+                        prevPercentage.classList.add('opacity-0');
+
+                        // Revert previous day label to abbreviation
+                        if (prevDaySpan) {
+                            prevDaySpan.textContent = chartData[highlightedColumnIndex].day;
+                            prevDaySpan.style.maxWidth = '20px';
+                        }
+                    }
+                }
+
+                // --- Handle current clicked column ---
+                const currentBar = columnDiv.querySelector('div:nth-child(2)');
+                const currentPercentage = columnDiv.querySelector('span:first-child');
+                const currentDaySpan = columnDiv.querySelector('.day-label-span');
+
+                // Check if the same column was clicked again (to un-highlight and un-expand)
+                if (highlightedColumnIndex === clickedIndex) {
+                    // Un-highlight the current column
+                    currentBar.classList.remove('bg-blue-700');
+                    currentBar.classList.add('bg-blue-400');
+                    currentPercentage.classList.add('opacity-0');
+
+                    // Revert day label to abbreviation
+                    if (currentDaySpan) {
+                        currentDaySpan.textContent = currentItem.day;
+                        currentDaySpan.style.maxWidth = '20px';
+                    }
+                    highlightedColumnIndex = -1;
+                } else {
+                    // Highlight the new column
+                    currentBar.classList.remove('bg-blue-400');
+                    currentBar.classList.add('bg-blue-700');
+
+                    // Show percentage only if it's not 0%
+                    if (currentItem.percentage !== '0%') {
+                        currentPercentage.classList.remove('opacity-0');
+                    }
+
+                    // Expand day label to full name
+                    if (currentDaySpan) {
+                        currentDaySpan.textContent = currentItem.fullName;
+                        currentDaySpan.style.maxWidth = '9999px';
+                    }
+                    highlightedColumnIndex = clickedIndex;
+                }
+            }
+        });
+
+        // Call renderChart when the DOM is fully loaded to ensure elements exist
+        document.addEventListener('DOMContentLoaded', renderChart);
+
+
+        // JavaScript for the Circular Gauge
+        // Get reference to the canvas element
+        const canvas = document.getElementById('gaugeCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const progressPercentageSpan = document.getElementById('progressPercentage');
+
+        // Define gauge properties, adjusted to fit the existing card's width
+        const lineWidth = 45; // Thickness of the gauge line (increased from 30)
+        const outerRadius = 100; // Outer radius of the gauge (increased from 85)
+        const canvasPadding = 5; // Extra padding around the gauge for visual spacing
+
+        const startAngle = Math.PI * .75; // Start at 225 degrees (bottom-left)
+        const endAngle = Math.PI * 2.25;   // End at 45 degrees (top-right), covering 270 degrees total
+
+        // Set a static initial display value to 0
+        let currentDisplayValue = 0;
+
+        /**
+         * Converts a value within a range to a color using a gradient.
+         * @param {number} value - The current value (0-100).
+         * @returns {string} The interpolated color in HSL format.
+         */
+        function interpolateColor(value) {
+            // Interpolate hue from red (0) to green (120)
+            const hueMin = 0;   // Red
+            const hueMax = 120; // Green
+            const hue = hueMin + (value / 100) * (hueMax - hueMin);
+            return `hsl(${hue}, 80%, 50%)`; // Keep saturation and lightness constant for vibrancy
+        }
+
+        /**
+         * Draws the circular gauge on the canvas.
+         * @param {number} value - The current value to display (0-100).
+         */
+        function drawGauge(value) {
+            // Clear the canvas before redrawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+
+            // Calculate the radius to the center of the stroke
+            const centerRadius = outerRadius - (lineWidth / 2);
+
+            // Draw the background track (light gray)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, centerRadius, startAngle, endAngle);
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = '#e0e0e0'; // Light gray for the background track
+            ctx.lineCap = 'round'; // Rounded ends for the track
+            ctx.stroke();
+
+            // Calculate the end angle for the filled arc based on the value
+            const fillAngle = startAngle + (endAngle - startAngle) * (value / 100);
+
+            // Determine the dynamic color based on the value
+            const dynamicColor = interpolateColor(value);
+
+            // Draw the filled arc
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, centerRadius, startAngle, fillAngle);
+            ctx.lineWidth = lineWidth;
+            ctx.strokeStyle = dynamicColor;
+            ctx.lineCap = 'round'; // Rounded ends for the filled arc
+            ctx.stroke();
+
+            // Draw the percentage value in the middle of the gauge
+            // Adjusted font size for the larger gauge
+            ctx.font = 'bold 3rem Inter, sans-serif';
+            ctx.textAlign = 'center'; // Center horizontally
+            ctx.textBaseline = 'middle'; // Center vertically
+            ctx.fillStyle = '#333'; // Darker color for readability
+            ctx.fillText(`${Math.round(value)}%`, centerX, centerY); // Draw text at the center, rounded
+        }
+
+        /**
+         * Resizes the canvas to ensure the desired outer radius is maintained.
+         */
+        function resizeCanvas() {
+            // Calculate canvas size based on the desired outer radius and padding
+            const size = (outerRadius + canvasPadding) * 2; // Total canvas dimension (diameter)
+            canvas.width = size;
+            canvas.height = size;
+
+            // Redraw the gauge after resizing with the current display value
+            drawGauge(currentDisplayValue);
+        }
+
+        // Initial draw and resize when the page loads
+        window.addEventListener('load', () => {
+            resizeCanvas(); // Set initial size and draw
+            progressPercentageSpan.textContent = `${currentDisplayValue}%`; // Set initial progress info percentage
+        });
+
+        // Add a resize listener to redraw the gauge when the window is resized
+        window.addEventListener('resize', resizeCanvas);
+
+
+        // JavaScript for the Time Tracker
+        // --- DOM Element References ---
+        const timeTrackerSection = document.getElementById('time-tracker-section');
+        const countdownSection = document.getElementById('countdown-section');
+        const timerDisplay = document.getElementById('timer-display');
+        const pauseResumeButton = document.getElementById('pause-resume-button');
+        const stopButton = document.getElementById('stop-button');
+        const topRightButton = document.getElementById('top-right-button'); // Button to switch to Countdown
+
+        const countdownDisplay = document.getElementById('countdown-display');
+        const countdownStartButton = document.getElementById('countdown-start-button');
+        const countdownResetButton = document.getElementById('countdown-reset-button');
+        const countdownBackButton = document.getElementById('countdown-back-button'); // New button to switch back to Time Tracker
+
+        const timeTrackerClockButton = document.getElementById('time-tracker-clock-button'); // New clock button for Time Tracker
+        const countdownClockButton = document.getElementById('countdown-clock-button'); // New clock button for Countdown
+
+        // --- Time Tracker Variables ---
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval;
+        let isRunning = false;
+
+        // --- Countdown Variables ---
+        let countdownTime = 0; // Changed from 5 * 1000 to 0
+        let currentCountdown = countdownTime;
+        let countdownInterval;
+        let isCountdownRunning = false;
+
+        // --- Utility Functions ---
+
+        /**
+         * Pads a number with leading zeros to a specified length.
+         * @param {number} num - The number to pad.
+         * @param {number} length - The desired length of the string.
+         * @returns {string} The padded string.
+         */
+        const pad = (num, length = 2) => String(num).padStart(length, '0');
+
+        /**
+         * Formats a given number of milliseconds into HH:MM:SS or MM:SS.ms string format.
+         * @param {number} ms - The time in milliseconds.
+         * @returns {string} The formatted time string.
+         */
+        function formatTime(ms) {
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor((totalSeconds % 3600) / 60);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            const milliseconds = ms % 1000;
+
+            if (hours > 0) {
+                // If hours are present, show HH:MM:SS
+                return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+            } else {
+                // Otherwise, show MM:SS.ms
+                return `${pad(minutes)}:${pad(seconds)}.${pad(milliseconds, 3)}`;
+            }
+        }
+
+        // --- Time Tracker Functions ---
+
+        /**
+         * Updates the time tracker display.
+         */
+        function updateTimerDisplay() {
+            const currentElapsedTime = isRunning ? (Date.now() - startTime + elapsedTime) : elapsedTime;
+            timerDisplay.textContent = formatTime(currentElapsedTime);
+
+            const totalSeconds = Math.floor(currentElapsedTime / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            if (hours > 0) {
+                timerDisplay.classList.remove('text-5xl');
+                timerDisplay.classList.add('text-6xl');
+            } else {
+                timerDisplay.classList.remove('text-6xl');
+                timerDisplay.classList.add('text-5xl');
+            }
+        }
+
+        /**
+         * Starts or resumes the time tracker.
+         */
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimerDisplay, 10); // Update every 10ms for milliseconds
+                pauseResumeButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 17V7m4 10V7" />
+                    </svg>
+                `;
+            }
+        }
+
+        /**
+         * Pauses the time tracker.
+         */
+        function pauseTimer() {
+            if (isRunning) {
+                isRunning = false;
+                clearInterval(timerInterval);
+                elapsedTime += Date.now() - startTime;
+                pauseResumeButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z" />
+                    </svg>
+                `;
+            }
+        }
+
+        /**
+         * Resets the time tracker.
+         */
+        function stopTimer() {
+            isRunning = false;
+            clearInterval(timerInterval);
+            startTime = 0;
+            elapsedTime = 0;
+            timerDisplay.textContent = '00:00.000';
+            timerDisplay.classList.remove('text-6xl');
+            timerDisplay.classList.add('text-5xl');
+            pauseResumeButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z" />
+                </svg>
+            `;
+        }
+
+        // --- Countdown Functions ---
+
+        /**
+         * Updates the countdown display.
+         */
+        function updateCountdownDisplay() {
+            if (currentCountdown <= 0) {
+                currentCountdown = 0;
+                clearInterval(countdownInterval);
+                isCountdownRunning = false;
+                countdownStartButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z" />
+                    </svg>
+                `;
+            }
+            countdownDisplay.textContent = formatTime(currentCountdown);
+        }
+
+        /**
+         * Starts or pauses the countdown.
+         */
+        function toggleCountdown() {
+            if (isCountdownRunning) {
+                isCountdownRunning = false;
+                clearInterval(countdownInterval);
+                countdownStartButton.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z" />
+                    </svg>
+                `;
+            } else {
+                if (currentCountdown > 0) {
+                    isCountdownRunning = true;
+                    // Update every 10ms for smooth millisecond display
+                    countdownInterval = setInterval(() => {
+                        currentCountdown -= 10;
+                        updateCountdownDisplay();
+                    }, 10);
+                    countdownStartButton.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 17V7m4 10V7" />
+                        </svg>
+                    `;
+                }
+            }
+        }
+
+        /**
+         * Resets the countdown.
+         */
+        function resetCountdown() {
+            isCountdownRunning = false;
+            clearInterval(countdownInterval);
+            currentCountdown = countdownTime; // Reset to initial countdown time
+            updateCountdownDisplay();
+            countdownStartButton.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 3l14 9-14 9V3z" />
+                </svg>
+            `;
+        }
+
+        /**
+         * Allows setting the countdown time by clicking on the display.
+         */
+        function setCountdownTime() {
+            if (!isCountdownRunning) {
+                let inputTime = prompt("Enter countdown time (MM:SS or MM:SS.ms, e.g., 01:30 or 00:05.500):");
+                if (inputTime) {
+                    let parts = inputTime.split(':');
+                    let minutes = 0;
+                    let seconds = 0;
+                    let milliseconds = 0;
+
+                    if (parts.length === 2) { // MM:SS or MM:SS.ms
+                        minutes = parseInt(parts[0]) || 0;
+                        let secMs = parts[1].split('.');
+                        seconds = parseInt(secMs[0]) || 0;
+                        milliseconds = parseInt(secMs[1]) || 0;
+                    } else if (parts.length === 3) { // HH:MM:SS (though we only use MM:SS for input)
+                        // This case is less likely for direct MM:SS.ms input, but handle defensively
+                        minutes = parseInt(parts[1]) || 0;
+                        let secMs = parts[2].split('.');
+                        seconds = parseInt(secMs[0]) || 0;
+                        milliseconds = parseInt(secMs[1]) || 0;
+                    }
+
+                    countdownTime = (minutes * 60 * 1000) + (seconds * 1000) + milliseconds;
+                    currentCountdown = countdownTime;
+                    updateCountdownDisplay();
+                }
+            }
+        }
+
+        // --- Event Listeners ---
+
+        // Time Tracker Buttons
+        pauseResumeButton.addEventListener('click', () => {
+            if (isRunning) {
+                pauseTimer();
+            } else {
+                startTimer();
+            }
+        });
+        stopButton.addEventListener('click', stopTimer);
+
+        // Countdown Buttons
+        countdownStartButton.addEventListener('click', toggleCountdown);
+        countdownResetButton.addEventListener('click', resetCountdown);
+        countdownDisplay.addEventListener('click', setCountdownTime); // Allow setting time by clicking display
+
+        // Toggle between Time Tracker and Countdown sections (top-right button)
+        topRightButton.addEventListener('click', () => {
+            if (timeTrackerSection.classList.contains('hidden')) {
+                // Currently showing countdown, this button should not be visible or active
+                console.log("Top-right button clicked while countdown is active. No action taken.");
+            } else {
+                // Currently showing time tracker, switch to countdown
+                timeTrackerSection.classList.add('hidden');
+                countdownSection.classList.remove('hidden');
+                // Ensure time tracker is paused when switching away
+                pauseTimer();
+                // Removed toggleCountdown() to prevent automatic start
+            }
+        });
+
+        // Toggle between Countdown and Time Tracker sections (top-left button in countdown)
+        countdownBackButton.addEventListener('click', () => {
+            if (countdownSection.classList.contains('hidden')) {
+                // Currently showing time tracker, this button should not be visible or active
+                console.log("Countdown back button clicked while time tracker is active. No action taken.");
+            } else {
+                // Currently showing countdown, switch back to time tracker
+                countdownSection.classList.add('hidden');
+                timeTrackerSection.classList.remove('hidden');
+                // Ensure countdown is paused when switching away
+                toggleCountdown(); // This will pause if running, or do nothing if not
+                // Ensure time tracker is paused when switching to it
+                pauseTimer(); // This will pause if running, or do nothing if not
+            }
+        });
+
+        // Event listener for the new clock button in Time Tracker section
+        timeTrackerClockButton.addEventListener('click', () => {
+            // No section switching when this button is clicked
+            console.log("Time Tracker Clock Button clicked. No section change.");
+        });
+
+        // Event listener for the new clock button in Countdown section
+        countdownClockButton.addEventListener('click', () => {
+            // No section switching when this button is clicked
+            console.log("Countdown Clock Button clicked. No section change.");
+        });
+
+
+        // --- Initial Setup ---
+        updateTimerDisplay(); // Initialize time tracker display
+        updateCountdownDisplay(); // Initialize countdown display
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            let currentHighlightedCard = null;
+
+            cards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Check if the card has the 'data-no-highlight' attribute
+                    if (card.hasAttribute('data-no-highlight')) {
+                        return; // Do not highlight this card
+                    }
+
+                    // If there's a currently highlighted card, remove its highlight
+                    if (currentHighlightedCard) {
+                        currentHighlightedCard.classList.remove('highlighted');
+                    }
+
+                    // Add highlight to the clicked card
+                    card.classList.add('highlighted');
+                    currentHighlightedCard = card;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
