@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Menu Bar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom styles for the active bar transition if needed, though Tailwind handles most */
+        .sidebar {
+            transition: width 0.3s ease-in-out;
+        }
+        .nav-item-content {
+            /* Use opacity and pointer-events for smooth transition instead of 'hidden' */
+            transition: opacity 0.3s ease-in-out, margin-right 0.3s ease-in-out;
+        }
+        /* Specific class for collapsed text state */
+        .nav-item-content.collapsed {
+            opacity: 0;
+            pointer-events: none; /* Make it unclickable when hidden */
+            width: 0; /* Collapse width to hide content */
+            overflow: hidden; /* Hide overflow during collapse */
+        }
+        /* Specific class for expanded text state */
+        .nav-item-content.expanded {
+            opacity: 1;
+            pointer-events: auto;
+            width: auto; /* Allow content to take its natural width */
+        }
+
+        /* Spinner Styles - Integrated from spinner.html */
+        .loader-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            min-height: 200px; /* Ensure it takes up some space even if content is small */
+            background-color: rgba(255, 255, 255, 0.7); /* Slightly transparent background */
+            border-radius: 8px;
+        }
+
+        .spinner {
+            position: relative;
+            width: 20px;
+            height: 20px;
+        }
+
+        .outer-circle {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 1px solid transparent;
+            border-top-color: black;
+            border-right-color: black;
+            border-radius: 50%;
+            animation: spin 1.5s linear infinite;
+        }
+
+        .inner-circle {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            width: 8px;
+            height: 8px;
+            border: 1px solid transparent;
+            border-bottom-color: black;
+            border-left-color: black;
+            border-radius: 50%;
+            animation: spin-reverse 1.5s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes spin-reverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+    </style>
+</head>
+<body class="flex font-sans min-h-screen bg-gray-100 text-gray-900">
+
+    <!-- Sidebar / Menu Bar -->
+    <aside id="sidebar" class="flex flex-col bg-white p-4 shadow-lg rounded-r-lg m-2 sidebar">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6 px-2" id="sidebar-header">
+            <div class="flex items-center space-x-2" id="onesignal-logo-text">
+                <!-- OneSignal Logo Placeholder -->
+                <div class="w-8 h-8 rounded-full border-2 border-gray-600 flex items-center justify-center">
+                    <span class="text-sm font-bold text-gray-900">O</span>
+                </div>
+                <span class="text-xl font-semibold text-gray-900">OneSignal</span>
+            </div>
+            <!-- Search button -->
+            <button class="p-2 rounded-full hover:bg-gray-200 transition-colors" id="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-gray-600">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.3-4.3"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Add Reminder Dropdown -->
+        <div class="mb-6 px-2" id="add-reminder-dropdown">
+            <button id="add-reminder-button" class="w-full flex items-center justify-between bg-gray-200 hover:bg-gray-300 transition-colors text-gray-800 py-2 px-3 rounded-xl shadow-md
+                    transition-transform duration-150 hover:scale-[1.03] active:scale-[0.97]">
+                <!-- New SVG Icon for Add Reminder -->
+                <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+                    <path d="M15 12L12 12M12 12L9 12M12 12L12 9M12 12L12 15" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M22 12C22 16.714 22 19.0711 20.5355 20.5355C19.0711 22 16.714 22 12 22C7.28595 22 4.92893 22 3.46447 20.5355C2 19.0711 2 16.714 2 12C2 7.28595 2 4.92893 3.46447 3.46447C4.92893 2 7.28595 2 12 2C16.714 2 19.0711 2 20.5355 3.46447C21.5093 4.43821 21.8356 5.80655 21.9449 8" stroke="#1C274C" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span class="font-medium">Add Reminder</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-600">
+                    <path d="m6 9 6 6 6-6"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Navigation Items -->
+        <nav class="flex-grow space-y-2" id="nav-items-container">
+            <!-- Nav items will be dynamically inserted here by JavaScript -->
+        </nav>
+
+        <!-- Separator -->
+        <div class="border-t border-gray-300 my-4 pt-4" id="separator"></div>
+
+        <!-- Bottom Navigation Items -->
+        <nav class="space-y-2" id="bottom-nav-items-container">
+            <!-- Bottom nav items will be dynamically inserted here by JavaScript -->
+        </nav>
+
+        <!-- Footer / User Profile and Collapse Button -->
+        <div class="mt-auto flex justify-between p-2 border-t border-gray-300 pt-4" id="sidebar-footer">
+            <!-- Collapse/Expand button -->
+            <button id="collapse-toggle" class="flex items-center p-2 rounded-full transition-colors hover:bg-gray-200 text-gray-600">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                    <path d="M19 12H5"></path>
+                    <path d="m12 19-7-7 7-7"></path>
+                </svg>
+            </button>
+            <!-- User Profile button -->
+            <button class="flex items-center p-2 rounded-full hover:bg-gray-200 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-gray-600">
+                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 p-8 flex flex-col" id="main-content-area">
+        <!-- Content will be loaded here dynamically -->
+    </main>
+
+    <script>
+        // Define SVG icons as strings for direct insertion
+        const icons = {
+            Search: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-gray-600"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>`,
+            ChevronDown: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-gray-600"><path d="m6 9 6 6 6-6"></path></svg>`,
+            LayoutDashboard: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect width="7" height="5" x="14" y="3" rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"></rect><rect width="7" height="5" x="3" y="16" rx="1"></rect></svg>`,
+            MessageSquare: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V3a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`,
+            Plane: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 22 5 22 3.5a2.1 2.1 0 0 0-3.5-3.5c-1.5 0-2.5 1-3.5 2.5L13 6l-8.2 1.8c-1.1.2-1.8 1.3-1.5 2.4l.7 2.8c.2.8.9 1.4 1.7 1.5L10 19.2c.7.5 1.7.7 2.5.7H15c.7 0 1.5-.3 2-.8l.8-.7a2.1 2.1 0 0 0 .5-2.5z"></path></svg>`,
+            Users: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>`,
+            Truck: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"></path><path d="M19 18h2a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1h-1V6a2 2 0 0 0-2-2h-3v14"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>`,
+            Settings: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l-.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l-.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>`,
+            FileText: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>`,
+            LifeBuoy: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><circle cx="12" cy="12" r="10"></circle><path d="M10 16.5 16.5 10"></path><path d="M18 12a6 6 0 0 0-6-6"></path><path d="M6 12a6 6 0 0 0 6 6"></path></svg>`,
+            User: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 text-gray-600"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`,
+            ArrowLeft: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg>`,
+            ArrowRight: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>`
+        };
+
+        let activeItem = 'Dashboard'; // Initial active item
+        let collapsed = false;
+
+        // Define content URLs for each navigation item
+        const contentUrls = {
+            'Dashboard': '/dash.html', // <--- This path should match where you upload dash.html
+            'Messages': 'https://raw.githubusercontent.com/mdn/learning-area/main/html/introduction-to-html/what-is-html.html',
+            'Journeys': 'https://raw.githubusercontent.com/mdn/learning-area/main/css/introduction-to-css/what-is-css.html',
+            'Audience': 'https://raw.githubusercontent.com/mdn/learning-area/main/javascript/introduction-to-javascript/what-is-javascript.html',
+            'Delivery': 'https://raw.githubusercontent.com/mdn/learning-area/main/javascript/asynchronous/promises/bouncing-balls.html',
+            'Settings': 'https://raw.githubusercontent.com/mdn/learning-area/main/javascript/asynchronous/loops/index.html',
+            'Documentation': 'https://raw.githubusercontent.com/mdn/learning-area/main/html/tables/basic/index.html',
+            'Support': 'https://raw.githubusercontent.com/mdn/learning-area/main/html/forms/your-first-form/index.html',
+            'Add Reminder': '<h1>Add New Reminder</h1><p>This is a custom content for adding reminders.</p>' // Custom HTML content
+        };
+
+
+        const navItemsData = [
+            { name: 'Dashboard', icon: 'LayoutDashboard' },
+            { name: 'Messages', icon: 'MessageSquare' },
+            { name: 'Journeys', icon: 'Plane' },
+            { name: 'Audience', icon: 'Users' },
+            { name: 'Delivery', icon: 'Truck' },
+            { name: 'Settings', icon: 'Settings' },
+        ];
+
+        const bottomItemsData = [
+            { name: 'Documentation', icon: 'FileText' },
+            { name: 'Support', icon: 'LifeBuoy' },
+        ];
+
+        const sidebar = document.getElementById('sidebar');
+        const sidebarHeader = document.getElementById('sidebar-header');
+        const onesignalLogoText = document.getElementById('onesignal-logo-text');
+        const searchButton = document.getElementById('search-button');
+        const addReminderDropdown = document.getElementById('add-reminder-dropdown');
+        const addReminderButton = document.getElementById('add-reminder-button'); // Get the specific button
+        const navItemsContainer = document.getElementById('nav-items-container');
+        const separator = document.getElementById('separator');
+        const bottomNavItemsContainer = document.getElementById('bottom-nav-items-container');
+        const sidebarFooter = document.getElementById('sidebar-footer');
+        const collapseToggle = document.getElementById('collapse-toggle');
+        const mainContentArea = document.getElementById('main-content-area'); // Get the main content area
+
+        // Cache to store loaded content to avoid re-fetching
+        const contentCache = new Map();
+
+        // Function to render navigation items
+        function renderNavItems(items, container) {
+            container.innerHTML = ''; // Clear existing items
+            items.forEach(item => {
+                const button = document.createElement('button');
+                button.className = `
+                    w-full flex items-center p-3 rounded-xl relative
+                    transition-colors duration-200 transition-transform duration-150 hover:scale-[1.03] active:scale-[0.97]
+                `;
+                button.innerHTML = `
+                    ${icons[item.icon]}
+                    <span class="nav-item-content">${item.name}</span>
+                `;
+                button.onclick = () => {
+                    activeItem = item.name;
+                    updateUI(); // Re-render to update active state
+                    loadContentForActiveItem(item.name); // Call without isInitialLoad, logic is now in the function
+                };
+                container.appendChild(button);
+            });
+        }
+
+        // Function to update UI based on collapsed state and active item
+        function updateUI() {
+            // Sidebar width and alignment
+            if (collapsed) {
+                sidebar.classList.remove('w-64', 'md:w-72', 'lg:w-80');
+                sidebar.classList.add('w-20', 'items-center');
+                sidebarHeader.classList.remove('justify-between');
+                sidebarHeader.classList.add('justify-center');
+                sidebarFooter.classList.remove('justify-between');
+                sidebarFooter.classList.add('flex-col', 'items-center', 'space-y-4');
+                collapseToggle.classList.add('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                collapseToggle.classList.remove('hover:bg-gray-200', 'text-gray-600');
+            } else {
+                sidebar.classList.add('w-64', 'md:w-72', 'lg:w-80');
+                sidebar.classList.remove('w-20', 'items-center');
+                sidebarHeader.classList.add('justify-between');
+                sidebarHeader.classList.remove('justify-center');
+                sidebarFooter.classList.add('justify-between');
+                sidebarFooter.classList.remove('flex-col', 'items-center', 'space-y-4');
+                collapseToggle.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'text-white');
+                collapseToggle.classList.add('hover:bg-gray-200', 'text-gray-600');
+            }
+
+            // Toggle visibility of text content and specific elements
+            onesignalLogoText.classList.toggle('hidden', collapsed);
+            searchButton.classList.toggle('hidden', !collapsed); // Search button visible only when collapsed
+            addReminderDropdown.classList.toggle('hidden', collapsed);
+            separator.classList.toggle('hidden', collapsed);
+
+
+            // Update nav item content visibility and icon margin, and manage active state
+            document.querySelectorAll('#nav-items-container button, #bottom-nav-items-container button, #add-reminder-button').forEach(button => {
+                const icon = button.querySelector('svg');
+                const textSpan = button.querySelector('.nav-item-content') || button.querySelector('.font-medium'); // Get text span for "Add Reminder" too
+                const itemName = textSpan ? textSpan.textContent : ''; // Get the name of the current item
+
+                // Update text and icon layout based on collapsed state
+                if (collapsed) {
+                    button.classList.add('justify-center');
+                    if (textSpan) { // Ensure textSpan exists before manipulating classes
+                        textSpan.classList.add('collapsed'); // Add collapsed class for animation
+                        textSpan.classList.remove('expanded');
+                    }
+                    icon.classList.remove('mr-3');
+                } else {
+                    button.classList.remove('justify-center');
+                    if (textSpan) { // Ensure textSpan exists before manipulating classes
+                        textSpan.classList.remove('collapsed'); // Remove collapsed class
+                        textSpan.classList.add('expanded'); // Add expanded class for animation
+                    }
+                    icon.classList.add('mr-3');
+                }
+
+                // Apply light blue highlight to the active button
+                if (activeItem === itemName) {
+                    button.classList.add('bg-blue-100', 'text-blue-800', 'shadow-md');
+                    button.classList.remove('bg-gray-200', 'hover:bg-gray-300', 'text-gray-700', 'hover:bg-gray-200');
+                } else {
+                    // Reset to default styling for inactive buttons
+                    button.classList.remove('bg-blue-100', 'text-blue-800', 'shadow-md');
+                    // Ensure the Add Reminder button goes back to its specific gray styling
+                    if (button.id === 'add-reminder-button') {
+                        button.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-800');
+                    } else {
+                        button.classList.add('text-gray-700', 'hover:bg-gray-200');
+                    }
+                }
+            });
+
+            // Update collapse toggle icon
+            collapseToggle.innerHTML = collapsed ? icons.ArrowRight : icons.ArrowLeft;
+        }
+
+        // Function to load content from a URL or directly from predefined content
+        async function loadContentForActiveItem(itemName) {
+            const contentSource = contentUrls[itemName];
+
+            if (!contentSource) {
+                mainContentArea.innerHTML = `<h2 class="text-2xl font-semibold mb-4">Content Not Found</h2><p>No content defined for "${itemName}".</p>`;
+                return;
+            }
+
+            // Handle 'Add Reminder' as direct HTML, no caching for this specific case as it's static
+            if (itemName === 'Add Reminder') {
+                mainContentArea.innerHTML = contentSource;
+                return;
+            }
+
+            // If content is already in cache, just display it immediately
+            if (contentCache.has(itemName)) {
+                mainContentArea.innerHTML = contentCache.get(itemName);
+                return;
+            }
+
+            // Spinner HTML
+            const spinnerHtml = `
+                <div class="loader-container">
+                    <div class="spinner">
+                        <div class="outer-circle"></div>
+                        <div class="inner-circle"></div>
+                    </div>
+                </div>
+            `;
+
+            // Function to introduce a delay
+            const delay = (ms) => new Promise(res => setTimeout(res, ms));
+
+            // Display spinner only if content is being fetched for the first time
+            mainContentArea.innerHTML = spinnerHtml;
+
+            // Special handling for 'Dashboard' to load it in an iframe
+            if (itemName === 'Dashboard') {
+                try {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = contentSource;
+                    iframe.style.width = '100%';
+                    iframe.style.height = '100%';
+                    iframe.style.border = 'none';
+                    iframe.style.borderRadius = '1rem'; // Match card styling
+                    iframe.style.flexGrow = '1'; // Allow iframe to grow within flex container
+                    iframe.style.backgroundColor = 'transparent'; // Ensure background is transparent
+
+                    // Append iframe after a delay to show spinner
+                    await delay(5000); // Keep the 5-second delay for the initial load of the iframe
+
+                    mainContentArea.innerHTML = ''; // Clear spinner
+                    mainContentArea.appendChild(iframe);
+                    contentCache.set(itemName, iframe.outerHTML); // Cache the iframe HTML
+
+                } catch (error) {
+                    console.error('Error loading Dashboard content:', error);
+                    mainContentArea.innerHTML = '<p class="text-red-500">Failed to load Dashboard. Please try again.</p>';
+                }
+            } else if (contentSource.startsWith('http://') || contentSource.startsWith('https://')) {
+                // Handle other external URLs
+                try {
+                    // Fetch content and apply a 5-second delay for network fetches
+                    const [fetchedContent] = await Promise.all([
+                        fetch(contentSource).then(response => {
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.text();
+                        }),
+                        delay(5000) // Always apply delay for network fetches
+                    ]);
+
+                    mainContentArea.innerHTML = fetchedContent; // Insert content into the main area
+                    contentCache.set(itemName, fetchedContent); // Cache the loaded content
+
+                } catch (error) {
+                    console.error('Error loading content:', error);
+                    mainContentArea.innerHTML = '<p class="text-red-500">Failed to load content. Please try again.</p>';
+                }
+            } else {
+                // If it's direct HTML content, no fetch or delay needed, just set it
+                mainContentArea.innerHTML = contentSource;
+                contentCache.set(itemName, contentSource); // Cache the direct content
+            }
+        }
+
+
+        // Initial render
+        renderNavItems(navItemsData, navItemsContainer);
+        renderNavItems(bottomItemsData, bottomNavItemsContainer);
+        updateUI(); // Apply initial state and ensure active state is rendered
+        // Load content for the initially active item. Spinner will show as it's not cached yet.
+        loadContentForActiveItem(activeItem);
+
+        // Event listener for the collapse toggle button
+        collapseToggle.onclick = () => {
+            collapsed = !collapsed;
+            updateUI();
+        };
+
+        // Event listener for the "Add Reminder" button specifically
+        addReminderButton.onclick = () => {
+            activeItem = 'Add Reminder';
+            updateUI();
+            // Load content for "Add Reminder". Spinner will show if not cached.
+            loadContentForActiveItem('Add Reminder');
+        };
+    </script>
+</body>
+</html>
+
