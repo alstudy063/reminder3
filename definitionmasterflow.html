@@ -37,7 +37,6 @@
             background: #0f172a;
             color: #eef2ff;
         }
-        /* Dark mode overrides for better consistency */
         .theme-dark .card-bg,
         .theme-dark .modal-content,
         .theme-dark .stat-card,
@@ -321,6 +320,15 @@
                 <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center"><i class="fas fa-times-circle text-red-500 text-2xl mb-1"></i><p class="text-xs uppercase">Failed total</p><p id="total-failed-count" class="text-2xl font-bold">0</p></div>
             </div>
 
+            <!-- User info & sync status -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold"><i class="fas fa-cloud-upload-alt mr-2"></i> Cloud Sync</span>
+                    <span id="sync-status" class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 px-3 py-1 rounded-full">⚠️ Signed out (local only)</span>
+                </div>
+                <div id="user-info-panel" class="text-sm text-gray-600 dark:text-gray-300"></div>
+            </div>
+
             <!-- Data Management -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl border p-5 space-y-5">
                 <h4 class="font-semibold"><i class="fas fa-database mr-2"></i> Data Management</h4>
@@ -422,6 +430,7 @@
             if (currentUser) {
                 const userDocRef = doc(db, "users", currentUser.uid);
                 setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() }, { merge: true }).catch(err=>showToast("Sync failed: "+err.message, "error"));
+                document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
             }
             updateStatusCounters();
             populateLessonDropdowns();
@@ -594,7 +603,7 @@
 
         window.toggleAuthMenu = () => { document.getElementById('auth-menu').classList.toggle('hidden'); };
 
-        // Load user data from Firestore
+        // Load user data from Firestore (silent sync - no success toast)
         async function loadUserData(user) {
             if(firestoreUnsubscribe) firestoreUnsubscribe();
             const userDocRef = doc(db, "users", user.uid);
@@ -607,7 +616,7 @@
                     definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
                     saveToLocalAndCloud();
                     displayLessons(document.getElementById('filter-lesson').value || null);
-                    showToast("Data synced from cloud", "success");
+                    // Removed success toast here to avoid repeated messages
                 } else {
                     const localLessons = JSON.parse(localStorage.getItem('biologyLessons') || '[]');
                     const localDefs = JSON.parse(localStorage.getItem('biologyDefinitions') || '[]');
@@ -633,6 +642,7 @@
                 document.getElementById('user-icon').classList.add('hidden');
                 document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || '';
                 document.getElementById('user-name').classList.remove('hidden');
+                document.getElementById('sync-status').innerHTML = "☁️ Synced with " + user.email;
                 document.getElementById('google-signin-btn').classList.add('hidden');
                 document.getElementById('google-signout-btn').classList.remove('hidden');
                 await loadUserData(user);
@@ -640,6 +650,7 @@
                 document.getElementById('user-avatar').classList.add('hidden');
                 document.getElementById('user-icon').classList.remove('hidden');
                 document.getElementById('user-name').classList.add('hidden');
+                document.getElementById('sync-status').innerHTML = "⚠️ Signed out (local only)";
                 document.getElementById('google-signin-btn').classList.remove('hidden');
                 document.getElementById('google-signout-btn').classList.add('hidden');
                 const storedLessons = localStorage.getItem('biologyLessons');
