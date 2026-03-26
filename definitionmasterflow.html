@@ -51,6 +51,7 @@
         .header-icon-btn:hover { background: rgba(0,0,0,0.05); }
         .theme-dark .header-icon-btn:hover { background: rgba(255,255,255,0.08); }
         .user-avatar { width: 36px; height: 36px; border-radius: 999px; object-fit: cover; border: 2px solid #3b82f6; }
+        .sync-spinner { margin-left: 0.5rem; display: inline-flex; align-items: center; }
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
@@ -70,6 +71,9 @@
                 <img id="user-avatar" src="https://via.placeholder.com/36" alt="avatar" class="user-avatar hidden">
                 <i id="user-icon" class="fas fa-user-circle text-2xl text-gray-500"></i>
                 <span id="user-name" class="text-sm font-medium hidden md:inline-block"></span>
+            </div>
+            <div id="sync-spinner" class="sync-spinner hidden">
+                <i class="fas fa-spinner fa-pulse text-blue-500"></i>
             </div>
             <button id="global-history-btn" class="header-icon-btn text-gray-600 hover:text-blue-600" title="History"><i class="fas fa-history text-xl"></i></button>
             <div id="theme-switch-header" class="header-icon-btn cursor-pointer"><i class="fas fa-sun text-yellow-500 text-lg"></i></div>
@@ -154,6 +158,23 @@
         let suggestionsHistory = [];
         let currentUser = null;
         let unsubscribeFirestore = null;
+        let syncSpinnerCounter = 0;
+
+        function showSyncSpinner() {
+            const spinner = document.getElementById('sync-spinner');
+            if (spinner) {
+                syncSpinnerCounter++;
+                spinner.classList.remove('hidden');
+            }
+        }
+        function hideSyncSpinner() {
+            syncSpinnerCounter--;
+            if (syncSpinnerCounter <= 0) {
+                syncSpinnerCounter = 0;
+                const spinner = document.getElementById('sync-spinner');
+                if (spinner) spinner.classList.add('hidden');
+            }
+        }
 
         function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
         function showToast(msg, type='info'){ const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type==='success'?'bg-green-600':type==='error'?'bg-red-600':'bg-blue-600'} text-white`; t.innerText=msg; c.appendChild(t); setTimeout(()=>t.classList.add('show'),20); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},2800);}
@@ -276,6 +297,7 @@
         async function saveToCloud() {
             if (!currentUser) return;
             const userDocRef = doc(db, "users", currentUser.uid);
+            showSyncSpinner();
             try {
                 await setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() }, { merge: true });
                 document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
@@ -283,6 +305,8 @@
                 console.error("Save to cloud failed:", err);
                 showToast("Sync failed: " + err.message, "error");
                 document.getElementById('sync-status').innerHTML = "⚠️ Sync error";
+            } finally {
+                hideSyncSpinner();
             }
         }
 
@@ -319,7 +343,12 @@
         function startFirestoreListener(user) {
             if (unsubscribeFirestore) unsubscribeFirestore();
             const userDocRef = doc(db, "users", user.uid);
-            unsubscribeFirestore = onSnapshot(userDocRef, onUserDataSnapshot, (err) => {
+            showSyncSpinner(); // show spinner while initial data loads
+            unsubscribeFirestore = onSnapshot(userDocRef, (snapshot) => {
+                hideSyncSpinner(); // data arrived (first or subsequent)
+                onUserDataSnapshot(snapshot);
+            }, (err) => {
+                hideSyncSpinner();
                 console.error("Firestore listener error:", err);
                 showToast("Real‑time sync error. Check console.", "error");
             });
