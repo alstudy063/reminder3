@@ -21,19 +21,61 @@
         }
     </script>
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * {
+            font-family: 'Inter', sans-serif;
+        }
         body {
             min-height: 100vh;
             padding-bottom: 90px;
             transition: background-color 0.25s ease, color 0.2s ease;
         }
-        body.theme-light { background: #f8fafc; color: #0f172a; }
-        body.theme-dark { background: #0a0f1c; color: #eef2ff; }
-        .theme-light .card-bg, .theme-light .modal-content, .theme-light .stat-card, .theme-light .lesson-card, .theme-light .suggestion-card, .theme-light .bottom-nav {
-            background-color: #ffffff; border-color: #e2e8f0;
+        body.theme-light {
+            background: #f8fafc;
+            color: #0f172a;
         }
-        .theme-dark .card-bg, .theme-dark .modal-content, .theme-dark .stat-card, .theme-dark .lesson-card, .theme-dark .suggestion-card, .theme-dark .bottom-nav {
-            background-color: #111827; border-color: #1e293b;
+        body.theme-dark {
+            background: #0f172a;
+            color: #eef2ff;
+        }
+        /* Dark mode overrides for better consistency */
+        .theme-dark .card-bg,
+        .theme-dark .modal-content,
+        .theme-dark .stat-card,
+        .theme-dark .lesson-card,
+        .theme-dark .suggestion-card,
+        .theme-dark .bottom-nav {
+            background-color: #1e293b;
+            border-color: #334155;
+        }
+        .theme-dark .bg-white {
+            background-color: #1e293b !important;
+        }
+        .theme-dark .bg-gray-50,
+        .theme-dark .bg-gray-100 {
+            background-color: #0f172a !important;
+        }
+        .theme-dark .border-gray-200,
+        .theme-dark .border-gray-300 {
+            border-color: #334155 !important;
+        }
+        .theme-dark .text-gray-600,
+        .theme-dark .text-gray-700,
+        .theme-dark .text-gray-500 {
+            color: #cbd5e1 !important;
+        }
+        .theme-dark .text-gray-800 {
+            color: #f1f5f9 !important;
+        }
+        .theme-dark .bg-blue-100,
+        .theme-dark .bg-purple-100,
+        .theme-dark .bg-green-100,
+        .theme-dark .bg-red-100 {
+            background-color: #1e293b !important;
+        }
+        .theme-dark .bg-blue-50,
+        .theme-dark .bg-purple-50,
+        .theme-dark .bg-green-50 {
+            background-color: #0f172a !important;
         }
         .bottom-nav {
             backdrop-filter: blur(16px);
@@ -45,7 +87,7 @@
             bottom: 1.25rem;
             z-index: 50;
             transition: background 0.2s, border 0.2s;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
         }
         .nav-item {
             display: flex;
@@ -60,27 +102,51 @@
             transition: all 0.2s;
             color: #64748b;
         }
-        .theme-dark .nav-item { color: #94a3b8; }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 2px; }
-        .nav-item.active { color: #3b82f6; background: rgba(59,130,246,0.12); transform: translateY(-2px); }
-        .theme-dark .nav-item.active { color: #818cf8; background: rgba(129,140,248,0.15); }
-        .lesson-card, .suggestion-card, .stat-card { transition: all 0.2s ease; }
-        .lesson-card:hover, .suggestion-card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
+        .theme-dark .nav-item {
+            color: #94a3b8;
+        }
+        .nav-item i {
+            font-size: 1.5rem;
+            margin-bottom: 2px;
+        }
+        .nav-item.active {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.12);
+            transform: translateY(-2px);
+        }
+        .theme-dark .nav-item.active {
+            color: #818cf8;
+            background: rgba(129, 140, 248, 0.15);
+        }
+        .lesson-card, .suggestion-card, .stat-card {
+            transition: all 0.2s ease;
+        }
+        .lesson-card:hover, .suggestion-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
+        }
         .definition-text {
             max-height: 0;
             overflow: hidden;
             opacity: 0;
-            transition: max-height 0.4s cubic-bezier(0.2,0.9,0.4,1.1), opacity 0.3s ease;
+            transition: max-height 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.3s ease;
         }
-        .definition-text.active { max-height: 300px; opacity: 1; margin-top: 0.5rem; }
+        .definition-text.active {
+            max-height: 300px;
+            opacity: 1;
+            margin-top: 0.5rem;
+        }
         .modal {
-            background-color: rgba(0,0,0,0.6);
+            background-color: rgba(0, 0, 0, 0.7);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s;
             z-index: 100;
         }
-        .modal:not(.hidden) { opacity: 1; pointer-events: auto; }
+        .modal:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        }
         .modal-content {
             transform: scale(0.96);
             transition: transform 0.2s ease-out;
@@ -90,26 +156,73 @@
             max-height: 85vh;
             overflow-y: auto;
         }
-        .modal:not(.hidden) .modal-content { transform: scale(1); }
+        .modal:not(.hidden) .modal-content {
+            transform: scale(1);
+        }
         .toast {
             padding: 0.75rem 1.25rem;
             border-radius: 2rem;
             font-weight: 500;
             backdrop-filter: blur(12px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             transform: translateX(120%);
             transition: transform 0.25s ease, opacity 0.2s;
         }
-        .toast.show { transform: translateX(0); }
-        .daily-badge { background: #8b5cf6; color: white; border-radius: 999px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 600; }
-        .lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-        .header-icon-btn { transition: all 0.2s; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 999px; }
-        .header-icon-btn:hover { background: rgba(0,0,0,0.05); }
-        .theme-dark .header-icon-btn:hover { background: rgba(255,255,255,0.08); }
-        .user-avatar { width: 36px; height: 36px; border-radius: 999px; object-fit: cover; border: 2px solid #3b82f6; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .daily-badge {
+            background: #8b5cf6;
+            color: white;
+            border-radius: 999px;
+            padding: 0.2rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .lessons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 1rem;
+        }
+        .header-icon-btn {
+            transition: all 0.2s;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+        }
+        .header-icon-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+        .theme-dark .header-icon-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            object-fit: cover;
+            border: 2px solid #3b82f6;
+        }
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8;
+            border-radius: 10px;
+        }
+        .theme-dark ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .theme-dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
     </style>
 </head>
 <body class="theme-light">
@@ -208,21 +321,13 @@
                 <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center"><i class="fas fa-times-circle text-red-500 text-2xl mb-1"></i><p class="text-xs uppercase">Failed total</p><p id="total-failed-count" class="text-2xl font-bold">0</p></div>
             </div>
 
-            <!-- User info & sync status -->
-            <div class="bg-white dark:bg-slate-800 rounded-2xl border p-5 space-y-3">
-                <div class="flex items-center justify-between">
-                    <span class="font-semibold"><i class="fas fa-cloud-upload-alt mr-2"></i> Cloud Sync</span>
-                    <span id="sync-status" class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 px-3 py-1 rounded-full">⚠️ Signed out (local only)</span>
-                </div>
-                <div id="user-info-panel" class="text-sm text-gray-600 dark:text-gray-300"></div>
-            </div>
-
             <!-- Data Management -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl border p-5 space-y-5">
                 <h4 class="font-semibold"><i class="fas fa-database mr-2"></i> Data Management</h4>
                 <div class="flex flex-wrap gap-2">
                     <button id="import-data" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-import mr-1"></i> Import JSON</button>
                     <button id="export-data" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-export mr-1"></i> Export Backup</button>
+                    <button id="reset-progress-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-trash-alt mr-1"></i> Reset All Progress</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div><p class="text-xs text-gray-500 mb-1">📋 Copy backup code</p><textarea id="backup-data-textarea" rows="2" class="w-full text-xs bg-gray-50 dark:bg-slate-900 border rounded-xl p-2" readonly placeholder="Click 'Copy Backup Data'"></textarea><button id="copy-backup-btn" class="mt-1 w-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 py-1.5 rounded-xl text-sm"><i class="fas fa-copy mr-1"></i> Copy to Clipboard</button></div>
@@ -250,9 +355,9 @@
     </div>
 
     <!-- Modals -->
-    <div id="addContentModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between border-b pb-2 mb-3"><h3 class="text-xl font-bold"><i class="fas fa-plus-circle text-blue-500"></i> Add New</h3><button class="close-modal-btn text-3xl">&times;</button></div><div class="space-y-4"><div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Lesson</h4><form id="add-lesson-form" class="flex gap-2 mt-2"><input type="text" id="new-lesson-name" placeholder="e.g., Cell Biology" class="flex-1 p-2 rounded-lg border" required><button type="submit" class="bg-blue-600 text-white px-4 rounded-xl text-sm">Add</button></form></div><div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Definition</h4><form id="add-definition-form" class="space-y-2 mt-2"><select id="add-definition-lesson" class="w-full p-2 rounded-lg border" required></select><input type="text" id="new-definition-topic" placeholder="Topic / Term" class="w-full p-2 rounded-lg border" required><textarea id="new-definition-text" rows="2" placeholder="Definition content..." class="w-full p-2 rounded-lg border" required></textarea><button type="submit" class="bg-green-600 text-white w-full py-2 rounded-xl">Save Definition</button></form></div></div></div></div>
+    <div id="addContentModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between border-b pb-2 mb-3"><h3 class="text-xl font-bold"><i class="fas fa-plus-circle text-blue-500"></i> Add New</h3><button class="close-modal-btn text-3xl">&times;</button></div><div class="space-y-4"><div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Lesson</h4><form id="add-lesson-form" class="flex gap-2 mt-2"><input type="text" id="new-lesson-name" placeholder="e.g., Cell Biology" class="flex-1 p-2 rounded-lg border dark:bg-slate-700" required><button type="submit" class="bg-blue-600 text-white px-4 rounded-xl text-sm">Add</button></form></div><div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Definition</h4><form id="add-definition-form" class="space-y-2 mt-2"><select id="add-definition-lesson" class="w-full p-2 rounded-lg border dark:bg-slate-700" required></select><input type="text" id="new-definition-topic" placeholder="Topic / Term" class="w-full p-2 rounded-lg border dark:bg-slate-700" required><textarea id="new-definition-text" rows="2" placeholder="Definition content..." class="w-full p-2 rounded-lg border dark:bg-slate-700" required></textarea><button type="submit" class="bg-green-600 text-white w-full py-2 rounded-xl">Save Definition</button></form></div></div></div></div>
     <div id="lessonDefinitionsModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"><div class="flex justify-between sticky top-0 bg-white dark:bg-slate-800 pb-2"><h3 id="lesson-definitions-modal-title" class="text-xl font-bold"></h3><button id="close-lesson-definitions-modal" class="text-2xl">&times;</button></div><div id="lesson-definitions-container" class="grid gap-2 mt-2"></div></div></div>
-    <div id="editDefinitionModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between mb-3"><h3 class="font-bold"><i class="fas fa-edit text-yellow-500"></i> Edit Definition</h3><button id="close-edit-modal-btn" class="text-2xl">&times;</button></div><form id="edit-definition-form" class="space-y-3"><input type="hidden" id="edit-definition-id"><select id="edit-definition-lesson" class="w-full p-2 rounded-lg border" required></select><input type="text" id="edit-definition-topic" class="w-full p-2 rounded-lg border" required><textarea id="edit-definition-text" rows="3" class="w-full p-2 rounded-lg border" required></textarea><button type="submit" class="bg-blue-600 text-white w-full py-2 rounded-xl">Update</button></form></div></div>
+    <div id="editDefinitionModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between mb-3"><h3 class="font-bold"><i class="fas fa-edit text-yellow-500"></i> Edit Definition</h3><button id="close-edit-modal-btn" class="text-2xl">&times;</button></div><form id="edit-definition-form" class="space-y-3"><input type="hidden" id="edit-definition-id"><select id="edit-definition-lesson" class="w-full p-2 rounded-lg border dark:bg-slate-700" required></select><input type="text" id="edit-definition-topic" class="w-full p-2 rounded-lg border dark:bg-slate-700" required><textarea id="edit-definition-text" rows="3" class="w-full p-2 rounded-lg border dark:bg-slate-700" required></textarea><button type="submit" class="bg-blue-600 text-white w-full py-2 rounded-xl">Update</button></form></div></div>
     <div id="infoModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-6 rounded-2xl text-center max-w-sm"><h3 id="modal-title" class="text-lg font-bold mb-2"></h3><p id="modal-message" class="mb-4"></p><button id="close-info-modal" class="bg-blue-600 text-white px-5 py-2 rounded-full">OK</button></div></div>
     <div id="confirmModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl text-center"><h3 class="text-lg font-bold">Confirm</h3><p id="confirm-message" class="my-3"></p><div class="flex gap-3 justify-center"><button id="cancel-confirm-modal" class="bg-gray-300 px-4 py-2 rounded-full">Cancel</button><button id="confirm-action" class="bg-red-600 text-white px-4 py-2 rounded-full">Yes, Delete</button></div></div></div>
     <div id="toast-container" class="fixed bottom-24 right-4 z-[9999] flex flex-col gap-2"></div>
@@ -317,10 +422,45 @@
             if (currentUser) {
                 const userDocRef = doc(db, "users", currentUser.uid);
                 setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() }, { merge: true }).catch(err=>showToast("Sync failed: "+err.message, "error"));
-                document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
             }
             updateStatusCounters();
             populateLessonDropdowns();
+            displayLessons(document.getElementById('filter-lesson').value || null);
+            if (!document.getElementById('suggestions-section').classList.contains('hidden')) {
+                showSuggestionsContent();
+            }
+            if (!document.getElementById('lessonDefinitionsModal').classList.contains('hidden')) {
+                closeModal('lessonDefinitionsModal');
+            }
+        }
+
+        // RESET ALL PROGRESS
+        function resetAllProgress() {
+            definitions.forEach(def => {
+                def.count = 0;
+                def.passCount = 0;
+                def.failCount = 0;
+            });
+            const today = new Date().toISOString().slice(0,10);
+            const dailyEntry = suggestionsHistory.find(e => e.date === today);
+            if (dailyEntry) {
+                dailyEntry.definitions.forEach(def => {
+                    def.sessionStatus = 'incomplete';
+                });
+            } else {
+                const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
+                if (newSuggest.length) {
+                    const existingIndex = suggestionsHistory.findIndex(e => e.date === today);
+                    if (existingIndex !== -1) {
+                        suggestionsHistory[existingIndex] = { date: today, definitions: newSuggest };
+                    } else {
+                        suggestionsHistory.unshift({ date: today, definitions: newSuggest });
+                        if (suggestionsHistory.length > 30) suggestionsHistory.pop();
+                    }
+                }
+            }
+            saveToLocalAndCloud();
+            showToast("All progress has been reset!", "success");
         }
 
         function populateLessonDropdowns() {
@@ -447,7 +587,6 @@
             if (sectionId === 'settings-section') updateStatusCounters();
             if (sectionId === 'history-section') renderHistory();
             if (sectionId === 'main-content-section') displayLessons(document.getElementById('filter-lesson').value || null);
-            // update bottom nav active state
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             const map = { 'main-content-section':'nav-home', 'suggestions-section':'nav-suggestions', 'settings-section':'nav-settings' };
             if(map[sectionId]) document.getElementById(map[sectionId])?.classList.add('active');
@@ -494,7 +633,6 @@
                 document.getElementById('user-icon').classList.add('hidden');
                 document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || '';
                 document.getElementById('user-name').classList.remove('hidden');
-                document.getElementById('sync-status').innerHTML = "☁️ Synced with " + user.email;
                 document.getElementById('google-signin-btn').classList.add('hidden');
                 document.getElementById('google-signout-btn').classList.remove('hidden');
                 await loadUserData(user);
@@ -502,7 +640,6 @@
                 document.getElementById('user-avatar').classList.add('hidden');
                 document.getElementById('user-icon').classList.remove('hidden');
                 document.getElementById('user-name').classList.add('hidden');
-                document.getElementById('sync-status').innerHTML = "⚠️ Signed out (local only)";
                 document.getElementById('google-signin-btn').classList.remove('hidden');
                 document.getElementById('google-signout-btn').classList.add('hidden');
                 const storedLessons = localStorage.getItem('biologyLessons');
@@ -539,6 +676,13 @@
         document.getElementById('cancel-confirm-modal').onclick = () => { closeModal('confirmModal'); window.confirmCallback=null; };
         document.getElementById('confirm-action').onclick = () => { if(window.confirmCallback) window.confirmCallback(); closeModal('confirmModal'); window.confirmCallback=null; };
 
+        // Reset progress button
+        document.getElementById('reset-progress-btn').onclick = () => {
+            showConfirmModal("⚠️ This will reset all progress: total passed, failed, and repeated times for all definitions. Today's suggestions will be reset as incomplete. This cannot be undone. Proceed?", () => {
+                resetAllProgress();
+            });
+        };
+
         // Forms
         document.getElementById('add-lesson-form').addEventListener('submit',(e)=>{e.preventDefault(); const name=document.getElementById('new-lesson-name').value.trim(); if(!name) return; lessons.push({id:Date.now().toString(),name,createdAt:new Date().toISOString()}); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); closeModal('addContentModal'); showToast(`Lesson ${name} added`,'success'); document.getElementById('new-lesson-name').value=''; });
         document.getElementById('add-definition-form').addEventListener('submit',(e)=>{e.preventDefault(); const lid=document.getElementById('add-definition-lesson').value, topic=document.getElementById('new-definition-topic').value.trim(), defText=document.getElementById('new-definition-text').value.trim(); if(!lid||!topic||!defText) return showModal('Error','Fill all fields'); definitions.push({id:Date.now().toString(),lessonId:lid,topic,definition:defText,count:0,passCount:0,failCount:0}); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); closeModal('addContentModal'); showToast(`Definition "${topic}" added`,'success'); document.getElementById('add-definition-form').reset(); lastSelectedLessonId=lid; });
@@ -557,6 +701,13 @@
             const edit = e.target.closest('.edit-def-btn'); if(edit){ const def=definitions.find(d=>d.id===edit.dataset.id); if(def){ document.getElementById('edit-definition-id').value=def.id; document.getElementById('edit-definition-topic').value=def.topic; document.getElementById('edit-definition-text').value=def.definition; document.getElementById('edit-definition-lesson').value=def.lessonId; openModal('editDefinitionModal'); } return; }
             const delDef = e.target.closest('.delete-def-btn'); if(delDef){ showConfirmModal(`Delete "${delDef.dataset.topic}"?`,()=>{ definitions=definitions.filter(d=>d.id!==delDef.dataset.id); saveToLocalAndCloud(); displayLessons(document.getElementById('filter-lesson').value||null); closeModal('lessonDefinitionsModal'); showToast('Definition deleted','error'); }); return; }
             const delLesson = e.target.closest('.delete-lesson-btn'); if(delLesson){ const id=delLesson.dataset.id, name=delLesson.dataset.name; showConfirmModal(`Delete "${name}" and all definitions?`,()=>{ lessons=lessons.filter(l=>l.id!==id); definitions=definitions.filter(d=>d.lessonId!==id); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); closeAllModals(); showToast(`Lesson ${name} deleted`,'error'); }); return; }
+        });
+
+        // Backdrop click: close modal when tapping outside modal content
+        window.addEventListener('click', (event) => {
+            if (event.target.classList && event.target.classList.contains('modal')) {
+                closeModal(event.target.id);
+            }
         });
 
         // Theme
