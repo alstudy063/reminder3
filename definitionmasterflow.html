@@ -362,7 +362,7 @@
         <button id="nav-settings" class="nav-item"><i class="fas fa-chart-simple"></i><span>Stats</span></button>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (unchanged) -->
     <div id="addContentModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between border-b pb-2 mb-3"><h3 class="text-xl font-bold"><i class="fas fa-plus-circle text-blue-500"></i> Add New</h3><button class="close-modal-btn text-3xl">&times;</button></div><div class="space-y-4"><div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Lesson</h4><form id="add-lesson-form" class="flex gap-2 mt-2"><input type="text" id="new-lesson-name" placeholder="e.g., Cell Biology" class="flex-1 p-2 rounded-lg border dark:bg-slate-700" required><button type="submit" class="bg-blue-600 text-white px-4 rounded-xl text-sm">Add</button></form></div><div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Definition</h4><form id="add-definition-form" class="space-y-2 mt-2"><select id="add-definition-lesson" class="w-full p-2 rounded-lg border dark:bg-slate-700" required></select><input type="text" id="new-definition-topic" placeholder="Topic / Term" class="w-full p-2 rounded-lg border dark:bg-slate-700" required><textarea id="new-definition-text" rows="2" placeholder="Definition content..." class="w-full p-2 rounded-lg border dark:bg-slate-700" required></textarea><button type="submit" class="bg-green-600 text-white w-full py-2 rounded-xl">Save Definition</button></form></div></div></div></div>
     <div id="lessonDefinitionsModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"><div class="flex justify-between sticky top-0 bg-white dark:bg-slate-800 pb-2"><h3 id="lesson-definitions-modal-title" class="text-xl font-bold"></h3><button id="close-lesson-definitions-modal" class="text-2xl">&times;</button></div><div id="lesson-definitions-container" class="grid gap-2 mt-2"></div></div></div>
     <div id="editDefinitionModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between mb-3"><h3 class="font-bold"><i class="fas fa-edit text-yellow-500"></i> Edit Definition</h3><button id="close-edit-modal-btn" class="text-2xl">&times;</button></div><form id="edit-definition-form" class="space-y-3"><input type="hidden" id="edit-definition-id"><select id="edit-definition-lesson" class="w-full p-2 rounded-lg border dark:bg-slate-700" required></select><input type="text" id="edit-definition-topic" class="w-full p-2 rounded-lg border dark:bg-slate-700" required><textarea id="edit-definition-text" rows="3" class="w-full p-2 rounded-lg border dark:bg-slate-700" required></textarea><button type="submit" class="bg-blue-600 text-white w-full py-2 rounded-xl">Update</button></form></div></div>
@@ -373,7 +373,7 @@
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, enableIndexedDbPersistence } from "firebase/firestore";
+        import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "firebase/firestore";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
@@ -389,15 +389,14 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
         const db = getFirestore(app);
-        enableIndexedDbPersistence(db).catch(e=>console.warn(e));
+        enableIndexedDbPersistence(db).catch(e=>console.warn("Offline persistence error:", e));
 
         // Global app data
         let definitions = [];
         let lessons = [];
         let suggestionsHistory = [];
         let currentUser = null;
-        let firestoreUnsubscribe = null;
-        let lastSelectedLessonId = null;
+        let unsubscribeFirestore = null;
 
         // Helper functions
         function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
@@ -409,8 +408,9 @@
         function showModal(title,msg){ document.getElementById('modal-title').innerText=title; document.getElementById('modal-message').innerText=msg; openModal('infoModal'); }
         function showConfirmModal(msg,cb){ document.getElementById('confirm-message').innerText=msg; openModal('confirmModal'); window.confirmCallback=cb; }
 
-        // Update UI counters
-        function updateStatusCounters() {
+        // Update UI from current data (lessons, definitions, suggestionsHistory)
+        function refreshUI() {
+            // Update counters
             document.getElementById('total-definitions-count').textContent = definitions.length;
             const today = new Date().toISOString().slice(0,10);
             const dailyEntry = suggestionsHistory.find(e=>e.date===today);
@@ -420,64 +420,30 @@
             document.getElementById('total-failed-count').textContent = definitions.reduce((s,d)=>s+(d.failCount||0),0);
             document.getElementById('daily-suggestions-count-display').textContent = incomplete;
             document.getElementById('lessons-count-badge').textContent = lessons.length;
-        }
 
-        // Save to localStorage and cloud
-        function saveToLocalAndCloud() {
-            localStorage.setItem('biologyLessons', JSON.stringify(lessons));
-            localStorage.setItem('biologyDefinitions', JSON.stringify(definitions));
-            localStorage.setItem('suggestionsHistory', JSON.stringify(suggestionsHistory));
-            if (currentUser) {
-                const userDocRef = doc(db, "users", currentUser.uid);
-                setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() }, { merge: true }).catch(err=>showToast("Sync failed: "+err.message, "error"));
-                document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
-            }
-            updateStatusCounters();
-            populateLessonDropdowns();
-            displayLessons(document.getElementById('filter-lesson').value || null);
+            // Refresh lesson dropdowns
+            const selects = ['add-definition-lesson','filter-lesson','edit-definition-lesson'];
+            selects.forEach(id=>{ const sel=document.getElementById(id); if(sel){ const prev=sel.value; sel.innerHTML=id==='filter-lesson'?'<option value="">All Lessons</option>':'<option value="">Select a Lesson</option>'; lessons.forEach(l=>{ const opt=document.createElement('option'); opt.value=l.id; opt.textContent=l.name; sel.appendChild(opt); }); if(prev && lessons.some(l=>l.id===prev)) sel.value=prev; } });
+
+            // Refresh lessons grid
+            const filterId = document.getElementById('filter-lesson').value;
+            const container = document.getElementById('definitions-display');
+            container.innerHTML = '';
+            let lessonsToShow = filterId ? lessons.filter(l => definitions.some(d=>d.lessonId===l.id && l.id===filterId)) : [...lessons];
+            if(lessonsToShow.length===0) { container.innerHTML='<div class="col-span-full text-center py-8 text-gray-400">📭 No lessons yet. Tap + to add.</div>'; }
+            else lessonsToShow.forEach(lesson => container.appendChild(createLessonCard(lesson)));
+
+            // Refresh suggestions section if it's visible
             if (!document.getElementById('suggestions-section').classList.contains('hidden')) {
                 showSuggestionsContent();
             }
-            if (!document.getElementById('lessonDefinitionsModal').classList.contains('hidden')) {
-                closeModal('lessonDefinitionsModal');
+
+            // Refresh history if visible
+            if (!document.getElementById('history-section').classList.contains('hidden')) {
+                renderHistory();
             }
         }
 
-        // RESET ALL PROGRESS
-        function resetAllProgress() {
-            definitions.forEach(def => {
-                def.count = 0;
-                def.passCount = 0;
-                def.failCount = 0;
-            });
-            const today = new Date().toISOString().slice(0,10);
-            const dailyEntry = suggestionsHistory.find(e => e.date === today);
-            if (dailyEntry) {
-                dailyEntry.definitions.forEach(def => {
-                    def.sessionStatus = 'incomplete';
-                });
-            } else {
-                const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
-                if (newSuggest.length) {
-                    const existingIndex = suggestionsHistory.findIndex(e => e.date === today);
-                    if (existingIndex !== -1) {
-                        suggestionsHistory[existingIndex] = { date: today, definitions: newSuggest };
-                    } else {
-                        suggestionsHistory.unshift({ date: today, definitions: newSuggest });
-                        if (suggestionsHistory.length > 30) suggestionsHistory.pop();
-                    }
-                }
-            }
-            saveToLocalAndCloud();
-            showToast("All progress has been reset!", "success");
-        }
-
-        function populateLessonDropdowns() {
-            const selects = ['add-definition-lesson','filter-lesson','edit-definition-lesson'];
-            selects.forEach(id=>{ const sel=document.getElementById(id); if(sel){ const prev=sel.value; sel.innerHTML=id==='filter-lesson'?'<option value="">All Lessons</option>':'<option value="">Select a Lesson</option>'; lessons.forEach(l=>{ const opt=document.createElement('option'); opt.value=l.id; opt.textContent=l.name; sel.appendChild(opt); }); if(prev && lessons.some(l=>l.id===prev)) sel.value=prev; } });
-        }
-
-        // Lesson & Definition display
         function createLessonCard(lesson) {
             const card = document.createElement('div');
             card.className = 'lesson-card bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4 cursor-pointer transition hover:shadow-md';
@@ -486,14 +452,6 @@
             card.setAttribute('data-id', lesson.id);
             card.addEventListener('click', (e) => { if(!e.target.closest('.delete-lesson-btn')) window.showLessonDefinitionsModal(lesson.id); });
             return card;
-        }
-        function displayLessons(filterId = null) {
-            const container = document.getElementById('definitions-display');
-            container.innerHTML = '';
-            let lessonsToShow = filterId ? lessons.filter(l => definitions.some(d=>d.lessonId===l.id && l.id===filterId)) : [...lessons];
-            if(lessonsToShow.length===0) { container.innerHTML='<div class="col-span-full text-center py-8 text-gray-400">📭 No lessons yet. Tap + to add.</div>'; return; }
-            lessonsToShow.forEach(lesson => container.appendChild(createLessonCard(lesson)));
-            updateStatusCounters();
         }
 
         window.showLessonDefinitionsModal = (lessonId) => {
@@ -515,7 +473,6 @@
             return div;
         }
 
-        // Daily suggestions logic
         function generateNewSuggestions() {
             if(!definitions.length) return [];
             let weighted = [];
@@ -524,16 +481,20 @@
             const shuffled = weighted.sort(()=>0.5-Math.random());
             return Array.from(new Set(shuffled.slice(0,30)));
         }
+
         function initializeDailySession() {
             const today = new Date().toISOString().slice(0,10);
             if(!suggestionsHistory.some(e=>e.date===today)) {
                 const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
                 if(newSuggest.length) suggestionsHistory.unshift({ date: today, definitions: newSuggest });
                 if(suggestionsHistory.length>30) suggestionsHistory.pop();
-                saveToLocalAndCloud();
+                // This will trigger a cloud save automatically when we call saveToCloud()
+                saveToCloud();
+            } else {
+                refreshUI(); // just in case
             }
-            updateStatusCounters();
         }
+
         function showSuggestionsContent() {
             const container = document.getElementById('daily-suggestions-container');
             container.innerHTML = '';
@@ -549,21 +510,7 @@
                 container.appendChild(card);
             });
         }
-        function markDefStatus(id, status) {
-            const def = definitions.find(d=>d.id===id);
-            if(!def) return;
-            if(status==='passed'){ def.passCount++; def.count++; }
-            else { def.failCount++; def.count++; }
-            const today = new Date().toISOString().slice(0,10);
-            const entry = suggestionsHistory.find(e=>e.date===today);
-            if(entry){ const target=entry.definitions.find(d=>d.id===id); if(target) target.sessionStatus=status; }
-            saveToLocalAndCloud();
-            showSuggestionsContent();
-            updateStatusCounters();
-            showToast(`${def.topic} marked as ${status}`, status==='passed'?'success':'error');
-        }
 
-        // History rendering
         function renderHistory() {
             const container = document.getElementById('history-container');
             container.innerHTML = '';
@@ -586,57 +533,85 @@
             });
         }
 
-        // Section switching
-        window.showSection = (sectionId) => {
-            closeAllModals();
-            const sections = ['main-content-section','suggestions-section','settings-section','history-section'];
-            sections.forEach(id => document.getElementById(id).classList.toggle('hidden', id !== sectionId));
-            document.getElementById('bottom-nav').classList.toggle('hidden', sectionId === 'history-section');
-            if (sectionId === 'suggestions-section') showSuggestionsContent();
-            if (sectionId === 'settings-section') updateStatusCounters();
-            if (sectionId === 'history-section') renderHistory();
-            if (sectionId === 'main-content-section') displayLessons(document.getElementById('filter-lesson').value || null);
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            const map = { 'main-content-section':'nav-home', 'suggestions-section':'nav-suggestions', 'settings-section':'nav-settings' };
-            if(map[sectionId]) document.getElementById(map[sectionId])?.classList.add('active');
-        };
-
-        window.toggleAuthMenu = () => { document.getElementById('auth-menu').classList.toggle('hidden'); };
-
-        // Load user data from Firestore (silent sync - no success toast)
-        async function loadUserData(user) {
-            if(firestoreUnsubscribe) firestoreUnsubscribe();
-            const userDocRef = doc(db, "users", user.uid);
-            firestoreUnsubscribe = onSnapshot(userDocRef, (docSnap) => {
-                if(docSnap.exists()) {
-                    const data = docSnap.data();
-                    lessons = data.lessons || [];
-                    definitions = data.definitions || [];
-                    suggestionsHistory = data.suggestionsHistory || [];
-                    definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
-                    saveToLocalAndCloud();
-                    displayLessons(document.getElementById('filter-lesson').value || null);
-                    // Removed success toast here to avoid repeated messages
-                } else {
-                    const localLessons = JSON.parse(localStorage.getItem('biologyLessons') || '[]');
-                    const localDefs = JSON.parse(localStorage.getItem('biologyDefinitions') || '[]');
-                    const localHistory = JSON.parse(localStorage.getItem('suggestionsHistory') || '[]');
-                    lessons = localLessons;
-                    definitions = localDefs;
-                    suggestionsHistory = localHistory;
-                    setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() });
-                    displayLessons();
-                }
-                updateStatusCounters();
-                populateLessonDropdowns();
-                initializeDailySession();
-            }, (err) => { console.error(err); showToast("Firestore error, using local data", "error"); });
+        // Save current state to Firestore
+        async function saveToCloud() {
+            if (!currentUser) return;
+            const userDocRef = doc(db, "users", currentUser.uid);
+            try {
+                await setDoc(userDocRef, {
+                    lessons,
+                    definitions,
+                    suggestionsHistory,
+                    lastUpdated: new Date().toISOString()
+                }, { merge: true });
+                document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
+            } catch (err) {
+                console.error("Save to cloud failed:", err);
+                showToast("Sync failed: " + err.message, "error");
+                document.getElementById('sync-status').innerHTML = "⚠️ Sync error";
+            }
         }
 
-        // Auth state
-        onAuthStateChanged(auth, async (user) => {
-            currentUser = user;
-            if(user) {
+        // Called when a snapshot arrives from Firestore
+        function onUserDataSnapshot(snapshot) {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                lessons = data.lessons || [];
+                definitions = data.definitions || [];
+                suggestionsHistory = data.suggestionsHistory || [];
+                // Ensure every definition has counters
+                definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
+                // Also ensure history entries have sessionStatus if missing (for old data)
+                suggestionsHistory.forEach(day=>{
+                    day.definitions.forEach(def=>{
+                        if(!def.sessionStatus) def.sessionStatus = 'incomplete';
+                    });
+                });
+                // Update UI
+                refreshUI();
+                // Also ensure daily suggestions are initialized if needed
+                initializeDailySession();
+            } else {
+                // First time – push local data to cloud
+                if (currentUser) {
+                    const storedLessons = localStorage.getItem('biologyLessons');
+                    const storedDefs = localStorage.getItem('biologyDefinitions');
+                    const storedHistory = localStorage.getItem('suggestionsHistory');
+                    if (storedLessons) lessons = JSON.parse(storedLessons);
+                    if (storedDefs) definitions = JSON.parse(storedDefs);
+                    if (storedHistory) suggestionsHistory = JSON.parse(storedHistory);
+                    definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
+                    saveToCloud().then(()=>{
+                        refreshUI();
+                        initializeDailySession();
+                    });
+                }
+            }
+        }
+
+        // Set up Firestore listener when user signs in
+        function startFirestoreListener(user) {
+            if (unsubscribeFirestore) unsubscribeFirestore();
+            const userDocRef = doc(db, "users", user.uid);
+            unsubscribeFirestore = onSnapshot(userDocRef, onUserDataSnapshot, (err) => {
+                console.error("Firestore listener error:", err);
+                showToast("Real‑time sync error. Check console.", "error");
+            });
+        }
+
+        // Stop listener and clear local data (optional)
+        function stopFirestoreListener() {
+            if (unsubscribeFirestore) {
+                unsubscribeFirestore();
+                unsubscribeFirestore = null;
+            }
+        }
+
+        // Auth state handler
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                // Update UI for signed-in state
                 document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/36';
                 document.getElementById('user-avatar').classList.remove('hidden');
                 document.getElementById('user-icon').classList.add('hidden');
@@ -645,14 +620,11 @@
                 document.getElementById('sync-status').innerHTML = "☁️ Synced with " + user.email;
                 document.getElementById('google-signin-btn').classList.add('hidden');
                 document.getElementById('google-signout-btn').classList.remove('hidden');
-                await loadUserData(user);
+                startFirestoreListener(user);
             } else {
-                document.getElementById('user-avatar').classList.add('hidden');
-                document.getElementById('user-icon').classList.remove('hidden');
-                document.getElementById('user-name').classList.add('hidden');
-                document.getElementById('sync-status').innerHTML = "⚠️ Signed out (local only)";
-                document.getElementById('google-signin-btn').classList.remove('hidden');
-                document.getElementById('google-signout-btn').classList.add('hidden');
+                currentUser = null;
+                stopFirestoreListener();
+                // Fall back to localStorage
                 const storedLessons = localStorage.getItem('biologyLessons');
                 const storedDefs = localStorage.getItem('biologyDefinitions');
                 const storedHistory = localStorage.getItem('suggestionsHistory');
@@ -660,71 +632,309 @@
                 definitions = storedDefs ? JSON.parse(storedDefs) : [];
                 suggestionsHistory = storedHistory ? JSON.parse(storedHistory) : [];
                 definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
-                displayLessons();
-                populateLessonDropdowns();
+                refreshUI();
                 initializeDailySession();
-                if(firestoreUnsubscribe) firestoreUnsubscribe();
+
+                document.getElementById('user-avatar').classList.add('hidden');
+                document.getElementById('user-icon').classList.remove('hidden');
+                document.getElementById('user-name').classList.add('hidden');
+                document.getElementById('sync-status').innerHTML = "⚠️ Signed out (local only)";
+                document.getElementById('google-signin-btn').classList.remove('hidden');
+                document.getElementById('google-signout-btn').classList.add('hidden');
             }
         });
 
-        // Event listeners for buttons
-        document.getElementById('google-signin-btn').onclick = async () => {
-            try { await signInWithPopup(auth, provider); document.getElementById('auth-menu').classList.add('hidden'); showToast("Signed in", "success"); } catch(e){ showToast("Sign-in failed", "error"); }
+        // Helper to apply an action and then save to cloud
+        function applyActionAndSave(action) {
+            action();               // modify lessons/definitions/suggestionsHistory
+            refreshUI();           // update UI immediately
+            saveToCloud();         // push to Firestore
+        }
+
+        // ---- UI event handlers (wrapped with applyActionAndSave) ----
+        window.showSection = (sectionId) => {
+            closeAllModals();
+            const sections = ['main-content-section','suggestions-section','settings-section','history-section'];
+            sections.forEach(id => document.getElementById(id).classList.toggle('hidden', id !== sectionId));
+            document.getElementById('bottom-nav').classList.toggle('hidden', sectionId === 'history-section');
+            if (sectionId === 'suggestions-section') showSuggestionsContent();
+            if (sectionId === 'settings-section') refreshUI();
+            if (sectionId === 'history-section') renderHistory();
+            if (sectionId === 'main-content-section') refreshUI();
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const map = { 'main-content-section':'nav-home', 'suggestions-section':'nav-suggestions', 'settings-section':'nav-settings' };
+            if(map[sectionId]) document.getElementById(map[sectionId])?.classList.add('active');
         };
-        document.getElementById('google-signout-btn').onclick = async () => {
-            await signOut(auth); document.getElementById('auth-menu').classList.add('hidden'); showToast("Signed out", "info");
+
+        window.toggleAuthMenu = () => { document.getElementById('auth-menu').classList.toggle('hidden'); };
+
+        // Add lesson
+        document.getElementById('add-lesson-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('new-lesson-name').value.trim();
+            if (!name) return;
+            applyActionAndSave(() => {
+                lessons.push({ id: Date.now().toString(), name, createdAt: new Date().toISOString() });
+                document.getElementById('new-lesson-name').value = '';
+                closeModal('addContentModal');
+                showToast(`Lesson "${name}" added`, 'success');
+            });
+        });
+
+        // Add definition
+        document.getElementById('add-definition-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const lid = document.getElementById('add-definition-lesson').value;
+            const topic = document.getElementById('new-definition-topic').value.trim();
+            const defText = document.getElementById('new-definition-text').value.trim();
+            if (!lid || !topic || !defText) return showModal('Error', 'Fill all fields');
+            applyActionAndSave(() => {
+                definitions.push({
+                    id: Date.now().toString(),
+                    lessonId: lid,
+                    topic,
+                    definition: defText,
+                    count: 0,
+                    passCount: 0,
+                    failCount: 0
+                });
+                document.getElementById('add-definition-form').reset();
+                closeModal('addContentModal');
+                showToast(`Definition "${topic}" added`, 'success');
+                initializeDailySession(); // re-evaluate suggestions
+            });
+        });
+
+        // Edit definition
+        document.getElementById('edit-definition-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit-definition-id').value;
+            const topic = document.getElementById('edit-definition-topic').value.trim();
+            const def = document.getElementById('edit-definition-text').value.trim();
+            const lid = document.getElementById('edit-definition-lesson').value;
+            applyActionAndSave(() => {
+                const idx = definitions.findIndex(d => d.id === id);
+                if (idx !== -1) {
+                    definitions[idx] = { ...definitions[idx], topic, definition: def, lessonId: lid };
+                    closeModal('editDefinitionModal');
+                    showToast('Definition updated', 'success');
+                }
+            });
+        });
+
+        // Delete definition
+        function deleteDefinition(id, topic) {
+            applyActionAndSave(() => {
+                definitions = definitions.filter(d => d.id !== id);
+                closeModal('lessonDefinitionsModal');
+                showToast(`Definition "${topic}" deleted`, 'error');
+            });
+        }
+
+        // Delete lesson
+        function deleteLesson(id, name) {
+            applyActionAndSave(() => {
+                lessons = lessons.filter(l => l.id !== id);
+                definitions = definitions.filter(d => d.lessonId !== id);
+                closeAllModals();
+                showToast(`Lesson "${name}" deleted`, 'error');
+                initializeDailySession();
+            });
+        }
+
+        // Mark pass/fail
+        function markDefStatus(id, status) {
+            const def = definitions.find(d => d.id === id);
+            if (!def) return;
+            applyActionAndSave(() => {
+                if (status === 'passed') { def.passCount++; def.count++; }
+                else { def.failCount++; def.count++; }
+                const today = new Date().toISOString().slice(0,10);
+                const entry = suggestionsHistory.find(e => e.date === today);
+                if (entry) {
+                    const target = entry.definitions.find(d => d.id === id);
+                    if (target) target.sessionStatus = status;
+                }
+                showToast(`${def.topic} marked as ${status}`, status === 'passed' ? 'success' : 'error');
+                showSuggestionsContent();
+            });
+        }
+
+        // Reset all progress
+        function resetAllProgress() {
+            applyActionAndSave(() => {
+                definitions.forEach(def => {
+                    def.count = 0;
+                    def.passCount = 0;
+                    def.failCount = 0;
+                });
+                const today = new Date().toISOString().slice(0,10);
+                const dailyEntry = suggestionsHistory.find(e => e.date === today);
+                if (dailyEntry) {
+                    dailyEntry.definitions.forEach(def => { def.sessionStatus = 'incomplete'; });
+                } else {
+                    const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
+                    if (newSuggest.length) suggestionsHistory.unshift({ date: today, definitions: newSuggest });
+                    if (suggestionsHistory.length > 30) suggestionsHistory.pop();
+                }
+                showToast("All progress has been reset!", "success");
+            });
+        }
+
+        // Event delegation for dynamic buttons
+        document.body.addEventListener('click', (e) => {
+            const toggle = e.target.closest('.toggle-def-btn');
+            if (toggle) {
+                e.preventDefault();
+                const textEl = document.getElementById(`def-text-${toggle.dataset.id}`) || document.getElementById(`sug-text-${toggle.dataset.id}`);
+                if (textEl) {
+                    textEl.classList.toggle('active');
+                    const btn = textEl.closest('.border,.suggestion-card')?.querySelector('.toggle-def-btn');
+                    if (btn) btn.innerHTML = textEl.classList.contains('active') ? '<i class="fas fa-eye-slash mr-1"></i> Hide' : '<i class="fas fa-eye mr-1"></i> Show';
+                }
+                return;
+            }
+            const pass = e.target.closest('.pass-def-btn');
+            if (pass) { triggerHaptic(); markDefStatus(pass.dataset.id, 'passed'); return; }
+            const fail = e.target.closest('.fail-def-btn');
+            if (fail) { triggerHaptic(); markDefStatus(fail.dataset.id, 'failed'); return; }
+            const edit = e.target.closest('.edit-def-btn');
+            if (edit) {
+                const def = definitions.find(d => d.id === edit.dataset.id);
+                if (def) {
+                    document.getElementById('edit-definition-id').value = def.id;
+                    document.getElementById('edit-definition-topic').value = def.topic;
+                    document.getElementById('edit-definition-text').value = def.definition;
+                    document.getElementById('edit-definition-lesson').value = def.lessonId;
+                    openModal('editDefinitionModal');
+                }
+                return;
+            }
+            const delDef = e.target.closest('.delete-def-btn');
+            if (delDef) {
+                showConfirmModal(`Delete "${delDef.dataset.topic}"?`, () => deleteDefinition(delDef.dataset.id, delDef.dataset.topic));
+                return;
+            }
+            const delLesson = e.target.closest('.delete-lesson-btn');
+            if (delLesson) {
+                showConfirmModal(`Delete "${delLesson.dataset.name}" and all definitions?`, () => deleteLesson(delLesson.dataset.id, delLesson.dataset.name));
+                return;
+            }
+        });
+
+        // Import/Export buttons (unchanged, but they will trigger saveToCloud after modifying data)
+        document.getElementById('import-data').onclick = () => {
+            const inp = document.createElement('input');
+            inp.type = 'file';
+            inp.accept = 'application/json';
+            inp.onchange = ev => {
+                const file = ev.target.files[0];
+                if (!file) return;
+                const fr = new FileReader();
+                fr.onload = e => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.lessons && data.definitions) {
+                            applyActionAndSave(() => {
+                                lessons.push(...data.lessons.filter(l => !lessons.some(ex => ex.id === l.id)));
+                                definitions.push(...data.definitions.filter(d => !definitions.some(ex => ex.id === d.id)));
+                                if (data.suggestionsHistory) {
+                                    suggestionsHistory.push(...data.suggestionsHistory.filter(h => !suggestionsHistory.some(ex => ex.date === h.date)));
+                                }
+                                showToast('Import merged', 'success');
+                                initializeDailySession();
+                            });
+                        } else showModal('Error', 'Invalid structure');
+                    } catch (err) { showModal('Invalid JSON'); }
+                };
+                fr.readAsText(file);
+            };
+            inp.click();
         };
-        document.getElementById('global-history-btn').onclick = () => { window.showSection('history-section'); };
-        document.getElementById('back-from-history').onclick = () => { window.showSection('main-content-section'); };
+        document.getElementById('export-data').onclick = () => {
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([JSON.stringify({ lessons, definitions, suggestionsHistory }, null, 2)], { type: 'application/json' }));
+            a.download = 'biology_backup.json';
+            a.click();
+            showToast('Export ready', 'success');
+        };
+        document.getElementById('copy-backup-btn').onclick = async () => {
+            const str = JSON.stringify({ lessons, definitions, suggestionsHistory }, null, 2);
+            await navigator.clipboard.writeText(str);
+            showToast('Backup copied', 'success');
+            document.getElementById('backup-data-textarea').value = str;
+        };
+        document.getElementById('load-backup-btn').onclick = () => {
+            try {
+                const data = JSON.parse(document.getElementById('restore-data-textarea').value);
+                if (data.lessons && data.definitions) {
+                    applyActionAndSave(() => {
+                        lessons.push(...data.lessons.filter(l => !lessons.some(ex => ex.id === l.id)));
+                        definitions.push(...data.definitions.filter(d => !definitions.some(ex => ex.id === d.id)));
+                        if (data.suggestionsHistory) {
+                            suggestionsHistory.push(...data.suggestionsHistory.filter(h => !suggestionsHistory.some(ex => ex.date === h.date)));
+                        }
+                        showToast('Data merged', 'success');
+                        initializeDailySession();
+                    });
+                } else showModal('Error', 'Invalid structure');
+            } catch (e) { showModal('Invalid JSON'); }
+        };
+        document.getElementById('reset-progress-btn').onclick = () => {
+            showConfirmModal("⚠️ This will reset all progress: total passed, failed, and repeated times for all definitions. Today's suggestions will be reset as incomplete. This cannot be undone. Proceed?", () => resetAllProgress());
+        };
+
+        // Filter dropdown
+        document.getElementById('filter-lesson').addEventListener('change', () => refreshUI());
+
+        // Bottom nav and other static buttons
+        document.getElementById('global-history-btn').onclick = () => window.showSection('history-section');
+        document.getElementById('back-from-history').onclick = () => window.showSection('main-content-section');
         document.getElementById('nav-home').onclick = () => { triggerHaptic(); window.showSection('main-content-section'); };
         document.getElementById('nav-suggestions').onclick = () => { triggerHaptic(); window.showSection('suggestions-section'); };
         document.getElementById('nav-add').onclick = () => { triggerHaptic(); openModal('addContentModal'); };
         document.getElementById('nav-settings').onclick = () => { triggerHaptic(); window.showSection('settings-section'); };
         document.getElementById('close-lesson-definitions-modal').onclick = () => closeModal('lessonDefinitionsModal');
         document.getElementById('close-edit-modal-btn').onclick = () => closeModal('editDefinitionModal');
-        document.querySelectorAll('.close-modal-btn').forEach(btn=>btn.onclick=()=>closeModal(btn.closest('.modal').id));
+        document.querySelectorAll('.close-modal-btn').forEach(btn => btn.onclick = () => closeModal(btn.closest('.modal').id));
         document.getElementById('close-info-modal').onclick = () => closeModal('infoModal');
-        document.getElementById('cancel-confirm-modal').onclick = () => { closeModal('confirmModal'); window.confirmCallback=null; };
-        document.getElementById('confirm-action').onclick = () => { if(window.confirmCallback) window.confirmCallback(); closeModal('confirmModal'); window.confirmCallback=null; };
+        document.getElementById('cancel-confirm-modal').onclick = () => { closeModal('confirmModal'); window.confirmCallback = null; };
+        document.getElementById('confirm-action').onclick = () => { if (window.confirmCallback) window.confirmCallback(); closeModal('confirmModal'); window.confirmCallback = null; };
 
-        // Reset progress button
-        document.getElementById('reset-progress-btn').onclick = () => {
-            showConfirmModal("⚠️ This will reset all progress: total passed, failed, and repeated times for all definitions. Today's suggestions will be reset as incomplete. This cannot be undone. Proceed?", () => {
-                resetAllProgress();
-            });
+        // Theme
+        const setTheme = (theme) => {
+            const body = document.body;
+            const isDark = theme === 'dark';
+            body.classList.toggle('theme-dark', isDark);
+            body.classList.toggle('theme-light', !isDark);
+            localStorage.setItem('app-theme', theme);
+            const sunIcon = document.querySelector('#theme-switch-header i');
+            if (sunIcon) sunIcon.className = isDark ? 'fas fa-moon text-indigo-200 text-lg' : 'fas fa-sun text-yellow-500 text-lg';
+        };
+        const savedTheme = localStorage.getItem('app-theme') || 'light';
+        setTheme(savedTheme);
+        document.getElementById('theme-switch-header').onclick = () => {
+            const newTheme = document.body.classList.contains('theme-dark') ? 'light' : 'dark';
+            setTheme(newTheme);
         };
 
-        // Forms
-        document.getElementById('add-lesson-form').addEventListener('submit',(e)=>{e.preventDefault(); const name=document.getElementById('new-lesson-name').value.trim(); if(!name) return; lessons.push({id:Date.now().toString(),name,createdAt:new Date().toISOString()}); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); closeModal('addContentModal'); showToast(`Lesson ${name} added`,'success'); document.getElementById('new-lesson-name').value=''; });
-        document.getElementById('add-definition-form').addEventListener('submit',(e)=>{e.preventDefault(); const lid=document.getElementById('add-definition-lesson').value, topic=document.getElementById('new-definition-topic').value.trim(), defText=document.getElementById('new-definition-text').value.trim(); if(!lid||!topic||!defText) return showModal('Error','Fill all fields'); definitions.push({id:Date.now().toString(),lessonId:lid,topic,definition:defText,count:0,passCount:0,failCount:0}); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); closeModal('addContentModal'); showToast(`Definition "${topic}" added`,'success'); document.getElementById('add-definition-form').reset(); lastSelectedLessonId=lid; });
-        document.getElementById('edit-definition-form').addEventListener('submit',(e)=>{e.preventDefault(); const id=document.getElementById('edit-definition-id').value, topic=document.getElementById('edit-definition-topic').value.trim(), def=document.getElementById('edit-definition-text').value.trim(), lid=document.getElementById('edit-definition-lesson').value; const idx=definitions.findIndex(d=>d.id===id); if(idx>=0){ definitions[idx]={...definitions[idx],topic,definition:def,lessonId:lid}; saveToLocalAndCloud(); displayLessons(); closeModal('editDefinitionModal'); showToast('Definition updated','success'); } });
-        document.getElementById('filter-lesson').addEventListener('change',(e)=>displayLessons(e.target.value||null));
-        document.getElementById('import-data').onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=ev=>{ const file=ev.target.files[0]; if(!file)return; const fr=new FileReader(); fr.onload=e=>{ try{ const data=JSON.parse(e.target.result); if(data.lessons&&data.definitions){ lessons.push(...data.lessons.filter(l=>!lessons.some(ex=>ex.id===l.id))); definitions.push(...data.definitions.filter(d=>!definitions.some(ex=>ex.id===d.id))); if(data.suggestionsHistory) suggestionsHistory.push(...data.suggestionsHistory.filter(h=>!suggestionsHistory.some(ex=>ex.date===h.date))); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); showToast('Import merged','success'); } else showModal('Error','Invalid structure'); }catch(err){showModal('Invalid JSON');} }; fr.readAsText(file); }; inp.click(); };
-        document.getElementById('export-data').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify({lessons,definitions,suggestionsHistory},null,2)],{type:'application/json'})); a.download='biology_backup.json'; a.click(); showToast('Export ready','success'); };
-        document.getElementById('copy-backup-btn').onclick=async()=>{ const str=JSON.stringify({lessons,definitions,suggestionsHistory},null,2); await navigator.clipboard.writeText(str); showToast('Backup copied','success'); document.getElementById('backup-data-textarea').value=str; };
-        document.getElementById('load-backup-btn').onclick=()=>{ try{ const data=JSON.parse(document.getElementById('restore-data-textarea').value); if(data.lessons&&data.definitions){ lessons.push(...data.lessons.filter(l=>!lessons.some(ex=>ex.id===l.id))); definitions.push(...data.definitions.filter(d=>!definitions.some(ex=>ex.id===d.id))); if(data.suggestionsHistory) suggestionsHistory.push(...data.suggestionsHistory.filter(h=>!suggestionsHistory.some(ex=>ex.date===h.date))); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); showToast('Data merged','success'); } else showModal('Error','Invalid structure'); }catch(e){showModal('Invalid JSON');} };
-
-        // Global event delegation for dynamic buttons (show/hide, edit, delete, pass/fail)
-        document.body.addEventListener('click', (e) => {
-            const toggle = e.target.closest('.toggle-def-btn'); if(toggle){ e.preventDefault(); const textEl=document.getElementById(`def-text-${toggle.dataset.id}`) || document.getElementById(`sug-text-${toggle.dataset.id}`); if(textEl){ textEl.classList.toggle('active'); const btn=textEl.closest('.border,.suggestion-card')?.querySelector('.toggle-def-btn'); if(btn) btn.innerHTML=textEl.classList.contains('active')?'<i class="fas fa-eye-slash mr-1"></i> Hide':'<i class="fas fa-eye mr-1"></i> Show'; } return; }
-            const pass = e.target.closest('.pass-def-btn'); if(pass){ triggerHaptic(); markDefStatus(pass.dataset.id,'passed'); return; }
-            const fail = e.target.closest('.fail-def-btn'); if(fail){ triggerHaptic(); markDefStatus(fail.dataset.id,'failed'); return; }
-            const edit = e.target.closest('.edit-def-btn'); if(edit){ const def=definitions.find(d=>d.id===edit.dataset.id); if(def){ document.getElementById('edit-definition-id').value=def.id; document.getElementById('edit-definition-topic').value=def.topic; document.getElementById('edit-definition-text').value=def.definition; document.getElementById('edit-definition-lesson').value=def.lessonId; openModal('editDefinitionModal'); } return; }
-            const delDef = e.target.closest('.delete-def-btn'); if(delDef){ showConfirmModal(`Delete "${delDef.dataset.topic}"?`,()=>{ definitions=definitions.filter(d=>d.id!==delDef.dataset.id); saveToLocalAndCloud(); displayLessons(document.getElementById('filter-lesson').value||null); closeModal('lessonDefinitionsModal'); showToast('Definition deleted','error'); }); return; }
-            const delLesson = e.target.closest('.delete-lesson-btn'); if(delLesson){ const id=delLesson.dataset.id, name=delLesson.dataset.name; showConfirmModal(`Delete "${name}" and all definitions?`,()=>{ lessons=lessons.filter(l=>l.id!==id); definitions=definitions.filter(d=>d.lessonId!==id); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); closeAllModals(); showToast(`Lesson ${name} deleted`,'error'); }); return; }
-        });
-
-        // Backdrop click: close modal when tapping outside modal content
+        // Close modals when clicking backdrop
         window.addEventListener('click', (event) => {
             if (event.target.classList && event.target.classList.contains('modal')) {
                 closeModal(event.target.id);
             }
         });
 
-        // Theme
-        const setTheme=(theme)=>{ const body=document.body; const isDark=theme==='dark'; body.classList.toggle('theme-dark',isDark); body.classList.toggle('theme-light',!isDark); localStorage.setItem('app-theme',theme); const sunIcon=document.querySelector('#theme-switch-header i'); if(sunIcon) sunIcon.className=isDark ? 'fas fa-moon text-indigo-200 text-lg' : 'fas fa-sun text-yellow-500 text-lg'; };
-        const savedTheme=localStorage.getItem('app-theme')||'light'; setTheme(savedTheme);
-        document.getElementById('theme-switch-header').onclick=()=>{ const newTheme=document.body.classList.contains('theme-dark')?'light':'dark'; setTheme(newTheme); };
+        // Initial load (before auth) - use localStorage data
+        const storedLessons = localStorage.getItem('biologyLessons');
+        const storedDefs = localStorage.getItem('biologyDefinitions');
+        const storedHistory = localStorage.getItem('suggestionsHistory');
+        if (storedLessons) lessons = JSON.parse(storedLessons);
+        if (storedDefs) definitions = JSON.parse(storedDefs);
+        if (storedHistory) suggestionsHistory = JSON.parse(storedHistory);
+        definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
+        refreshUI();
+        initializeDailySession();
     </script>
 </body>
 </html>
