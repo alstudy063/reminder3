@@ -3,57 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Biology Definitions • Cloud Sync</title>
+    <title>Biology Definitions • Smart Study with Cloud Sync</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-database-compat.js"></script>
-    <style>
-        * {
-            font-family: 'Inter', sans-serif;
+    <!-- Firebase SDKs (v10) -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"
+            }
         }
+    </script>
+    <style>
+        * { font-family: 'Inter', sans-serif; }
         body {
             min-height: 100vh;
             padding-bottom: 90px;
             transition: background-color 0.25s ease, color 0.2s ease;
         }
-        body.theme-light {
-            background: #f8fafc;
-            color: #0f172a;
+        body.theme-light { background: #f8fafc; color: #0f172a; }
+        body.theme-dark { background: #0a0f1c; color: #eef2ff; }
+        .theme-light .card-bg, .theme-light .modal-content, .theme-light .stat-card, .theme-light .lesson-card, .theme-light .suggestion-card, .theme-light .bottom-nav {
+            background-color: #ffffff; border-color: #e2e8f0;
         }
-        body.theme-dark {
-            background: #0a0f1c;
-            color: #eef2ff;
-        }
-        .theme-light .card-bg,
-        .theme-light .modal-content,
-        .theme-light .stat-card,
-        .theme-light .lesson-card,
-        .theme-light .suggestion-card,
-        .theme-light .bottom-nav {
-            background-color: #ffffff;
-            border-color: #e2e8f0;
-        }
-        .theme-dark .card-bg,
-        .theme-dark .modal-content,
-        .theme-dark .stat-card,
-        .theme-dark .lesson-card,
-        .theme-dark .suggestion-card,
-        .theme-dark .bottom-nav {
-            background-color: #111827;
-            border-color: #1e293b;
-        }
-        .theme-dark .text-soft {
-            color: #cbd5e1;
-        }
-        .theme-light .text-soft {
-            color: #334155;
+        .theme-dark .card-bg, .theme-dark .modal-content, .theme-dark .stat-card, .theme-dark .lesson-card, .theme-dark .suggestion-card, .theme-dark .bottom-nav {
+            background-color: #111827; border-color: #1e293b;
         }
         .bottom-nav {
             backdrop-filter: blur(16px);
@@ -65,7 +45,7 @@
             bottom: 1.25rem;
             z-index: 50;
             transition: background 0.2s, border 0.2s;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
         }
         .nav-item {
             display: flex;
@@ -80,51 +60,27 @@
             transition: all 0.2s;
             color: #64748b;
         }
-        .theme-dark .nav-item {
-            color: #94a3b8;
-        }
-        .nav-item i {
-            font-size: 1.5rem;
-            margin-bottom: 2px;
-        }
-        .nav-item.active {
-            color: #3b82f6;
-            background: rgba(59,130,246,0.12);
-            transform: translateY(-2px);
-        }
-        .theme-dark .nav-item.active {
-            color: #818cf8;
-            background: rgba(129,140,248,0.15);
-        }
-        .lesson-card, .suggestion-card, .stat-card {
-            transition: all 0.2s ease;
-        }
-        .lesson-card:hover, .suggestion-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 20px -12px rgba(0, 0, 0, 0.15);
-        }
+        .theme-dark .nav-item { color: #94a3b8; }
+        .nav-item i { font-size: 1.5rem; margin-bottom: 2px; }
+        .nav-item.active { color: #3b82f6; background: rgba(59,130,246,0.12); transform: translateY(-2px); }
+        .theme-dark .nav-item.active { color: #818cf8; background: rgba(129,140,248,0.15); }
+        .lesson-card, .suggestion-card, .stat-card { transition: all 0.2s ease; }
+        .lesson-card:hover, .suggestion-card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
         .definition-text {
             max-height: 0;
             overflow: hidden;
             opacity: 0;
-            transition: max-height 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1), opacity 0.3s ease;
+            transition: max-height 0.4s cubic-bezier(0.2,0.9,0.4,1.1), opacity 0.3s ease;
         }
-        .definition-text.active {
-            max-height: 300px;
-            opacity: 1;
-            margin-top: 0.5rem;
-        }
+        .definition-text.active { max-height: 300px; opacity: 1; margin-top: 0.5rem; }
         .modal {
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(0,0,0,0.6);
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s;
             z-index: 100;
         }
-        .modal:not(.hidden) {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .modal:not(.hidden) { opacity: 1; pointer-events: auto; }
         .modal-content {
             transform: scale(0.96);
             transition: transform 0.2s ease-out;
@@ -134,9 +90,7 @@
             max-height: 85vh;
             overflow-y: auto;
         }
-        .modal:not(.hidden) .modal-content {
-            transform: scale(1);
-        }
+        .modal:not(.hidden) .modal-content { transform: scale(1); }
         .toast {
             padding: 0.75rem 1.25rem;
             border-radius: 2rem;
@@ -146,118 +100,54 @@
             transform: translateX(120%);
             transition: transform 0.25s ease, opacity 0.2s;
         }
-        .toast.show {
-            transform: translateX(0);
-        }
-        .daily-badge {
-            background: #8b5cf6;
-            color: white;
-            border-radius: 999px;
-            padding: 0.2rem 0.75rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-        }
-        .btn-grad {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            transition: all 0.2s;
-        }
-        .btn-grad:hover {
-            transform: scale(0.98);
-            box-shadow: 0 4px 12px rgba(37,99,235,0.3);
-        }
-        .lessons-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 1rem;
-        }
-        .header-icon-btn {
-            transition: all 0.2s;
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 999px;
-        }
-        .header-icon-btn:hover {
-            background: rgba(0,0,0,0.05);
-        }
-        .theme-dark .header-icon-btn:hover {
-            background: rgba(255,255,255,0.08);
-        }
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #e2e8f0;
-            border-radius: 10px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-            border-radius: 10px;
-        }
-        /* Auth button */
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 999px;
-            object-fit: cover;
-            cursor: pointer;
-            border: 2px solid #3b82f6;
-        }
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-        }
+        .toast.show { transform: translateX(0); }
+        .daily-badge { background: #8b5cf6; color: white; border-radius: 999px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 600; }
+        .lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+        .header-icon-btn { transition: all 0.2s; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 999px; }
+        .header-icon-btn:hover { background: rgba(0,0,0,0.05); }
+        .theme-dark .header-icon-btn:hover { background: rgba(255,255,255,0.08); }
+        .user-avatar { width: 36px; height: 36px; border-radius: 999px; object-fit: cover; border: 2px solid #3b82f6; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
     </style>
 </head>
 <body class="theme-light">
 
-    <!-- Loading overlay -->
-    <div id="loadingOverlay" class="loading-overlay hidden">
-        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-xl flex items-center gap-3">
-            <i class="fas fa-spinner fa-pulse text-2xl text-blue-500"></i>
-            <span>Syncing your data...</span>
-        </div>
-    </div>
-
-    <!-- ========== HEADER ========== -->
+    <!-- HEADER -->
     <div class="max-w-5xl mx-auto px-4 pt-5 pb-2 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <i class="fas fa-dna text-blue-600 text-2xl"></i>
             <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">A/L Biology<span class="text-blue-500">·</span>Definitions</h1>
         </div>
         <div class="flex gap-2 items-center">
+            <div id="user-profile" class="flex items-center gap-2 cursor-pointer" onclick="window.toggleAuthMenu()">
+                <img id="user-avatar" src="https://via.placeholder.com/36" alt="avatar" class="user-avatar hidden">
+                <i id="user-icon" class="fas fa-user-circle text-2xl text-gray-500"></i>
+                <span id="user-name" class="text-sm font-medium hidden md:inline-block"></span>
+            </div>
             <button id="global-history-btn" class="header-icon-btn text-gray-600 hover:text-blue-600" title="History">
                 <i class="fas fa-history text-xl"></i>
             </button>
             <div id="theme-switch-header" class="header-icon-btn cursor-pointer">
                 <i class="fas fa-sun text-yellow-500 text-lg"></i>
             </div>
-            <div id="userAvatarContainer" class="cursor-pointer">
-                <img id="userAvatar" class="user-avatar hidden" alt="user avatar">
-                <i id="loginIcon" class="fas fa-sign-in-alt text-gray-500 text-xl header-icon-btn hidden"></i>
-            </div>
         </div>
     </div>
 
-    <!-- ========== MAIN CONTENT SECTIONS ========== -->
+    <!-- Auth dropdown -->
+    <div id="auth-menu" class="hidden absolute right-4 top-16 bg-white dark:bg-slate-800 rounded-xl shadow-lg border p-2 z-50 w-48">
+        <div id="auth-status" class="text-sm p-2"></div>
+        <button id="google-signin-btn" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg flex items-center gap-2"><i class="fab fa-google"></i> Sign in with Google</button>
+        <button id="google-signout-btn" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg hidden"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    </div>
+
+    <!-- MAIN CONTENT -->
     <div class="max-w-5xl mx-auto px-4 pb-8">
         <!-- Home Section -->
         <div id="main-content-section" class="space-y-6">
             <!-- Daily Suggestions Trigger -->
-            <div id="daily-suggestions-section-trigger" class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 border border-purple-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all group" onclick="showSection('suggestions-section')">
+            <div id="daily-suggestions-section-trigger" class="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 border border-purple-200 dark:border-slate-700 cursor-pointer hover:shadow-lg transition-all group" onclick="window.showSection('suggestions-section')">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
@@ -291,83 +181,52 @@
                     <h2 class="text-xl font-semibold flex items-center gap-2"><i class="fas fa-layer-group text-blue-500"></i> Your Lessons</h2>
                     <span id="lessons-count-badge" class="text-xs bg-gray-200 dark:bg-slate-700 px-2 py-1 rounded-full">0</span>
                 </div>
-                <div id="definitions-display" class="lessons-grid">
-                    <!-- Dynamic lesson cards -->
-                </div>
+                <div id="definitions-display" class="lessons-grid"></div>
             </div>
         </div>
 
         <!-- Daily Suggestions Section -->
         <div id="suggestions-section" class="hidden space-y-4">
             <div class="flex items-center gap-3 mb-2">
-                <button onclick="showSection('main-content-section')" class="text-blue-500 hover:underline text-sm flex items-center gap-1"><i class="fas fa-arrow-left"></i> Back</button>
+                <button onclick="window.showSection('main-content-section')" class="text-blue-500 hover:underline text-sm flex items-center gap-1"><i class="fas fa-arrow-left"></i> Back</button>
                 <h3 class="text-2xl font-bold flex items-center gap-2"><i class="fas fa-lightbulb text-purple-500"></i> Today's Study List</h3>
             </div>
-            <div id="daily-suggestions-container" class="flex flex-col gap-3">
-                <!-- dynamic suggestion cards -->
-            </div>
+            <div id="daily-suggestions-container" class="flex flex-col gap-3"></div>
         </div>
 
         <!-- Settings & Stats Section -->
         <div id="settings-section" class="hidden space-y-6">
             <div class="flex items-center gap-3 mb-2">
-                <button onclick="showSection('main-content-section')" class="text-blue-500 hover:underline text-sm"><i class="fas fa-arrow-left"></i> Back</button>
+                <button onclick="window.showSection('main-content-section')" class="text-blue-500 hover:underline text-sm"><i class="fas fa-arrow-left"></i> Back</button>
                 <h3 class="text-2xl font-bold">Stats & Settings</h3>
             </div>
+            <!-- Stats cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center shadow-sm">
-                    <i class="fas fa-book-open text-blue-500 text-2xl mb-1"></i>
-                    <p class="text-xs uppercase tracking-wide text-gray-500">Total</p>
-                    <p id="total-definitions-count" class="text-2xl font-bold">0</p>
-                </div>
-                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center">
-                    <i class="fas fa-calendar-day text-purple-500 text-2xl mb-1"></i>
-                    <p class="text-xs uppercase">Suggested today</p>
-                    <p id="suggested-definitions-count" class="text-2xl font-bold">0</p>
-                </div>
-                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center">
-                    <i class="fas fa-check-circle text-green-500 text-2xl mb-1"></i>
-                    <p class="text-xs uppercase">Passed total</p>
-                    <p id="total-passed-count" class="text-2xl font-bold">0</p>
-                </div>
-                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center">
-                    <i class="fas fa-times-circle text-red-500 text-2xl mb-1"></i>
-                    <p class="text-xs uppercase">Failed total</p>
-                    <p id="total-failed-count" class="text-2xl font-bold">0</p>
-                </div>
+                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center shadow-sm"><i class="fas fa-book-open text-blue-500 text-2xl mb-1"></i><p class="text-xs uppercase tracking-wide text-gray-500">Total</p><p id="total-definitions-count" class="text-2xl font-bold">0</p></div>
+                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center"><i class="fas fa-calendar-day text-purple-500 text-2xl mb-1"></i><p class="text-xs uppercase">Suggested today</p><p id="suggested-definitions-count" class="text-2xl font-bold">0</p></div>
+                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center"><i class="fas fa-check-circle text-green-500 text-2xl mb-1"></i><p class="text-xs uppercase">Passed total</p><p id="total-passed-count" class="text-2xl font-bold">0</p></div>
+                <div class="stat-card bg-white dark:bg-slate-800 p-4 rounded-2xl border text-center"><i class="fas fa-times-circle text-red-500 text-2xl mb-1"></i><p class="text-xs uppercase">Failed total</p><p id="total-failed-count" class="text-2xl font-bold">0</p></div>
             </div>
 
+            <!-- User info & sync status -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border p-5 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold"><i class="fas fa-cloud-upload-alt mr-2"></i> Cloud Sync</span>
+                    <span id="sync-status" class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 px-3 py-1 rounded-full">⚠️ Signed out (local only)</span>
+                </div>
+                <div id="user-info-panel" class="text-sm text-gray-600 dark:text-gray-300"></div>
+            </div>
+
+            <!-- Data Management -->
             <div class="bg-white dark:bg-slate-800 rounded-2xl border p-5 space-y-5">
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold"><i class="fas fa-palette mr-2"></i> Appearance</span>
-                    <div id="theme-switch-settings" class="flex items-center gap-2 cursor-pointer bg-gray-100 dark:bg-slate-700 rounded-full px-3 py-1">
-                        <i class="fas fa-sun text-yellow-500"></i>
-                        <span class="text-sm font-medium">Dark / Light</span>
-                        <i class="fas fa-moon text-slate-500"></i>
-                    </div>
+                <h4 class="font-semibold"><i class="fas fa-database mr-2"></i> Data Management</h4>
+                <div class="flex flex-wrap gap-2">
+                    <button id="import-data" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-import mr-1"></i> Import JSON</button>
+                    <button id="export-data" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-export mr-1"></i> Export Backup</button>
                 </div>
-                <hr class="dark:border-slate-700">
-                <div>
-                    <h4 class="font-semibold mb-2"><i class="fas fa-database mr-2"></i> Data Management</h4>
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <button id="import-data" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm shadow transition"><i class="fas fa-file-import mr-1"></i> Import JSON</button>
-                        <button id="export-data" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-export mr-1"></i> Export Backup</button>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                            <p class="text-xs text-gray-500 mb-1">📋 Copy backup code</p>
-                            <textarea id="backup-data-textarea" rows="2" class="w-full text-xs bg-gray-50 dark:bg-slate-900 border rounded-xl p-2" readonly placeholder="Click 'Copy Backup Data'"></textarea>
-                            <button id="copy-backup-btn" class="mt-1 w-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 py-1.5 rounded-xl text-sm"><i class="fas fa-copy mr-1"></i> Copy to Clipboard</button>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-500 mb-1">📥 Paste & restore</p>
-                            <textarea id="restore-data-textarea" rows="2" class="w-full text-xs border rounded-xl p-2 dark:bg-slate-900" placeholder='Paste backup JSON here...'></textarea>
-                            <button id="load-backup-btn" class="mt-1 w-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 py-1.5 rounded-xl text-sm"><i class="fas fa-upload mr-1"></i> Merge Data</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center text-sm text-gray-500 pt-2">
-                    <button id="signOutBtn" class="text-red-500 hover:underline"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div><p class="text-xs text-gray-500 mb-1">📋 Copy backup code</p><textarea id="backup-data-textarea" rows="2" class="w-full text-xs bg-gray-50 dark:bg-slate-900 border rounded-xl p-2" readonly placeholder="Click 'Copy Backup Data'"></textarea><button id="copy-backup-btn" class="mt-1 w-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 py-1.5 rounded-xl text-sm"><i class="fas fa-copy mr-1"></i> Copy to Clipboard</button></div>
+                    <div><p class="text-xs text-gray-500 mb-1">📥 Paste & restore</p><textarea id="restore-data-textarea" rows="2" class="w-full text-xs border rounded-xl p-2 dark:bg-slate-900" placeholder='Paste backup JSON here...'></textarea><button id="load-backup-btn" class="mt-1 w-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 py-1.5 rounded-xl text-sm"><i class="fas fa-upload mr-1"></i> Merge Data</button></div>
                 </div>
             </div>
         </div>
@@ -382,7 +241,7 @@
         </div>
     </div>
 
-    <!-- ========== BOTTOM NAVIGATION ========== -->
+    <!-- Bottom Navigation -->
     <div id="bottom-nav" class="bottom-nav fixed flex justify-around p-1.5 bg-white/80 dark:bg-slate-900/80 border border-gray-200 dark:border-slate-700 backdrop-blur-lg">
         <button id="nav-home" class="nav-item active"><i class="fas fa-home"></i><span>Home</span></button>
         <button id="nav-suggestions" class="nav-item"><i class="fas fa-lightbulb"></i><span>Today</span></button>
@@ -390,16 +249,19 @@
         <button id="nav-settings" class="nav-item"><i class="fas fa-chart-simple"></i><span>Stats</span></button>
     </div>
 
-    <!-- MODALS (same as before, kept for brevity) -->
-    <div id="addContentModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md">...</div></div>
-    <div id="lessonDefinitionsModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto">...</div></div>
-    <div id="editDefinitionModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md">...</div></div>
-    <div id="infoModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-6 rounded-2xl text-center max-w-sm">...</div></div>
-    <div id="confirmModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl text-center">...</div></div>
+    <!-- Modals -->
+    <div id="addContentModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between border-b pb-2 mb-3"><h3 class="text-xl font-bold"><i class="fas fa-plus-circle text-blue-500"></i> Add New</h3><button class="close-modal-btn text-3xl">&times;</button></div><div class="space-y-4"><div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Lesson</h4><form id="add-lesson-form" class="flex gap-2 mt-2"><input type="text" id="new-lesson-name" placeholder="e.g., Cell Biology" class="flex-1 p-2 rounded-lg border" required><button type="submit" class="bg-blue-600 text-white px-4 rounded-xl text-sm">Add</button></form></div><div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl"><h4 class="font-semibold">New Definition</h4><form id="add-definition-form" class="space-y-2 mt-2"><select id="add-definition-lesson" class="w-full p-2 rounded-lg border" required></select><input type="text" id="new-definition-topic" placeholder="Topic / Term" class="w-full p-2 rounded-lg border" required><textarea id="new-definition-text" rows="2" placeholder="Definition content..." class="w-full p-2 rounded-lg border" required></textarea><button type="submit" class="bg-green-600 text-white w-full py-2 rounded-xl">Save Definition</button></form></div></div></div></div>
+    <div id="lessonDefinitionsModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto"><div class="flex justify-between sticky top-0 bg-white dark:bg-slate-800 pb-2"><h3 id="lesson-definitions-modal-title" class="text-xl font-bold"></h3><button id="close-lesson-definitions-modal" class="text-2xl">&times;</button></div><div id="lesson-definitions-container" class="grid gap-2 mt-2"></div></div></div>
+    <div id="editDefinitionModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl w-full max-w-md"><div class="flex justify-between mb-3"><h3 class="font-bold"><i class="fas fa-edit text-yellow-500"></i> Edit Definition</h3><button id="close-edit-modal-btn" class="text-2xl">&times;</button></div><form id="edit-definition-form" class="space-y-3"><input type="hidden" id="edit-definition-id"><select id="edit-definition-lesson" class="w-full p-2 rounded-lg border" required></select><input type="text" id="edit-definition-topic" class="w-full p-2 rounded-lg border" required><textarea id="edit-definition-text" rows="3" class="w-full p-2 rounded-lg border" required></textarea><button type="submit" class="bg-blue-600 text-white w-full py-2 rounded-xl">Update</button></form></div></div>
+    <div id="infoModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-6 rounded-2xl text-center max-w-sm"><h3 id="modal-title" class="text-lg font-bold mb-2"></h3><p id="modal-message" class="mb-4"></p><button id="close-info-modal" class="bg-blue-600 text-white px-5 py-2 rounded-full">OK</button></div></div>
+    <div id="confirmModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white dark:bg-slate-800 p-5 rounded-2xl text-center"><h3 class="text-lg font-bold">Confirm</h3><p id="confirm-message" class="my-3"></p><div class="flex gap-3 justify-center"><button id="cancel-confirm-modal" class="bg-gray-300 px-4 py-2 rounded-full">Cancel</button><button id="confirm-action" class="bg-red-600 text-white px-4 py-2 rounded-full">Yes, Delete</button></div></div></div>
     <div id="toast-container" class="fixed bottom-24 right-4 z-[9999] flex flex-col gap-2"></div>
 
-    <script>
-        // ---------- FIREBASE INIT ----------
+    <script type="module">
+        import { initializeApp } from "firebase/app";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, enableIndexedDbPersistence } from "firebase/firestore";
+
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -410,368 +272,297 @@
             appId: "1:426684063256:web:52c17625a9450ea9662d6d",
             measurementId: "G-CWQB2330GF"
         };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        const db = getFirestore(app);
+        enableIndexedDbPersistence(db).catch(e=>console.warn(e));
 
-        // Global data (will be synced with Firebase)
+        // Global app data
         let definitions = [];
         let lessons = [];
         let suggestionsHistory = [];
         let currentUser = null;
-        let dataLoaded = false;
+        let firestoreUnsubscribe = null;
+        let lastSelectedLessonId = null;
 
-        // UI helpers (same as before, plus Firebase sync)
-        function showToast(msg,type='info'){ const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type==='success'?'bg-green-600':type==='error'?'bg-red-600':'bg-blue-600'} text-white`; t.innerText=msg; c.appendChild(t); setTimeout(()=>t.classList.add('show'),20); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},2800);}
-        function showModal(title,msg){ document.getElementById('modal-title').innerText=title; document.getElementById('modal-message').innerText=msg; openModal('infoModal');}
-        function openModal(id){ const m=document.getElementById(id); if(m) m.classList.remove('hidden'); }
-        function closeModal(id){ const m=document.getElementById(id); if(m) m.classList.add('hidden'); }
-        function closeAllModals(){ document.querySelectorAll('.modal').forEach(m=>closeModal(m.id)); }
+        // Helper functions
+        function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+        function showToast(msg, type='info'){ const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type==='success'?'bg-green-600':type==='error'?'bg-red-600':'bg-blue-600'} text-white`; t.innerText=msg; c.appendChild(t); setTimeout(()=>t.classList.add('show'),20); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},2800);}
         function triggerHaptic(){ if(navigator.vibrate) navigator.vibrate(20); }
+        function openModal(id){ const m=document.getElementById(id); if(m){ m.classList.remove('hidden'); m.classList.add('is-opening'); } }
+        function closeModal(id){ const m=document.getElementById(id); if(m){ m.classList.add('hidden'); m.classList.remove('is-opening'); } }
+        function closeAllModals(){ document.querySelectorAll('.modal').forEach(m=>closeModal(m.id)); }
+        function showModal(title,msg){ document.getElementById('modal-title').innerText=title; document.getElementById('modal-message').innerText=msg; openModal('infoModal'); }
+        function showConfirmModal(msg,cb){ document.getElementById('confirm-message').innerText=msg; openModal('confirmModal'); window.confirmCallback=cb; }
 
-        // Save entire app state to Firebase Realtime Database
-        async function syncToFirebase() {
-            if (!currentUser) return;
-            const userRef = db.ref(`users/${currentUser.uid}`);
-            await userRef.update({
-                lessons: lessons,
-                definitions: definitions,
-                suggestionsHistory: suggestionsHistory,
-                lastUpdated: firebase.database.ServerValue.TIMESTAMP
-            });
-        }
-
-        // Load from Firebase
-        async function loadFromFirebase() {
-            if (!currentUser) return;
-            const snapshot = await db.ref(`users/${currentUser.uid}`).once('value');
-            const data = snapshot.val();
-            if (data) {
-                lessons = data.lessons || [];
-                definitions = data.definitions || [];
-                suggestionsHistory = data.suggestionsHistory || [];
-                // ensure counts fields exist
-                definitions.forEach(d => { if (typeof d.count === 'undefined') d.count = 0; if (typeof d.passCount === 'undefined') d.passCount = 0; if (typeof d.failCount === 'undefined') d.failCount = 0; });
-            } else {
-                // fresh user
-                lessons = [];
-                definitions = [];
-                suggestionsHistory = [];
-            }
-            dataLoaded = true;
-            refreshUI();
-        }
-
-        // Refresh UI after data changes (local or remote)
-        function refreshUI() {
-            populateLessonDropdowns();
-            displayLessons(document.getElementById('filter-lesson')?.value || null);
-            updateStatusCounters();
-            if (document.getElementById('suggestions-section') && !document.getElementById('suggestions-section').classList.contains('hidden')) {
-                showSuggestionsContent();
-            }
-            if (document.getElementById('history-section') && !document.getElementById('history-section').classList.contains('hidden')) {
-                renderHistory();
-            }
-        }
-
+        // Update UI counters
         function updateStatusCounters() {
             document.getElementById('total-definitions-count').textContent = definitions.length;
             const today = new Date().toISOString().slice(0,10);
-            const dailyEntry = suggestionsHistory.find(e => e.date === today);
-            const incomplete = dailyEntry ? dailyEntry.definitions.filter(d => d.sessionStatus !== 'passed' && d.sessionStatus !== 'failed').length : 0;
+            const dailyEntry = suggestionsHistory.find(e=>e.date===today);
+            const incomplete = dailyEntry ? dailyEntry.definitions.filter(d=>d.sessionStatus!=='passed' && d.sessionStatus!=='failed').length : 0;
             document.getElementById('suggested-definitions-count').textContent = incomplete;
-            document.getElementById('total-passed-count').textContent = definitions.reduce((s,d)=> s + (d.passCount||0),0);
-            document.getElementById('total-failed-count').textContent = definitions.reduce((s,d)=> s + (d.failCount||0),0);
+            document.getElementById('total-passed-count').textContent = definitions.reduce((s,d)=>s+(d.passCount||0),0);
+            document.getElementById('total-failed-count').textContent = definitions.reduce((s,d)=>s+(d.failCount||0),0);
             document.getElementById('daily-suggestions-count-display').textContent = incomplete;
             document.getElementById('lessons-count-badge').textContent = lessons.length;
         }
 
+        // Save to localStorage and cloud
+        function saveToLocalAndCloud() {
+            localStorage.setItem('biologyLessons', JSON.stringify(lessons));
+            localStorage.setItem('biologyDefinitions', JSON.stringify(definitions));
+            localStorage.setItem('suggestionsHistory', JSON.stringify(suggestionsHistory));
+            if (currentUser) {
+                const userDocRef = doc(db, "users", currentUser.uid);
+                setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() }, { merge: true }).catch(err=>showToast("Sync failed: "+err.message, "error"));
+                document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
+            }
+            updateStatusCounters();
+            populateLessonDropdowns();
+        }
+
         function populateLessonDropdowns() {
             const selects = ['add-definition-lesson','filter-lesson','edit-definition-lesson'];
-            selects.forEach(id=>{ const sel=document.getElementById(id); if(sel){ sel.innerHTML=id==='filter-lesson'?'<option value="">All Lessons</option>':'<option value="">Select a Lesson</option>'; lessons.forEach(l=>{ const opt=document.createElement('option'); opt.value=l.id; opt.textContent=l.name; sel.appendChild(opt); }); } });
+            selects.forEach(id=>{ const sel=document.getElementById(id); if(sel){ const prev=sel.value; sel.innerHTML=id==='filter-lesson'?'<option value="">All Lessons</option>':'<option value="">Select a Lesson</option>'; lessons.forEach(l=>{ const opt=document.createElement('option'); opt.value=l.id; opt.textContent=l.name; sel.appendChild(opt); }); if(prev && lessons.some(l=>l.id===prev)) sel.value=prev; } });
         }
 
-        function displayLessons(filterLessonId = null) {
-            const container = document.getElementById('definitions-display');
-            container.innerHTML = '';
-            let lessonsToShow = filterLessonId ? lessons.filter(l => definitions.some(d => d.lessonId === l.id && l.id === filterLessonId)) : [...lessons];
-            if(lessonsToShow.length === 0) { container.innerHTML = '<div class="col-span-full text-center py-8 text-gray-400">📭 No lessons yet. Tap + to add.</div>'; return; }
-            lessonsToShow.forEach(lesson => container.appendChild(createLessonCard(lesson)));
-        }
-
+        // Lesson & Definition display
         function createLessonCard(lesson) {
             const card = document.createElement('div');
             card.className = 'lesson-card bg-white dark:bg-slate-800 rounded-2xl border border-gray-200 dark:border-slate-700 p-4 cursor-pointer transition hover:shadow-md';
-            const defCount = definitions.filter(d => d.lessonId === lesson.id).length;
-            card.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <h3 class="font-bold text-lg truncate">${escapeHtml(lesson.name)}</h3>
-                    <span class="text-xs bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded-full">${defCount} terms</span>
-                </div>
-                <div class="mt-3 flex justify-between items-center">
-                    <button class="view-lesson-defs text-blue-500 text-sm font-medium flex items-center gap-1"><i class="fas fa-eye"></i> View</button>
-                    <button class="delete-lesson-btn bg-red-100 dark:bg-red-900/30 text-red-600 px-3 py-1 rounded-full text-xs" data-id="${lesson.id}" data-name="${escapeHtml(lesson.name)}"><i class="fas fa-trash-alt"></i> Delete</button>
-                </div>
-            `;
+            const defCount = definitions.filter(d=>d.lessonId===lesson.id).length;
+            card.innerHTML = `<div class="flex justify-between items-start"><h3 class="font-bold text-lg truncate">${escapeHtml(lesson.name)}</h3><span class="text-xs bg-blue-100 dark:bg-blue-900/40 px-2 py-1 rounded-full">${defCount} terms</span></div><div class="mt-3 flex justify-between items-center"><button class="view-lesson-defs text-blue-500 text-sm font-medium flex items-center gap-1"><i class="fas fa-eye"></i> View</button><button class="delete-lesson-btn bg-red-100 dark:bg-red-900/30 text-red-600 px-3 py-1 rounded-full text-xs" data-id="${lesson.id}" data-name="${escapeHtml(lesson.name)}"><i class="fas fa-trash-alt"></i> Delete</button></div>`;
             card.setAttribute('data-id', lesson.id);
-            card.addEventListener('click', (e) => { if(e.target.closest('.delete-lesson-btn')) return; showLessonDefinitionsModal(lesson.id); });
+            card.addEventListener('click', (e) => { if(!e.target.closest('.delete-lesson-btn')) window.showLessonDefinitionsModal(lesson.id); });
             return card;
         }
+        function displayLessons(filterId = null) {
+            const container = document.getElementById('definitions-display');
+            container.innerHTML = '';
+            let lessonsToShow = filterId ? lessons.filter(l => definitions.some(d=>d.lessonId===l.id && l.id===filterId)) : [...lessons];
+            if(lessonsToShow.length===0) { container.innerHTML='<div class="col-span-full text-center py-8 text-gray-400">📭 No lessons yet. Tap + to add.</div>'; return; }
+            lessonsToShow.forEach(lesson => container.appendChild(createLessonCard(lesson)));
+            updateStatusCounters();
+        }
 
-        function showLessonDefinitionsModal(lessonId) {
-            const lesson = lessons.find(l => l.id === lessonId);
+        window.showLessonDefinitionsModal = (lessonId) => {
+            const lesson = lessons.find(l=>l.id===lessonId);
             if(!lesson) return;
-            const defs = definitions.filter(d => d.lessonId === lessonId);
+            const defs = definitions.filter(d=>d.lessonId===lessonId);
             const container = document.getElementById('lesson-definitions-container');
             container.innerHTML = '';
-            if(defs.length === 0) container.innerHTML = '<p class="text-center text-gray-500">No definitions in this lesson.</p>';
-            else defs.forEach(def => container.appendChild(createDefinitionCard(def)));
+            if(defs.length===0) container.innerHTML='<p class="text-center text-gray-500">No definitions in this lesson.</p>';
+            else defs.forEach(def=>container.appendChild(createDefinitionCard(def)));
             document.getElementById('lesson-definitions-modal-title').textContent = lesson.name;
             openModal('lessonDefinitionsModal');
-        }
+        };
 
         function createDefinitionCard(def) {
             const div = document.createElement('div');
             div.className = 'border rounded-xl p-3 bg-gray-50 dark:bg-slate-700/30';
-            div.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <h4 class="font-semibold text-md">${escapeHtml(def.topic)}</h4>
-                    <span class="text-xs font-mono bg-blue-100 dark:bg-blue-800 px-2 py-0.5 rounded-full">Repeated: ${def.count}</span>
-                </div>
-                <p class="definition-text text-sm text-gray-600 dark:text-gray-300 mt-1" id="def-text-${def.id}">${escapeHtml(def.definition)}</p>
-                <div class="flex justify-between items-center mt-2">
-                    <button class="toggle-def-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-eye mr-1"></i> Show</button>
-                    <div>
-                        <button class="edit-def-btn bg-yellow-500 text-white px-2 py-1 rounded-full text-xs mr-1" data-id="${def.id}"><i class="fas fa-edit"></i></button>
-                        <button class="delete-def-btn bg-red-500 text-white px-2 py-1 rounded-full text-xs" data-id="${def.id}" data-topic="${escapeHtml(def.topic)}"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `;
+            div.innerHTML = `<div class="flex justify-between items-start"><h4 class="font-semibold text-md">${escapeHtml(def.topic)}</h4><span class="text-xs font-mono bg-blue-100 dark:bg-blue-800 px-2 py-0.5 rounded-full">Repeated: ${def.count}</span></div><p class="definition-text text-sm text-gray-600 dark:text-gray-300 mt-1" id="def-text-${def.id}">${escapeHtml(def.definition)}</p><div class="flex justify-between items-center mt-2"><button class="toggle-def-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-eye mr-1"></i> Show</button><div><button class="edit-def-btn bg-yellow-500 text-white px-2 py-1 rounded-full text-xs mr-1" data-id="${def.id}"><i class="fas fa-edit"></i></button><button class="delete-def-btn bg-red-500 text-white px-2 py-1 rounded-full text-xs" data-id="${def.id}" data-topic="${escapeHtml(def.topic)}"><i class="fas fa-trash"></i></button></div></div>`;
             return div;
         }
 
-        window.toggleDefinition = (id) => {
-            const textEl = document.getElementById(`def-text-${id}`);
-            if(textEl) { textEl.classList.toggle('active'); const btn = textEl.closest('.border')?.querySelector('.toggle-def-btn'); if(btn) btn.innerHTML = textEl.classList.contains('active') ? '<i class="fas fa-eye-slash mr-1"></i> Hide' : '<i class="fas fa-eye mr-1"></i> Show'; }
-        };
-
-        function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-
+        // Daily suggestions logic
         function generateNewSuggestions() {
             if(!definitions.length) return [];
             let weighted = [];
-            definitions.forEach(d => { let w = (d.failCount > d.passCount) ? 4 : (d.passCount > 0 && d.failCount > 0 ? 2 : 1); for(let i=0;i<w;i++) weighted.push(d); });
+            definitions.forEach(d=>{ let w = (d.failCount>d.passCount) ? 4 : (d.passCount>0&&d.failCount>0 ? 2 : 1); for(let i=0;i<w;i++) weighted.push(d); });
             if(!weighted.length) weighted = [...definitions];
             const shuffled = weighted.sort(()=>0.5-Math.random());
             return Array.from(new Set(shuffled.slice(0,30)));
         }
-
-        async function initializeDailySession() {
+        function initializeDailySession() {
             const today = new Date().toISOString().slice(0,10);
-            if(!suggestionsHistory.some(e => e.date === today)) {
+            if(!suggestionsHistory.some(e=>e.date===today)) {
                 const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
                 if(newSuggest.length) suggestionsHistory.unshift({ date: today, definitions: newSuggest });
-                if(suggestionsHistory.length > 30) suggestionsHistory.pop();
-                await syncToFirebase();
+                if(suggestionsHistory.length>30) suggestionsHistory.pop();
+                saveToLocalAndCloud();
             }
             updateStatusCounters();
         }
-
         function showSuggestionsContent() {
             const container = document.getElementById('daily-suggestions-container');
             container.innerHTML = '';
             const today = new Date().toISOString().slice(0,10);
-            const entry = suggestionsHistory.find(e => e.date === today);
-            const incomplete = entry?.definitions.filter(d => d.sessionStatus !== 'passed' && d.sessionStatus !== 'failed') || [];
-            if(!incomplete.length) { container.innerHTML = '<div class="p-6 text-center bg-white dark:bg-slate-800 rounded-2xl">🎉 All caught up! Great job.</div>'; return; }
-            incomplete.forEach(def => {
+            const entry = suggestionsHistory.find(e=>e.date===today);
+            const incomplete = entry?.definitions.filter(d=>d.sessionStatus!=='passed' && d.sessionStatus!=='failed') || [];
+            if(!incomplete.length){ container.innerHTML='<div class="p-6 text-center bg-white dark:bg-slate-800 rounded-2xl">🎉 All caught up! Great job.</div>'; return; }
+            incomplete.forEach(def=>{
                 const card = document.createElement('div');
                 card.className = 'suggestion-card bg-white dark:bg-slate-800 rounded-xl p-4 border shadow-sm';
                 card.setAttribute('data-id', def.id);
-                card.innerHTML = `
-                    <div class="flex justify-between"><h4 class="font-bold">${escapeHtml(def.topic)}</h4><span class="text-xs bg-gray-200 dark:bg-slate-700 px-2 rounded-full">#${def.count}</span></div>
-                    <p class="definition-text text-sm mt-1" id="sug-text-${def.id}">${escapeHtml(def.definition)}</p>
-                    <div class="flex justify-between items-center mt-3">
-                        <button class="toggle-def-btn bg-purple-500 text-white px-3 py-1 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-eye"></i> Show</button>
-                        <div id="pass-fail-buttons-${def.id}" class="flex gap-2">
-                            <button class="pass-def-btn bg-green-500 text-white p-2 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-check"></i></button>
-                            <button class="fail-def-btn bg-red-500 text-white p-2 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-times"></i></button>
-                        </div>
-                    </div>
-                `;
+                card.innerHTML = `<div class="flex justify-between"><h4 class="font-bold">${escapeHtml(def.topic)}</h4><span class="text-xs bg-gray-200 dark:bg-slate-700 px-2 rounded-full">#${def.count}</span></div><p class="definition-text text-sm mt-1" id="sug-text-${def.id}">${escapeHtml(def.definition)}</p><div class="flex justify-between items-center mt-3"><button class="toggle-def-btn bg-purple-500 text-white px-3 py-1 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-eye"></i> Show</button><div id="pass-fail-buttons-${def.id}" class="flex gap-2"><button class="pass-def-btn bg-green-500 text-white p-2 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-check"></i></button><button class="fail-def-btn bg-red-500 text-white p-2 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-times"></i></button></div></div>`;
                 container.appendChild(card);
             });
         }
-
-        async function markDefStatus(id, status) {
-            const def = definitions.find(d => d.id === id);
+        function markDefStatus(id, status) {
+            const def = definitions.find(d=>d.id===id);
             if(!def) return;
-            if(status === 'passed') { def.passCount++; def.count++; }
+            if(status==='passed'){ def.passCount++; def.count++; }
             else { def.failCount++; def.count++; }
             const today = new Date().toISOString().slice(0,10);
-            const entry = suggestionsHistory.find(e => e.date === today);
-            if(entry) { const target = entry.definitions.find(d => d.id === id); if(target) target.sessionStatus = status; }
-            await syncToFirebase();
+            const entry = suggestionsHistory.find(e=>e.date===today);
+            if(entry){ const target=entry.definitions.find(d=>d.id===id); if(target) target.sessionStatus=status; }
+            saveToLocalAndCloud();
             showSuggestionsContent();
             updateStatusCounters();
-            showToast(`${def.topic} marked as ${status}`, status === 'passed' ? 'success' : 'error');
+            showToast(`${def.topic} marked as ${status}`, status==='passed'?'success':'error');
         }
 
+        // History rendering
         function renderHistory() {
             const container = document.getElementById('history-container');
             container.innerHTML = '';
-            if(!suggestionsHistory.length) { container.innerHTML = '<div class="text-center py-6">No history yet.</div>'; return; }
-            suggestionsHistory.forEach(entry => {
-                const dateStr = new Date(entry.date+'T00:00').toLocaleDateString(undefined, { weekday:'short', year:'numeric', month:'short', day:'numeric' });
+            if(!suggestionsHistory.length){ container.innerHTML='<div class="text-center py-6">No history yet.</div>'; return; }
+            suggestionsHistory.forEach(entry=>{
+                const dateStr = new Date(entry.date+'T00:00').toLocaleDateString();
                 const wrapper = document.createElement('div');
                 wrapper.className = 'bg-white dark:bg-slate-800 rounded-xl border p-3';
                 wrapper.innerHTML = `<div class="collapsible-header flex justify-between cursor-pointer font-semibold p-2"><span>📅 ${dateStr}</span><i class="fas fa-chevron-down"></i></div><div class="collapsible-content hidden mt-2 space-y-2"></div>`;
                 const contentDiv = wrapper.querySelector('.collapsible-content');
-                entry.definitions.forEach(def => {
-                    const badge = def.sessionStatus === 'passed' ? '<span class="text-green-600 text-xs bg-green-100 px-2 py-0.5 rounded-full">✔ Passed</span>' : (def.sessionStatus === 'failed' ? '<span class="text-red-600 text-xs bg-red-100 px-2 py-0.5 rounded-full">✖ Failed</span>' : '');
+                entry.definitions.forEach(def=>{
+                    const badge = def.sessionStatus==='passed'?'<span class="text-green-600 text-xs bg-green-100 px-2 py-0.5 rounded-full">✔ Passed</span>':(def.sessionStatus==='failed'?'<span class="text-red-600 text-xs bg-red-100 px-2 py-0.5 rounded-full">✖ Failed</span>':'');
                     const item = document.createElement('div');
                     item.className = 'border-b pb-1 text-sm';
                     item.innerHTML = `<div class="flex justify-between"><span class="font-medium">${escapeHtml(def.topic)}</span>${badge}</div><p class="text-xs text-gray-500">${escapeHtml(def.definition)}</p>`;
                     contentDiv.appendChild(item);
                 });
-                wrapper.querySelector('.collapsible-header').addEventListener('click', () => { contentDiv.classList.toggle('hidden'); });
+                wrapper.querySelector('.collapsible-header').addEventListener('click',()=>{ contentDiv.classList.toggle('hidden'); });
                 container.appendChild(wrapper);
             });
         }
 
-        // ---------- AUTHENTICATION ----------
-        async function signInWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            try {
-                document.getElementById('loadingOverlay').classList.remove('hidden');
-                const result = await auth.signInWithPopup(provider);
-                currentUser = result.user;
-                await loadFromFirebase();
-                await initializeDailySession();
-                updateAuthUI();
-                showToast(`Welcome ${currentUser.displayName || 'User'}!`, 'success');
-            } catch (err) {
-                console.error(err);
-                showToast('Sign-in failed: ' + err.message, 'error');
-            } finally {
-                document.getElementById('loadingOverlay').classList.add('hidden');
-            }
+        // Section switching
+        window.showSection = (sectionId) => {
+            closeAllModals();
+            const sections = ['main-content-section','suggestions-section','settings-section','history-section'];
+            sections.forEach(id => document.getElementById(id).classList.toggle('hidden', id !== sectionId));
+            document.getElementById('bottom-nav').classList.toggle('hidden', sectionId === 'history-section');
+            if (sectionId === 'suggestions-section') showSuggestionsContent();
+            if (sectionId === 'settings-section') updateStatusCounters();
+            if (sectionId === 'history-section') renderHistory();
+            if (sectionId === 'main-content-section') displayLessons(document.getElementById('filter-lesson').value || null);
+            // update bottom nav active state
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const map = { 'main-content-section':'nav-home', 'suggestions-section':'nav-suggestions', 'settings-section':'nav-settings' };
+            if(map[sectionId]) document.getElementById(map[sectionId])?.classList.add('active');
+        };
+
+        window.toggleAuthMenu = () => { document.getElementById('auth-menu').classList.toggle('hidden'); };
+
+        // Load user data from Firestore
+        async function loadUserData(user) {
+            if(firestoreUnsubscribe) firestoreUnsubscribe();
+            const userDocRef = doc(db, "users", user.uid);
+            firestoreUnsubscribe = onSnapshot(userDocRef, (docSnap) => {
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    lessons = data.lessons || [];
+                    definitions = data.definitions || [];
+                    suggestionsHistory = data.suggestionsHistory || [];
+                    definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
+                    saveToLocalAndCloud();
+                    displayLessons(document.getElementById('filter-lesson').value || null);
+                    showToast("Data synced from cloud", "success");
+                } else {
+                    const localLessons = JSON.parse(localStorage.getItem('biologyLessons') || '[]');
+                    const localDefs = JSON.parse(localStorage.getItem('biologyDefinitions') || '[]');
+                    const localHistory = JSON.parse(localStorage.getItem('suggestionsHistory') || '[]');
+                    lessons = localLessons;
+                    definitions = localDefs;
+                    suggestionsHistory = localHistory;
+                    setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() });
+                    displayLessons();
+                }
+                updateStatusCounters();
+                populateLessonDropdowns();
+                initializeDailySession();
+            }, (err) => { console.error(err); showToast("Firestore error, using local data", "error"); });
         }
 
-        async function signOut() {
-            await auth.signOut();
-            currentUser = null;
-            lessons = []; definitions = []; suggestionsHistory = [];
-            dataLoaded = false;
-            updateAuthUI();
-            showToast('Signed out', 'info');
-            refreshUI();
-        }
-
-        function updateAuthUI() {
-            const avatar = document.getElementById('userAvatar');
-            const loginIcon = document.getElementById('loginIcon');
-            if (currentUser && currentUser.photoURL) {
-                avatar.src = currentUser.photoURL;
-                avatar.classList.remove('hidden');
-                loginIcon.classList.add('hidden');
-            } else if (currentUser) {
-                avatar.classList.add('hidden');
-                loginIcon.classList.remove('hidden');
-                loginIcon.className = 'fas fa-user-circle text-gray-500 text-xl header-icon-btn';
+        // Auth state
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if(user) {
+                document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/36';
+                document.getElementById('user-avatar').classList.remove('hidden');
+                document.getElementById('user-icon').classList.add('hidden');
+                document.getElementById('user-name').textContent = user.displayName?.split(' ')[0] || '';
+                document.getElementById('user-name').classList.remove('hidden');
+                document.getElementById('sync-status').innerHTML = "☁️ Synced with " + user.email;
+                document.getElementById('google-signin-btn').classList.add('hidden');
+                document.getElementById('google-signout-btn').classList.remove('hidden');
+                await loadUserData(user);
             } else {
-                avatar.classList.add('hidden');
-                loginIcon.classList.remove('hidden');
-                loginIcon.className = 'fas fa-sign-in-alt text-gray-500 text-xl header-icon-btn';
-            }
-        }
-
-        auth.onAuthStateChanged(async (user) => {
-            if (user) {
-                currentUser = user;
-                await loadFromFirebase();
-                await initializeDailySession();
-                updateAuthUI();
-                refreshUI();
-            } else {
-                currentUser = null;
-                lessons = []; definitions = []; suggestionsHistory = [];
-                dataLoaded = false;
-                updateAuthUI();
-                refreshUI();
-                // Show sign-in prompt as overlay
-                showModal('Sign in required', 'Please sign in with Google to access your study data.');
-                setTimeout(() => signInWithGoogle(), 1000);
+                document.getElementById('user-avatar').classList.add('hidden');
+                document.getElementById('user-icon').classList.remove('hidden');
+                document.getElementById('user-name').classList.add('hidden');
+                document.getElementById('sync-status').innerHTML = "⚠️ Signed out (local only)";
+                document.getElementById('google-signin-btn').classList.remove('hidden');
+                document.getElementById('google-signout-btn').classList.add('hidden');
+                const storedLessons = localStorage.getItem('biologyLessons');
+                const storedDefs = localStorage.getItem('biologyDefinitions');
+                const storedHistory = localStorage.getItem('suggestionsHistory');
+                lessons = storedLessons ? JSON.parse(storedLessons) : [];
+                definitions = storedDefs ? JSON.parse(storedDefs) : [];
+                suggestionsHistory = storedHistory ? JSON.parse(storedHistory) : [];
+                definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
+                displayLessons();
+                populateLessonDropdowns();
+                initializeDailySession();
+                if(firestoreUnsubscribe) firestoreUnsubscribe();
             }
         });
 
-        // --- Event listeners for data mutations (sync to Firebase) ---
-        function wrapSync(fn) {
-            return async (...args) => {
-                const result = await fn(...args);
-                if (currentUser) await syncToFirebase();
-                return result;
-            };
-        }
-
-        // Override add/delete/edit methods with sync
-        document.getElementById('add-lesson-form').addEventListener('submit', wrapSync(async (e) => {
-            e.preventDefault(); const name=document.getElementById('new-lesson-name').value.trim(); if(!name) return; lessons.push({id:Date.now().toString(),name,createdAt:new Date().toISOString()}); refreshUI(); closeModal('addContentModal'); showToast(`Lesson ${name} added`,'success'); document.getElementById('new-lesson-name').value='';
-        }));
-        document.getElementById('add-definition-form').addEventListener('submit', wrapSync(async (e) => {
-            e.preventDefault(); const lid=document.getElementById('add-definition-lesson').value, topic=document.getElementById('new-definition-topic').value.trim(), defText=document.getElementById('new-definition-text').value.trim(); if(!lid||!topic||!defText) return showModal('Error','Fill all fields'); definitions.push({id:Date.now().toString(),lessonId:lid,topic,definition:defText,count:0,passCount:0,failCount:0}); refreshUI(); await initializeDailySession(); closeModal('addContentModal'); showToast(`Definition "${topic}" added`,'success'); document.getElementById('add-definition-form').reset();
-        }));
-        document.getElementById('edit-definition-form').addEventListener('submit', wrapSync(async (e) => {
-            e.preventDefault(); const id=document.getElementById('edit-definition-id').value, topic=document.getElementById('edit-definition-topic').value.trim(), def=document.getElementById('edit-definition-text').value.trim(), lid=document.getElementById('edit-definition-lesson').value; const idx=definitions.findIndex(d=>d.id===id); if(idx>=0){ definitions[idx]={...definitions[idx],topic,definition:def,lessonId:lid}; refreshUI(); closeModal('editDefinitionModal'); showToast('Definition updated','success'); }
-        }));
-        // Event delegation for dynamic buttons (delete, pass/fail)
-        document.body.addEventListener('click', async (e) => {
-            const delLesson = e.target.closest('.delete-lesson-btn');
-            if(delLesson) { triggerHaptic(); const id=delLesson.dataset.id, name=delLesson.dataset.name; showConfirmModal(`Delete "${name}" and all its definitions?`, async ()=>{ lessons=lessons.filter(l=>l.id!==id); definitions=definitions.filter(d=>d.lessonId!==id); await syncToFirebase(); refreshUI(); closeAllModals(); showToast(`Lesson ${name} deleted`,'error'); }); return; }
-            const delDef = e.target.closest('.delete-def-btn');
-            if(delDef){ triggerHaptic(); showConfirmModal(`Delete "${delDef.dataset.topic}"?`, async ()=>{ definitions=definitions.filter(d=>d.id!==delDef.dataset.id); await syncToFirebase(); refreshUI(); closeModal('lessonDefinitionsModal'); showToast('Definition deleted','error'); }); return; }
-            const pass = e.target.closest('.pass-def-btn'); if(pass){ triggerHaptic(); await markDefStatus(pass.dataset.id,'passed'); return; }
-            const fail = e.target.closest('.fail-def-btn'); if(fail){ triggerHaptic(); await markDefStatus(fail.dataset.id,'failed'); return; }
-            const edit = e.target.closest('.edit-def-btn'); if(edit){ const def=definitions.find(d=>d.id===edit.dataset.id); if(def){ document.getElementById('edit-definition-id').value=def.id; document.getElementById('edit-definition-topic').value=def.topic; document.getElementById('edit-definition-text').value=def.definition; document.getElementById('edit-definition-lesson').value=def.lessonId; openModal('editDefinitionModal'); } return; }
-            const toggle = e.target.closest('.toggle-def-btn'); if(toggle){ triggerHaptic(); toggleDefinition(toggle.dataset.id); return; }
-        });
-
-        // other UI helpers
-        function showConfirmModal(msg,cb){ document.getElementById('confirm-message').innerText=msg; openModal('confirmModal'); window.confirmCallback=cb; }
-        document.getElementById('cancel-confirm-modal').onclick=()=>{ closeModal('confirmModal'); window.confirmCallback=null; };
-        document.getElementById('confirm-action').onclick=()=>{ if(window.confirmCallback) window.confirmCallback(); closeModal('confirmModal'); window.confirmCallback=null; };
-        document.getElementById('close-info-modal').onclick=()=>closeModal('infoModal');
+        // Event listeners for buttons
+        document.getElementById('google-signin-btn').onclick = async () => {
+            try { await signInWithPopup(auth, provider); document.getElementById('auth-menu').classList.add('hidden'); showToast("Signed in", "success"); } catch(e){ showToast("Sign-in failed", "error"); }
+        };
+        document.getElementById('google-signout-btn').onclick = async () => {
+            await signOut(auth); document.getElementById('auth-menu').classList.add('hidden'); showToast("Signed out", "info");
+        };
+        document.getElementById('global-history-btn').onclick = () => { window.showSection('history-section'); };
+        document.getElementById('back-from-history').onclick = () => { window.showSection('main-content-section'); };
+        document.getElementById('nav-home').onclick = () => { triggerHaptic(); window.showSection('main-content-section'); };
+        document.getElementById('nav-suggestions').onclick = () => { triggerHaptic(); window.showSection('suggestions-section'); };
+        document.getElementById('nav-add').onclick = () => { triggerHaptic(); openModal('addContentModal'); };
+        document.getElementById('nav-settings').onclick = () => { triggerHaptic(); window.showSection('settings-section'); };
+        document.getElementById('close-lesson-definitions-modal').onclick = () => closeModal('lessonDefinitionsModal');
+        document.getElementById('close-edit-modal-btn').onclick = () => closeModal('editDefinitionModal');
         document.querySelectorAll('.close-modal-btn').forEach(btn=>btn.onclick=()=>closeModal(btn.closest('.modal').id));
-        document.getElementById('close-lesson-definitions-modal').onclick=()=>closeModal('lessonDefinitionsModal');
-        document.getElementById('close-edit-modal-btn').onclick=()=>closeModal('editDefinitionModal');
-        document.getElementById('signOutBtn').onclick=()=>signOut();
-        document.getElementById('userAvatarContainer').onclick=()=>{ if(currentUser) signOut(); else signInWithGoogle(); };
-        document.getElementById('global-history-btn').onclick=()=>{ renderHistory(); showSection('history-section'); };
-        document.getElementById('back-from-history').onclick=()=>showSection('main-content-section');
-        function showSection(sectionId){ closeAllModals(); sections.forEach(id=>document.getElementById(id)?.classList.toggle('hidden',id!==sectionId)); document.getElementById('bottom-nav').classList.toggle('hidden',sectionId==='history-section'); if(sectionId==='suggestions-section') showSuggestionsContent(); if(sectionId==='settings-section') updateStatusCounters(); if(sectionId==='main-content-section') displayLessons(document.getElementById('filter-lesson')?.value||null); document.querySelectorAll('.nav-item').forEach(btn=>btn.classList.remove('active')); const map={'main-content-section':'nav-home','suggestions-section':'nav-suggestions','settings-section':'nav-settings'}; if(map[sectionId]) document.getElementById(map[sectionId])?.classList.add('active'); }
-        document.getElementById('nav-home').onclick=()=>{ triggerHaptic(); showSection('main-content-section'); };
-        document.getElementById('nav-suggestions').onclick=()=>{ triggerHaptic(); showSection('suggestions-section'); };
-        document.getElementById('nav-add').onclick=()=>{ triggerHaptic(); openModal('addContentModal'); };
-        document.getElementById('nav-settings').onclick=()=>{ triggerHaptic(); showSection('settings-section'); };
+        document.getElementById('close-info-modal').onclick = () => closeModal('infoModal');
+        document.getElementById('cancel-confirm-modal').onclick = () => { closeModal('confirmModal'); window.confirmCallback=null; };
+        document.getElementById('confirm-action').onclick = () => { if(window.confirmCallback) window.confirmCallback(); closeModal('confirmModal'); window.confirmCallback=null; };
+
+        // Forms
+        document.getElementById('add-lesson-form').addEventListener('submit',(e)=>{e.preventDefault(); const name=document.getElementById('new-lesson-name').value.trim(); if(!name) return; lessons.push({id:Date.now().toString(),name,createdAt:new Date().toISOString()}); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); closeModal('addContentModal'); showToast(`Lesson ${name} added`,'success'); document.getElementById('new-lesson-name').value=''; });
+        document.getElementById('add-definition-form').addEventListener('submit',(e)=>{e.preventDefault(); const lid=document.getElementById('add-definition-lesson').value, topic=document.getElementById('new-definition-topic').value.trim(), defText=document.getElementById('new-definition-text').value.trim(); if(!lid||!topic||!defText) return showModal('Error','Fill all fields'); definitions.push({id:Date.now().toString(),lessonId:lid,topic,definition:defText,count:0,passCount:0,failCount:0}); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); closeModal('addContentModal'); showToast(`Definition "${topic}" added`,'success'); document.getElementById('add-definition-form').reset(); lastSelectedLessonId=lid; });
+        document.getElementById('edit-definition-form').addEventListener('submit',(e)=>{e.preventDefault(); const id=document.getElementById('edit-definition-id').value, topic=document.getElementById('edit-definition-topic').value.trim(), def=document.getElementById('edit-definition-text').value.trim(), lid=document.getElementById('edit-definition-lesson').value; const idx=definitions.findIndex(d=>d.id===id); if(idx>=0){ definitions[idx]={...definitions[idx],topic,definition:def,lessonId:lid}; saveToLocalAndCloud(); displayLessons(); closeModal('editDefinitionModal'); showToast('Definition updated','success'); } });
         document.getElementById('filter-lesson').addEventListener('change',(e)=>displayLessons(e.target.value||null));
-        // Theme handling
-        const setTheme = (theme)=>{ const body=document.body; const isDark=theme==='dark'; body.classList.toggle('theme-dark',isDark); body.classList.toggle('theme-light',!isDark); localStorage.setItem('app-theme',theme); const sunIcon=document.querySelector('#theme-switch-header i'); if(sunIcon) sunIcon.className=isDark ? 'fas fa-moon text-indigo-200 text-lg' : 'fas fa-sun text-yellow-500 text-lg'; };
-        const saved=localStorage.getItem('app-theme')||'light'; setTheme(saved);
-        document.getElementById('theme-switch-header').onclick=()=>{ const newTheme=document.body.classList.contains('theme-dark')?'light':'dark'; setTheme(newTheme); };
-        document.getElementById('theme-switch-settings').onclick=()=>{ const newTheme=document.body.classList.contains('theme-dark')?'light':'dark'; setTheme(newTheme); };
-        // Import/Export (same as before but with sync)
+        document.getElementById('import-data').onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=ev=>{ const file=ev.target.files[0]; if(!file)return; const fr=new FileReader(); fr.onload=e=>{ try{ const data=JSON.parse(e.target.result); if(data.lessons&&data.definitions){ lessons.push(...data.lessons.filter(l=>!lessons.some(ex=>ex.id===l.id))); definitions.push(...data.definitions.filter(d=>!definitions.some(ex=>ex.id===d.id))); if(data.suggestionsHistory) suggestionsHistory.push(...data.suggestionsHistory.filter(h=>!suggestionsHistory.some(ex=>ex.date===h.date))); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); showToast('Import merged','success'); } else showModal('Error','Invalid structure'); }catch(err){showModal('Invalid JSON');} }; fr.readAsText(file); }; inp.click(); };
         document.getElementById('export-data').onclick=()=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify({lessons,definitions,suggestionsHistory},null,2)],{type:'application/json'})); a.download='biology_backup.json'; a.click(); showToast('Export ready','success'); };
         document.getElementById('copy-backup-btn').onclick=async()=>{ const str=JSON.stringify({lessons,definitions,suggestionsHistory},null,2); await navigator.clipboard.writeText(str); showToast('Backup copied','success'); document.getElementById('backup-data-textarea').value=str; };
-        document.getElementById('load-backup-btn').onclick=async()=>{ try{ const data=JSON.parse(document.getElementById('restore-data-textarea').value); if(data.lessons&&data.definitions){ lessons.push(...data.lessons.filter(l=>!lessons.some(ex=>ex.id===l.id))); definitions.push(...data.definitions.filter(d=>!definitions.some(ex=>ex.id===d.id))); if(data.suggestionsHistory) suggestionsHistory.push(...data.suggestionsHistory.filter(h=>!suggestionsHistory.some(ex=>ex.date===h.date))); await syncToFirebase(); refreshUI(); showToast('Data merged from text','success'); } else showModal('Error','Invalid structure'); }catch(e){showModal('Invalid JSON');} };
-        document.getElementById('import-data').onclick=()=>{ const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange=ev=>{ const file=ev.target.files[0]; if(!file)return; const fr=new FileReader(); fr.onload=async e=>{ try{ const data=JSON.parse(e.target.result); if(data.lessons&&data.definitions){ lessons.push(...data.lessons.filter(l=>!lessons.some(ex=>ex.id===l.id))); definitions.push(...data.definitions.filter(d=>!definitions.some(ex=>ex.id===d.id))); if(data.suggestionsHistory) suggestionsHistory.push(...data.suggestionsHistory.filter(h=>!suggestionsHistory.some(ex=>ex.date===h.date))); await syncToFirebase(); refreshUI(); showToast('Import merged','success'); } else showModal('Error','Invalid structure'); }catch(err){showModal('Invalid JSON');} }; fr.readAsText(file); }; inp.click(); };
-        const sections = ['main-content-section','suggestions-section','settings-section','history-section'];
-        // prefill modals content (quick)
-        document.getElementById('addContentModal').querySelector('.modal-content').innerHTML = `<div class="flex justify-between items-center border-b pb-2 mb-3"><h3 class="text-xl font-bold"><i class="fas fa-plus-circle text-blue-500"></i> Add New</h3><button class="close-modal-btn text-3xl leading-5">&times;</button></div><div class="space-y-4"><div class="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-xl"><h4 class="font-semibold flex items-center gap-1"><i class="fas fa-folder-open"></i> New Lesson</h4><form id="add-lesson-form" class="flex gap-2 mt-2"><input type="text" id="new-lesson-name" placeholder="e.g., Cell Biology" class="flex-1 p-2 rounded-lg border" required><button type="submit" class="bg-blue-600 text-white px-4 rounded-xl text-sm">Add</button></form></div><div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl"><h4 class="font-semibold flex items-center gap-1"><i class="fas fa-file-alt"></i> New Definition</h4><form id="add-definition-form" class="space-y-2 mt-2"><select id="add-definition-lesson" class="w-full p-2 rounded-lg border" required></select><input type="text" id="new-definition-topic" placeholder="Topic / Term" class="w-full p-2 rounded-lg border" required><textarea id="new-definition-text" rows="2" placeholder="Definition content..." class="w-full p-2 rounded-lg border" required></textarea><button type="submit" class="bg-green-600 text-white w-full py-2 rounded-xl">Save Definition</button></form></div></div>`;
-        document.getElementById('lessonDefinitionsModal').querySelector('.modal-content').innerHTML = `<div class="flex justify-between items-center sticky top-0 bg-white dark:bg-slate-800 pb-2"><h3 id="lesson-definitions-modal-title" class="text-xl font-bold"></h3><button id="close-lesson-definitions-modal" class="text-2xl">&times;</button></div><div id="lesson-definitions-container" class="grid gap-2 mt-2"></div>`;
-        document.getElementById('editDefinitionModal').querySelector('.modal-content').innerHTML = `<div class="flex justify-between items-center mb-3"><h3 class="font-bold text-lg"><i class="fas fa-edit text-yellow-500"></i> Edit Definition</h3><button id="close-edit-modal-btn" class="text-2xl">&times;</button></div><form id="edit-definition-form" class="space-y-3"><input type="hidden" id="edit-definition-id"><select id="edit-definition-lesson" class="w-full p-2 rounded-lg border" required></select><input type="text" id="edit-definition-topic" class="w-full p-2 rounded-lg border" required><textarea id="edit-definition-text" rows="3" class="w-full p-2 rounded-lg border" required></textarea><button type="submit" class="bg-blue-600 text-white w-full py-2 rounded-xl">Update</button></form>`;
-        document.getElementById('infoModal').querySelector('.modal-content').innerHTML = `<h3 id="modal-title" class="text-lg font-bold mb-2"></h3><p id="modal-message" class="mb-4"></p><button id="close-info-modal" class="bg-blue-600 text-white px-5 py-2 rounded-full">OK</button>`;
-        document.getElementById('confirmModal').querySelector('.modal-content').innerHTML = `<h3 class="text-lg font-bold">Confirm</h3><p id="confirm-message" class="my-3"></p><div class="flex gap-3 justify-center"><button id="cancel-confirm-modal" class="bg-gray-300 px-4 py-2 rounded-full">Cancel</button><button id="confirm-action" class="bg-red-600 text-white px-4 py-2 rounded-full">Yes, Delete</button></div>`;
+        document.getElementById('load-backup-btn').onclick=()=>{ try{ const data=JSON.parse(document.getElementById('restore-data-textarea').value); if(data.lessons&&data.definitions){ lessons.push(...data.lessons.filter(l=>!lessons.some(ex=>ex.id===l.id))); definitions.push(...data.definitions.filter(d=>!definitions.some(ex=>ex.id===d.id))); if(data.suggestionsHistory) suggestionsHistory.push(...data.suggestionsHistory.filter(h=>!suggestionsHistory.some(ex=>ex.date===h.date))); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); showToast('Data merged','success'); } else showModal('Error','Invalid structure'); }catch(e){showModal('Invalid JSON');} };
+
+        // Global event delegation for dynamic buttons (show/hide, edit, delete, pass/fail)
+        document.body.addEventListener('click', (e) => {
+            const toggle = e.target.closest('.toggle-def-btn'); if(toggle){ e.preventDefault(); const textEl=document.getElementById(`def-text-${toggle.dataset.id}`) || document.getElementById(`sug-text-${toggle.dataset.id}`); if(textEl){ textEl.classList.toggle('active'); const btn=textEl.closest('.border,.suggestion-card')?.querySelector('.toggle-def-btn'); if(btn) btn.innerHTML=textEl.classList.contains('active')?'<i class="fas fa-eye-slash mr-1"></i> Hide':'<i class="fas fa-eye mr-1"></i> Show'; } return; }
+            const pass = e.target.closest('.pass-def-btn'); if(pass){ triggerHaptic(); markDefStatus(pass.dataset.id,'passed'); return; }
+            const fail = e.target.closest('.fail-def-btn'); if(fail){ triggerHaptic(); markDefStatus(fail.dataset.id,'failed'); return; }
+            const edit = e.target.closest('.edit-def-btn'); if(edit){ const def=definitions.find(d=>d.id===edit.dataset.id); if(def){ document.getElementById('edit-definition-id').value=def.id; document.getElementById('edit-definition-topic').value=def.topic; document.getElementById('edit-definition-text').value=def.definition; document.getElementById('edit-definition-lesson').value=def.lessonId; openModal('editDefinitionModal'); } return; }
+            const delDef = e.target.closest('.delete-def-btn'); if(delDef){ showConfirmModal(`Delete "${delDef.dataset.topic}"?`,()=>{ definitions=definitions.filter(d=>d.id!==delDef.dataset.id); saveToLocalAndCloud(); displayLessons(document.getElementById('filter-lesson').value||null); closeModal('lessonDefinitionsModal'); showToast('Definition deleted','error'); }); return; }
+            const delLesson = e.target.closest('.delete-lesson-btn'); if(delLesson){ const id=delLesson.dataset.id, name=delLesson.dataset.name; showConfirmModal(`Delete "${name}" and all definitions?`,()=>{ lessons=lessons.filter(l=>l.id!==id); definitions=definitions.filter(d=>d.lessonId!==id); saveToLocalAndCloud(); populateLessonDropdowns(); displayLessons(); initializeDailySession(); closeAllModals(); showToast(`Lesson ${name} deleted`,'error'); }); return; }
+        });
+
+        // Theme
+        const setTheme=(theme)=>{ const body=document.body; const isDark=theme==='dark'; body.classList.toggle('theme-dark',isDark); body.classList.toggle('theme-light',!isDark); localStorage.setItem('app-theme',theme); const sunIcon=document.querySelector('#theme-switch-header i'); if(sunIcon) sunIcon.className=isDark ? 'fas fa-moon text-indigo-200 text-lg' : 'fas fa-sun text-yellow-500 text-lg'; };
+        const savedTheme=localStorage.getItem('app-theme')||'light'; setTheme(savedTheme);
+        document.getElementById('theme-switch-header').onclick=()=>{ const newTheme=document.body.classList.contains('theme-dark')?'light':'dark'; setTheme(newTheme); };
     </script>
 </body>
 </html>
