@@ -12,7 +12,7 @@
             "imports": {
                 "firebase/app": "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js",
                 "firebase/auth": "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"
+                "firebase/database": "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js"
             }
         }
     </script>
@@ -145,7 +145,7 @@
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
-        import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "firebase/firestore";
+        import { getDatabase, ref, set, get, onValue } from "firebase/database";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
@@ -160,23 +160,18 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
-        const db = getFirestore(app);
-        enableIndexedDbPersistence(db).catch(e=>console.warn("Offline persistence error:", e));
+        const db = getDatabase(app);
 
+        // Global state
         let definitions = [];
         let lessons = [];
         let suggestionsHistory = [];
         let currentUser = null;
-        let unsubscribeFirestore = null;
+        let realtimeUnsubscribe = null;
         let syncSpinnerCounter = 0;
         let lastSyncTime = null;
 
-        function updateLastSyncTime() {
-            const now = new Date();
-            lastSyncTime = now;
-            document.getElementById('last-sync-time').innerHTML = `Last synced: ${now.toLocaleTimeString()}`;
-        }
-
+        // Helper functions
         function showSyncSpinner() {
             const spinner = document.getElementById('sync-spinner');
             if (spinner) {
@@ -192,7 +187,11 @@
                 if (spinner) spinner.classList.add('hidden');
             }
         }
-
+        function updateLastSyncTime() {
+            const now = new Date();
+            lastSyncTime = now;
+            document.getElementById('last-sync-time').innerHTML = `Last synced: ${now.toLocaleTimeString()}`;
+        }
         function escapeHtml(str) { return String(str).replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
         function showToast(msg, type='info'){ const c=document.getElementById('toast-container'); const t=document.createElement('div'); t.className=`toast ${type==='success'?'bg-green-600':type==='error'?'bg-red-600':'bg-blue-600'} text-white`; t.innerText=msg; c.appendChild(t); setTimeout(()=>t.classList.add('show'),20); setTimeout(()=>{t.classList.remove('show'); setTimeout(()=>t.remove(),300);},2800);}
         function triggerHaptic(){ if(navigator.vibrate) navigator.vibrate(20); }
@@ -202,6 +201,137 @@
         function showModal(title,msg){ document.getElementById('modal-title').innerText=title; document.getElementById('modal-message').innerText=msg; openModal('infoModal'); }
         function showConfirmModal(msg,cb){ document.getElementById('confirm-message').innerText=msg; openModal('confirmModal'); window.confirmCallback=cb; }
 
+        // Core data persistence
+        function getUserDataPath(userId) {
+            return `users/${userId}/definition_master_app`;
+        }
+
+        // Save current state to localStorage and Firebase (if signed in)
+        function saveAllToLocalAndFirebase() {
+            // Save to localStorage (keys used by the app)
+            localStorage.setItem('biologyLessons', JSON.stringify(lessons));
+            localStorage.setItem('biologyDefinitions', JSON.stringify(definitions));
+            localStorage.setItem('suggestionsHistory', JSON.stringify(suggestionsHistory));
+
+            if (currentUser) {
+                const path = getUserDataPath(currentUser.uid);
+                const dataRef = ref(db, path);
+                showSyncSpinner();
+                set(dataRef, {
+                    lessons,
+                    definitions,
+                    suggestionsHistory,
+                    lastUpdated: new Date().toISOString()
+                }).then(() => {
+                    updateLastSyncTime();
+                    document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
+                }).catch(err => {
+                    console.error("Firebase save failed:", err);
+                    showToast("Sync failed: " + err.message, "error");
+                    document.getElementById('sync-status').innerHTML = "⚠️ Sync error";
+                }).finally(() => {
+                    hideSyncSpinner();
+                });
+            }
+        }
+
+        // Load data from Firebase and update localStorage + UI
+        async function loadFromFirebase(userId) {
+            const path = getUserDataPath(userId);
+            const dataRef = ref(db, path);
+            try {
+                const snapshot = await get(dataRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    lessons = data.lessons || [];
+                    definitions = data.definitions || [];
+                    suggestionsHistory = data.suggestionsHistory || [];
+                    // Ensure counters exist
+                    definitions.forEach(d => {
+                        if (typeof d.count === 'undefined') d.count = 0;
+                        if (typeof d.passCount === 'undefined') d.passCount = 0;
+                        if (typeof d.failCount === 'undefined') d.failCount = 0;
+                    });
+                    // Save to localStorage
+                    localStorage.setItem('biologyLessons', JSON.stringify(lessons));
+                    localStorage.setItem('biologyDefinitions', JSON.stringify(definitions));
+                    localStorage.setItem('suggestionsHistory', JSON.stringify(suggestionsHistory));
+                    // Refresh UI
+                    refreshUI();
+                    initializeDailySession();
+                    updateLastSyncTime();
+                    showToast("Data loaded from cloud", "success");
+                } else {
+                    // First time user: push local data (if any) to Firebase
+                    const storedLessons = localStorage.getItem('biologyLessons');
+                    const storedDefs = localStorage.getItem('biologyDefinitions');
+                    const storedHistory = localStorage.getItem('suggestionsHistory');
+                    if (storedLessons) lessons = JSON.parse(storedLessons);
+                    if (storedDefs) definitions = JSON.parse(storedDefs);
+                    if (storedHistory) suggestionsHistory = JSON.parse(storedHistory);
+                    definitions.forEach(d => {
+                        if (typeof d.count === 'undefined') d.count = 0;
+                        if (typeof d.passCount === 'undefined') d.passCount = 0;
+                        if (typeof d.failCount === 'undefined') d.failCount = 0;
+                    });
+                    refreshUI();
+                    initializeDailySession();
+                    saveAllToLocalAndFirebase(); // pushes initial data
+                }
+            } catch (err) {
+                console.error("Firebase load failed:", err);
+                showToast("Failed to load from cloud: " + err.message, "error");
+            }
+        }
+
+        // Real-time listener for updates from other devices
+        function startRealtimeListener(userId) {
+            if (realtimeUnsubscribe) realtimeUnsubscribe();
+            const path = getUserDataPath(userId);
+            const dataRef = ref(db, path);
+            realtimeUnsubscribe = onValue(dataRef, (snapshot) => {
+                if (snapshot.exists() && currentUser) {
+                    const data = snapshot.val();
+                    const newLessons = data.lessons || [];
+                    const newDefs = data.definitions || [];
+                    const newHistory = data.suggestionsHistory || [];
+                    // Avoid unnecessary updates if nothing changed
+                    if (JSON.stringify(lessons) !== JSON.stringify(newLessons) ||
+                        JSON.stringify(definitions) !== JSON.stringify(newDefs) ||
+                        JSON.stringify(suggestionsHistory) !== JSON.stringify(newHistory)) {
+                        lessons = newLessons;
+                        definitions = newDefs;
+                        suggestionsHistory = newHistory;
+                        definitions.forEach(d => {
+                            if (typeof d.count === 'undefined') d.count = 0;
+                            if (typeof d.passCount === 'undefined') d.passCount = 0;
+                            if (typeof d.failCount === 'undefined') d.failCount = 0;
+                        });
+                        // Update localStorage
+                        localStorage.setItem('biologyLessons', JSON.stringify(lessons));
+                        localStorage.setItem('biologyDefinitions', JSON.stringify(definitions));
+                        localStorage.setItem('suggestionsHistory', JSON.stringify(suggestionsHistory));
+                        refreshUI();
+                        initializeDailySession();
+                        updateLastSyncTime();
+                        showToast("Cloud update received", "info");
+                    }
+                }
+            }, (err) => {
+                console.error("Realtime listener error:", err);
+                showToast("Realtime sync error: " + err.message, "error");
+            });
+        }
+
+        // Stop realtime listener
+        function stopRealtimeListener() {
+            if (realtimeUnsubscribe) {
+                realtimeUnsubscribe();
+                realtimeUnsubscribe = null;
+            }
+        }
+
+        // --- UI rendering functions (unchanged from previous working version) ---
         function refreshUI() {
             document.getElementById('total-definitions-count').textContent = definitions.length;
             const today = new Date().toISOString().slice(0,10);
@@ -262,15 +392,14 @@
             const shuffled = weighted.sort(()=>0.5-Math.random());
             return Array.from(new Set(shuffled.slice(0,30)));
         }
-        function ensureTodaySuggestions() {
+        function initializeDailySession() {
             const today = new Date().toISOString().slice(0,10);
-            const existing = suggestionsHistory.find(e=>e.date===today);
-            if (!existing) {
+            if(!suggestionsHistory.some(e=>e.date===today)) {
                 const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
                 if (newSuggest.length) {
                     suggestionsHistory.unshift({ date: today, definitions: newSuggest });
                     if (suggestionsHistory.length > 30) suggestionsHistory.pop();
-                    saveToCloud();
+                    saveAllToLocalAndFirebase();
                 }
             }
         }
@@ -337,81 +466,83 @@
             });
         }
 
-        async function saveToCloud() {
-            if (!currentUser) {
-                console.log("saveToCloud skipped: no currentUser");
-                return;
-            }
-            const userDocRef = doc(db, "users", currentUser.uid);
-            showSyncSpinner();
-            try {
-                await setDoc(userDocRef, { lessons, definitions, suggestionsHistory, lastUpdated: new Date().toISOString() }, { merge: true });
-                updateLastSyncTime();
-                document.getElementById('sync-status').innerHTML = "☁️ Synced to cloud";
-                console.log("saveToCloud succeeded for user", currentUser.uid);
-            } catch (err) {
-                console.error("Save to cloud failed:", err);
-                showToast("Sync failed: " + err.message, "error");
-                document.getElementById('sync-status').innerHTML = "⚠️ Sync error";
-            } finally {
-                hideSyncSpinner();
-            }
-        }
-
-        function isDataEqual(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
-
-        function onUserDataSnapshot(snapshot) {
-            if (snapshot.exists()) {
-                const data = snapshot.data();
-                const newLessons = data.lessons || [];
-                const newDefinitions = data.definitions || [];
-                const newHistory = data.suggestionsHistory || [];
-                newDefinitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
-                newHistory.forEach(day=>{ day.definitions.forEach(d=>{ if(!d.sessionStatus) d.sessionStatus = 'incomplete'; }); });
-
-                if (!isDataEqual(lessons, newLessons) || !isDataEqual(definitions, newDefinitions) || !isDataEqual(suggestionsHistory, newHistory)) {
-                    lessons = newLessons;
-                    definitions = newDefinitions;
-                    suggestionsHistory = newHistory;
-                    refreshUI();
-                    updateLastSyncTime();
-                }
-            } else if (currentUser) {
-                const storedLessons = localStorage.getItem('biologyLessons');
-                const storedDefs = localStorage.getItem('biologyDefinitions');
-                const storedHistory = localStorage.getItem('suggestionsHistory');
-                if (storedLessons) lessons = JSON.parse(storedLessons);
-                if (storedDefs) definitions = JSON.parse(storedDefs);
-                if (storedHistory) suggestionsHistory = JSON.parse(storedHistory);
-                definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
-                refreshUI();
-                saveToCloud().then(() => ensureTodaySuggestions());
-            }
-        }
-
-        function startFirestoreListener(user) {
-            if (unsubscribeFirestore) unsubscribeFirestore();
-            const userDocRef = doc(db, "users", user.uid);
-            showSyncSpinner();
-            unsubscribeFirestore = onSnapshot(userDocRef, (snapshot) => {
-                hideSyncSpinner();
-                onUserDataSnapshot(snapshot);
-            }, (err) => {
-                hideSyncSpinner();
-                console.error("Firestore listener error:", err);
-                showToast("Real‑time sync error: " + err.message, "error");
-            });
-        }
-
-        function stopFirestoreListener() { if (unsubscribeFirestore) { unsubscribeFirestore(); unsubscribeFirestore = null; } }
-
-        function applyActionAndSave(action) {
-            action();
+        // --- Data modification actions (all call saveAllToLocalAndFirebase after changes) ---
+        function addLesson(name) {
+            lessons.push({ id: Date.now().toString(), name, createdAt: new Date().toISOString() });
+            saveAllToLocalAndFirebase();
             refreshUI();
-            saveToCloud();
+        }
+        function addDefinition(lessonId, topic, definitionText) {
+            definitions.push({
+                id: Date.now().toString(),
+                lessonId,
+                topic,
+                definition: definitionText,
+                count: 0,
+                passCount: 0,
+                failCount: 0
+            });
+            saveAllToLocalAndFirebase();
+            refreshUI();
+            initializeDailySession();
+        }
+        function updateDefinition(id, topic, definitionText, lessonId) {
+            const idx = definitions.findIndex(d => d.id === id);
+            if (idx !== -1) {
+                definitions[idx] = { ...definitions[idx], topic, definition: definitionText, lessonId };
+                saveAllToLocalAndFirebase();
+                refreshUI();
+            }
+        }
+        function deleteDefinition(id, topic) {
+            definitions = definitions.filter(d => d.id !== id);
+            saveAllToLocalAndFirebase();
+            refreshUI();
+            showToast(`Definition "${topic}" deleted`, 'error');
+        }
+        function deleteLesson(id, name) {
+            lessons = lessons.filter(l => l.id !== id);
+            definitions = definitions.filter(d => d.lessonId !== id);
+            saveAllToLocalAndFirebase();
+            refreshUI();
+            initializeDailySession();
+            closeAllModals();
+            showToast(`Lesson "${name}" deleted`, 'error');
+        }
+        function markDefStatus(id, status) {
+            const def = definitions.find(d => d.id === id);
+            if (!def) return;
+            if (status === 'passed') { def.passCount++; def.count++; }
+            else { def.failCount++; def.count++; }
+            const today = new Date().toISOString().slice(0,10);
+            const entry = suggestionsHistory.find(e => e.date === today);
+            if (entry) {
+                const target = entry.definitions.find(d => d.id === id);
+                if (target) target.sessionStatus = status;
+            }
+            saveAllToLocalAndFirebase();
+            refreshUI();
+            showSuggestionsContent();
+            showToast(`${def.topic} marked as ${status}`, status === 'passed' ? 'success' : 'error');
+        }
+        function resetAllProgress() {
+            definitions.forEach(def => { def.count = 0; def.passCount = 0; def.failCount = 0; });
+            const today = new Date().toISOString().slice(0,10);
+            const dailyEntry = suggestionsHistory.find(e => e.date === today);
+            if (dailyEntry) {
+                dailyEntry.definitions.forEach(def => { def.sessionStatus = 'incomplete'; });
+            } else {
+                const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
+                if (newSuggest.length) suggestionsHistory.unshift({ date: today, definitions: newSuggest });
+                if (suggestionsHistory.length > 30) suggestionsHistory.pop();
+            }
+            saveAllToLocalAndFirebase();
+            refreshUI();
+            showToast("All progress has been reset!", "success");
         }
 
-        onAuthStateChanged(auth, (user) => {
+        // --- Auth and UI event listeners ---
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('user-avatar').src = user.photoURL || 'https://via.placeholder.com/36';
@@ -423,19 +554,24 @@
                 document.getElementById('google-signin-btn').classList.add('hidden');
                 document.getElementById('google-signout-btn').classList.remove('hidden');
                 document.getElementById('force-sync-btn').classList.remove('hidden');
-                startFirestoreListener(user);
+                await loadFromFirebase(user.uid);
+                startRealtimeListener(user.uid);
             } else {
                 currentUser = null;
-                stopFirestoreListener();
+                stopRealtimeListener();
                 const storedLessons = localStorage.getItem('biologyLessons');
                 const storedDefs = localStorage.getItem('biologyDefinitions');
                 const storedHistory = localStorage.getItem('suggestionsHistory');
                 lessons = storedLessons ? JSON.parse(storedLessons) : [];
                 definitions = storedDefs ? JSON.parse(storedDefs) : [];
                 suggestionsHistory = storedHistory ? JSON.parse(storedHistory) : [];
-                definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
+                definitions.forEach(d => {
+                    if (typeof d.count === 'undefined') d.count = 0;
+                    if (typeof d.passCount === 'undefined') d.passCount = 0;
+                    if (typeof d.failCount === 'undefined') d.failCount = 0;
+                });
                 refreshUI();
-                ensureTodaySuggestions();
+                initializeDailySession();
 
                 document.getElementById('user-avatar').classList.add('hidden');
                 document.getElementById('user-icon').classList.remove('hidden');
@@ -448,25 +584,26 @@
             }
         });
 
+        // Manual force sync
         document.getElementById('force-sync-btn').onclick = () => {
             if (currentUser) {
                 showToast("Forcing sync...", "info");
-                saveToCloud().then(() => showToast("Sync completed", "success"));
+                saveAllToLocalAndFirebase();
+                showToast("Sync completed", "success");
             } else {
                 showToast("Not signed in", "error");
             }
         };
 
+        // Form submissions
         document.getElementById('add-lesson-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('new-lesson-name').value.trim();
             if (!name) return;
-            applyActionAndSave(() => {
-                lessons.push({ id: Date.now().toString(), name, createdAt: new Date().toISOString() });
-                document.getElementById('new-lesson-name').value = '';
-                closeModal('addContentModal');
-                showToast(`Lesson "${name}" added`, 'success');
-            });
+            addLesson(name);
+            document.getElementById('new-lesson-name').value = '';
+            closeModal('addContentModal');
+            showToast(`Lesson "${name}" added`, 'success');
         });
         document.getElementById('add-definition-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -474,13 +611,10 @@
             const topic = document.getElementById('new-definition-topic').value.trim();
             const defText = document.getElementById('new-definition-text').value.trim();
             if (!lid || !topic || !defText) return showModal('Error', 'Fill all fields');
-            applyActionAndSave(() => {
-                definitions.push({ id: Date.now().toString(), lessonId: lid, topic, definition: defText, count: 0, passCount: 0, failCount: 0 });
-                document.getElementById('add-definition-form').reset();
-                closeModal('addContentModal');
-                showToast(`Definition "${topic}" added`, 'success');
-                ensureTodaySuggestions();
-            });
+            addDefinition(lid, topic, defText);
+            document.getElementById('add-definition-form').reset();
+            closeModal('addContentModal');
+            showToast(`Definition "${topic}" added`, 'success');
         });
         document.getElementById('edit-definition-form').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -488,63 +622,12 @@
             const topic = document.getElementById('edit-definition-topic').value.trim();
             const def = document.getElementById('edit-definition-text').value.trim();
             const lid = document.getElementById('edit-definition-lesson').value;
-            applyActionAndSave(() => {
-                const idx = definitions.findIndex(d => d.id === id);
-                if (idx !== -1) {
-                    definitions[idx] = { ...definitions[idx], topic, definition: def, lessonId: lid };
-                    closeModal('editDefinitionModal');
-                    showToast('Definition updated', 'success');
-                }
-            });
+            updateDefinition(id, topic, def, lid);
+            closeModal('editDefinitionModal');
+            showToast('Definition updated', 'success');
         });
-        function deleteDefinition(id, topic) {
-            applyActionAndSave(() => {
-                definitions = definitions.filter(d => d.id !== id);
-                closeModal('lessonDefinitionsModal');
-                showToast(`Definition "${topic}" deleted`, 'error');
-            });
-        }
-        function deleteLesson(id, name) {
-            applyActionAndSave(() => {
-                lessons = lessons.filter(l => l.id !== id);
-                definitions = definitions.filter(d => d.lessonId !== id);
-                closeAllModals();
-                showToast(`Lesson "${name}" deleted`, 'error');
-                ensureTodaySuggestions();
-            });
-        }
-        function markDefStatus(id, status) {
-            const def = definitions.find(d => d.id === id);
-            if (!def) return;
-            applyActionAndSave(() => {
-                if (status === 'passed') { def.passCount++; def.count++; }
-                else { def.failCount++; def.count++; }
-                const today = new Date().toISOString().slice(0,10);
-                const entry = suggestionsHistory.find(e => e.date === today);
-                if (entry) {
-                    const target = entry.definitions.find(d => d.id === id);
-                    if (target) target.sessionStatus = status;
-                }
-                showToast(`${def.topic} marked as ${status}`, status === 'passed' ? 'success' : 'error');
-                showSuggestionsContent();
-            });
-        }
-        function resetAllProgress() {
-            applyActionAndSave(() => {
-                definitions.forEach(def => { def.count = 0; def.passCount = 0; def.failCount = 0; });
-                const today = new Date().toISOString().slice(0,10);
-                const dailyEntry = suggestionsHistory.find(e => e.date === today);
-                if (dailyEntry) {
-                    dailyEntry.definitions.forEach(def => { def.sessionStatus = 'incomplete'; });
-                } else {
-                    const newSuggest = generateNewSuggestions().map(d => ({ ...d, sessionStatus: 'incomplete' }));
-                    if (newSuggest.length) suggestionsHistory.unshift({ date: today, definitions: newSuggest });
-                    if (suggestionsHistory.length > 30) suggestionsHistory.pop();
-                }
-                showToast("All progress has been reset!", "success");
-            });
-        }
 
+        // Event delegation for dynamic buttons (show/hide, edit, delete, pass/fail)
         document.body.addEventListener('click', (e) => {
             const toggleBtn = e.target.closest('.toggle-def-btn');
             if (toggleBtn) {
@@ -582,6 +665,7 @@
             if (delLesson) { showConfirmModal(`Delete "${delLesson.dataset.name}" and all definitions?`, () => deleteLesson(delLesson.dataset.id, delLesson.dataset.name)); return; }
         });
 
+        // Import/Export
         document.getElementById('import-data').onclick = () => {
             const inp = document.createElement('input');
             inp.type = 'file';
@@ -594,15 +678,15 @@
                     try {
                         const data = JSON.parse(e.target.result);
                         if (data.lessons && data.definitions) {
-                            applyActionAndSave(() => {
-                                lessons.push(...data.lessons.filter(l => !lessons.some(ex => ex.id === l.id)));
-                                definitions.push(...data.definitions.filter(d => !definitions.some(ex => ex.id === d.id)));
-                                if (data.suggestionsHistory) {
-                                    suggestionsHistory.push(...data.suggestionsHistory.filter(h => !suggestionsHistory.some(ex => ex.date === h.date)));
-                                }
-                                showToast('Import merged', 'success');
-                                ensureTodaySuggestions();
-                            });
+                            lessons.push(...data.lessons.filter(l => !lessons.some(ex => ex.id === l.id)));
+                            definitions.push(...data.definitions.filter(d => !definitions.some(ex => ex.id === d.id)));
+                            if (data.suggestionsHistory) {
+                                suggestionsHistory.push(...data.suggestionsHistory.filter(h => !suggestionsHistory.some(ex => ex.date === h.date)));
+                            }
+                            saveAllToLocalAndFirebase();
+                            refreshUI();
+                            initializeDailySession();
+                            showToast('Import merged', 'success');
                         } else showModal('Error', 'Invalid structure');
                     } catch (err) { showModal('Invalid JSON'); }
                 };
@@ -627,20 +711,22 @@
             try {
                 const data = JSON.parse(document.getElementById('restore-data-textarea').value);
                 if (data.lessons && data.definitions) {
-                    applyActionAndSave(() => {
-                        lessons.push(...data.lessons.filter(l => !lessons.some(ex => ex.id === l.id)));
-                        definitions.push(...data.definitions.filter(d => !definitions.some(ex => ex.id === d.id)));
-                        if (data.suggestionsHistory) {
-                            suggestionsHistory.push(...data.suggestionsHistory.filter(h => !suggestionsHistory.some(ex => ex.date === h.date)));
-                        }
-                        showToast('Data merged', 'success');
-                        ensureTodaySuggestions();
-                    });
+                    lessons.push(...data.lessons.filter(l => !lessons.some(ex => ex.id === l.id)));
+                    definitions.push(...data.definitions.filter(d => !definitions.some(ex => ex.id === d.id)));
+                    if (data.suggestionsHistory) {
+                        suggestionsHistory.push(...data.suggestionsHistory.filter(h => !suggestionsHistory.some(ex => ex.date === h.date)));
+                    }
+                    saveAllToLocalAndFirebase();
+                    refreshUI();
+                    initializeDailySession();
+                    showToast('Data merged', 'success');
                 } else showModal('Error', 'Invalid structure');
             } catch (e) { showModal('Invalid JSON'); }
         };
         document.getElementById('reset-progress-btn').onclick = () => { showConfirmModal("⚠️ This will reset all progress: total passed, failed, and repeated times for all definitions. Today's suggestions will be reset as incomplete. This cannot be undone. Proceed?", () => resetAllProgress()); };
         document.getElementById('filter-lesson').addEventListener('change', () => refreshUI());
+
+        // Navigation
         document.getElementById('global-history-btn').onclick = () => window.showSection('history-section');
         document.getElementById('back-from-history').onclick = () => window.showSection('main-content-section');
         document.getElementById('nav-home').onclick = () => { triggerHaptic(); window.showSection('main-content-section'); };
@@ -668,9 +754,9 @@
             if(map[sectionId]) document.getElementById(map[sectionId])?.classList.add('active');
         };
         window.toggleAuthMenu = () => { document.getElementById('auth-menu').classList.toggle('hidden'); };
-
         window.addEventListener('click', (event) => { if (event.target.classList && event.target.classList.contains('modal')) closeModal(event.target.id); });
 
+        // Theme
         const setTheme = (theme) => {
             const body = document.body;
             const isDark = theme === 'dark';
@@ -684,15 +770,20 @@
         setTheme(savedTheme);
         document.getElementById('theme-switch-header').onclick = () => { const newTheme = document.body.classList.contains('theme-dark') ? 'light' : 'dark'; setTheme(newTheme); };
 
+        // Initial load (before auth)
         const storedLessons = localStorage.getItem('biologyLessons');
         const storedDefs = localStorage.getItem('biologyDefinitions');
         const storedHistory = localStorage.getItem('suggestionsHistory');
         if (storedLessons) lessons = JSON.parse(storedLessons);
         if (storedDefs) definitions = JSON.parse(storedDefs);
         if (storedHistory) suggestionsHistory = JSON.parse(storedHistory);
-        definitions.forEach(d=>{ if(typeof d.count==='undefined') d.count=0; if(typeof d.passCount==='undefined') d.passCount=0; if(typeof d.failCount==='undefined') d.failCount=0; });
+        definitions.forEach(d => {
+            if (typeof d.count === 'undefined') d.count = 0;
+            if (typeof d.passCount === 'undefined') d.passCount = 0;
+            if (typeof d.failCount === 'undefined') d.failCount = 0;
+        });
         refreshUI();
-        ensureTodaySuggestions();
+        initializeDailySession();
     </script>
 </body>
 </html>
