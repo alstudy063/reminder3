@@ -50,7 +50,11 @@
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     console.log('Signed in with email:', userCredential.user);
                     alert(`Welcome ${userCredential.user.email}!`);
+                    // Close modal and redirect to manager page
                     closeModal();
+                    setTimeout(() => {
+                        window.location.href = "https://alstudy063.github.io/reminder3/manager.html";
+                    }, 300);
                 } catch (error) {
                     console.error('Email sign-in error:', error);
                     alert(error.message);
@@ -64,10 +68,13 @@
                     const result = await signInWithPopup(auth, provider);
                     console.log('Google sign-in success:', result.user);
                     alert(`Welcome ${result.user.displayName || result.user.email}!`);
+                    // Close modal and redirect to manager page
                     closeModal();
+                    setTimeout(() => {
+                        window.location.href = "https://alstudy063.github.io/reminder3/manager.html";
+                    }, 300);
                 } catch (error) {
                     console.error('Google sign-in error:', error);
-                    // Handle user closed popup gracefully
                     if (error.code === 'auth/popup-closed-by-user') {
                         console.log('Popup closed by user');
                     } else {
