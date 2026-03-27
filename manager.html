@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Master Flow - Ecosystem Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -29,6 +29,7 @@
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
 
+        // DOM elements
         const dashboardContent = document.getElementById('dashboard-content');
         const loginPrompt = document.getElementById('login-prompt');
         const userProfileContainer = document.querySelector('.user-profile-container');
@@ -52,6 +53,7 @@
             }
         }
 
+        // Auth state listener
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 dashboardContent.style.display = 'block';
@@ -70,6 +72,13 @@
         });
     </script>
     <style>
+        /* Full viewport height */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
         /* Modern Fluid Background */
         body {
             background: linear-gradient(-45deg, #fdfcfb, #e2e8f0, #fff5f5, #f0fdf4);
@@ -89,9 +98,7 @@
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 
-                0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                0 20px 40px -10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 40px -10px rgba(0, 0, 0, 0.08);
         }
 
         /* Entrance Animations */
@@ -123,9 +130,7 @@
         .card-pink:hover { border-color: rgba(236, 72, 153, 0.3); }
 
         /* Active Badge Pulse */
-        .pulse-active {
-            position: relative;
-        }
+        .pulse-active { position: relative; }
         .pulse-active::after {
             content: '';
             position: absolute;
@@ -144,13 +149,8 @@
             100% { transform: scale(0.95); opacity: 0; }
         }
 
-        .btn-launch {
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .btn-launch:active {
-            transform: scale(0.97);
-        }
+        .btn-launch { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .btn-launch:active { transform: scale(0.97); }
 
         .search-glass {
             background: rgba(255, 255, 255, 0.2);
@@ -169,7 +169,7 @@
         }
     </style>
 </head>
-<body class="min-h-[100dvh] flex flex-col font-sans selection:bg-indigo-100 overflow-x-hidden">
+<body class="flex flex-col font-sans selection:bg-indigo-100 overflow-x-hidden h-full">
 
     <!-- Navigation -->
     <nav class="relative z-20 flex-shrink-0 w-full flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
@@ -201,14 +201,14 @@
         </div>
     </nav>
 
-    <!-- Main Content - fills remaining height and centers glass container -->
-    <main class="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 py-6">
-        <div class="glass-container w-full rounded-[3.5rem] p-8 lg:p-12 relative overflow-auto flex-1 flex flex-col justify-center animate-fade-in" style="animation-delay: 0.1s;">
+    <!-- Main Content: expands to fill remaining height -->
+    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-6 flex flex-col min-h-0">
+        <div class="glass-container w-full rounded-[3.5rem] p-8 lg:p-12 relative overflow-hidden animate-fade-in flex flex-col flex-1" style="animation-delay: 0.1s;">
             <div class="bg-noise"></div>
             <i data-lucide="layout-grid" class="absolute -right-16 -top-16 w-80 h-80 text-white opacity-[0.07] rotate-12 pointer-events-none"></i>
 
-            <!-- LOGIN PROMPT -->
-            <div id="login-prompt" class="flex flex-col items-center justify-center text-center min-h-[400px] relative z-10" style="display: flex;">
+            <!-- LOGIN PROMPT (centered) -->
+            <div id="login-prompt" class="flex flex-col items-center justify-center text-center flex-1 relative z-10" style="display: flex;">
                 <i data-lucide="lock" class="w-16 h-16 text-gray-400 mb-6"></i>
                 <h2 class="text-2xl font-bold text-gray-800 mb-3">Please log in first</h2>
                 <p class="text-gray-500 mb-8 max-w-sm">You need to be signed in to access your dashboard.</p>
@@ -218,8 +218,8 @@
                 </button>
             </div>
 
-            <!-- DASHBOARD CONTENT (hidden until authenticated) -->
-            <div id="dashboard-content" style="display: none;">
+            <!-- DASHBOARD CONTENT (fills space) -->
+            <div id="dashboard-content" class="flex flex-col flex-1" style="display: none;">
                 <div class="flex flex-col lg:flex-row lg:items-end justify-between mb-10 gap-8 relative z-10">
                     <div>
                         <h1 class="text-4xl lg:text-5xl font-black text-gray-900 tracking-tight leading-none">
@@ -252,11 +252,12 @@
                 </div>
 
                 <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 relative z-10">Pinned Applications</h2>
-                <div id="app-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative z-10"></div>
+                <div id="app-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative z-10 flex-1"></div>
             </div>
         </div>
     </main>
 
+    <!-- Dashboard Logic -->
     <script>
         const apps = [
             { name: 'Master Flow', sub: 'Your data manager', icon: 'database', color: 'blue' },
@@ -289,6 +290,7 @@
 
         lucide.createIcons();
 
+        // Launch simulation
         document.addEventListener('click', function(e) {
             if (e.target.closest('.btn-launch')) {
                 const btn = e.target.closest('.btn-launch');
@@ -304,6 +306,7 @@
             }
         });
 
+        // Search filter
         const searchInput = document.getElementById('appSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function(e) {
