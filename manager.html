@@ -29,7 +29,6 @@
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
 
-        // DOM elements
         const dashboardContent = document.getElementById('dashboard-content');
         const loginPrompt = document.getElementById('login-prompt');
         const userProfileContainer = document.querySelector('.user-profile-container');
@@ -53,19 +52,15 @@
             }
         }
 
-        // Show/hide dashboard based on auth state
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // Logged in: show dashboard, hide login prompt
                 dashboardContent.style.display = 'block';
                 loginPrompt.style.display = 'none';
                 renderSignedIn(user);
                 console.log("✅ Auto-signed in as", user.displayName || user.email);
             } else {
-                // Not logged in: hide dashboard, show login prompt
                 dashboardContent.style.display = 'none';
                 loginPrompt.style.display = 'flex';
-                // Clear any leftover profile info
                 if (userProfileContainer) userProfileContainer.innerHTML = `
                     <div class="flex items-center gap-3 pl-4 border-l border-gray-200">
                         <div class="w-8 h-8 rounded-full bg-gray-200 animate-pulse"></div>
@@ -75,45 +70,62 @@
         });
     </script>
     <style>
-        /* (all your existing styles remain unchanged) */
+        /* Modern Fluid Background */
         body {
             background: linear-gradient(-45deg, #fdfcfb, #e2e8f0, #fff5f5, #f0fdf4);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
         }
+
         @keyframes gradientBG {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+
+        /* Enhanced Glassmorphism */
         .glass-container {
             background: rgba(255, 255, 255, 0.35);
             backdrop-filter: blur(25px) saturate(180%);
             -webkit-backdrop-filter: blur(25px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+            box-shadow: 
+                0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                0 20px 40px -10px rgba(0, 0, 0, 0.08);
         }
-        .animate-fade-in {
-            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0;
-        }
+
+        /* Entrance Animations */
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+
+        /* Card Hover Depth */
         .app-card {
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             perspective: 1000px;
         }
+
         .app-card:hover {
             transform: translateY(-8px) scale(1.02);
             box-shadow: 0 30px 40px -15px rgba(0, 0, 0, 0.1);
         }
+
+        /* Dynamic Glow Effects */
         .card-blue:hover { border-color: rgba(59, 130, 246, 0.3); }
         .card-purple:hover { border-color: rgba(168, 85, 247, 0.3); }
         .card-orange:hover { border-color: rgba(249, 115, 22, 0.3); }
         .card-pink:hover { border-color: rgba(236, 72, 153, 0.3); }
-        .pulse-active { position: relative; }
+
+        /* Active Badge Pulse */
+        .pulse-active {
+            position: relative;
+        }
         .pulse-active::after {
             content: '';
             position: absolute;
@@ -125,18 +137,28 @@
             border-radius: 8px;
             animation: pulse 2s infinite;
         }
+
         @keyframes pulse {
             0% { transform: scale(0.95); opacity: 0.8; }
             70% { transform: scale(1.1); opacity: 0; }
             100% { transform: scale(0.95); opacity: 0; }
         }
-        .btn-launch { transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
-        .btn-launch:active { transform: scale(0.97); }
+
+        .btn-launch {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-launch:active {
+            transform: scale(0.97);
+        }
+
         .search-glass {
             background: rgba(255, 255, 255, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(10px);
         }
+
+        /* Subtle Noise Overlay for Realistic Glass */
         .bg-noise {
             position: absolute;
             inset: 0;
@@ -149,7 +171,7 @@
 </head>
 <body class="min-h-[100dvh] flex flex-col font-sans selection:bg-indigo-100 overflow-x-hidden">
 
-    <!-- Navigation (unchanged) -->
+    <!-- Navigation -->
     <nav class="relative z-20 flex-shrink-0 w-full flex items-center justify-between px-8 py-6 max-w-7xl mx-auto">
         <div class="flex items-center gap-2 group cursor-pointer">
             <div class="w-9 h-9 bg-black rounded-xl flex items-center justify-center transition-all group-hover:shadow-lg group-hover:shadow-black/20 group-hover:-translate-y-0.5">
@@ -157,11 +179,13 @@
             </div>
             <span class="text-xl font-black tracking-tighter text-gray-900">MASTERFLOW</span>
         </div>
+
         <div class="hidden md:flex items-center gap-10 text-[10px] font-bold text-gray-400">
             <a href="#" class="text-black uppercase tracking-[0.2em] relative after:absolute after:bottom-[-4px] after:left-0 after:w-full after:h-[2px] after:bg-black">Ecosystem</a>
             <a href="#" class="hover:text-black transition-colors uppercase tracking-[0.2em]">Components</a>
             <a href="#" class="hover:text-black transition-colors uppercase tracking-[0.2em]">Updates</a>
         </div>
+
         <div class="flex items-center gap-5">
             <button class="relative group">
                 <div class="p-2 text-gray-400 group-hover:text-gray-900 transition-colors">
@@ -177,13 +201,13 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="flex-1 w-full max-w-7xl mx-auto px-6 py-6 flex flex-col justify-center">
-        <div class="glass-container w-full rounded-[3.5rem] p-8 lg:p-12 relative overflow-hidden animate-fade-in" style="animation-delay: 0.1s;">
+    <!-- Main Content - fills remaining height and centers glass container -->
+    <main class="flex-1 flex flex-col w-full max-w-7xl mx-auto px-6 py-6">
+        <div class="glass-container w-full rounded-[3.5rem] p-8 lg:p-12 relative overflow-auto flex-1 flex flex-col justify-center animate-fade-in" style="animation-delay: 0.1s;">
             <div class="bg-noise"></div>
             <i data-lucide="layout-grid" class="absolute -right-16 -top-16 w-80 h-80 text-white opacity-[0.07] rotate-12 pointer-events-none"></i>
 
-            <!-- LOGIN PROMPT (visible when not logged in) -->
+            <!-- LOGIN PROMPT -->
             <div id="login-prompt" class="flex flex-col items-center justify-center text-center min-h-[400px] relative z-10" style="display: flex;">
                 <i data-lucide="lock" class="w-16 h-16 text-gray-400 mb-6"></i>
                 <h2 class="text-2xl font-bold text-gray-800 mb-3">Please log in first</h2>
@@ -233,7 +257,6 @@
         </div>
     </main>
 
-    <!-- Existing Dashboard Logic (apps, search, button interactions) -->
     <script>
         const apps = [
             { name: 'Master Flow', sub: 'Your data manager', icon: 'database', color: 'blue' },
@@ -266,7 +289,6 @@
 
         lucide.createIcons();
 
-        // Launch button simulation
         document.addEventListener('click', function(e) {
             if (e.target.closest('.btn-launch')) {
                 const btn = e.target.closest('.btn-launch');
@@ -282,7 +304,6 @@
             }
         });
 
-        // Search filter
         const searchInput = document.getElementById('appSearch');
         if (searchInput) {
             searchInput.addEventListener('input', function(e) {
