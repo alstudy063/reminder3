@@ -181,12 +181,18 @@
 
     <div id="app-container" class="min-h-screen">
         
+        <!-- Updated header: back button on left, title centered, user info on right -->
         <header class="p-5 glass sticky top-0 z-10 transition-colors duration-500">
-            <div id="header-content" class="flex items-center justify-center relative">
-                <h1 id="header-title" class="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">Home</h1>
-            </div>
-            <div id="user-info" class="absolute right-5 top-5 text-sm text-gray-600 dark:text-gray-300 hidden">
-                <span id="user-email"></span>
+            <div class="flex items-center justify-between relative">
+                <button id="global-back-btn" class="p-2 text-gray-600 dark:text-gray-300 hover:text-blue-500 transition">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                </button>
+                <div id="header-content" class="flex items-center justify-center flex-grow">
+                    <h1 id="header-title" class="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">Home</h1>
+                </div>
+                <div id="user-info" class="text-sm text-gray-600 dark:text-gray-300 hidden">
+                    <span id="user-email"></span>
+                </div>
             </div>
         </header>
 
@@ -278,18 +284,9 @@
                             </div>
                         </div>
                     </div>
-                    <div class="glass p-6 rounded-2xl hover-lift">
-                        <h3 class="font-bold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                            <i data-lucide="palette" class="w-5 h-5"></i> Appearance
-                        </h3>
-                        <div class="flex justify-between items-center p-3 bg-gray-100/50 dark:bg-gray-700/50 rounded-xl">
-                            <span class="font-medium">Dark Mode</span>
-                            <label for="dark-mode-toggle" class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="dark-mode-toggle" class="sr-only peer">
-                                <div class="w-14 h-7 bg-gray-300 peer-focus:outline-none rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all dark:border-gray-500 peer-checked:bg-blue-500"></div>
-                            </label>
-                        </div>
-                    </div>
+
+                    <!-- Appearance section removed per request -->
+
                     <div class="glass p-6 rounded-2xl hover-lift">
                         <h3 class="font-bold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-300">
                             <i data-lucide="database" class="w-5 h-5"></i> Data Management
@@ -531,7 +528,6 @@
             if (user) {
                 currentUser = user;
                 updateUIForSignedInUser(user);
-                // Optional: show a welcome message only on first sign-in
                 const signedInBefore = localStorage.getItem('physics_auth_welcome_shown');
                 if (!signedInBefore) {
                     showInfoModal(`Welcome back, ${user.displayName || user.email || 'User'}!`);
@@ -587,8 +583,7 @@
         }
 
         // ---------------------------------------------------------------------
-        // Original physics tracker code (unchanged except for one line: 
-        // we removed the initial lessons set to avoid duplicates, but it's fine)
+        // Original physics tracker code (unchanged)
         // ---------------------------------------------------------------------
 
         const initialPracticals = [
@@ -658,7 +653,6 @@
         const equationSubunitSelect = document.getElementById('equation-subunit');
         const equationNameInput = document.getElementById('equation-name');
         const equationFormulaInput = document.getElementById('equation-formula');
-        const darkModeToggle = document.getElementById('dark-mode-toggle');
         const importDataFile = document.getElementById('import-data-file');
         const lessonsListContainer = document.getElementById('lessons-list');
         const newLessonNameInput = document.getElementById('new-lesson-name');
@@ -809,8 +803,8 @@
                 'progress': `<h1 id="header-title" class="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">Progress</h1>`,
                 'settings': `<h1 id="header-title" class="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">Settings</h1>`,
                 'equations': `
-                    <button onclick="switchTab('home')" class="absolute left-0 p-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 transition">
-                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    <button onclick="switchTab('home')" class="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 transition">
+                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
                     </button>
                     <h1 id="header-title" class="text-xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500 dark:from-blue-400 dark:to-indigo-300">සමීකරණ</h1>
                 `
@@ -1484,34 +1478,35 @@
             else showInfoModal("Still offline. Please check your internet connection.");
         }
 
-        function applyTheme(isDark) {
-            if (isDark) {
+        // Theme management – keep saved theme but no user toggle
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
                 document.documentElement.classList.add('dark');
-                darkModeToggle.checked = true;
             } else {
                 document.documentElement.classList.remove('dark');
-                darkModeToggle.checked = false;
             }
-            filterPracticals(currentFilter);
         }
-        
+
         equationUnitSelect.addEventListener('change', (e) => populateSubunitDropdowns(e.target.value));
         subunitUnitSelect.addEventListener('change', (e) => renderSubunitsList(e.target.value));
-
-        darkModeToggle.addEventListener('change', () => {
-            const isDark = darkModeToggle.checked;
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            applyTheme(isDark);
-        });
 
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             refreshAllViews();
-            const savedTheme = localStorage.getItem('theme');
-            applyTheme(savedTheme === 'dark');
+            applySavedTheme();
             lucide.createIcons();
             filterPracticals('all');
             switchTab('home');
+
+            // Add back button redirect
+            const backBtn = document.getElementById('global-back-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                    window.location.href = 'https://alstudy063.github.io/reminder3/manager.html';
+                });
+            }
+
             [practicalModal, equationModal, lessonsModal, subunitModal, confirmationModal, offlineModal, pasteDataModal].forEach(modal => {
                 if (modal) modal.addEventListener('click', (e) => { if (e.target.classList.contains('absolute')) closeModal(modal.id); });
             });
