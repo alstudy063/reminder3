@@ -42,6 +42,18 @@
             background: #fef9e3;
             border-left: 4px solid #f59e0b;
         }
+        
+        .cloud-status {
+            transition: all 0.2s;
+        }
+        .cloud-status.connected { background-color: #dcfce7; color: #15803d; border-color: #86efac; }
+        .cloud-status.offline { background-color: #fef9c3; color: #854d0e; border-color: #fde047; }
+        .cloud-status.error { background-color: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+        
+        /* Hide sync elements until login */
+        .sync-elements-hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -53,19 +65,26 @@
         <div class="bg-amber-50 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-3">
                 <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
-                <p class="text-sm font-medium text-amber-800">You're using an anonymous account. Your study data is tied to this browser. If you clear your browsing data, you may lose your progress. <strong>Sign in with email to save permanently</strong> (coming soon).</p>
+                <p class="text-sm font-medium text-amber-800">Your data is saved locally in your browser and synced to the cloud. <strong>Clearing your browser data will remove the local copy</strong>, but your cloud data remains safe (as long as you're signed in).</p>
             </div>
             <button id="dismissWarningBtn" class="px-4 py-2 bg-white text-amber-700 rounded-xl text-sm font-bold shadow-sm hover:bg-amber-50 transition">Got it</button>
         </div>
     </div>
 
-    <!-- Syncing indicator -->
-    <div id="syncIndicator" class="fixed top-20 right-4 z-50 bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 opacity-0 pointer-events-none transition-opacity">
-        <svg class="sync-spinner w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <span class="text-xs font-medium text-slate-700">Syncing...</span>
+    <!-- Sync indicator + Cloud status (hidden until login) -->
+    <div id="syncPanel" class="fixed top-20 right-4 z-50 flex flex-col gap-2 items-end sync-elements-hidden">
+        <div id="syncIndicator" class="bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 opacity-0 pointer-events-none transition-opacity">
+            <svg class="sync-spinner w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-xs font-medium text-slate-700">Syncing...</span>
+        </div>
+        <div id="cloudStatus" class="cloud-status bg-gray-100 rounded-full px-3 py-1 text-xs font-medium shadow-sm border hidden"></div>
+        <button id="forceSyncBtn" class="bg-white hover:bg-gray-50 rounded-full shadow-md px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 transition flex items-center gap-1">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+            Sync Now
+        </button>
     </div>
 
     <div id="appBody" class="min-h-screen">
@@ -224,12 +243,39 @@
         let currentStatusFilter = "all";
         let currentUser = null;
         let initialDataLoaded = false;
+        let isLocalStorageLoaded = false;
+        let unsubscribeSnapshot = null;
 
+        const syncPanel = document.getElementById('syncPanel');
         const syncIndicator = document.getElementById('syncIndicator');
+        const cloudStatusDiv = document.getElementById('cloudStatus');
+        const forceSyncBtn = document.getElementById('forceSyncBtn');
         let syncTimeout = null;
 
+        // LocalStorage key
+        const LOCAL_STORAGE_KEY = 'studyflow_reminders_backup';
+
+        function saveToLocalStorage(reminders) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(reminders));
+                console.log('Saved to localStorage');
+            } catch (e) {
+                console.warn('Failed to save to localStorage:', e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                console.warn('Failed to load from localStorage:', e);
+                return null;
+            }
+        }
+
         function showSyncSpinner() {
-            if (!currentUser) return; // Only show spinner when user is logged in
+            if (!currentUser) return;
             if (syncTimeout) clearTimeout(syncTimeout);
             syncIndicator.style.opacity = '1';
             syncIndicator.style.pointerEvents = 'auto';
@@ -241,6 +287,24 @@
                 syncIndicator.style.opacity = '0';
                 syncIndicator.style.pointerEvents = 'none';
             }, 300);
+        }
+
+        function updateCloudStatus(status, message) {
+            cloudStatusDiv.classList.remove('connected', 'offline', 'error');
+            if (status === 'connected') {
+                cloudStatusDiv.classList.add('connected');
+                cloudStatusDiv.innerText = '☁️ Connected';
+            } else if (status === 'offline') {
+                cloudStatusDiv.classList.add('offline');
+                cloudStatusDiv.innerText = '📡 Offline';
+            } else if (status === 'error') {
+                cloudStatusDiv.classList.add('error');
+                cloudStatusDiv.innerText = '⚠️ Sync Error';
+            }
+            if (message) {
+                cloudStatusDiv.title = message;
+            }
+            cloudStatusDiv.classList.remove('hidden');
         }
 
         const showToast = (msg) => {
@@ -264,7 +328,7 @@
             } catch (err) { console.error(err); }
         };
 
-        // Data loss warning handling - show for anonymous users
+        // Data loss warning handling
         const warningDiv = document.getElementById('dataLossWarning');
         const dismissBtn = document.getElementById('dismissWarningBtn');
         const warningDismissedKey = 'studyflow_warning_dismissed';
@@ -272,7 +336,6 @@
         function checkAndShowWarning(user) {
             if (!user) return;
             const dismissed = localStorage.getItem(warningDismissedKey);
-            // Show warning only for anonymous users and if not dismissed
             if (user.isAnonymous && !dismissed) {
                 warningDiv.classList.remove('hidden');
             } else {
@@ -285,9 +348,67 @@
             warningDiv.classList.add('hidden');
         });
 
+        function setupFirestoreListeners(uid) {
+            // First, try to load from localStorage for instant display
+            const localData = loadFromLocalStorage();
+            if (localData && localData.length > 0 && !isLocalStorageLoaded) {
+                currentReminders = localData;
+                updateStats();
+                renderReminders();
+                updateMasteryUI();
+                isLocalStorageLoaded = true;
+            }
+            
+            showSyncSpinner();
+            updateCloudStatus('offline', 'Connecting...');
+            
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            unsubscribeSnapshot = onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'reminders'), 
+                (snap) => {
+                    const firestoreReminders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                    saveToLocalStorage(firestoreReminders);
+                    currentReminders = firestoreReminders;
+                    updateStats();
+                    renderReminders();
+                    updateMasteryUI();
+                    if (!initialDataLoaded) {
+                        initialDataLoaded = true;
+                        hideSyncSpinner();
+                    } else {
+                        hideSyncSpinner();
+                    }
+                    updateCloudStatus('connected', 'Live sync active');
+                }, 
+                (error) => {
+                    console.error("Firestore sync error:", error);
+                    updateCloudStatus('error', error.message);
+                    hideSyncSpinner();
+                    showToast("Sync error: " + error.message);
+                    // Attempt to reconnect after 5 seconds
+                    setTimeout(() => {
+                        if (currentUser) setupFirestoreListeners(currentUser.uid);
+                    }, 5000);
+                }
+            );
+        }
+
+        function forceSync() {
+            if (!currentUser) {
+                showToast("Not logged in");
+                return;
+            }
+            showSyncSpinner();
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            setupFirestoreListeners(currentUser.uid);
+            showToast("Manual sync triggered");
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                // Show sync panel now that user is logged in
+                syncPanel.classList.remove('sync-elements-hidden');
+                
                 const name = user.isAnonymous ? "Scholar" : (user.displayName || "Explorer");
                 document.getElementById('userGreetingNav').innerText = `Hi, ${name}`;
                 document.getElementById('profileUserEmail').innerText = user.email || 'Anonymous Scholar';
@@ -296,31 +417,16 @@
                 checkAndShowWarning(user);
             } else {
                 currentUser = null;
+                // Hide sync panel when logged out
+                syncPanel.classList.add('sync-elements-hidden');
                 initAuth();
-                // No user, don't show warning (will be shown after sign-in)
                 warningDiv.classList.add('hidden');
+                if (unsubscribeSnapshot) unsubscribeSnapshot();
+                updateCloudStatus('offline', 'Waiting for login');
             }
         });
 
-        function setupFirestoreListeners(uid) {
-            showSyncSpinner();
-            onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'reminders'), (snap) => {
-                currentReminders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                updateStats();
-                renderReminders();
-                updateMasteryUI();
-                if (!initialDataLoaded) {
-                    initialDataLoaded = true;
-                    hideSyncSpinner();
-                } else {
-                    hideSyncSpinner();
-                }
-            }, (error) => {
-                console.error("Snapshot error:", error);
-                hideSyncSpinner();
-                showToast("Sync error: " + error.message);
-            });
-        }
+        forceSyncBtn.addEventListener('click', forceSync);
 
         function updateStats() {
             const today = new Date().toISOString().split('T')[0];
