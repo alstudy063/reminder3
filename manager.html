@@ -46,7 +46,6 @@
             signOut(auth).catch(console.error);
         });
         if (confirmNo) confirmNo.addEventListener('click', closeModal);
-        // Click outside modal to close
         if (confirmModal) confirmModal.addEventListener('click', (e) => {
             if (e.target === confirmModal) closeModal();
         });
@@ -122,6 +121,8 @@
             -webkit-backdrop-filter: blur(25px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.5);
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 20px 40px -10px rgba(0, 0, 0, 0.08);
+            /* Enable scrolling when content overflows */
+            overflow-y: auto;
         }
 
         /* Entrance Animations */
@@ -195,6 +196,13 @@
         .modal-overlay {
             background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(8px);
+        }
+
+        /* Adjust padding on small screens to avoid cutting off content */
+        @media (max-width: 640px) {
+            .glass-container {
+                padding: 1.5rem !important;
+            }
         }
     </style>
 </head>
@@ -298,7 +306,9 @@
                 </div>
 
                 <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6 relative z-10">Pinned Applications</h2>
-                <div id="app-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative z-10 flex-1"></div>
+                <div id="app-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 relative z-10">
+                    <!-- Cards will be injected here -->
+                </div>
             </div>
         </div>
     </main>
