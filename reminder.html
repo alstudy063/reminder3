@@ -4,24 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>StudyFlow Pro · Spaced Repetition Study Tracker</title>
-    <!-- Tailwind + Fonts + Smooth Interactivity -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
-        body { background: #f8fafc; color: #1e293b; transition: background 0.3s ease; }
+        body { background: #f8fafc; color: #1e293b; }
         
-        /* Animations */
         @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes toastIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         
         .animate-fade-up { animation: fadeSlideUp 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards; }
         .reminder-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #e2e8f0; }
         .reminder-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 25px -12px rgba(79, 70, 229, 0.1); border-color: #c7d2fe; }
         
-        .modal-overlay { backdrop-filter: blur(8px); background: rgba(15, 23, 42, 0.4); transition: all 0.3s; }
+        .modal-overlay { backdrop-filter: blur(8px); background: rgba(15, 23, 42, 0.4); }
         
-        /* Navigation styling */
         .nav-link.active { color: #4f46e5; background-color: #eef2ff; font-weight: 600; }
         .status-btn.active { background-color: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
         
@@ -33,11 +31,42 @@
         
         .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
         .overdue-card { border-left: 4px solid #f97316; background: #fffaf5; }
+        .summary-link-btn { transition: all 0.2s; }
+        .summary-link-btn:hover { background-color: #e0e7ff; transform: scale(1.02); }
+        
+        .sync-spinner { animation: spin 0.8s linear infinite; }
+        #syncIndicator { transition: opacity 0.2s ease; }
+        
+        /* Data loss warning */
+        .data-loss-warning {
+            background: #fef9e3;
+            border-left: 4px solid #f59e0b;
+        }
     </style>
 </head>
 <body class="bg-slate-50">
 
     <div id="toast-container"></div>
+
+    <!-- Data loss warning banner (hidden by default) -->
+    <div id="dataLossWarning" class="data-loss-warning hidden mx-auto max-w-7xl mt-4 px-4 sm:px-6 lg:px-8">
+        <div class="bg-amber-50 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-3">
+                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                <p class="text-sm font-medium text-amber-800">You're using an anonymous account. Your study data is tied to this browser. If you clear your browsing data, you may lose your progress. <strong>Sign in with email to save permanently</strong> (coming soon).</p>
+            </div>
+            <button id="dismissWarningBtn" class="px-4 py-2 bg-white text-amber-700 rounded-xl text-sm font-bold shadow-sm hover:bg-amber-50 transition">Got it</button>
+        </div>
+    </div>
+
+    <!-- Syncing indicator -->
+    <div id="syncIndicator" class="fixed top-20 right-4 z-50 bg-white rounded-full shadow-lg px-4 py-2 flex items-center gap-2 opacity-0 pointer-events-none transition-opacity">
+        <svg class="sync-spinner w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-xs font-medium text-slate-700">Syncing...</span>
+    </div>
 
     <div id="appBody" class="min-h-screen">
         <nav class="desktop-nav bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
@@ -126,7 +155,7 @@
         </div>
     </div>
 
-    <!-- Modals -->
+    <!-- Modals (same as before) -->
     <div id="addModal" class="modal-overlay fixed inset-0 hidden justify-center items-center z-[1100]">
         <div class="modal-content bg-white rounded-3xl w-[90%] max-w-md p-8 animate-fade-up">
             <h2 class="text-2xl font-black text-slate-800">New Topic</h2>
@@ -137,6 +166,7 @@
                     <input type="date" id="topicDate" required class="w-full px-4 py-3 bg-slate-50 border rounded-2xl outline-none">
                 </div>
                 <textarea id="topicNotes" rows="2" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl outline-none" placeholder="Notes..."></textarea>
+                <input type="url" id="topicSummaryLink" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl outline-none" placeholder="Summary Link (URL) - optional">
                 <div class="flex gap-3 pt-4">
                     <button type="button" onclick="closeModal('addModal')" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold">Cancel</button>
                     <button type="submit" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold">Save</button>
@@ -153,6 +183,7 @@
                 <input type="text" id="editTopic" required class="w-full px-4 py-3 bg-slate-50 border rounded-2xl">
                 <input type="date" id="editNextReview" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl">
                 <textarea id="editNotes" rows="2" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl"></textarea>
+                <input type="url" id="editSummaryLink" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl" placeholder="Summary Link (URL)">
                 <div class="flex gap-3 pt-4">
                     <button type="button" onclick="deleteReminderFromEdit()" class="px-4 py-3 bg-red-50 text-red-600 rounded-2xl">Delete</button>
                     <button type="button" onclick="closeModal('editModal')" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold">Cancel</button>
@@ -165,9 +196,7 @@
     <div id="progressModal" class="modal-overlay fixed inset-0 hidden justify-center items-center z-[1100]">
         <div class="modal-content bg-white rounded-3xl w-[90%] max-w-md p-8 animate-fade-up">
             <h2 class="text-2xl font-black text-slate-800 mb-4">Mastery</h2>
-            <div id="masteryList" class="space-y-4">
-                <!-- Mastery levels here -->
-            </div>
+            <div id="masteryList" class="space-y-4"></div>
             <button onclick="closeModal('progressModal')" class="w-full mt-6 py-4 bg-indigo-600 text-white rounded-2xl font-bold">Close</button>
         </div>
     </div>
@@ -183,7 +212,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU","authDomain":"studymaster-919ba.firebaseapp.com","databaseURL":"https://studymaster-919ba-default-rtdb.firebaseio.com","projectId":"studymaster-919ba","storageBucket":"studymaster-919ba.firebasestorage.app","messagingSenderId":"426684063256","appId":"1:426684063256:web:52c17625a9450ea9662d6d","measurementId":"G-CWQB2330GF"}');
         const app = initializeApp(firebaseConfig);
@@ -194,6 +223,25 @@
         let currentReminders = [];
         let currentStatusFilter = "all";
         let currentUser = null;
+        let initialDataLoaded = false;
+
+        const syncIndicator = document.getElementById('syncIndicator');
+        let syncTimeout = null;
+
+        function showSyncSpinner() {
+            if (!currentUser) return; // Only show spinner when user is logged in
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncIndicator.style.opacity = '1';
+            syncIndicator.style.pointerEvents = 'auto';
+        }
+
+        function hideSyncSpinner() {
+            if (syncTimeout) clearTimeout(syncTimeout);
+            syncTimeout = setTimeout(() => {
+                syncIndicator.style.opacity = '0';
+                syncIndicator.style.pointerEvents = 'none';
+            }, 300);
+        }
 
         const showToast = (msg) => {
             const container = document.getElementById('toast-container');
@@ -216,6 +264,27 @@
             } catch (err) { console.error(err); }
         };
 
+        // Data loss warning handling - show for anonymous users
+        const warningDiv = document.getElementById('dataLossWarning');
+        const dismissBtn = document.getElementById('dismissWarningBtn');
+        const warningDismissedKey = 'studyflow_warning_dismissed';
+        
+        function checkAndShowWarning(user) {
+            if (!user) return;
+            const dismissed = localStorage.getItem(warningDismissedKey);
+            // Show warning only for anonymous users and if not dismissed
+            if (user.isAnonymous && !dismissed) {
+                warningDiv.classList.remove('hidden');
+            } else {
+                warningDiv.classList.add('hidden');
+            }
+        }
+        
+        dismissBtn.addEventListener('click', () => {
+            localStorage.setItem(warningDismissedKey, 'true');
+            warningDiv.classList.add('hidden');
+        });
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -224,17 +293,32 @@
                 document.getElementById('profileUserEmail').innerText = user.email || 'Anonymous Scholar';
                 document.getElementById('headerAvatarDesktop').src = `https://ui-avatars.com/api/?background=4f46e5&color=fff&name=${encodeURIComponent(name)}`;
                 setupFirestoreListeners(user.uid);
+                checkAndShowWarning(user);
             } else {
+                currentUser = null;
                 initAuth();
+                // No user, don't show warning (will be shown after sign-in)
+                warningDiv.classList.add('hidden');
             }
         });
 
         function setupFirestoreListeners(uid) {
+            showSyncSpinner();
             onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'reminders'), (snap) => {
                 currentReminders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 updateStats();
                 renderReminders();
                 updateMasteryUI();
+                if (!initialDataLoaded) {
+                    initialDataLoaded = true;
+                    hideSyncSpinner();
+                } else {
+                    hideSyncSpinner();
+                }
+            }, (error) => {
+                console.error("Snapshot error:", error);
+                hideSyncSpinner();
+                showToast("Sync error: " + error.message);
             });
         }
 
@@ -269,6 +353,10 @@
             items.forEach(r => {
                 const card = document.createElement('div');
                 card.className = `reminder-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 ${r.nextReviewDate < today ? 'overdue-card' : ''}`;
+                let summaryHtml = '';
+                if (r.summaryLink && r.summaryLink.trim() !== '') {
+                    summaryHtml = `<button onclick="openSummaryLink('${r.summaryLink.replace(/'/g, "\\'")}')" class="summary-link-btn px-4 py-2 bg-indigo-50 text-indigo-600 text-xs font-black rounded-xl flex items-center gap-1">📄 Summary</button>`;
+                }
                 card.innerHTML = `
                     <div class="flex justify-between mb-4">
                         <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-full">${r.subject}</span>
@@ -279,6 +367,7 @@
                         <span class="text-[10px] font-bold text-slate-400 uppercase">${r.nextReviewDate}</span>
                         <div class="flex gap-2">
                             <button onclick="openEditModal('${r.id}')" class="p-2 bg-slate-50 rounded-xl">⚙️</button>
+                            ${summaryHtml}
                             <button onclick="handleReview('${r.id}')" class="px-6 py-2 bg-indigo-50 text-indigo-600 text-xs font-black rounded-xl">Review</button>
                         </div>
                     </div>
@@ -307,53 +396,91 @@
             });
         }
 
+        window.openSummaryLink = (url) => {
+            if (url && url.startsWith('http')) {
+                window.open(url, '_blank', 'noopener,noreferrer');
+            } else {
+                showToast('Invalid link');
+            }
+        };
+
         window.handleReview = async (id) => {
             if (!currentUser) return;
-            const r = currentReminders.find(rem => rem.id === id);
-            const nextDate = new Date();
-            nextDate.setDate(nextDate.getDate() + 3);
-            const nextStr = nextDate.toISOString().split('T')[0];
-            await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), {
-                nextReviewDate: nextStr
-            });
-            showToast("Review tracked!");
+            showSyncSpinner();
+            try {
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + 3);
+                const nextStr = nextDate.toISOString().split('T')[0];
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), {
+                    nextReviewDate: nextStr
+                });
+                showToast("Review tracked!");
+            } catch (err) {
+                showToast("Error: " + err.message);
+            } finally {
+                hideSyncSpinner();
+            }
         };
 
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
-            await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders'), {
-                topic: document.getElementById('topicName').value,
-                subject: document.getElementById('topicSubject').value,
-                notes: document.getElementById('topicNotes').value,
-                nextReviewDate: document.getElementById('topicDate').value,
-                completed: false,
-                createdAt: Date.now()
-            });
-            closeModal('addModal');
-            showToast("Saved!");
-            e.target.reset();
+            showSyncSpinner();
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders'), {
+                    topic: document.getElementById('topicName').value,
+                    subject: document.getElementById('topicSubject').value,
+                    notes: document.getElementById('topicNotes').value,
+                    summaryLink: document.getElementById('topicSummaryLink').value.trim() || null,
+                    nextReviewDate: document.getElementById('topicDate').value,
+                    completed: false,
+                    createdAt: Date.now()
+                });
+                closeModal('addModal');
+                showToast("Saved!");
+                e.target.reset();
+                document.getElementById('topicSummaryLink').value = '';
+            } catch (err) {
+                showToast("Error: " + err.message);
+            } finally {
+                hideSyncSpinner();
+            }
         });
 
         document.getElementById('editForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
             const id = document.getElementById('editId').value;
-            await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), {
-                topic: document.getElementById('editTopic').value,
-                nextReviewDate: document.getElementById('editNextReview').value,
-                notes: document.getElementById('editNotes').value
-            });
-            closeModal('editModal');
-            showToast("Updated");
+            showSyncSpinner();
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), {
+                    topic: document.getElementById('editTopic').value,
+                    nextReviewDate: document.getElementById('editNextReview').value,
+                    notes: document.getElementById('editNotes').value,
+                    summaryLink: document.getElementById('editSummaryLink').value.trim() || null
+                });
+                closeModal('editModal');
+                showToast("Updated");
+            } catch (err) {
+                showToast("Error: " + err.message);
+            } finally {
+                hideSyncSpinner();
+            }
         });
 
         window.deleteReminderFromEdit = async () => {
             if (!currentUser) return;
             const id = document.getElementById('editId').value;
-            if (confirm("Delete this?")) {
+            if (!confirm("Delete this?")) return;
+            showSyncSpinner();
+            try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id));
                 closeModal('editModal');
+                showToast("Deleted");
+            } catch (err) {
+                showToast("Error: " + err.message);
+            } finally {
+                hideSyncSpinner();
             }
         };
 
@@ -375,6 +502,7 @@
             document.getElementById('editTopic').value = r.topic;
             document.getElementById('editNextReview').value = r.nextReviewDate;
             document.getElementById('editNotes').value = r.notes || '';
+            document.getElementById('editSummaryLink').value = r.summaryLink || '';
             openModal('editModal');
         };
 
