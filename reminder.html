@@ -41,20 +41,13 @@
             background: #fef9e3;
             border-left: 4px solid #f59e0b;
         }
-        
-        .sync-status {
-            font-size: 10px;
-            padding: 4px 8px;
-            border-radius: 20px;
-            background: #f1f5f9;
-        }
     </style>
 </head>
 <body class="bg-slate-50">
 
     <div id="toast-container"></div>
 
-    <!-- Data loss warning banner (hidden by default) -->
+    <!-- Data loss warning banner -->
     <div id="dataLossWarning" class="data-loss-warning hidden mx-auto max-w-7xl mt-4 px-4 sm:px-6 lg:px-8">
         <div class="bg-amber-50 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-3">
@@ -219,7 +212,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU","authDomain":"studymaster-919ba.firebaseapp.com","databaseURL":"https://studymaster-919ba-default-rtdb.firebaseio.com","projectId":"studymaster-919ba","storageBucket":"studymaster-919ba.firebasestorage.app","messagingSenderId":"426684063256","appId":"1:426684063256:web:52c17625a9450ea9662d6d","measurementId":"G-CWQB2330GF"}');
         const app = initializeApp(firebaseConfig);
@@ -228,7 +221,6 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
         console.log("Firebase initialized. appId:", appId);
-        console.log("Firestore instance:", db);
 
         let currentReminders = [];
         let currentStatusFilter = "all";
