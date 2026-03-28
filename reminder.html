@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>StudyFlow Pro · Spaced Repetition Study Tracker</title>
+    <!-- Tailwind + Fonts + Smooth Interactivity -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        body { background: #f8fafc; color: #1e293b; transition: background 0.3s ease; }
+        
+        /* Animations */
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes toastIn { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .animate-fade-up { animation: fadeSlideUp 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards; }
+        .reminder-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #e2e8f0; }
+        .reminder-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 20px 25px -12px rgba(79, 70, 229, 0.1); border-color: #c7d2fe; }
+        
+        .modal-overlay { backdrop-filter: blur(8px); background: rgba(15, 23, 42, 0.4); transition: all 0.3s; }
+        
+        /* Navigation styling */
+        .nav-link.active { color: #4f46e5; background-color: #eef2ff; font-weight: 600; }
+        .status-btn.active { background-color: #4f46e5; color: white; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2); }
+        
+        .mobile-bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(12px); border-top: 1px solid #e5e7eb; z-index: 1000; padding: 10px 16px 24px; display: none; }
+        @media (max-width: 767px) { .desktop-nav { display: none; } .mobile-bottom-nav { display: flex; justify-content: space-around; align-items: center; } .main-content-padding { padding-bottom: 100px; } }
+        
+        #toast-container { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); z-index: 9999; pointer-events: none; }
+        .toast { background: #1e293b; color: white; padding: 12px 24px; border-radius: 99px; font-size: 14px; font-weight: 500; margin-top: 8px; animation: toastIn 0.3s ease-out; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2); pointer-events: auto; }
+        
+        .empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+        .overdue-card { border-left: 4px solid #f97316; background: #fffaf5; }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div id="toast-container"></div>
+
+    <div id="appBody" class="min-h-screen">
+        <nav class="desktop-nav bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        </div>
+                        <span class="font-extrabold text-xl tracking-tight text-slate-800">StudyFlow <span class="text-indigo-600">Pro</span></span>
+                    </div>
+                    <div class="hidden md:flex items-center space-x-2 bg-slate-100/50 p-1.5 rounded-full border border-slate-200">
+                        <button data-nav="home" class="nav-link active flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full transition-all">Home</button>
+                        <button data-nav="add" class="nav-link flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full transition-all">Add Topic</button>
+                        <button data-nav="progress" class="nav-link flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full transition-all">My Mastery</button>
+                        <button data-nav="profile" class="nav-link flex items-center gap-2 px-5 py-2 text-sm font-medium rounded-full transition-all">Account</button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-right hidden sm:block">
+                            <p id="userGreetingNav" class="text-sm font-semibold text-slate-700">Hi, Explorer</p>
+                        </div>
+                        <img id="headerAvatarDesktop" class="w-10 h-10 rounded-full border-2 border-indigo-100 shadow-sm cursor-pointer" src="" alt="avatar">
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 main-content-padding">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Due Today</p>
+                    <p id="pendingCountDisplay" class="text-3xl font-black text-indigo-600">0</p>
+                </div>
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Overdue</p>
+                    <p id="overdueCountDisplay" class="text-3xl font-black text-orange-500">0</p>
+                </div>
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Mastered</p>
+                    <p id="completedCountDisplay" class="text-3xl font-black text-emerald-500">0</p>
+                </div>
+                <div class="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
+                    <p class="text-xs font-bold text-slate-400 uppercase mb-1">Daily Streak</p>
+                    <p class="text-3xl font-black text-purple-600">1 🔥</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row gap-6 justify-between items-center">
+                <select id="subjectFilter" class="w-full md:w-56 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <option value="All">All Subjects</option>
+                    <option value="Biology">🧬 Biology</option>
+                    <option value="Physics">⚛️ Physics</option>
+                    <option value="Chemistry">🧪 Chemistry</option>
+                </select>
+                <div class="flex gap-2 bg-slate-100 p-1.5 rounded-2xl">
+                    <button data-status="all" class="status-btn active px-6 py-2 text-xs font-bold rounded-xl">All Tasks</button>
+                    <button data-status="pending" class="status-btn px-6 py-2 text-xs font-bold rounded-xl">Due</button>
+                    <button data-status="overdue" class="status-btn px-6 py-2 text-xs font-bold rounded-xl">Overdue</button>
+                </div>
+            </div>
+
+            <div id="reminderGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Skeleton Loading -->
+                <div class="animate-pulse bg-white h-48 rounded-3xl border border-slate-100"></div>
+                <div class="animate-pulse bg-white h-48 rounded-3xl border border-slate-100"></div>
+            </div>
+        </main>
+
+        <!-- Mobile Bottom Nav -->
+        <div class="mobile-bottom-nav">
+            <button data-mobile-nav="home" class="flex flex-col items-center gap-1 text-indigo-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                <span class="text-[10px] font-bold">Home</span>
+            </button>
+            <button data-mobile-nav="add" class="relative">
+                <div class="w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg -mt-10 border-4 border-white">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+                </div>
+                <span class="text-[10px] font-bold text-slate-400 block text-center mt-1">Add</span>
+            </button>
+            <button data-mobile-nav="progress" class="flex flex-col items-center gap-1 text-slate-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                <span class="text-[10px] font-bold">Mastery</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="addModal" class="modal-overlay fixed inset-0 hidden justify-center items-center z-[1100]">
+        <div class="modal-content bg-white rounded-3xl w-[90%] max-w-md p-8 animate-fade-up">
+            <h2 class="text-2xl font-black text-slate-800">New Topic</h2>
+            <form id="addForm" class="mt-6 space-y-4">
+                <input type="text" id="topicName" required class="w-full px-4 py-3 bg-slate-50 border rounded-2xl outline-none" placeholder="Topic Name">
+                <div class="grid grid-cols-2 gap-4">
+                    <select id="topicSubject" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl"><option>Biology</option><option>Physics</option><option>Chemistry</option></select>
+                    <input type="date" id="topicDate" required class="w-full px-4 py-3 bg-slate-50 border rounded-2xl outline-none">
+                </div>
+                <textarea id="topicNotes" rows="2" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl outline-none" placeholder="Notes..."></textarea>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="closeModal('addModal')" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal-overlay fixed inset-0 hidden justify-center items-center z-[1100]">
+        <div class="modal-content bg-white rounded-3xl w-[90%] max-w-md p-8 animate-fade-up">
+            <h2 class="text-2xl font-black text-slate-800">Edit Task</h2>
+            <form id="editForm" class="mt-6 space-y-4">
+                <input type="hidden" id="editId">
+                <input type="text" id="editTopic" required class="w-full px-4 py-3 bg-slate-50 border rounded-2xl">
+                <input type="date" id="editNextReview" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl">
+                <textarea id="editNotes" rows="2" class="w-full px-4 py-3 bg-slate-50 border rounded-2xl"></textarea>
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="deleteReminderFromEdit()" class="px-4 py-3 bg-red-50 text-red-600 rounded-2xl">Delete</button>
+                    <button type="button" onclick="closeModal('editModal')" class="flex-1 py-4 bg-slate-100 rounded-2xl font-bold">Cancel</button>
+                    <button type="submit" class="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="progressModal" class="modal-overlay fixed inset-0 hidden justify-center items-center z-[1100]">
+        <div class="modal-content bg-white rounded-3xl w-[90%] max-w-md p-8 animate-fade-up">
+            <h2 class="text-2xl font-black text-slate-800 mb-4">Mastery</h2>
+            <div id="masteryList" class="space-y-4">
+                <!-- Mastery levels here -->
+            </div>
+            <button onclick="closeModal('progressModal')" class="w-full mt-6 py-4 bg-indigo-600 text-white rounded-2xl font-bold">Close</button>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal-overlay fixed inset-0 hidden justify-center items-center z-[1100]">
+        <div class="modal-content bg-white rounded-3xl w-[90%] max-w-md p-8 animate-fade-up">
+            <h2 class="text-2xl font-black text-slate-800 mb-4">Account</h2>
+            <p id="profileUserEmail" class="text-sm text-slate-500 mb-6"></p>
+            <button onclick="closeModal('profileModal')" class="w-full py-4 bg-slate-100 rounded-2xl font-bold text-slate-700">Close</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU","authDomain":"studymaster-919ba.firebaseapp.com","databaseURL":"https://studymaster-919ba-default-rtdb.firebaseio.com","projectId":"studymaster-919ba","storageBucket":"studymaster-919ba.firebasestorage.app","messagingSenderId":"426684063256","appId":"1:426684063256:web:52c17625a9450ea9662d6d","measurementId":"G-CWQB2330GF"}');
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+        let currentReminders = [];
+        let currentStatusFilter = "all";
+        let currentUser = null;
+
+        const showToast = (msg) => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerText = msg;
+            container.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        };
+
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (e) { await signInAnonymously(auth); }
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) { console.error(err); }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                const name = user.isAnonymous ? "Scholar" : (user.displayName || "Explorer");
+                document.getElementById('userGreetingNav').innerText = `Hi, ${name}`;
+                document.getElementById('profileUserEmail').innerText = user.email || 'Anonymous Scholar';
+                document.getElementById('headerAvatarDesktop').src = `https://ui-avatars.com/api/?background=4f46e5&color=fff&name=${encodeURIComponent(name)}`;
+                setupFirestoreListeners(user.uid);
+            } else {
+                initAuth();
+            }
+        });
+
+        function setupFirestoreListeners(uid) {
+            onSnapshot(collection(db, 'artifacts', appId, 'users', uid, 'reminders'), (snap) => {
+                currentReminders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                updateStats();
+                renderReminders();
+                updateMasteryUI();
+            });
+        }
+
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const pending = currentReminders.filter(r => !r.completed && r.nextReviewDate <= today).length;
+            const overdue = currentReminders.filter(r => !r.completed && r.nextReviewDate < today).length;
+            const mastered = currentReminders.filter(r => r.completed).length;
+            document.getElementById('pendingCountDisplay').innerText = pending;
+            document.getElementById('overdueCountDisplay').innerText = overdue;
+            document.getElementById('completedCountDisplay').innerText = mastered;
+        }
+
+        function renderReminders() {
+            const grid = document.getElementById('reminderGrid');
+            const subFilter = document.getElementById('subjectFilter').value;
+            const today = new Date().toISOString().split('T')[0];
+            
+            let items = currentReminders.filter(r => !r.completed);
+            if (subFilter !== 'All') items = items.filter(r => r.subject === subFilter);
+            if (currentStatusFilter === 'pending') items = items.filter(r => r.nextReviewDate === today);
+            if (currentStatusFilter === 'overdue') items = items.filter(r => r.nextReviewDate < today);
+
+            items.sort((a,b) => (a.nextReviewDate || '').localeCompare(b.nextReviewDate || ''));
+
+            grid.innerHTML = '';
+            if (items.length === 0) {
+                grid.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400">No tasks found.</div>`;
+                return;
+            }
+
+            items.forEach(r => {
+                const card = document.createElement('div');
+                card.className = `reminder-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 ${r.nextReviewDate < today ? 'overdue-card' : ''}`;
+                card.innerHTML = `
+                    <div class="flex justify-between mb-4">
+                        <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black rounded-full">${r.subject}</span>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-lg">${r.topic}</h3>
+                    <p class="text-xs text-slate-400 mb-4 line-clamp-2">${r.notes || ''}</p>
+                    <div class="flex items-center justify-between pt-4 border-t border-slate-50">
+                        <span class="text-[10px] font-bold text-slate-400 uppercase">${r.nextReviewDate}</span>
+                        <div class="flex gap-2">
+                            <button onclick="openEditModal('${r.id}')" class="p-2 bg-slate-50 rounded-xl">⚙️</button>
+                            <button onclick="handleReview('${r.id}')" class="px-6 py-2 bg-indigo-50 text-indigo-600 text-xs font-black rounded-xl">Review</button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateMasteryUI() {
+            const list = document.getElementById('masteryList');
+            const subjects = ["Biology", "Physics", "Chemistry"];
+            list.innerHTML = '';
+            subjects.forEach(sub => {
+                const count = currentReminders.filter(r => r.subject === sub).length;
+                const mastered = currentReminders.filter(r => r.subject === sub && r.completed).length;
+                const percent = count === 0 ? 0 : Math.round((mastered / count) * 100);
+                
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <div class="flex justify-between text-xs font-bold mb-1"><span>${sub}</span><span>${percent}%</span></div>
+                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                        <div class="bg-indigo-600 h-full" style="width: ${percent}%"></div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        window.handleReview = async (id) => {
+            if (!currentUser) return;
+            const r = currentReminders.find(rem => rem.id === id);
+            const nextDate = new Date();
+            nextDate.setDate(nextDate.getDate() + 3);
+            const nextStr = nextDate.toISOString().split('T')[0];
+            await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), {
+                nextReviewDate: nextStr
+            });
+            showToast("Review tracked!");
+        };
+
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+            await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders'), {
+                topic: document.getElementById('topicName').value,
+                subject: document.getElementById('topicSubject').value,
+                notes: document.getElementById('topicNotes').value,
+                nextReviewDate: document.getElementById('topicDate').value,
+                completed: false,
+                createdAt: Date.now()
+            });
+            closeModal('addModal');
+            showToast("Saved!");
+            e.target.reset();
+        });
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+            const id = document.getElementById('editId').value;
+            await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), {
+                topic: document.getElementById('editTopic').value,
+                nextReviewDate: document.getElementById('editNextReview').value,
+                notes: document.getElementById('editNotes').value
+            });
+            closeModal('editModal');
+            showToast("Updated");
+        });
+
+        window.deleteReminderFromEdit = async () => {
+            if (!currentUser) return;
+            const id = document.getElementById('editId').value;
+            if (confirm("Delete this?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id));
+                closeModal('editModal');
+            }
+        };
+
+        window.openModal = (id) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'flex';
+                if (id === 'addModal') document.getElementById('topicDate').valueAsDate = new Date();
+            }
+        };
+        window.closeModal = (id) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        };
+
+        window.openEditModal = (id) => {
+            const r = currentReminders.find(rem => rem.id === id);
+            document.getElementById('editId').value = r.id;
+            document.getElementById('editTopic').value = r.topic;
+            document.getElementById('editNextReview').value = r.nextReviewDate;
+            document.getElementById('editNotes').value = r.notes || '';
+            openModal('editModal');
+        };
+
+        document.getElementById('subjectFilter').onchange = renderReminders;
+        
+        document.querySelectorAll('[data-status]').forEach(btn => btn.onclick = () => {
+            document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentStatusFilter = btn.getAttribute('data-status');
+            renderReminders();
+        });
+
+        document.querySelectorAll('[data-nav]').forEach(btn => btn.onclick = () => {
+            const nav = btn.getAttribute('data-nav');
+            if (nav === 'home') renderReminders();
+            else openModal(`${nav}Modal`);
+        });
+
+        document.querySelectorAll('[data-mobile-nav]').forEach(btn => btn.onclick = () => {
+            const nav = btn.getAttribute('data-mobile-nav');
+            if (nav === 'home') renderReminders();
+            else openModal(`${nav}Modal`);
+        });
+
+        window.onclick = (e) => { if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; };
+
+    </script>
+</body>
+</html>
