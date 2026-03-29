@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
+        /* (same as before, unchanged) */
         * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         body { background: #f8fafc; color: #1e293b; }
         
@@ -222,7 +223,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, setDoc, onSnapshot, updateDoc, deleteDoc, doc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, setDoc, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU","authDomain":"studymaster-919ba.firebaseapp.com","databaseURL":"https://studymaster-919ba-default-rtdb.firebaseio.com","projectId":"studymaster-919ba","storageBucket":"studymaster-919ba.firebasestorage.app","messagingSenderId":"426684063256","appId":"1:426684063256:web:52c17625a9450ea9662d6d","measurementId":"G-CWQB2330GF"}');
         const app = initializeApp(firebaseConfig);
@@ -233,17 +234,17 @@
         console.log("🔥 Firebase initialized. appId:", appId);
 
         // ---------- Global State ----------
-        let currentReminders = [];        // Array of reminder objects (local + pending)
+        let currentReminders = [];
         let currentStatusFilter = "all";
         let currentUser = null;
         let unsubscribeSnapshot = null;
-        let pendingSync = false;           // flag to avoid multiple sync loops
+        let pendingSync = false;
 
         const syncIndicator = document.getElementById('syncIndicator');
         let syncTimeout = null;
         const LOCAL_STORAGE_KEY = 'studyflow_reminders_backup';
 
-        // ---------- Helper Functions ----------
+        // Helper functions (unchanged)
         function showSyncSpinner() {
             if (!currentUser) return;
             if (syncTimeout) clearTimeout(syncTimeout);
@@ -262,18 +263,14 @@
         function saveToLocalStorage(reminders) {
             try {
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(reminders));
-            } catch (e) {
-                console.warn('Failed to save to localStorage:', e);
-            }
+            } catch (e) { console.warn('Failed to save to localStorage:', e); }
         }
 
         function loadFromLocalStorage() {
             try {
                 const data = localStorage.getItem(LOCAL_STORAGE_KEY);
                 if (data) return JSON.parse(data);
-            } catch (e) {
-                console.warn('Failed to load from localStorage:', e);
-            }
+            } catch (e) { console.warn('Failed to load from localStorage:', e); }
             return null;
         }
 
@@ -287,14 +284,12 @@
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
 
-        // ---------- UI Update Functions ----------
         function updateStats() {
             const activeReminders = currentReminders.filter(r => !r._deleted);
             const today = new Date().toISOString().split('T')[0];
             const pending = activeReminders.filter(r => !r.completed && r.nextReviewDate <= today).length;
             const overdue = activeReminders.filter(r => !r.completed && r.nextReviewDate < today).length;
             const mastered = activeReminders.filter(r => r.completed).length;
-            
             document.getElementById('pendingCountDisplay').innerText = pending;
             document.getElementById('overdueCountDisplay').innerText = overdue;
             document.getElementById('completedCountDisplay').innerText = mastered;
@@ -304,20 +299,16 @@
             const grid = document.getElementById('reminderGrid');
             const subFilter = document.getElementById('subjectFilter').value;
             const today = new Date().toISOString().split('T')[0];
-            
             let items = currentReminders.filter(r => !r.completed && !r._deleted);
             if (subFilter !== 'All') items = items.filter(r => r.subject === subFilter);
             if (currentStatusFilter === 'pending') items = items.filter(r => r.nextReviewDate === today);
             if (currentStatusFilter === 'overdue') items = items.filter(r => r.nextReviewDate < today);
-
             items.sort((a,b) => (a.nextReviewDate || '').localeCompare(b.nextReviewDate || ''));
-
             grid.innerHTML = '';
             if (items.length === 0) {
                 grid.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400">No active tasks found for this filter.</div>`;
                 return;
             }
-
             items.forEach(r => {
                 const card = document.createElement('div');
                 card.className = `reminder-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 ${r.nextReviewDate < today ? 'overdue-card' : ''}`;
@@ -351,13 +342,11 @@
             const list = document.getElementById('masteryList');
             const subjects = ["Biology", "Physics", "Chemistry"];
             const activeReminders = currentReminders.filter(r => !r._deleted);
-            
             list.innerHTML = '';
             subjects.forEach(sub => {
                 const count = activeReminders.filter(r => r.subject === sub).length;
                 const mastered = activeReminders.filter(r => r.subject === sub && r.completed).length;
                 const percent = count === 0 ? 0 : Math.round((mastered / count) * 100);
-                
                 const div = document.createElement('div');
                 div.innerHTML = `
                     <div class="flex justify-between text-xs font-bold mb-1"><span>${sub}</span><span>${percent}%</span></div>
@@ -369,47 +358,32 @@
             });
         }
 
-        // ---------- Sync with Firestore ----------
         async function syncPendingChanges() {
             if (!currentUser || pendingSync) return;
             pendingSync = true;
             showSyncSpinner();
-            
             try {
-                // Fetch the latest pending tasks from the array
                 const pendingReminders = currentReminders.filter(r => r.syncStatus === 'pending');
-                
                 for (const rem of pendingReminders) {
                     const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', rem.id);
-                    
                     if (rem._deleted) {
-                        // Pending delete: remove from cloud, then remove completely from local array
                         await deleteDoc(docRef);
                         currentReminders = currentReminders.filter(r => r.id !== rem.id);
                         console.log(`🗑️ Synced delete for ${rem.id}`);
                     } else {
-                        // Pending update/add: push to cloud
                         const dataToSend = { ...rem };
                         delete dataToSend.syncStatus;
                         delete dataToSend._deleted;
-                        
                         await setDoc(docRef, dataToSend, { merge: true });
-                        
-                        // Update status cleanly in the current array
                         const idx = currentReminders.findIndex(r => r.id === rem.id);
-                        if (idx !== -1) {
-                            currentReminders[idx].syncStatus = 'synced';
-                        }
+                        if (idx !== -1) currentReminders[idx].syncStatus = 'synced';
                         console.log(`✅ Synced ${rem.id}`);
                     }
                 }
-                
-                // Save and refresh UI only if things actually changed
                 saveToLocalStorage(currentReminders);
                 renderReminders();
                 updateStats();
                 updateMasteryUI();
-                
             } catch (err) {
                 console.error("Sync error:", err);
                 showToast("Cloud sync failed – will retry later", true);
@@ -420,60 +394,33 @@
         }
 
         function setupFirestoreListener(uid) {
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-                unsubscribeSnapshot = null;
-            }
-
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
             const remindersRef = collection(db, 'artifacts', appId, 'users', uid, 'reminders');
             console.log("📡 Firestore listener attached");
-
             unsubscribeSnapshot = onSnapshot(remindersRef,
                 (snapshot) => {
                     const cloudReminders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     let updated = false;
-                    
-                    // Convert cloud data to a Map for quick lookups
                     const cloudMap = new Map();
                     cloudReminders.forEach(r => cloudMap.set(r.id, r));
-
                     const mergedReminders = [];
-
-                    // 1. Process local items against the cloud
                     for (const local of currentReminders) {
                         const cloudRem = cloudMap.get(local.id);
                         if (cloudRem) {
-                            if (local.syncStatus === 'pending') {
-                                // We have pending local changes, DO NOT OVERWRITE with cloud version yet
-                                mergedReminders.push(local);
-                            } else {
-                                // No pending changes, always trust the cloud state
-                                mergedReminders.push({ ...cloudRem, syncStatus: 'synced' });
-                            }
-                            cloudMap.delete(local.id); 
+                            if (local.syncStatus === 'pending') mergedReminders.push(local);
+                            else mergedReminders.push({ ...cloudRem, syncStatus: 'synced' });
+                            cloudMap.delete(local.id);
                         } else {
-                            // Exists locally but not in cloud
-                            if (local.syncStatus === 'pending') {
-                                // Hasn't synced to cloud yet, KEEP IT
-                                mergedReminders.push(local);
-                            } else {
-                                // Was previously synced, but is now missing from cloud. (Deleted elsewhere). REMOVE IT.
-                                // by simply not pushing it to mergedReminders
-                            }
+                            if (local.syncStatus === 'pending') mergedReminders.push(local);
                         }
                     }
-
-                    // 2. Add remaining cloud items (Items created on another device)
                     for (const cloudRem of cloudMap.values()) {
                         mergedReminders.push({ ...cloudRem, syncStatus: 'synced' });
                     }
-
-                    // Check if anything fundamentally changed to avoid unnecessary renders
                     if (JSON.stringify(mergedReminders) !== JSON.stringify(currentReminders)) {
                         currentReminders = mergedReminders;
                         updated = true;
                     }
-
                     if (updated) {
                         saveToLocalStorage(currentReminders);
                         updateStats();
@@ -489,7 +436,6 @@
             );
         }
 
-        // ---------- CRUD Operations (immediate local + background sync) ----------
         async function addReminder(topicData) {
             const now = Date.now();
             const newId = 'local_' + now + '_' + Math.random().toString(36).substr(2, 6);
@@ -501,67 +447,43 @@
                 completed: false,
                 syncStatus: 'pending'
             };
-            
-            // Offline-first approach
             currentReminders = [newReminder, ...currentReminders];
             saveToLocalStorage(currentReminders);
-            
             updateStats();
             renderReminders();
             updateMasteryUI();
             showToast("Task saved");
-            
-            if (currentUser) {
-                await syncPendingChanges();
-            }
+            if (currentUser) await syncPendingChanges();
         }
 
         async function updateReminder(id, updates) {
             const idx = currentReminders.findIndex(r => r.id === id);
             if (idx === -1) return;
-            
-            // Offline-first update
             const updated = { ...currentReminders[idx], ...updates, updatedAt: Date.now(), syncStatus: 'pending' };
             currentReminders[idx] = updated;
             saveToLocalStorage(currentReminders);
-            
             updateStats();
             renderReminders();
             updateMasteryUI();
-            
-            if (currentUser) {
-                await syncPendingChanges();
-            }
+            if (currentUser) await syncPendingChanges();
         }
 
         async function deleteReminder(id) {
             const idx = currentReminders.findIndex(r => r.id === id);
             if (idx === -1) return;
-            
-            const reminder = currentReminders[idx];
-            
-            // Mark as deleted offline (UI hides it instantly)
-            reminder._deleted = true;
-            reminder.syncStatus = 'pending';
+            currentReminders[idx]._deleted = true;
+            currentReminders[idx].syncStatus = 'pending';
             saveToLocalStorage(currentReminders);
-            
             updateStats();
             renderReminders();
             updateMasteryUI();
             showToast("Deleted");
-            
-            if (currentUser) {
-                await syncPendingChanges();
-            }
+            if (currentUser) await syncPendingChanges();
         }
 
-        // ---------- Event Handlers (exposed to window) ----------
         window.openSummaryLink = (url) => {
-            if (url && url.startsWith('http')) {
-                window.open(url, '_blank', 'noopener,noreferrer');
-            } else {
-                showToast('Invalid link');
-            }
+            if (url && url.startsWith('http')) window.open(url, '_blank', 'noopener,noreferrer');
+            else showToast('Invalid link');
         };
 
         window.handleReview = async (id) => {
@@ -595,61 +517,69 @@
             closeModal('editModal');
         };
 
-        // ---------- INITIALIZATION AND AUTH (Rule 3 Compliance) ----------
+        // ---------- ENHANCED AUTH: Try to get token from parent or URL ----------
         const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
+            let token = null;
+
+            // 1. Check for URL parameter ?token=...
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('token')) {
+                token = urlParams.get('token');
+                console.log("Using token from URL");
+            }
+
+            // 2. Check for global variable set by parent
+            if (!token && typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                token = __initial_auth_token;
+                console.log("Using token from __initial_auth_token");
+            }
+
+            // 3. If parent window provides a function to get token, call it
+            if (!token && window.parent && typeof window.parent.__getFirebaseToken === 'function') {
+                try {
+                    token = await window.parent.__getFirebaseToken();
+                    console.log("Retrieved token from parent function");
+                } catch (e) { console.warn("Parent token retrieval failed", e); }
+            }
+
+            if (token) {
+                try {
+                    await signInWithCustomToken(auth, token);
+                    console.log("✅ Signed in with custom token");
+                } catch (err) {
+                    console.error("Custom token sign-in failed:", err);
+                    showToast("Custom token invalid, falling back to anonymous", true);
                     await signInAnonymously(auth);
                 }
-                console.log("✅ Auth Success");
-            } catch (err) {
-                console.error("❌ Auth Error:", err);
-                showToast("Authentication failed – working offline", true);
+            } else {
+                console.log("No token provided, signing in anonymously");
+                await signInAnonymously(auth);
             }
         };
 
-        // EXECUTED IMMEDIATELY BEFORE LISTENER to prevent race conditions
         initAuth();
 
         onAuthStateChanged(auth, (user) => {
-            console.log("🔐 Auth State Changed. Current User:", user ? user.uid : "None");
-            
+            console.log("🔐 Auth State Changed:", user ? user.uid : "None");
             if (user) {
                 currentUser = user;
-                
-                // UI Name assignment
                 const name = user.isAnonymous ? "Scholar" : (user.displayName || "Explorer");
                 document.getElementById('userGreetingNav').innerText = `Hi, ${name}`;
                 document.getElementById('profileUserEmail').innerText = user.email || 'Anonymous Scholar';
                 document.getElementById('headerAvatarDesktop').src = `https://ui-avatars.com/api/?background=4f46e5&color=fff&name=${encodeURIComponent(name)}`;
                 
-                // 1. Load Local Data Immediately
                 const localData = loadFromLocalStorage();
-                if (localData && localData.length > 0) {
-                    currentReminders = localData;
-                }
-                
+                if (localData && localData.length > 0) currentReminders = localData;
                 updateStats();
                 renderReminders();
                 updateMasteryUI();
-                
-                // 2. Attach Listener for Syncs
                 setupFirestoreListener(user.uid);
-                
-                // 3. Kick off background sync
                 setTimeout(() => syncPendingChanges(), 500);
                 
-                // Warnings for anonymous user
                 const dismissed = localStorage.getItem('studyflow_warning_dismissed');
                 const warningDiv = document.getElementById('dataLossWarning');
-                if (user.isAnonymous && !dismissed) {
-                    warningDiv.classList.remove('hidden');
-                } else {
-                    warningDiv.classList.add('hidden');
-                }
-                
+                if (user.isAnonymous && !dismissed) warningDiv.classList.remove('hidden');
+                else warningDiv.classList.add('hidden');
             } else {
                 currentUser = null;
             }
@@ -660,7 +590,6 @@
             document.getElementById('dataLossWarning').classList.add('hidden');
         });
 
-        // ---------- Form Submissions ----------
         document.getElementById('addForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const newTopic = {
@@ -689,9 +618,7 @@
             closeModal('editModal');
         });
 
-        // ---------- Filter & Navigation ----------
         document.getElementById('subjectFilter').onchange = renderReminders;
-        
         document.querySelectorAll('[data-status]').forEach(btn => btn.onclick = () => {
             document.querySelectorAll('[data-status]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -706,10 +633,7 @@
                 if (id === 'addModal') document.getElementById('topicDate').valueAsDate = new Date();
             }
         }
-        window.closeModal = (id) => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-        };
+        window.closeModal = (id) => { const el = document.getElementById(id); if (el) el.style.display = 'none'; };
         window.openModal = openModal;
 
         document.querySelectorAll('[data-nav]').forEach(btn => btn.onclick = () => {
@@ -717,7 +641,6 @@
             if (nav === 'home') renderReminders();
             else openModal(`${nav}Modal`);
         });
-
         document.querySelectorAll('[data-mobile-nav]').forEach(btn => btn.onclick = () => {
             const nav = btn.getAttribute('data-mobile-nav');
             if (nav === 'home') renderReminders();
@@ -735,12 +658,7 @@
         });
 
         window.onclick = (e) => { if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; };
-
-        // Retry sync on network reconnection
-        window.addEventListener('online', () => {
-            console.log("Network online – retrying sync");
-            syncPendingChanges();
-        });
+        window.addEventListener('online', () => { console.log("Network online – retrying sync"); syncPendingChanges(); });
     </script>
 </body>
 </html>
