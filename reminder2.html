@@ -8,7 +8,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Phosphor Icons (for clean, modern icons similar to the screenshot) -->
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <!-- Google Fonts -->
@@ -28,10 +28,10 @@
                             50: '#eef2ff',
                             100: '#e0e7ff',
                             500: '#6366f1',
-                            600: '#4f46e5', // Primary purple/indigo
+                            600: '#4f46e5',
                             700: '#4338ca',
                         },
-                        appbg: '#f8fafc' // Very light gray/blue background
+                        appbg: '#f8fafc'
                     }
                 }
             }
@@ -39,13 +39,18 @@
     </script>
     <style>
         body { background-color: #f8fafc; }
-        /* Hide scrollbar for clean look */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 200ms ease-out, transform 200ms ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 150ms ease-in, transform 150ms ease-in; }
     </style>
 </head>
-<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
+<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden pb-16 md:pb-0">
 
     <!-- ==================== LOGIN SCREEN ==================== -->
     <div id="login-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-appbg transition-opacity duration-300">
@@ -56,9 +61,9 @@
                 </div>
                 <span>StudyFlow <span class="text-brand-600">Pro</span></span>
             </div>
-            <p class="text-slate-500 mb-8">Sign in to manage your study tasks and mastery.</p>
+            <p class="text-slate-500 mb-8">Sign in to sync your study tasks across devices, or continue locally.</p>
             
-            <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 py-3 px-4 rounded-xl font-medium transition-colors shadow-sm">
+            <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 py-3 px-4 rounded-xl font-medium transition-colors shadow-sm mb-3">
                 <svg class="w-5 h-5" viewBox="0 0 24 24">
                     <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                     <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -67,6 +72,9 @@
                 </svg>
                 Continue with Google
             </button>
+            <button id="btn-anon-login" class="w-full text-slate-500 hover:text-slate-800 py-3 px-4 rounded-xl font-medium transition-colors text-sm">
+                Skip for now (Local only)
+            </button>
             <div id="login-error" class="text-red-500 text-sm mt-4 hidden"></div>
         </div>
     </div>
@@ -74,12 +82,11 @@
     <!-- ==================== MAIN APP SCREEN ==================== -->
     <div id="app-screen" class="hidden flex-1 flex flex-col h-full opacity-0 transition-opacity duration-300">
         
-        <!-- Top Navbar -->
+        <!-- Top Navbar (Desktop) -->
         <header class="bg-white border-b border-slate-100 sticky top-0 z-10">
             <div class="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between">
-                
                 <!-- Logo -->
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 cursor-pointer" id="nav-brand">
                     <div class="bg-brand-600 text-white p-2 rounded-xl flex items-center justify-center h-10 w-10">
                         <i class="ph-bold ph-book-open text-xl"></i>
                     </div>
@@ -88,21 +95,22 @@
 
                 <!-- Center Nav Links -->
                 <nav class="hidden md:flex bg-slate-50/80 p-1.5 rounded-full items-center">
-                    <a href="#" class="px-6 py-2 rounded-full bg-brand-50 text-brand-600 font-medium text-sm transition-colors">Home</a>
-                    <a href="#" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Add Topic</a>
-                    <a href="#" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">My Mastery</a>
-                    <a href="#" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Account</a>
+                    <button class="nav-btn-home px-6 py-2 rounded-full bg-brand-50 text-brand-600 font-medium text-sm transition-colors">Home</button>
+                    <button class="nav-btn-add px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Add Topic</button>
+                    <button class="nav-btn-mastery px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">My Mastery</button>
                 </nav>
 
                 <!-- Right Profile Section -->
                 <div class="flex items-center gap-4">
-                    <span id="user-greeting" class="text-sm font-medium text-slate-700 hidden sm:block">Hi, User</span>
-                    <div id="user-avatar" class="h-10 w-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100">
-                        U
+                    <!-- Sync Indicator -->
+                    <div id="sync-indicator" class="hidden text-brand-600 items-center gap-1 text-sm font-medium mr-2" title="Syncing with Cloud">
+                        <i class="ph ph-arrows-clockwise animate-spin text-lg"></i>
                     </div>
-                    <button id="btn-logout" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-medium transition-colors">
-                        Sign Out
-                    </button>
+                    
+                    <span id="user-greeting" class="text-sm font-medium text-slate-700 hidden sm:block">Hi, User</span>
+                    <div id="user-avatar" class="nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-semibold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-brand-200 transition-all">
+                        <i class="ph-fill ph-user text-lg"></i>
+                    </div>
                 </div>
             </div>
         </header>
@@ -112,111 +120,203 @@
             <div class="max-w-[1400px] mx-auto space-y-8">
                 
                 <!-- Stats Grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Due Today -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60">
-                        <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">DUE TODAY</h3>
-                        <div class="text-4xl font-bold text-brand-600">1</div>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">DUE TODAY</h3>
+                        <div id="stat-due" class="text-3xl sm:text-4xl font-bold text-brand-600">0</div>
                     </div>
-                    <!-- Overdue -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60">
-                        <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">OVERDUE</h3>
-                        <div class="text-4xl font-bold text-orange-500">0</div>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">OVERDUE</h3>
+                        <div id="stat-overdue" class="text-3xl sm:text-4xl font-bold text-orange-500">0</div>
                     </div>
-                    <!-- Mastered -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60">
-                        <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">MASTERED</h3>
-                        <div class="text-4xl font-bold text-emerald-500">0</div>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">MASTERED</h3>
+                        <div id="stat-mastered" class="text-3xl sm:text-4xl font-bold text-emerald-500">0</div>
                     </div>
-                    <!-- Daily Streak -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60 flex items-center justify-between">
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">DAILY STREAK</h3>
-                            <div class="text-4xl font-bold text-brand-600 flex items-center gap-2">
-                                1 <span class="text-3xl">🔥</span>
-                            </div>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">DAILY STREAK</h3>
+                        <div class="text-3xl sm:text-4xl font-bold text-brand-600 flex items-center gap-2">
+                            1 <span class="text-2xl sm:text-3xl">🔥</span>
                         </div>
                     </div>
                 </div>
 
                 <!-- Controls Bar -->
-                <div class="bg-white rounded-3xl p-3 shadow-sm border border-slate-100/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="bg-white rounded-2xl sm:rounded-3xl p-2 sm:p-3 shadow-sm border border-slate-100/60 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <!-- Subject Filter -->
                     <div class="relative w-full sm:w-64 pl-2">
-                        <select class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm">
-                            <option>All Subjects</option>
-                            <option>Biology</option>
-                            <option>Chemistry</option>
+                        <select id="filter-subject" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm cursor-pointer">
+                            <option value="All">All Subjects</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Physics">Physics</option>
                         </select>
                         <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     </div>
 
                     <!-- Tabs -->
-                    <div class="bg-slate-50 p-1.5 rounded-full flex items-center w-full sm:w-auto">
-                        <button class="flex-1 sm:flex-none px-6 py-2 rounded-full bg-brand-600 text-white font-medium text-sm shadow-sm transition-all">All Tasks</button>
-                        <button class="flex-1 sm:flex-none px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all">Due</button>
-                        <button class="flex-1 sm:flex-none px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all">Overdue</button>
+                    <div class="bg-slate-50 p-1.5 rounded-full flex items-center w-full sm:w-auto overflow-x-auto no-scrollbar">
+                        <button class="filter-status-btn flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-full bg-brand-600 text-white font-medium text-sm shadow-sm transition-all whitespace-nowrap" data-status="All">All Tasks</button>
+                        <button class="filter-status-btn flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all whitespace-nowrap" data-status="Due">Due Today</button>
+                        <button class="filter-status-btn flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all whitespace-nowrap" data-status="Overdue">Overdue</button>
                     </div>
                 </div>
 
                 <!-- Tasks Container -->
-                <div class="flex flex-col gap-6">
-                    <!-- Single Task Card (Replicating the screenshot) -->
-                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60 max-w-sm flex flex-col gap-4">
-                        
-                        <!-- Top Row: Tags -->
-                        <div class="flex items-center justify-between">
-                            <span class="bg-slate-100 text-slate-700 font-medium px-4 py-1.5 rounded-full text-xs">Biology</span>
-                            <span class="bg-amber-100/50 text-amber-700 font-semibold px-4 py-1.5 rounded-full text-xs flex items-center gap-1.5">
-                                <i class="ph-bold ph-arrow-counter-clockwise text-amber-600"></i> pending
-                            </span>
+                <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Tasks injected by JS -->
+                </div>
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+                    <div class="bg-slate-100 h-24 w-24 rounded-full flex items-center justify-center mb-4 text-slate-400">
+                        <i class="ph ph-check-circle text-5xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700 mb-2">You're all caught up!</h3>
+                    <p class="text-slate-500 max-w-sm">No tasks found for this filter. Enjoy your free time or add a new topic to study.</p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Mobile Bottom Nav -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-2 py-2 pb-safe z-40 h-16 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
+            <button class="nav-btn-home flex flex-col items-center justify-center w-16 text-brand-600">
+                <i class="ph-fill ph-house text-2xl"></i>
+                <span class="text-[10px] font-medium mt-1">Home</span>
+            </button>
+            
+            <div class="relative -top-6">
+                <button class="nav-btn-add bg-brand-600 text-white h-14 w-14 rounded-full shadow-lg shadow-brand-500/30 flex items-center justify-center transform hover:scale-105 active:scale-95 transition-all">
+                    <i class="ph-bold ph-plus text-2xl"></i>
+                </button>
+            </div>
+            
+            <button class="nav-btn-mastery flex flex-col items-center justify-center w-16 text-slate-400 hover:text-slate-700 transition-colors">
+                <i class="ph-bold ph-chart-bar text-2xl"></i>
+                <span class="text-[10px] font-medium mt-1">Mastery</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        
+        <!-- 1. Add/Edit Topic Modal -->
+        <div id="modal-topic" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden max-h-[90vh]">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 id="modal-topic-title" class="text-xl font-bold text-slate-800">Add Topic</h2>
+                <button class="close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+            <form id="form-topic" class="p-6 overflow-y-auto space-y-4">
+                <input type="hidden" id="topic-id">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Topic Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="topic-name" required placeholder="e.g. Mitosis Phases" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Subject</label>
+                        <div class="relative">
+                            <select id="topic-subject" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+                                <option>Biology</option>
+                                <option>Chemistry</option>
+                                <option>Physics</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                         </div>
-
-                        <!-- Title -->
-                        <h2 class="text-xl font-bold text-slate-800 mt-2">jj</h2>
-
-                        <!-- Bottom Row: Date & Actions -->
-                        <div class="flex items-center justify-between mt-2 pt-2">
-                            <!-- Date (Split into two lines like screenshot) -->
-                            <div class="text-[13px] font-semibold text-slate-400 leading-tight">
-                                2026-<br>03-29
-                            </div>
-
-                            <!-- Action Buttons -->
-                            <div class="flex items-center gap-2">
-                                <button class="h-11 w-11 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors">
-                                    <i class="ph ph-gear text-xl"></i>
-                                </button>
-                                
-                                <button class="h-11 px-4 rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold text-sm flex items-center gap-1.5 transition-colors">
-                                    <i class="ph ph-file-text text-lg"></i>
-                                    Summary
-                                </button>
-                                
-                                <button class="h-11 w-11 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors">
-                                    <i class="ph-bold ph-check text-lg"></i>
-                                </button>
-                                
-                                <button class="h-11 px-5 rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold text-sm transition-colors">
-                                    Review
-                                </button>
-                            </div>
-                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Review Date</label>
+                        <input type="date" id="topic-date" required class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Summary Link (Optional)</label>
+                    <input type="url" id="topic-link" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Notes (Optional)</label>
+                    <textarea id="topic-notes" rows="2" placeholder="Key takeaways..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all resize-none"></textarea>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" id="btn-delete-topic" class="hidden px-5 py-3 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors border border-red-100">
+                        Delete
+                    </button>
+                    <button type="submit" class="flex-1 px-5 py-3 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-500/30">
+                        Save Topic
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 2. Mastery Modal -->
+        <div id="modal-mastery" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="text-xl font-bold text-slate-800">My Mastery</h2>
+                <button class="close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
             </div>
-        </main>
+            <div class="p-6 space-y-6" id="mastery-container">
+                <!-- Progress bars injected via JS -->
+            </div>
+        </div>
+
+        <!-- 3. Account Modal -->
+        <div id="modal-account" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="text-xl font-bold text-slate-800">Account</h2>
+                <button class="close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col items-center">
+                <div id="account-avatar-lg" class="h-20 w-20 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner">
+                    U
+                </div>
+                <h3 id="account-name" class="text-xl font-bold text-slate-800">User</h3>
+                <p id="account-email" class="text-sm text-slate-500 mb-6">Anonymous</p>
+
+                <div id="anon-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 w-full flex gap-3 text-left hidden">
+                    <i class="ph-fill ph-warning text-amber-500 text-xl shrink-0"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-800 mb-1">Local Storage Only</h4>
+                        <p class="text-xs text-amber-700 leading-relaxed">You are currently using the app anonymously. Your data is saved to this browser. Sign in to back up and sync across devices.</p>
+                    </div>
+                </div>
+
+                <div class="w-full flex flex-col gap-3">
+                    <button id="btn-force-sync" class="w-full py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold transition-colors flex items-center justify-center gap-2 border border-slate-200">
+                        <i class="ph ph-arrows-clockwise text-lg"></i> Force Sync Data
+                    </button>
+                    <button id="btn-logout" class="w-full py-3 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-semibold transition-colors flex items-center justify-center gap-2 border border-red-100">
+                        <i class="ph ph-sign-out text-lg"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Firebase SDK Implementation -->
+    <!-- Firebase SDK & Application Logic -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Your provided Firebase configuration
-        const firebaseConfig = {
+        // ==========================================
+        // 1. ENVIRONMENT & FIREBASE SETUP
+        // ==========================================
+        const fallbackConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
             databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
@@ -227,100 +327,595 @@
             measurementId: "G-CWQB2330GF"
         };
 
-        // Initialize Firebase
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackConfig;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'studyflow-pro';
 
-        // UI Elements
-        const loginScreen = document.getElementById('login-screen');
-        const appScreen = document.getElementById('app-screen');
-        const btnGoogleLogin = document.getElementById('btn-google-login');
-        const btnLogout = document.getElementById('btn-logout');
-        const errorDiv = document.getElementById('login-error');
-        const userGreeting = document.getElementById('user-greeting');
-        const userAvatar = document.getElementById('user-avatar');
+        let currentUser = null;
+        let unsubscribeSnapshot = null;
 
-        // Authentication State Observer
+        // ==========================================
+        // 2. STATE & LOCAL STORAGE
+        // ==========================================
+        let tasks = [];
+        let currentSubjectFilter = 'All';
+        let currentStatusFilter = 'All'; // All, Due, Overdue
+
+        function getLocalKey() {
+            return currentUser ? `studyflow_tasks_${currentUser.uid}` : 'studyflow_tasks_anon';
+        }
+
+        function loadLocalData() {
+            const data = localStorage.getItem(getLocalKey());
+            if (data) {
+                try {
+                    tasks = JSON.parse(data);
+                } catch (e) {
+                    tasks = [];
+                }
+            } else {
+                tasks = [];
+            }
+        }
+
+        function saveLocalData() {
+            localStorage.setItem(getLocalKey(), JSON.stringify(tasks));
+        }
+
+        // Helpers for dates
+        const getTodayStr = () => {
+            const d = new Date();
+            const offset = d.getTimezoneOffset() * 60000;
+            return new Date(d.getTime() - offset).toISOString().split('T')[0];
+        };
+        
+        const addDaysStr = (dateStr, days) => {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
+        };
+
+        const generateId = () => crypto.randomUUID();
+
+        // ==========================================
+        // 3. UI RENDERING & LOGIC
+        // ==========================================
+        const ui = {
+            loginScreen: document.getElementById('login-screen'),
+            appScreen: document.getElementById('app-screen'),
+            tasksContainer: document.getElementById('tasks-container'),
+            emptyState: document.getElementById('empty-state'),
+            syncIndicator: document.getElementById('sync-indicator'),
+            modals: {
+                overlay: document.getElementById('modal-overlay'),
+                topic: document.getElementById('modal-topic'),
+                mastery: document.getElementById('modal-mastery'),
+                account: document.getElementById('modal-account')
+            }
+        };
+
+        function showScreen(screen) {
+            if (screen === 'app') {
+                ui.loginScreen.classList.add('opacity-0');
+                setTimeout(() => {
+                    ui.loginScreen.classList.add('hidden');
+                    ui.appScreen.classList.remove('hidden');
+                    void ui.appScreen.offsetWidth;
+                    ui.appScreen.classList.remove('opacity-0');
+                }, 300);
+            } else {
+                ui.appScreen.classList.add('opacity-0');
+                setTimeout(() => {
+                    ui.appScreen.classList.add('hidden');
+                    ui.loginScreen.classList.remove('hidden');
+                    void ui.loginScreen.offsetWidth;
+                    ui.loginScreen.classList.remove('opacity-0');
+                }, 300);
+            }
+        }
+
+        function openModal(modalId) {
+            ui.modals.overlay.classList.remove('hidden');
+            void ui.modals.overlay.offsetWidth;
+            ui.modals.overlay.classList.remove('opacity-0');
+            
+            // Hide all sub-modals
+            Object.values(ui.modals).forEach(m => {
+                if(m.id && m.id !== 'modal-overlay') { m.classList.add('hidden'); m.classList.add('scale-95'); }
+            });
+
+            const target = ui.modals[modalId];
+            if (target) {
+                target.classList.remove('hidden');
+                void target.offsetWidth;
+                target.classList.remove('scale-95');
+            }
+        }
+
+        function closeModal() {
+            ui.modals.overlay.classList.add('opacity-0');
+            Object.values(ui.modals).forEach(m => {
+                if(m.id && m.id !== 'modal-overlay') { m.classList.add('scale-95'); }
+            });
+            setTimeout(() => {
+                ui.modals.overlay.classList.add('hidden');
+            }, 200);
+        }
+
+        function updateStats() {
+            const today = getTodayStr();
+            const activeTasks = tasks.filter(t => !t._deleted && !t.completed);
+            
+            // Due Today: Date equals today
+            const dueToday = activeTasks.filter(t => t.nextReviewDate === today).length;
+            // Overdue: Date < today
+            const overdue = activeTasks.filter(t => t.nextReviewDate < today).length;
+            // Mastered: completed is true
+            const mastered = tasks.filter(t => !t._deleted && t.completed).length;
+
+            document.getElementById('stat-due').textContent = dueToday;
+            document.getElementById('stat-overdue').textContent = overdue;
+            document.getElementById('stat-mastered').textContent = mastered;
+        }
+
+        function renderTasks() {
+            const today = getTodayStr();
+            let filtered = tasks.filter(t => !t._deleted && !t.completed);
+
+            if (currentSubjectFilter !== 'All') {
+                filtered = filtered.filter(t => t.subject === currentSubjectFilter);
+            }
+
+            if (currentStatusFilter === 'Due') {
+                filtered = filtered.filter(t => t.nextReviewDate === today);
+            } else if (currentStatusFilter === 'Overdue') {
+                filtered = filtered.filter(t => t.nextReviewDate < today);
+            }
+
+            // Sort by date ascending
+            filtered.sort((a, b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
+
+            ui.tasksContainer.innerHTML = '';
+
+            if (filtered.length === 0) {
+                ui.emptyState.classList.remove('hidden');
+                ui.emptyState.classList.add('flex');
+            } else {
+                ui.emptyState.classList.add('hidden');
+                ui.emptyState.classList.remove('flex');
+
+                filtered.forEach(task => {
+                    const [year, month, day] = task.nextReviewDate.split('-');
+                    
+                    // Badge logic
+                    let badgeHtml = '';
+                    if (task.syncStatus === 'pending') {
+                         badgeHtml = `<span class="bg-amber-100/60 text-amber-700 font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise text-amber-600"></i> pending</span>`;
+                    }
+                    
+                    // Subj Color logic
+                    let subjColor = 'bg-slate-100 text-slate-700';
+                    if(task.subject === 'Biology') subjColor = 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+                    if(task.subject === 'Physics') subjColor = 'bg-brand-50 text-brand-700 border border-brand-100';
+                    if(task.subject === 'Chemistry') subjColor = 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100';
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col gap-3 transition-transform hover:-translate-y-1 duration-200';
+                    
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="${subjColor} font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs">${task.subject}</span>
+                            ${badgeHtml}
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800 line-clamp-2" title="${task.topic}">${task.topic}</h2>
+                        ${task.notes ? `<p class="text-xs sm:text-sm text-slate-500 line-clamp-2">${task.notes}</p>` : ''}
+                        
+                        <div class="flex items-end justify-between mt-auto pt-3">
+                            <div class="text-[11px] sm:text-[13px] font-semibold text-slate-400 leading-tight">
+                                ${year}-<br>${month}-${day}
+                            </div>
+                            <div class="flex items-center gap-1.5 sm:gap-2">
+                                <button class="btn-edit h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Edit">
+                                    <i class="ph-fill ph-gear text-lg sm:text-xl pointer-events-none"></i>
+                                </button>
+                                ${task.summaryLink ? `
+                                <a href="${task.summaryLink}" target="_blank" class="h-9 px-3 sm:h-11 sm:px-4 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-600 font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition-colors" title="View Summary">
+                                    <i class="ph-fill ph-file-text text-base sm:text-lg"></i><span class="hidden sm:inline">Summary</span>
+                                </a>` : ''}
+                                <button class="btn-master h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Mark Mastered">
+                                    <i class="ph-bold ph-check text-base sm:text-lg pointer-events-none"></i>
+                                </button>
+                                <button class="btn-review h-9 px-3 sm:h-11 sm:px-5 rounded-xl sm:rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold text-xs sm:text-sm transition-colors" data-id="${task.id}">
+                                    Review
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    ui.tasksContainer.appendChild(card);
+                });
+            }
+            updateStats();
+        }
+
+        function renderMastery() {
+            const container = document.getElementById('mastery-container');
+            container.innerHTML = '';
+            const subjects = ['Biology', 'Chemistry', 'Physics'];
+            
+            subjects.forEach(sub => {
+                const subTasks = tasks.filter(t => !t._deleted && t.subject === sub);
+                const total = subTasks.length;
+                const mastered = subTasks.filter(t => t.completed).length;
+                const percentage = total === 0 ? 0 : Math.round((mastered / total) * 100);
+                
+                let colorClass = 'bg-slate-500';
+                if(sub === 'Biology') colorClass = 'bg-emerald-500';
+                if(sub === 'Physics') colorClass = 'bg-brand-500';
+                if(sub === 'Chemistry') colorClass = 'bg-fuchsia-500';
+
+                container.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm font-semibold mb-2">
+                            <span class="text-slate-700">${sub}</span>
+                            <span class="text-slate-500">${mastered}/${total} (${percentage}%)</span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full ${colorClass} transition-all duration-500" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateAccountUI(user) {
+            const nameEl = document.getElementById('account-name');
+            const emailEl = document.getElementById('account-email');
+            const avatarNav = document.getElementById('user-avatar');
+            const avatarLg = document.getElementById('account-avatar-lg');
+            const greeting = document.getElementById('user-greeting');
+            const anonWarning = document.getElementById('anon-warning');
+
+            if (user && !user.isAnonymous) {
+                const name = user.displayName || 'Student';
+                nameEl.textContent = name;
+                emailEl.textContent = user.email;
+                greeting.textContent = `Hi, ${name.split(' ')[0]}`;
+                anonWarning.classList.add('hidden');
+                
+                let initials = name.charAt(0).toUpperCase();
+                avatarNav.innerHTML = initials;
+                avatarLg.innerHTML = initials;
+                
+                // Colors for authenticated user
+                avatarNav.className = "nav-btn-account h-10 w-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-brand-200 transition-all";
+                avatarLg.className = "h-20 w-20 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner";
+
+            } else {
+                nameEl.textContent = 'Guest User';
+                emailEl.textContent = 'Anonymous';
+                greeting.textContent = `Hi, Guest`;
+                anonWarning.classList.remove('hidden');
+                
+                avatarNav.innerHTML = '<i class="ph-fill ph-user text-lg"></i>';
+                avatarLg.innerHTML = '<i class="ph-fill ph-user text-4xl"></i>';
+                
+                // Colors for anonymous user
+                avatarNav.className = "nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-slate-300 transition-all";
+                avatarLg.className = "h-20 w-20 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner";
+            }
+        }
+
+        // ==========================================
+        // 4. DATA ACTIONS & SYNC
+        // ==========================================
+        
+        async function syncToCloud() {
+            if (!currentUser || !navigator.onLine) return;
+            const pendingTasks = tasks.filter(t => t.syncStatus === 'pending');
+            if (pendingTasks.length === 0) return;
+
+            ui.syncIndicator.classList.remove('hidden');
+            ui.syncIndicator.classList.add('flex');
+
+            try {
+                for (const task of pendingTasks) {
+                    const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', task.id);
+                    const cloudData = { ...task, syncStatus: 'synced', _updatedAtCloud: Date.now() };
+                    await setDoc(docRef, cloudData);
+                    // Update local status inline
+                    const localIdx = tasks.findIndex(t => t.id === task.id);
+                    if (localIdx > -1) {
+                        tasks[localIdx].syncStatus = 'synced';
+                    }
+                }
+                saveLocalData();
+                renderTasks(); // To remove pending badges
+            } catch (error) {
+                console.error("Sync Error:", error);
+            } finally {
+                ui.syncIndicator.classList.add('hidden');
+                ui.syncIndicator.classList.remove('flex');
+            }
+        }
+
+        function mutateTask(id, modifications, isNew = false) {
+            const now = new Date().toISOString();
+            if (isNew) {
+                const newTask = {
+                    id: id,
+                    createdAt: now,
+                    updatedAt: now,
+                    completed: false,
+                    syncStatus: 'pending',
+                    _deleted: false,
+                    ...modifications
+                };
+                tasks.push(newTask);
+            } else {
+                const idx = tasks.findIndex(t => t.id === id);
+                if (idx > -1) {
+                    tasks[idx] = { ...tasks[idx], ...modifications, updatedAt: now, syncStatus: 'pending' };
+                }
+            }
+            saveLocalData();
+            renderTasks();
+            syncToCloud(); // Fire & forget
+        }
+
+        function setupCloudListener() {
+            if (!currentUser) return;
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+            const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders');
+            
+            unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
+                let hasChanges = false;
+                snapshot.docChanges().forEach((change) => {
+                    const cloudTask = change.doc.data();
+                    const localIdx = tasks.findIndex(t => t.id === cloudTask.id);
+                    
+                    if (localIdx > -1) {
+                        const localTask = tasks[localIdx];
+                        // Conflict resolution: Local pending wins
+                        if (localTask.syncStatus === 'pending') {
+                            return; 
+                        }
+                        // Update local if cloud is newer/different and local is not pending
+                        if (JSON.stringify(localTask) !== JSON.stringify(cloudTask)) {
+                            tasks[localIdx] = cloudTask;
+                            hasChanges = true;
+                        }
+                    } else {
+                        // New task from cloud
+                        tasks.push(cloudTask);
+                        hasChanges = true;
+                    }
+                });
+
+                if (hasChanges) {
+                    saveLocalData();
+                    renderTasks();
+                }
+            }, (error) => {
+                console.error("Firestore listen error:", error);
+            });
+        }
+
+
+        // ==========================================
+        // 5. EVENT LISTENERS
+        // ==========================================
+
+        // --- Authentication ---
+        const initAuth = async () => {
+            // First time load check token
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                try {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } catch(e) { console.error("Custom token fail", e); }
+            }
+            // If already signed in via cached session, onAuthStateChanged will catch it
+        };
+        initAuth();
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // User is signed in
-                showAppScreen();
-                updateUserProfile(user);
+                currentUser = user;
+                loadLocalData(); // Load local first
+                updateAccountUI(user);
+                showScreen('app');
+                renderTasks();
+                setupCloudListener();
+                syncToCloud();
             } else {
-                // User is signed out
-                showLoginScreen();
+                currentUser = null;
+                if(unsubscribeSnapshot) unsubscribeSnapshot();
+                showScreen('login');
             }
         });
 
-        // Login Action
-        btnGoogleLogin.addEventListener('click', async () => {
+        document.getElementById('btn-google-login').addEventListener('click', async (e) => {
+            const btn = e.currentTarget;
+            const errDiv = document.getElementById('login-error');
             try {
-                errorDiv.classList.add('hidden');
-                btnGoogleLogin.disabled = true;
-                btnGoogleLogin.innerHTML = `<i class="ph ph-spinner animate-spin text-xl"></i> Connecting...`;
-                
+                errDiv.classList.add('hidden');
+                btn.disabled = true;
+                btn.innerHTML = `<i class="ph ph-spinner animate-spin text-xl"></i> Connecting...`;
+                const provider = new GoogleAuthProvider();
                 await signInWithPopup(auth, provider);
-                // State observer will handle UI change
             } catch (error) {
-                console.error("Authentication Error:", error);
-                errorDiv.textContent = `Login failed: ${error.message}`;
-                errorDiv.classList.remove('hidden');
-                
-                // Reset button
-                btnGoogleLogin.disabled = false;
-                btnGoogleLogin.innerHTML = `
-                    <svg class="w-5 h-5" viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    Continue with Google
-                `;
+                errDiv.textContent = error.message;
+                errDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = `Continue with Google`; // Reset simplified
             }
         });
 
-        // Logout Action
-        btnLogout.addEventListener('click', () => {
+        document.getElementById('btn-anon-login').addEventListener('click', async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                document.getElementById('login-error').textContent = error.message;
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            closeModal();
             signOut(auth);
         });
 
-        // Helper Functions
-        function showAppScreen() {
-            loginScreen.classList.add('opacity-0');
-            setTimeout(() => {
-                loginScreen.classList.add('hidden');
-                appScreen.classList.remove('hidden');
-                // Trigger reflow
-                void appScreen.offsetWidth;
-                appScreen.classList.remove('opacity-0');
-            }, 300);
-        }
+        document.getElementById('btn-force-sync').addEventListener('click', () => {
+            syncToCloud();
+            closeModal();
+        });
 
-        function showLoginScreen() {
-            appScreen.classList.add('opacity-0');
-            setTimeout(() => {
-                appScreen.classList.add('hidden');
-                loginScreen.classList.remove('hidden');
-                // Trigger reflow
-                void loginScreen.offsetWidth;
-                loginScreen.classList.remove('opacity-0');
-            }, 300);
-        }
 
-        function updateUserProfile(user) {
-            const displayName = user.displayName || "Student";
-            userGreeting.textContent = `Hi, ${displayName}`;
-            
-            // Generate initials
-            const names = displayName.split(' ');
-            let initials = names[0].charAt(0).toUpperCase();
-            if (names.length > 1) {
-                initials += names[names.length - 1].charAt(0).toUpperCase();
+        // --- Navigation & Modals ---
+        document.querySelectorAll('.nav-btn-home').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentSubjectFilter = 'All';
+                currentStatusFilter = 'All';
+                document.getElementById('filter-subject').value = 'All';
+                document.querySelectorAll('.filter-status-btn').forEach(b => {
+                    if (b.dataset.status === 'All') {
+                        b.classList.remove('text-slate-600', 'hover:text-slate-900');
+                        b.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
+                    } else {
+                        b.classList.add('text-slate-600', 'hover:text-slate-900');
+                        b.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                    }
+                });
+                renderTasks();
+                window.scrollTo(0,0);
+            });
+        });
+
+        document.getElementById('nav-brand').addEventListener('click', () => {
+             document.querySelector('.nav-btn-home').click();
+        });
+
+        document.querySelectorAll('.nav-btn-add').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('form-topic').reset();
+                document.getElementById('topic-id').value = '';
+                document.getElementById('topic-date').value = getTodayStr();
+                document.getElementById('modal-topic-title').textContent = 'Add Topic';
+                document.getElementById('btn-delete-topic').classList.add('hidden');
+                openModal('topic');
+            });
+        });
+
+        document.querySelectorAll('.nav-btn-mastery').forEach(btn => {
+            btn.addEventListener('click', () => {
+                renderMastery();
+                openModal('mastery');
+            });
+        });
+
+        document.querySelectorAll('.nav-btn-account').forEach(btn => {
+            btn.addEventListener('click', () => {
+                openModal('account');
+            });
+        });
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', closeModal);
+        });
+
+        // Close modal on outside click
+        ui.modals.overlay.addEventListener('click', (e) => {
+            if (e.target === ui.modals.overlay) closeModal();
+        });
+
+        // --- Filters ---
+        document.getElementById('filter-subject').addEventListener('change', (e) => {
+            currentSubjectFilter = e.target.value;
+            renderTasks();
+        });
+
+        document.querySelectorAll('.filter-status-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // Update UI active state
+                document.querySelectorAll('.filter-status-btn').forEach(b => {
+                    b.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                    b.classList.add('text-slate-600', 'hover:text-slate-900');
+                });
+                e.target.classList.remove('text-slate-600', 'hover:text-slate-900');
+                e.target.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
+                
+                currentStatusFilter = e.target.dataset.status;
+                renderTasks();
+            });
+        });
+
+        // --- Task Actions (Delegated) ---
+        ui.tasksContainer.addEventListener('click', (e) => {
+            const btnEdit = e.target.closest('.btn-edit');
+            const btnMaster = e.target.closest('.btn-master');
+            const btnReview = e.target.closest('.btn-review');
+
+            if (btnEdit) {
+                const id = btnEdit.dataset.id;
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    document.getElementById('topic-id').value = task.id;
+                    document.getElementById('topic-name').value = task.topic;
+                    document.getElementById('topic-subject').value = task.subject;
+                    document.getElementById('topic-date').value = task.nextReviewDate;
+                    document.getElementById('topic-link').value = task.summaryLink || '';
+                    document.getElementById('topic-notes').value = task.notes || '';
+                    
+                    document.getElementById('modal-topic-title').textContent = 'Edit Topic';
+                    document.getElementById('btn-delete-topic').classList.remove('hidden');
+                    openModal('topic');
+                }
             }
-            userAvatar.textContent = initials;
-        }
+
+            if (btnMaster) {
+                const id = btnMaster.dataset.id;
+                mutateTask(id, { completed: true });
+            }
+
+            if (btnReview) {
+                const id = btnReview.dataset.id;
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    // Spaced repetition: add 3 days
+                    const newDate = addDaysStr(getTodayStr(), 3);
+                    mutateTask(id, { nextReviewDate: newDate });
+                }
+            }
+        });
+
+        // --- Forms ---
+        document.getElementById('form-topic').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('topic-id').value;
+            const isNew = !id;
+            const targetId = isNew ? generateId() : id;
+            
+            const data = {
+                topic: document.getElementById('topic-name').value.trim(),
+                subject: document.getElementById('topic-subject').value,
+                nextReviewDate: document.getElementById('topic-date').value,
+                summaryLink: document.getElementById('topic-link').value.trim(),
+                notes: document.getElementById('topic-notes').value.trim()
+            };
+
+            mutateTask(targetId, data, isNew);
+            closeModal();
+        });
+
+        document.getElementById('btn-delete-topic').addEventListener('click', () => {
+            const id = document.getElementById('topic-id').value;
+            if (id && confirm('Are you sure you want to delete this topic?')) {
+                mutateTask(id, { _deleted: true });
+                closeModal();
+            }
+        });
 
     </script>
 </body>
