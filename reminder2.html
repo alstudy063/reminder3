@@ -61,26 +61,19 @@
                 </div>
                 <span>StudyFlow <span class="text-brand-600">Pro</span></span>
             </div>
-            <p class="text-slate-500 mb-8">Sign in to sync your study tasks across devices, or continue locally.</p>
+            <p class="text-slate-500 mb-8">Continue as guest to start studying. You can sign in later to sync across devices.</p>
             
-            <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 py-3 px-4 rounded-xl font-medium transition-colors shadow-sm mb-3">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                Continue with Google
-            </button>
-            <button id="btn-anon-login" class="w-full text-slate-500 hover:text-slate-800 py-3 px-4 rounded-xl font-medium transition-colors text-sm">
-                Skip for now (Local only)
+            <!-- Only anonymous login; Google removed from initial screen -->
+            <button id="btn-anon-login" class="w-full flex items-center justify-center gap-3 bg-brand-600 text-white hover:bg-brand-700 py-3 px-4 rounded-xl font-medium transition-colors shadow-sm mb-3">
+                <i class="ph-bold ph-user text-xl"></i>
+                Continue as Guest
             </button>
             <div id="login-error" class="text-red-500 text-sm mt-4 hidden"></div>
         </div>
     </div>
 
     <!-- ==================== MAIN APP SCREEN ==================== -->
-    <div id="app-screen" class="hidden flex-1 flex flex-col h-full opacity-0 transition-opacity duration-300">
+    <div id="app-screen" class="hidden flex-1 flex-col h-full opacity-0 transition-opacity duration-300">
         
         <!-- Top Navbar (Desktop) -->
         <header class="bg-white border-b border-slate-100 sticky top-0 z-10">
@@ -93,19 +86,26 @@
                     <span class="text-xl font-bold tracking-tight text-slate-900">StudyFlow <span class="text-brand-600">Pro</span></span>
                 </div>
 
-                <!-- Center Nav Links -->
+                <!-- Center Nav Links: added Account button after My Mastery -->
                 <nav class="hidden md:flex bg-slate-50/80 p-1.5 rounded-full items-center">
                     <button class="nav-btn-home px-6 py-2 rounded-full bg-brand-50 text-brand-600 font-medium text-sm transition-colors">Home</button>
                     <button class="nav-btn-add px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Add Topic</button>
                     <button class="nav-btn-mastery px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">My Mastery</button>
+                    <button id="nav-btn-account-desktop" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors flex items-center gap-1">
+                        <i class="ph-bold ph-user-circle text-base"></i> Account
+                    </button>
                 </nav>
 
-                <!-- Right Profile Section -->
+                <!-- Right Profile Section (kept for avatar, but we'll rely on account button) -->
                 <div class="flex items-center gap-4">
                     <!-- Sync Indicator -->
-                    <div id="sync-indicator" class="hidden text-brand-600 items-center gap-1 text-sm font-medium mr-2" title="Syncing with Cloud">
+                    <div id="sync-indicator" class="hidden text-brand-600 items-center gap-1 text-sm font-medium" title="Syncing with Cloud">
                         <i class="ph ph-arrows-clockwise animate-spin text-lg"></i>
                     </div>
+                    <button id="btn-header-sync" class="text-slate-400 hover:text-brand-600 transition-colors text-sm font-medium hidden md:flex items-center gap-1">
+                        <i class="ph ph-arrows-clockwise text-base"></i>
+                        <span>Force sync</span>
+                    </button>
                     
                     <span id="user-greeting" class="text-sm font-medium text-slate-700 hidden sm:block">Hi, User</span>
                     <div id="user-avatar" class="nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-semibold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-brand-200 transition-all">
@@ -178,7 +178,7 @@
             </div>
         </main>
         
-        <!-- Mobile Bottom Nav -->
+        <!-- Mobile Bottom Nav: added Account button after Mastery -->
         <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-2 py-2 pb-safe z-40 h-16 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
             <button class="nav-btn-home flex flex-col items-center justify-center w-16 text-brand-600">
                 <i class="ph-fill ph-house text-2xl"></i>
@@ -194,6 +194,11 @@
             <button class="nav-btn-mastery flex flex-col items-center justify-center w-16 text-slate-400 hover:text-slate-700 transition-colors">
                 <i class="ph-bold ph-chart-bar text-2xl"></i>
                 <span class="text-[10px] font-medium mt-1">Mastery</span>
+            </button>
+
+            <button id="nav-btn-account-mobile" class="flex flex-col items-center justify-center w-16 text-slate-400 hover:text-slate-700 transition-colors">
+                <i class="ph-bold ph-user-circle text-2xl"></i>
+                <span class="text-[10px] font-medium mt-1">Account</span>
             </button>
         </nav>
     </div>
@@ -271,7 +276,7 @@
             </div>
         </div>
 
-        <!-- 3. Account Modal -->
+        <!-- 3. Account Modal (now includes Google Sign In for anonymous) -->
         <div id="modal-account" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 class="text-xl font-bold text-slate-800">Account</h2>
@@ -286,16 +291,27 @@
                 <h3 id="account-name" class="text-xl font-bold text-slate-800">User</h3>
                 <p id="account-email" class="text-sm text-slate-500 mb-6">Anonymous</p>
 
+                <!-- Dynamic content based on auth state will be handled by JS -->
                 <div id="anon-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 w-full flex gap-3 text-left hidden">
                     <i class="ph-fill ph-warning text-amber-500 text-xl shrink-0"></i>
                     <div>
                         <h4 class="text-sm font-bold text-amber-800 mb-1">Local Storage Only</h4>
-                        <p class="text-xs text-amber-700 leading-relaxed">You are currently using the app anonymously. Your data is saved to this browser. Sign in to back up and sync across devices.</p>
+                        <p class="text-xs text-amber-700 leading-relaxed">You are currently using the app anonymously. Sign in to back up and sync across devices.</p>
                     </div>
                 </div>
 
                 <div class="w-full flex flex-col gap-3">
-                    <button id="btn-force-sync" class="w-full py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold transition-colors flex items-center justify-center gap-2 border border-slate-200">
+                    <!-- Google Sign In button (only shown when anonymous) -->
+                    <button id="btn-google-signin-modal" class="hidden w-full py-3 px-4 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Sign in with Google
+                    </button>
+                    <button id="btn-force-sync-modal" class="w-full py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold transition-colors flex items-center justify-center gap-2 border border-slate-200">
                         <i class="ph ph-arrows-clockwise text-lg"></i> Force Sync Data
                     </button>
                     <button id="btn-logout" class="w-full py-3 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-semibold transition-colors flex items-center justify-center gap-2 border border-red-100">
@@ -310,24 +326,23 @@
     <!-- Firebase SDK & Application Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // ==========================================
         // 1. ENVIRONMENT & FIREBASE SETUP
         // ==========================================
-        const fallbackConfig = {
+        if (typeof __firebase_config === 'undefined') {
+            console.error("Firebase config missing.");
+        }
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
-            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
             projectId: "studymaster-919ba",
             storageBucket: "studymaster-919ba.firebasestorage.app",
             messagingSenderId: "426684063256",
-            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
-            measurementId: "G-CWQB2330GF"
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d"
         };
-
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : fallbackConfig;
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -341,7 +356,7 @@
         // ==========================================
         let tasks = [];
         let currentSubjectFilter = 'All';
-        let currentStatusFilter = 'All'; // All, Due, Overdue
+        let currentStatusFilter = 'All';
 
         function getLocalKey() {
             return currentUser ? `studyflow_tasks_${currentUser.uid}` : 'studyflow_tasks_anon';
@@ -364,7 +379,6 @@
             localStorage.setItem(getLocalKey(), JSON.stringify(tasks));
         }
 
-        // Helpers for dates
         const getTodayStr = () => {
             const d = new Date();
             const offset = d.getTimezoneOffset() * 60000;
@@ -421,7 +435,6 @@
             void ui.modals.overlay.offsetWidth;
             ui.modals.overlay.classList.remove('opacity-0');
             
-            // Hide all sub-modals
             Object.values(ui.modals).forEach(m => {
                 if(m.id && m.id !== 'modal-overlay') { m.classList.add('hidden'); m.classList.add('scale-95'); }
             });
@@ -447,12 +460,8 @@
         function updateStats() {
             const today = getTodayStr();
             const activeTasks = tasks.filter(t => !t._deleted && !t.completed);
-            
-            // Due Today: Date equals today
             const dueToday = activeTasks.filter(t => t.nextReviewDate === today).length;
-            // Overdue: Date < today
             const overdue = activeTasks.filter(t => t.nextReviewDate < today).length;
-            // Mastered: completed is true
             const mastered = tasks.filter(t => !t._deleted && t.completed).length;
 
             document.getElementById('stat-due').textContent = dueToday;
@@ -467,14 +476,12 @@
             if (currentSubjectFilter !== 'All') {
                 filtered = filtered.filter(t => t.subject === currentSubjectFilter);
             }
-
             if (currentStatusFilter === 'Due') {
                 filtered = filtered.filter(t => t.nextReviewDate === today);
             } else if (currentStatusFilter === 'Overdue') {
                 filtered = filtered.filter(t => t.nextReviewDate < today);
             }
 
-            // Sort by date ascending
             filtered.sort((a, b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
 
             ui.tasksContainer.innerHTML = '';
@@ -488,14 +495,11 @@
 
                 filtered.forEach(task => {
                     const [year, month, day] = task.nextReviewDate.split('-');
-                    
-                    // Badge logic
                     let badgeHtml = '';
                     if (task.syncStatus === 'pending') {
-                         badgeHtml = `<span class="bg-amber-100/60 text-amber-700 font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise text-amber-600"></i> pending</span>`;
+                        badgeHtml = `<span class="bg-amber-100/60 text-amber-700 font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise text-amber-600"></i> pending</span>`;
                     }
                     
-                    // Subj Color logic
                     let subjColor = 'bg-slate-100 text-slate-700';
                     if(task.subject === 'Biology') subjColor = 'bg-emerald-50 text-emerald-700 border border-emerald-100';
                     if(task.subject === 'Physics') subjColor = 'bg-brand-50 text-brand-700 border border-brand-100';
@@ -503,7 +507,6 @@
 
                     const card = document.createElement('div');
                     card.className = 'bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col gap-3 transition-transform hover:-translate-y-1 duration-200';
-                    
                     card.innerHTML = `
                         <div class="flex items-center justify-between">
                             <span class="${subjColor} font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs">${task.subject}</span>
@@ -511,25 +514,13 @@
                         </div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-800 line-clamp-2" title="${task.topic}">${task.topic}</h2>
                         ${task.notes ? `<p class="text-xs sm:text-sm text-slate-500 line-clamp-2">${task.notes}</p>` : ''}
-                        
                         <div class="flex items-end justify-between mt-auto pt-3">
-                            <div class="text-[11px] sm:text-[13px] font-semibold text-slate-400 leading-tight">
-                                ${year}-<br>${month}-${day}
-                            </div>
+                            <div class="text-[11px] sm:text-[13px] font-semibold text-slate-400 leading-tight">${year}-<br>${month}-${day}</div>
                             <div class="flex items-center gap-1.5 sm:gap-2">
-                                <button class="btn-edit h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Edit">
-                                    <i class="ph-fill ph-gear text-lg sm:text-xl pointer-events-none"></i>
-                                </button>
-                                ${task.summaryLink ? `
-                                <a href="${task.summaryLink}" target="_blank" class="h-9 px-3 sm:h-11 sm:px-4 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-600 font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition-colors" title="View Summary">
-                                    <i class="ph-fill ph-file-text text-base sm:text-lg"></i><span class="hidden sm:inline">Summary</span>
-                                </a>` : ''}
-                                <button class="btn-master h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Mark Mastered">
-                                    <i class="ph-bold ph-check text-base sm:text-lg pointer-events-none"></i>
-                                </button>
-                                <button class="btn-review h-9 px-3 sm:h-11 sm:px-5 rounded-xl sm:rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold text-xs sm:text-sm transition-colors" data-id="${task.id}">
-                                    Review
-                                </button>
+                                <button class="btn-edit h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Edit"><i class="ph-fill ph-gear text-lg sm:text-xl pointer-events-none"></i></button>
+                                ${task.summaryLink ? `<a href="${task.summaryLink}" target="_blank" class="h-9 px-3 sm:h-11 sm:px-4 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-600 font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition-colors" title="View Summary"><i class="ph-fill ph-file-text text-base sm:text-lg"></i><span class="hidden sm:inline">Summary</span></a>` : ''}
+                                <button class="btn-master h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Mark Mastered"><i class="ph-bold ph-check text-base sm:text-lg pointer-events-none"></i></button>
+                                <button class="btn-review h-9 px-3 sm:h-11 sm:px-5 rounded-xl sm:rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold text-xs sm:text-sm transition-colors" data-id="${task.id}">Review</button>
                             </div>
                         </div>
                     `;
@@ -543,18 +534,15 @@
             const container = document.getElementById('mastery-container');
             container.innerHTML = '';
             const subjects = ['Biology', 'Chemistry', 'Physics'];
-            
             subjects.forEach(sub => {
                 const subTasks = tasks.filter(t => !t._deleted && t.subject === sub);
                 const total = subTasks.length;
                 const mastered = subTasks.filter(t => t.completed).length;
                 const percentage = total === 0 ? 0 : Math.round((mastered / total) * 100);
-                
                 let colorClass = 'bg-slate-500';
                 if(sub === 'Biology') colorClass = 'bg-emerald-500';
                 if(sub === 'Physics') colorClass = 'bg-brand-500';
                 if(sub === 'Chemistry') colorClass = 'bg-fuchsia-500';
-
                 container.innerHTML += `
                     <div>
                         <div class="flex justify-between text-sm font-semibold mb-2">
@@ -576,6 +564,7 @@
             const avatarLg = document.getElementById('account-avatar-lg');
             const greeting = document.getElementById('user-greeting');
             const anonWarning = document.getElementById('anon-warning');
+            const googleSignInBtn = document.getElementById('btn-google-signin-modal');
 
             if (user && !user.isAnonymous) {
                 const name = user.displayName || 'Student';
@@ -583,25 +572,20 @@
                 emailEl.textContent = user.email;
                 greeting.textContent = `Hi, ${name.split(' ')[0]}`;
                 anonWarning.classList.add('hidden');
-                
+                googleSignInBtn.classList.add('hidden');
                 let initials = name.charAt(0).toUpperCase();
                 avatarNav.innerHTML = initials;
                 avatarLg.innerHTML = initials;
-                
-                // Colors for authenticated user
                 avatarNav.className = "nav-btn-account h-10 w-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-brand-200 transition-all";
                 avatarLg.className = "h-20 w-20 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner";
-
             } else {
                 nameEl.textContent = 'Guest User';
                 emailEl.textContent = 'Anonymous';
                 greeting.textContent = `Hi, Guest`;
                 anonWarning.classList.remove('hidden');
-                
+                googleSignInBtn.classList.remove('hidden');
                 avatarNav.innerHTML = '<i class="ph-fill ph-user text-lg"></i>';
                 avatarLg.innerHTML = '<i class="ph-fill ph-user text-4xl"></i>';
-                
-                // Colors for anonymous user
                 avatarNav.className = "nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-slate-300 transition-all";
                 avatarLg.className = "h-20 w-20 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner";
             }
@@ -610,7 +594,6 @@
         // ==========================================
         // 4. DATA ACTIONS & SYNC
         // ==========================================
-        
         async function syncToCloud() {
             if (!currentUser || !navigator.onLine) return;
             const pendingTasks = tasks.filter(t => t.syncStatus === 'pending');
@@ -624,14 +607,13 @@
                     const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', task.id);
                     const cloudData = { ...task, syncStatus: 'synced', _updatedAtCloud: Date.now() };
                     await setDoc(docRef, cloudData);
-                    // Update local status inline
                     const localIdx = tasks.findIndex(t => t.id === task.id);
                     if (localIdx > -1) {
                         tasks[localIdx].syncStatus = 'synced';
                     }
                 }
                 saveLocalData();
-                renderTasks(); // To remove pending badges
+                renderTasks();
             } catch (error) {
                 console.error("Sync Error:", error);
             } finally {
@@ -661,7 +643,7 @@
             }
             saveLocalData();
             renderTasks();
-            syncToCloud(); // Fire & forget
+            syncToCloud();
         }
 
         function setupCloudListener() {
@@ -669,31 +651,23 @@
             if (unsubscribeSnapshot) unsubscribeSnapshot();
 
             const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders');
-            
             unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
                 let hasChanges = false;
                 snapshot.docChanges().forEach((change) => {
                     const cloudTask = change.doc.data();
                     const localIdx = tasks.findIndex(t => t.id === cloudTask.id);
-                    
                     if (localIdx > -1) {
                         const localTask = tasks[localIdx];
-                        // Conflict resolution: Local pending wins
-                        if (localTask.syncStatus === 'pending') {
-                            return; 
-                        }
-                        // Update local if cloud is newer/different and local is not pending
+                        if (localTask.syncStatus === 'pending') return;
                         if (JSON.stringify(localTask) !== JSON.stringify(cloudTask)) {
                             tasks[localIdx] = cloudTask;
                             hasChanges = true;
                         }
                     } else {
-                        // New task from cloud
                         tasks.push(cloudTask);
                         hasChanges = true;
                     }
                 });
-
                 if (hasChanges) {
                     saveLocalData();
                     renderTasks();
@@ -703,27 +677,13 @@
             });
         }
 
-
         // ==========================================
         // 5. EVENT LISTENERS
         // ==========================================
-
-        // --- Authentication ---
-        const initAuth = async () => {
-            // First time load check token
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                try {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } catch(e) { console.error("Custom token fail", e); }
-            }
-            // If already signed in via cached session, onAuthStateChanged will catch it
-        };
-        initAuth();
-
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                loadLocalData(); // Load local first
+                loadLocalData();
                 updateAccountUI(user);
                 showScreen('app');
                 renderTasks();
@@ -736,23 +696,6 @@
             }
         });
 
-        document.getElementById('btn-google-login').addEventListener('click', async (e) => {
-            const btn = e.currentTarget;
-            const errDiv = document.getElementById('login-error');
-            try {
-                errDiv.classList.add('hidden');
-                btn.disabled = true;
-                btn.innerHTML = `<i class="ph ph-spinner animate-spin text-xl"></i> Connecting...`;
-                const provider = new GoogleAuthProvider();
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                errDiv.textContent = error.message;
-                errDiv.classList.remove('hidden');
-                btn.disabled = false;
-                btn.innerHTML = `Continue with Google`; // Reset simplified
-            }
-        });
-
         document.getElementById('btn-anon-login').addEventListener('click', async () => {
             try {
                 await signInAnonymously(auth);
@@ -762,18 +705,49 @@
             }
         });
 
+        // Google Sign In from account modal
+        document.getElementById('btn-google-signin-modal').addEventListener('click', async () => {
+            try {
+                const provider = new GoogleAuthProvider();
+                await signInWithPopup(auth, provider);
+                closeModal(); // close account modal after sign-in
+            } catch (error) {
+                console.error(error);
+                alert("Sign in failed: " + error.message);
+            }
+        });
+
         document.getElementById('btn-logout').addEventListener('click', () => {
             closeModal();
             signOut(auth);
         });
 
-        document.getElementById('btn-force-sync').addEventListener('click', () => {
+        document.getElementById('btn-force-sync-modal').addEventListener('click', () => {
             syncToCloud();
             closeModal();
         });
+        document.getElementById('btn-header-sync').addEventListener('click', () => {
+            syncToCloud();
+        });
 
+        // Navigation: Account buttons open account modal
+        const accountButtons = ['nav-btn-account-desktop', 'nav-btn-account-mobile'];
+        accountButtons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    openModal('account');
+                });
+            }
+        });
+        // Also the avatar (existing nav-btn-account) opens account modal
+        document.querySelectorAll('.nav-btn-account').forEach(btn => {
+            btn.addEventListener('click', () => {
+                openModal('account');
+            });
+        });
 
-        // --- Navigation & Modals ---
+        // Other nav buttons
         document.querySelectorAll('.nav-btn-home').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentSubjectFilter = 'All';
@@ -794,7 +768,7 @@
         });
 
         document.getElementById('nav-brand').addEventListener('click', () => {
-             document.querySelector('.nav-btn-home').click();
+            document.querySelector('.nav-btn-home').click();
         });
 
         document.querySelectorAll('.nav-btn-add').forEach(btn => {
@@ -815,22 +789,14 @@
             });
         });
 
-        document.querySelectorAll('.nav-btn-account').forEach(btn => {
-            btn.addEventListener('click', () => {
-                openModal('account');
-            });
-        });
-
         document.querySelectorAll('.close-modal').forEach(btn => {
             btn.addEventListener('click', closeModal);
         });
 
-        // Close modal on outside click
         ui.modals.overlay.addEventListener('click', (e) => {
             if (e.target === ui.modals.overlay) closeModal();
         });
 
-        // --- Filters ---
         document.getElementById('filter-subject').addEventListener('change', (e) => {
             currentSubjectFilter = e.target.value;
             renderTasks();
@@ -838,20 +804,17 @@
 
         document.querySelectorAll('.filter-status-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                // Update UI active state
                 document.querySelectorAll('.filter-status-btn').forEach(b => {
                     b.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
                     b.classList.add('text-slate-600', 'hover:text-slate-900');
                 });
                 e.target.classList.remove('text-slate-600', 'hover:text-slate-900');
                 e.target.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
-                
                 currentStatusFilter = e.target.dataset.status;
                 renderTasks();
             });
         });
 
-        // --- Task Actions (Delegated) ---
         ui.tasksContainer.addEventListener('click', (e) => {
             const btnEdit = e.target.closest('.btn-edit');
             const btnMaster = e.target.closest('.btn-master');
@@ -867,36 +830,30 @@
                     document.getElementById('topic-date').value = task.nextReviewDate;
                     document.getElementById('topic-link').value = task.summaryLink || '';
                     document.getElementById('topic-notes').value = task.notes || '';
-                    
                     document.getElementById('modal-topic-title').textContent = 'Edit Topic';
                     document.getElementById('btn-delete-topic').classList.remove('hidden');
                     openModal('topic');
                 }
             }
-
             if (btnMaster) {
                 const id = btnMaster.dataset.id;
                 mutateTask(id, { completed: true });
             }
-
             if (btnReview) {
                 const id = btnReview.dataset.id;
                 const task = tasks.find(t => t.id === id);
                 if (task) {
-                    // Spaced repetition: add 3 days
                     const newDate = addDaysStr(getTodayStr(), 3);
                     mutateTask(id, { nextReviewDate: newDate });
                 }
             }
         });
 
-        // --- Forms ---
         document.getElementById('form-topic').addEventListener('submit', (e) => {
             e.preventDefault();
             const id = document.getElementById('topic-id').value;
             const isNew = !id;
             const targetId = isNew ? generateId() : id;
-            
             const data = {
                 topic: document.getElementById('topic-name').value.trim(),
                 subject: document.getElementById('topic-subject').value,
@@ -904,7 +861,6 @@
                 summaryLink: document.getElementById('topic-link').value.trim(),
                 notes: document.getElementById('topic-notes').value.trim()
             };
-
             mutateTask(targetId, data, isNew);
             closeModal();
         });
@@ -916,7 +872,6 @@
                 closeModal();
             }
         });
-
     </script>
 </body>
 </html>
