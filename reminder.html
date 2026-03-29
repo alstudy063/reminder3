@@ -47,7 +47,7 @@
 
     <div id="toast-container"></div>
 
-    <!-- Data loss warning banner -->
+    <!-- Data loss warning banner (hidden by default) -->
     <div id="dataLossWarning" class="data-loss-warning hidden mx-auto max-w-7xl mt-4 px-4 sm:px-6 lg:px-8">
         <div class="bg-amber-50 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-4">
             <div class="flex items-center gap-3">
@@ -212,7 +212,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, enableNetwork } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU","authDomain":"studymaster-919ba.firebaseapp.com","databaseURL":"https://studymaster-919ba-default-rtdb.firebaseio.com","projectId":"studymaster-919ba","storageBucket":"studymaster-919ba.firebasestorage.app","messagingSenderId":"426684063256","appId":"1:426684063256:web:52c17625a9450ea9662d6d","measurementId":"G-CWQB2330GF"}');
         const app = initializeApp(firebaseConfig);
@@ -220,43 +220,20 @@
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
-        console.log("Firebase initialized. appId:", appId);
+        console.log("🔥 Firebase initialized. appId:", appId);
 
+        // ---------- Global State ----------
         let currentReminders = [];
         let currentStatusFilter = "all";
         let currentUser = null;
-        let initialDataLoaded = false;
-        let isLocalStorageLoaded = false;
         let unsubscribeSnapshot = null;
+        let isSyncing = false;
 
         const syncIndicator = document.getElementById('syncIndicator');
         let syncTimeout = null;
-
         const LOCAL_STORAGE_KEY = 'studyflow_reminders_backup';
 
-        function saveToLocalStorage(reminders) {
-            try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(reminders));
-                console.log('✅ Saved to localStorage:', reminders.length, 'items');
-            } catch (e) {
-                console.warn('Failed to save to localStorage:', e);
-            }
-        }
-
-        function loadFromLocalStorage() {
-            try {
-                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-                if (data) {
-                    const parsed = JSON.parse(data);
-                    console.log('📦 Loaded from localStorage:', parsed.length, 'items');
-                    return parsed;
-                }
-            } catch (e) {
-                console.warn('Failed to load from localStorage:', e);
-            }
-            return null;
-        }
-
+        // ---------- Helper Functions ----------
         function showSyncSpinner() {
             if (!currentUser) return;
             if (syncTimeout) clearTimeout(syncTimeout);
@@ -272,130 +249,39 @@
             }, 300);
         }
 
-        const showToast = (msg) => {
+        function saveToLocalStorage(reminders) {
+            try {
+                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(reminders));
+                console.log('💾 Saved to localStorage:', reminders.length, 'items');
+            } catch (e) {
+                console.warn('Failed to save to localStorage:', e);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    console.log('📀 Loaded from localStorage:', parsed.length, 'items');
+                    return parsed;
+                }
+            } catch (e) {
+                console.warn('Failed to load from localStorage:', e);
+            }
+            return null;
+        }
+
+        function showToast(msg) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerText = msg;
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
-        };
-
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    console.log("🔑 Using custom token for auth");
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    console.log("👤 Signing in anonymously");
-                    await signInAnonymously(auth);
-                }
-                console.log("✅ Auth success");
-            } catch (err) {
-                console.error("❌ Auth error:", err);
-                showToast("Authentication failed: " + err.message);
-            }
-        };
-
-        const warningDiv = document.getElementById('dataLossWarning');
-        const dismissBtn = document.getElementById('dismissWarningBtn');
-        const warningDismissedKey = 'studyflow_warning_dismissed';
-        
-        function checkAndShowWarning(user) {
-            if (!user) return;
-            const dismissed = localStorage.getItem(warningDismissedKey);
-            if (user.isAnonymous && !dismissed) {
-                warningDiv.classList.remove('hidden');
-            } else {
-                warningDiv.classList.add('hidden');
-            }
-        }
-        
-        dismissBtn.addEventListener('click', () => {
-            localStorage.setItem(warningDismissedKey, 'true');
-            warningDiv.classList.add('hidden');
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            console.log("🔐 Auth state changed:", user ? `User ${user.uid} (anonymous: ${user.isAnonymous})` : "No user");
-            if (user) {
-                currentUser = user;
-                const name = user.isAnonymous ? "Scholar" : (user.displayName || "Explorer");
-                document.getElementById('userGreetingNav').innerText = `Hi, ${name}`;
-                document.getElementById('profileUserEmail').innerText = user.email || 'Anonymous Scholar';
-                document.getElementById('headerAvatarDesktop').src = `https://ui-avatars.com/api/?background=4f46e5&color=fff&name=${encodeURIComponent(name)}`;
-                setupFirestoreListeners(user.uid);
-                checkAndShowWarning(user);
-                // Test write to verify permissions
-                testFirestoreWrite(user.uid);
-            } else {
-                currentUser = null;
-                initAuth();
-                warningDiv.classList.add('hidden');
-            }
-        });
-
-        async function testFirestoreWrite(uid) {
-            try {
-                const testDocRef = doc(db, 'artifacts', appId, 'users', uid, 'reminders', '_test_write_');
-                await setDoc(testDocRef, { test: true, timestamp: Date.now() });
-                console.log("✅ Firestore write test successful");
-                // Clean up
-                await deleteDoc(testDocRef);
-            } catch (err) {
-                console.error("❌ Firestore write test FAILED:", err);
-                showToast("Firestore permission error: " + err.message);
-            }
         }
 
-        function setupFirestoreListeners(uid) {
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-                unsubscribeSnapshot = null;
-            }
-
-            const localData = loadFromLocalStorage();
-            if (localData && localData.length > 0 && !isLocalStorageLoaded) {
-                currentReminders = localData;
-                updateStats();
-                renderReminders();
-                updateMasteryUI();
-                isLocalStorageLoaded = true;
-                console.log("📱 Displayed data from localStorage (waiting for Firestore)");
-            }
-            
-            showSyncSpinner();
-            const path = `artifacts/${appId}/users/${uid}/reminders`;
-            console.log("📡 Setting up Firestore listener for path:", path);
-            const remindersRef = collection(db, 'artifacts', appId, 'users', uid, 'reminders');
-            
-            unsubscribeSnapshot = onSnapshot(remindersRef, 
-                (snap) => {
-                    console.log("🔥 Firestore snapshot received, size:", snap.size);
-                    const firestoreReminders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                    console.log("📋 Reminders from Firestore:", firestoreReminders);
-                    saveToLocalStorage(firestoreReminders);
-                    currentReminders = firestoreReminders;
-                    updateStats();
-                    renderReminders();
-                    updateMasteryUI();
-                    if (!initialDataLoaded) {
-                        initialDataLoaded = true;
-                        hideSyncSpinner();
-                        console.log("✅ Initial data loaded from Firestore");
-                    } else {
-                        hideSyncSpinner();
-                    }
-                },
-                (error) => {
-                    console.error("❌ Firestore snapshot error:", error);
-                    console.error("Error details:", error.code, error.message);
-                    hideSyncSpinner();
-                    showToast("Firestore error: " + error.message);
-                }
-            );
-        }
-
+        // ---------- UI Update Functions ----------
         function updateStats() {
             const today = new Date().toISOString().split('T')[0];
             const pending = currentReminders.filter(r => !r.completed && r.nextReviewDate <= today).length;
@@ -429,7 +315,7 @@
                 card.className = `reminder-card bg-white rounded-3xl p-6 shadow-sm border border-slate-100 ${r.nextReviewDate < today ? 'overdue-card' : ''}`;
                 let summaryHtml = '';
                 if (r.summaryLink && r.summaryLink.trim() !== '') {
-                    summaryHtml = `<button onclick="openSummaryLink('${r.summaryLink.replace(/'/g, "\\'")}')" class="summary-link-btn px-4 py-2 bg-indigo-50 text-indigo-600 text-xs font-black rounded-xl flex items-center gap-1">📄 Summary</button>`;
+                    summaryHtml = `<button onclick="window.openSummaryLink('${r.summaryLink.replace(/'/g, "\\'")}')" class="summary-link-btn px-4 py-2 bg-indigo-50 text-indigo-600 text-xs font-black rounded-xl flex items-center gap-1">📄 Summary</button>`;
                 }
                 card.innerHTML = `
                     <div class="flex justify-between mb-4">
@@ -440,9 +326,9 @@
                     <div class="flex items-center justify-between pt-4 border-t border-slate-50">
                         <span class="text-[10px] font-bold text-slate-400 uppercase">${r.nextReviewDate}</span>
                         <div class="flex gap-2">
-                            <button onclick="openEditModal('${r.id}')" class="p-2 bg-slate-50 rounded-xl">⚙️</button>
+                            <button onclick="window.openEditModal('${r.id}')" class="p-2 bg-slate-50 rounded-xl">⚙️</button>
                             ${summaryHtml}
-                            <button onclick="handleReview('${r.id}')" class="px-6 py-2 bg-indigo-50 text-indigo-600 text-xs font-black rounded-xl">Review</button>
+                            <button onclick="window.handleReview('${r.id}')" class="px-6 py-2 bg-indigo-50 text-indigo-600 text-xs font-black rounded-xl">Review</button>
                         </div>
                     </div>
                 `;
@@ -470,6 +356,115 @@
             });
         }
 
+        // ---------- Firestore Sync ----------
+        async function syncRemindersToCloud(reminders) {
+            // This is not needed for full sync, as Firestore is the source of truth.
+            // We'll rely on Firestore listener to update localStorage and UI.
+            // But we can keep a function to push local changes if needed.
+        }
+
+        function setupFirestoreListener(uid) {
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot();
+                unsubscribeSnapshot = null;
+            }
+
+            const remindersRef = collection(db, 'artifacts', appId, 'users', uid, 'reminders');
+            console.log("📡 Firestore listener attached for:", `artifacts/${appId}/users/${uid}/reminders`);
+
+            unsubscribeSnapshot = onSnapshot(remindersRef,
+                (snapshot) => {
+                    console.log("🔥 Firestore snapshot received, count:", snapshot.size);
+                    const cloudReminders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Save to localStorage
+                    saveToLocalStorage(cloudReminders);
+                    // Update UI if different from current
+                    if (JSON.stringify(cloudReminders) !== JSON.stringify(currentReminders)) {
+                        currentReminders = cloudReminders;
+                        updateStats();
+                        renderReminders();
+                        updateMasteryUI();
+                        console.log("✅ UI updated from Firestore");
+                    }
+                    hideSyncSpinner();
+                },
+                (error) => {
+                    console.error("❌ Firestore snapshot error:", error);
+                    hideSyncSpinner();
+                    showToast("Firestore error: " + error.message);
+                }
+            );
+        }
+
+        // ---------- CRUD Operations (with optimistic update) ----------
+        async function addReminder(topicData) {
+            if (!currentUser) return;
+            showSyncSpinner();
+            try {
+                const docRef = await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders'), topicData);
+                // Optimistically add to local state (Firestore listener will confirm)
+                const newReminder = { id: docRef.id, ...topicData };
+                currentReminders = [newReminder, ...currentReminders];
+                saveToLocalStorage(currentReminders);
+                updateStats();
+                renderReminders();
+                updateMasteryUI();
+                showToast("Saved to cloud!");
+                console.log("✅ Added to Firestore and localStorage");
+            } catch (err) {
+                console.error("❌ Add error:", err);
+                showToast("Error saving: " + err.message);
+            } finally {
+                hideSyncSpinner();
+            }
+        }
+
+        async function updateReminder(id, updates) {
+            if (!currentUser) return;
+            showSyncSpinner();
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), updates);
+                // Optimistic update
+                const index = currentReminders.findIndex(r => r.id === id);
+                if (index !== -1) {
+                    currentReminders[index] = { ...currentReminders[index], ...updates };
+                    saveToLocalStorage(currentReminders);
+                    updateStats();
+                    renderReminders();
+                    updateMasteryUI();
+                }
+                showToast("Updated!");
+                console.log("✅ Updated in Firestore and localStorage");
+            } catch (err) {
+                console.error("❌ Update error:", err);
+                showToast("Error updating: " + err.message);
+            } finally {
+                hideSyncSpinner();
+            }
+        }
+
+        async function deleteReminder(id) {
+            if (!currentUser) return;
+            showSyncSpinner();
+            try {
+                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id));
+                // Optimistic delete
+                currentReminders = currentReminders.filter(r => r.id !== id);
+                saveToLocalStorage(currentReminders);
+                updateStats();
+                renderReminders();
+                updateMasteryUI();
+                showToast("Deleted!");
+                console.log("✅ Deleted from Firestore and localStorage");
+            } catch (err) {
+                console.error("❌ Delete error:", err);
+                showToast("Error deleting: " + err.message);
+            } finally {
+                hideSyncSpinner();
+            }
+        }
+
+        // ---------- Event Handlers (exposed to window) ----------
         window.openSummaryLink = (url) => {
             if (url && url.startsWith('http')) {
                 window.open(url, '_blank', 'noopener,noreferrer');
@@ -479,105 +474,10 @@
         };
 
         window.handleReview = async (id) => {
-            if (!currentUser) return;
-            showSyncSpinner();
-            try {
-                const nextDate = new Date();
-                nextDate.setDate(nextDate.getDate() + 3);
-                const nextStr = nextDate.toISOString().split('T')[0];
-                console.log("✏️ Updating review for ID:", id);
-                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), {
-                    nextReviewDate: nextStr
-                });
-                showToast("Review tracked!");
-            } catch (err) {
-                console.error("❌ Review update error:", err);
-                showToast("Error: " + err.message);
-            } finally {
-                hideSyncSpinner();
-            }
-        };
-
-        document.getElementById('addForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser) return;
-            showSyncSpinner();
-            try {
-                const newTopic = {
-                    topic: document.getElementById('topicName').value,
-                    subject: document.getElementById('topicSubject').value,
-                    notes: document.getElementById('topicNotes').value,
-                    summaryLink: document.getElementById('topicSummaryLink').value.trim() || null,
-                    nextReviewDate: document.getElementById('topicDate').value,
-                    completed: false,
-                    createdAt: Date.now()
-                };
-                console.log("➕ Adding topic:", newTopic);
-                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders'), newTopic);
-                closeModal('addModal');
-                showToast("Saved!");
-                e.target.reset();
-                document.getElementById('topicSummaryLink').value = '';
-            } catch (err) {
-                console.error("❌ Add error:", err);
-                showToast("Error: " + err.message);
-            } finally {
-                hideSyncSpinner();
-            }
-        });
-
-        document.getElementById('editForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser) return;
-            const id = document.getElementById('editId').value;
-            showSyncSpinner();
-            try {
-                const updates = {
-                    topic: document.getElementById('editTopic').value,
-                    nextReviewDate: document.getElementById('editNextReview').value,
-                    notes: document.getElementById('editNotes').value,
-                    summaryLink: document.getElementById('editSummaryLink').value.trim() || null
-                };
-                console.log("✏️ Updating topic:", id, updates);
-                await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), updates);
-                closeModal('editModal');
-                showToast("Updated");
-            } catch (err) {
-                console.error("❌ Update error:", err);
-                showToast("Error: " + err.message);
-            } finally {
-                hideSyncSpinner();
-            }
-        });
-
-        window.deleteReminderFromEdit = async () => {
-            if (!currentUser) return;
-            const id = document.getElementById('editId').value;
-            if (!confirm("Delete this?")) return;
-            showSyncSpinner();
-            try {
-                console.log("🗑️ Deleting topic:", id);
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id));
-                closeModal('editModal');
-                showToast("Deleted");
-            } catch (err) {
-                console.error("❌ Delete error:", err);
-                showToast("Error: " + err.message);
-            } finally {
-                hideSyncSpinner();
-            }
-        };
-
-        window.openModal = (id) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.style.display = 'flex';
-                if (id === 'addModal') document.getElementById('topicDate').valueAsDate = new Date();
-            }
-        };
-        window.closeModal = (id) => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
+            const nextDate = new Date();
+            nextDate.setDate(nextDate.getDate() + 3);
+            const nextStr = nextDate.toISOString().split('T')[0];
+            await updateReminder(id, { nextReviewDate: nextStr });
         };
 
         window.openEditModal = (id) => {
@@ -591,6 +491,103 @@
             openModal('editModal');
         };
 
+        window.deleteReminderFromEdit = async () => {
+            const id = document.getElementById('editId').value;
+            if (!confirm("Delete this?")) return;
+            await deleteReminder(id);
+            closeModal('editModal');
+        };
+
+        // ---------- Auth and Initial Load ----------
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    console.log("🔑 Using custom token for auth");
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    console.log("👤 Signing in anonymously");
+                    await signInAnonymously(auth);
+                }
+                console.log("✅ Auth success");
+            } catch (err) {
+                console.error("❌ Auth error:", err);
+                showToast("Authentication failed: " + err.message);
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            console.log("🔐 Auth state changed:", user ? `User ${user.uid} (anonymous: ${user.isAnonymous})` : "No user");
+            if (user) {
+                currentUser = user;
+                const name = user.isAnonymous ? "Scholar" : (user.displayName || "Explorer");
+                document.getElementById('userGreetingNav').innerText = `Hi, ${name}`;
+                document.getElementById('profileUserEmail').innerText = user.email || 'Anonymous Scholar';
+                document.getElementById('headerAvatarDesktop').src = `https://ui-avatars.com/api/?background=4f46e5&color=fff&name=${encodeURIComponent(name)}`;
+                
+                // Load from localStorage first for instant UI
+                const localData = loadFromLocalStorage();
+                if (localData && localData.length > 0) {
+                    currentReminders = localData;
+                    updateStats();
+                    renderReminders();
+                    updateMasteryUI();
+                    console.log("📱 Displayed from localStorage");
+                }
+                
+                // Then attach Firestore listener (will sync and overwrite if needed)
+                setupFirestoreListener(user.uid);
+                
+                // Show/hide data loss warning
+                const dismissed = localStorage.getItem('studyflow_warning_dismissed');
+                const warningDiv = document.getElementById('dataLossWarning');
+                if (user.isAnonymous && !dismissed) {
+                    warningDiv.classList.remove('hidden');
+                } else {
+                    warningDiv.classList.add('hidden');
+                }
+            } else {
+                currentUser = null;
+                initAuth();
+            }
+        });
+
+        document.getElementById('dismissWarningBtn').addEventListener('click', () => {
+            localStorage.setItem('studyflow_warning_dismissed', 'true');
+            document.getElementById('dataLossWarning').classList.add('hidden');
+        });
+
+        // ---------- Form Submissions ----------
+        document.getElementById('addForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newTopic = {
+                topic: document.getElementById('topicName').value,
+                subject: document.getElementById('topicSubject').value,
+                notes: document.getElementById('topicNotes').value,
+                summaryLink: document.getElementById('topicSummaryLink').value.trim() || null,
+                nextReviewDate: document.getElementById('topicDate').value,
+                completed: false,
+                createdAt: Date.now()
+            };
+            await addReminder(newTopic);
+            closeModal('addModal');
+            e.target.reset();
+            document.getElementById('topicSummaryLink').value = '';
+        });
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const updates = {
+                topic: document.getElementById('editTopic').value,
+                nextReviewDate: document.getElementById('editNextReview').value,
+                notes: document.getElementById('editNotes').value,
+                summaryLink: document.getElementById('editSummaryLink').value.trim() || null
+            };
+            await updateReminder(id, updates);
+            closeModal('editModal');
+        });
+
+        // ---------- Filter & Navigation ----------
         document.getElementById('subjectFilter').onchange = renderReminders;
         
         document.querySelectorAll('[data-status]').forEach(btn => btn.onclick = () => {
@@ -599,6 +596,19 @@
             currentStatusFilter = btn.getAttribute('data-status');
             renderReminders();
         });
+
+        function openModal(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'flex';
+                if (id === 'addModal') document.getElementById('topicDate').valueAsDate = new Date();
+            }
+        }
+        window.closeModal = (id) => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        };
+        window.openModal = openModal;
 
         document.querySelectorAll('[data-nav]').forEach(btn => btn.onclick = () => {
             const nav = btn.getAttribute('data-nav');
@@ -614,16 +624,15 @@
 
         document.getElementById('forceSyncBtn').addEventListener('click', () => {
             if (currentUser) {
-                console.log("🔄 Force sync triggered, re-subscribing...");
-                setupFirestoreListeners(currentUser.uid);
-                showToast("Force sync initiated");
+                console.log("🔄 Manual force sync - reattaching listener");
+                setupFirestoreListener(currentUser.uid);
+                showToast("Forcing sync from cloud...");
             } else {
                 showToast("Not logged in yet");
             }
         });
 
         window.onclick = (e) => { if (e.target.classList.contains('modal-overlay')) e.target.style.display = 'none'; };
-
     </script>
 </body>
 </html>
