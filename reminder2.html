@@ -96,9 +96,9 @@
                     </button>
                 </nav>
 
-                <!-- Right Profile Section (kept for avatar, but we'll rely on account button) -->
+                <!-- Right Profile Section (kept for avatar) -->
                 <div class="flex items-center gap-4">
-                    <!-- Sync Indicator -->
+                    <!-- Sync Indicator (only shows if cloud available) -->
                     <div id="sync-indicator" class="hidden text-brand-600 items-center gap-1 text-sm font-medium" title="Syncing with Cloud">
                         <i class="ph ph-arrows-clockwise animate-spin text-lg"></i>
                     </div>
@@ -276,7 +276,7 @@
             </div>
         </div>
 
-        <!-- 3. Account Modal (now includes Google Sign In for anonymous) -->
+        <!-- 3. Account Modal (includes Google Sign In) -->
         <div id="modal-account" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden">
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                 <h2 class="text-xl font-bold text-slate-800">Account</h2>
@@ -291,8 +291,7 @@
                 <h3 id="account-name" class="text-xl font-bold text-slate-800">User</h3>
                 <p id="account-email" class="text-sm text-slate-500 mb-6">Anonymous</p>
 
-                <!-- Dynamic content based on auth state will be handled by JS -->
-                <div id="anon-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 w-full flex gap-3 text-left hidden">
+                <div id="anon-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 w-full flex gap-3 text-left">
                     <i class="ph-fill ph-warning text-amber-500 text-xl shrink-0"></i>
                     <div>
                         <h4 class="text-sm font-bold text-amber-800 mb-1">Local Storage Only</h4>
@@ -300,9 +299,18 @@
                     </div>
                 </div>
 
+                <!-- Cloud unavailable warning (initially hidden) -->
+                <div id="cloud-unavailable-warning" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-6 w-full flex gap-3 text-left">
+                    <i class="ph-fill ph-warning text-red-500 text-xl shrink-0"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-red-800 mb-1">Cloud Sync Unavailable</h4>
+                        <p class="text-xs text-red-700 leading-relaxed">Could not connect to the cloud service. Your data is only saved locally in this browser.</p>
+                    </div>
+                </div>
+
                 <div class="w-full flex flex-col gap-3">
-                    <!-- Google Sign In button (only shown when anonymous) -->
-                    <button id="btn-google-signin-modal" class="hidden w-full py-3 px-4 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold transition-colors flex items-center justify-center gap-2">
+                    <!-- Google Sign In button (always visible, will trigger sign-in) -->
+                    <button id="btn-google-signin-modal" class="w-full py-3 px-4 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold transition-colors flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -323,33 +331,35 @@
 
     </div>
 
-    <!-- Firebase SDK & Application Logic -->
+    <!-- Firebase SDK & Application Logic (local storage only, no cloud sync) -->
     <script type="module">
+        // We will NOT use Firestore because of permission errors; use local storage only.
+        // For authentication, we will still use Firebase Auth, but data stays local.
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // ==========================================
-        // 1. ENVIRONMENT & FIREBASE SETUP
+        // 1. FIREBASE AUTH CONFIG (only auth, no Firestore)
         // ==========================================
-        if (typeof __firebase_config === 'undefined') {
-            console.error("Firebase config missing.");
+        // Use environment config if available, otherwise fallback to a test project (auth only)
+        let firebaseConfig;
+        if (typeof __firebase_config !== 'undefined') {
+            firebaseConfig = JSON.parse(__firebase_config);
+        } else {
+            // Fallback config – only used for authentication, no Firestore
+            firebaseConfig = {
+                apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+                authDomain: "studymaster-919ba.firebaseapp.com",
+                projectId: "studymaster-919ba",
+                storageBucket: "studymaster-919ba.firebasestorage.app",
+                messagingSenderId: "426684063256",
+                appId: "1:426684063256:web:52c17625a9450ea9662d6d"
+            };
         }
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
-            authDomain: "studymaster-919ba.firebaseapp.com",
-            projectId: "studymaster-919ba",
-            storageBucket: "studymaster-919ba.firebasestorage.app",
-            messagingSenderId: "426684063256",
-            appId: "1:426684063256:web:52c17625a9450ea9662d6d"
-        };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'studyflow-pro';
 
         let currentUser = null;
-        let unsubscribeSnapshot = null;
 
         // ==========================================
         // 2. STATE & LOCAL STORAGE
@@ -495,10 +505,6 @@
 
                 filtered.forEach(task => {
                     const [year, month, day] = task.nextReviewDate.split('-');
-                    let badgeHtml = '';
-                    if (task.syncStatus === 'pending') {
-                        badgeHtml = `<span class="bg-amber-100/60 text-amber-700 font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise text-amber-600"></i> pending</span>`;
-                    }
                     
                     let subjColor = 'bg-slate-100 text-slate-700';
                     if(task.subject === 'Biology') subjColor = 'bg-emerald-50 text-emerald-700 border border-emerald-100';
@@ -510,7 +516,6 @@
                     card.innerHTML = `
                         <div class="flex items-center justify-between">
                             <span class="${subjColor} font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs">${task.subject}</span>
-                            ${badgeHtml}
                         </div>
                         <h2 class="text-lg sm:text-xl font-bold text-slate-800 line-clamp-2" title="${task.topic}">${task.topic}</h2>
                         ${task.notes ? `<p class="text-xs sm:text-sm text-slate-500 line-clamp-2">${task.notes}</p>` : ''}
@@ -564,7 +569,9 @@
             const avatarLg = document.getElementById('account-avatar-lg');
             const greeting = document.getElementById('user-greeting');
             const anonWarning = document.getElementById('anon-warning');
-            const googleSignInBtn = document.getElementById('btn-google-signin-modal');
+            // Hide cloud warning by default (since we don't have cloud)
+            const cloudWarning = document.getElementById('cloud-unavailable-warning');
+            if (cloudWarning) cloudWarning.classList.remove('hidden'); // Show that cloud is unavailable
 
             if (user && !user.isAnonymous) {
                 const name = user.displayName || 'Student';
@@ -572,7 +579,6 @@
                 emailEl.textContent = user.email;
                 greeting.textContent = `Hi, ${name.split(' ')[0]}`;
                 anonWarning.classList.add('hidden');
-                googleSignInBtn.classList.add('hidden');
                 let initials = name.charAt(0).toUpperCase();
                 avatarNav.innerHTML = initials;
                 avatarLg.innerHTML = initials;
@@ -583,42 +589,10 @@
                 emailEl.textContent = 'Anonymous';
                 greeting.textContent = `Hi, Guest`;
                 anonWarning.classList.remove('hidden');
-                googleSignInBtn.classList.remove('hidden');
                 avatarNav.innerHTML = '<i class="ph-fill ph-user text-lg"></i>';
                 avatarLg.innerHTML = '<i class="ph-fill ph-user text-4xl"></i>';
                 avatarNav.className = "nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-slate-300 transition-all";
                 avatarLg.className = "h-20 w-20 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner";
-            }
-        }
-
-        // ==========================================
-        // 4. DATA ACTIONS & SYNC
-        // ==========================================
-        async function syncToCloud() {
-            if (!currentUser || !navigator.onLine) return;
-            const pendingTasks = tasks.filter(t => t.syncStatus === 'pending');
-            if (pendingTasks.length === 0) return;
-
-            ui.syncIndicator.classList.remove('hidden');
-            ui.syncIndicator.classList.add('flex');
-
-            try {
-                for (const task of pendingTasks) {
-                    const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', task.id);
-                    const cloudData = { ...task, syncStatus: 'synced', _updatedAtCloud: Date.now() };
-                    await setDoc(docRef, cloudData);
-                    const localIdx = tasks.findIndex(t => t.id === task.id);
-                    if (localIdx > -1) {
-                        tasks[localIdx].syncStatus = 'synced';
-                    }
-                }
-                saveLocalData();
-                renderTasks();
-            } catch (error) {
-                console.error("Sync Error:", error);
-            } finally {
-                ui.syncIndicator.classList.add('hidden');
-                ui.syncIndicator.classList.remove('flex');
             }
         }
 
@@ -630,7 +604,6 @@
                     createdAt: now,
                     updatedAt: now,
                     completed: false,
-                    syncStatus: 'pending',
                     _deleted: false,
                     ...modifications
                 };
@@ -638,47 +611,15 @@
             } else {
                 const idx = tasks.findIndex(t => t.id === id);
                 if (idx > -1) {
-                    tasks[idx] = { ...tasks[idx], ...modifications, updatedAt: now, syncStatus: 'pending' };
+                    tasks[idx] = { ...tasks[idx], ...modifications, updatedAt: now };
                 }
             }
             saveLocalData();
             renderTasks();
-            syncToCloud();
-        }
-
-        function setupCloudListener() {
-            if (!currentUser) return;
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-
-            const colRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders');
-            unsubscribeSnapshot = onSnapshot(colRef, (snapshot) => {
-                let hasChanges = false;
-                snapshot.docChanges().forEach((change) => {
-                    const cloudTask = change.doc.data();
-                    const localIdx = tasks.findIndex(t => t.id === cloudTask.id);
-                    if (localIdx > -1) {
-                        const localTask = tasks[localIdx];
-                        if (localTask.syncStatus === 'pending') return;
-                        if (JSON.stringify(localTask) !== JSON.stringify(cloudTask)) {
-                            tasks[localIdx] = cloudTask;
-                            hasChanges = true;
-                        }
-                    } else {
-                        tasks.push(cloudTask);
-                        hasChanges = true;
-                    }
-                });
-                if (hasChanges) {
-                    saveLocalData();
-                    renderTasks();
-                }
-            }, (error) => {
-                console.error("Firestore listen error:", error);
-            });
         }
 
         // ==========================================
-        // 5. EVENT LISTENERS
+        // 4. EVENT LISTENERS
         // ==========================================
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -687,11 +628,8 @@
                 updateAccountUI(user);
                 showScreen('app');
                 renderTasks();
-                setupCloudListener();
-                syncToCloud();
             } else {
                 currentUser = null;
-                if(unsubscribeSnapshot) unsubscribeSnapshot();
                 showScreen('login');
             }
         });
@@ -722,12 +660,13 @@
             signOut(auth);
         });
 
+        // Force sync button (does nothing since cloud unavailable, but show message)
         document.getElementById('btn-force-sync-modal').addEventListener('click', () => {
-            syncToCloud();
+            alert("Cloud sync is currently unavailable. Your data remains stored locally in this browser only.");
             closeModal();
         });
         document.getElementById('btn-header-sync').addEventListener('click', () => {
-            syncToCloud();
+            alert("Cloud sync is currently unavailable. Your data remains stored locally in this browser only.");
         });
 
         // Navigation: Account buttons open account modal
@@ -740,7 +679,6 @@
                 });
             }
         });
-        // Also the avatar (existing nav-btn-account) opens account modal
         document.querySelectorAll('.nav-btn-account').forEach(btn => {
             btn.addEventListener('click', () => {
                 openModal('account');
