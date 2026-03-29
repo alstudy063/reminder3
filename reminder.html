@@ -212,7 +212,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc, setDoc, enableNetwork } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, updateDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU","authDomain":"studymaster-919ba.firebaseapp.com","databaseURL":"https://studymaster-919ba-default-rtdb.firebaseio.com","projectId":"studymaster-919ba","storageBucket":"studymaster-919ba.firebasestorage.app","messagingSenderId":"426684063256","appId":"1:426684063256:web:52c17625a9450ea9662d6d","measurementId":"G-CWQB2330GF"}');
         const app = initializeApp(firebaseConfig);
@@ -227,7 +227,6 @@
         let currentStatusFilter = "all";
         let currentUser = null;
         let unsubscribeSnapshot = null;
-        let isSyncing = false;
 
         const syncIndicator = document.getElementById('syncIndicator');
         let syncTimeout = null;
@@ -272,11 +271,12 @@
             return null;
         }
 
-        function showToast(msg) {
+        function showToast(msg, isError = false) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.innerText = msg;
+            if (isError) toast.style.background = '#b91c1c';
             container.appendChild(toast);
             setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
         }
@@ -356,13 +356,7 @@
             });
         }
 
-        // ---------- Firestore Sync ----------
-        async function syncRemindersToCloud(reminders) {
-            // This is not needed for full sync, as Firestore is the source of truth.
-            // We'll rely on Firestore listener to update localStorage and UI.
-            // But we can keep a function to push local changes if needed.
-        }
-
+        // ---------- Firestore Listener ----------
         function setupFirestoreListener(uid) {
             if (unsubscribeSnapshot) {
                 unsubscribeSnapshot();
@@ -378,42 +372,49 @@
                     const cloudReminders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     // Save to localStorage
                     saveToLocalStorage(cloudReminders);
-                    // Update UI if different from current
-                    if (JSON.stringify(cloudReminders) !== JSON.stringify(currentReminders)) {
-                        currentReminders = cloudReminders;
-                        updateStats();
-                        renderReminders();
-                        updateMasteryUI();
-                        console.log("✅ UI updated from Firestore");
-                    }
+                    // Update UI
+                    currentReminders = cloudReminders;
+                    updateStats();
+                    renderReminders();
+                    updateMasteryUI();
+                    console.log("✅ UI updated from Firestore");
                     hideSyncSpinner();
                 },
                 (error) => {
                     console.error("❌ Firestore snapshot error:", error);
                     hideSyncSpinner();
-                    showToast("Firestore error: " + error.message);
+                    showToast("Firestore error: " + error.message, true);
                 }
             );
         }
 
-        // ---------- CRUD Operations (with optimistic update) ----------
+        // ---------- CRUD Operations with Optimistic Update & Revert on Error ----------
         async function addReminder(topicData) {
             if (!currentUser) return;
             showSyncSpinner();
+            // Optimistic update
+            const tempId = 'temp_' + Date.now();
+            const optimisticReminder = { id: tempId, ...topicData };
+            const previousReminders = [...currentReminders];
+            currentReminders = [optimisticReminder, ...currentReminders];
+            saveToLocalStorage(currentReminders);
+            updateStats();
+            renderReminders();
+            updateMasteryUI();
+
             try {
                 const docRef = await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders'), topicData);
-                // Optimistically add to local state (Firestore listener will confirm)
-                const newReminder = { id: docRef.id, ...topicData };
-                currentReminders = [newReminder, ...currentReminders];
+                console.log("✅ Added to Firestore with ID:", docRef.id);
+                // The snapshot will eventually update the UI with the real ID, so we don't need to do anything else.
+            } catch (err) {
+                console.error("❌ Add error:", err);
+                // Revert optimistic update
+                currentReminders = previousReminders;
                 saveToLocalStorage(currentReminders);
                 updateStats();
                 renderReminders();
                 updateMasteryUI();
-                showToast("Saved to cloud!");
-                console.log("✅ Added to Firestore and localStorage");
-            } catch (err) {
-                console.error("❌ Add error:", err);
-                showToast("Error saving: " + err.message);
+                showToast("Error saving: " + err.message, true);
             } finally {
                 hideSyncSpinner();
             }
@@ -422,22 +423,29 @@
         async function updateReminder(id, updates) {
             if (!currentUser) return;
             showSyncSpinner();
+            // Optimistic update
+            const previousReminders = [...currentReminders];
+            const index = currentReminders.findIndex(r => r.id === id);
+            if (index !== -1) {
+                currentReminders[index] = { ...currentReminders[index], ...updates };
+                saveToLocalStorage(currentReminders);
+                updateStats();
+                renderReminders();
+                updateMasteryUI();
+            }
+
             try {
                 await updateDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id), updates);
-                // Optimistic update
-                const index = currentReminders.findIndex(r => r.id === id);
-                if (index !== -1) {
-                    currentReminders[index] = { ...currentReminders[index], ...updates };
-                    saveToLocalStorage(currentReminders);
-                    updateStats();
-                    renderReminders();
-                    updateMasteryUI();
-                }
-                showToast("Updated!");
-                console.log("✅ Updated in Firestore and localStorage");
+                console.log("✅ Updated in Firestore");
             } catch (err) {
                 console.error("❌ Update error:", err);
-                showToast("Error updating: " + err.message);
+                // Revert optimistic update
+                currentReminders = previousReminders;
+                saveToLocalStorage(currentReminders);
+                updateStats();
+                renderReminders();
+                updateMasteryUI();
+                showToast("Error updating: " + err.message, true);
             } finally {
                 hideSyncSpinner();
             }
@@ -446,19 +454,26 @@
         async function deleteReminder(id) {
             if (!currentUser) return;
             showSyncSpinner();
+            // Optimistic delete
+            const previousReminders = [...currentReminders];
+            currentReminders = currentReminders.filter(r => r.id !== id);
+            saveToLocalStorage(currentReminders);
+            updateStats();
+            renderReminders();
+            updateMasteryUI();
+
             try {
                 await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', id));
-                // Optimistic delete
-                currentReminders = currentReminders.filter(r => r.id !== id);
+                console.log("✅ Deleted from Firestore");
+            } catch (err) {
+                console.error("❌ Delete error:", err);
+                // Revert optimistic delete
+                currentReminders = previousReminders;
                 saveToLocalStorage(currentReminders);
                 updateStats();
                 renderReminders();
                 updateMasteryUI();
-                showToast("Deleted!");
-                console.log("✅ Deleted from Firestore and localStorage");
-            } catch (err) {
-                console.error("❌ Delete error:", err);
-                showToast("Error deleting: " + err.message);
+                showToast("Error deleting: " + err.message, true);
             } finally {
                 hideSyncSpinner();
             }
@@ -511,7 +526,7 @@
                 console.log("✅ Auth success");
             } catch (err) {
                 console.error("❌ Auth error:", err);
-                showToast("Authentication failed: " + err.message);
+                showToast("Authentication failed: " + err.message, true);
             }
         };
 
