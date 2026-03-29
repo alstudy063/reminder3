@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFlow Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons (for clean, modern icons similar to the screenshot) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5', // Primary purple/indigo
+                            700: '#4338ca',
+                        },
+                        appbg: '#f8fafc' // Very light gray/blue background
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden">
+
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <div id="login-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-appbg transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-3xl shadow-sm text-center max-w-md w-full mx-4 border border-slate-100">
+            <div class="flex items-center justify-center gap-2 mb-6 text-2xl font-bold">
+                <div class="bg-brand-600 text-white p-2 rounded-xl">
+                    <i class="ph ph-book-open text-2xl"></i>
+                </div>
+                <span>StudyFlow <span class="text-brand-600">Pro</span></span>
+            </div>
+            <p class="text-slate-500 mb-8">Sign in to manage your study tasks and mastery.</p>
+            
+            <button id="btn-google-login" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 py-3 px-4 rounded-xl font-medium transition-colors shadow-sm">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                </svg>
+                Continue with Google
+            </button>
+            <div id="login-error" class="text-red-500 text-sm mt-4 hidden"></div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN APP SCREEN ==================== -->
+    <div id="app-screen" class="hidden flex-1 flex flex-col h-full opacity-0 transition-opacity duration-300">
+        
+        <!-- Top Navbar -->
+        <header class="bg-white border-b border-slate-100 sticky top-0 z-10">
+            <div class="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between">
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-2">
+                    <div class="bg-brand-600 text-white p-2 rounded-xl flex items-center justify-center h-10 w-10">
+                        <i class="ph-bold ph-book-open text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-slate-900">StudyFlow <span class="text-brand-600">Pro</span></span>
+                </div>
+
+                <!-- Center Nav Links -->
+                <nav class="hidden md:flex bg-slate-50/80 p-1.5 rounded-full items-center">
+                    <a href="#" class="px-6 py-2 rounded-full bg-brand-50 text-brand-600 font-medium text-sm transition-colors">Home</a>
+                    <a href="#" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Add Topic</a>
+                    <a href="#" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">My Mastery</a>
+                    <a href="#" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Account</a>
+                </nav>
+
+                <!-- Right Profile Section -->
+                <div class="flex items-center gap-4">
+                    <span id="user-greeting" class="text-sm font-medium text-slate-700 hidden sm:block">Hi, User</span>
+                    <div id="user-avatar" class="h-10 w-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-semibold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100">
+                        U
+                    </div>
+                    <button id="btn-logout" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-full text-sm font-medium transition-colors">
+                        Sign Out
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8">
+            <div class="max-w-[1400px] mx-auto space-y-8">
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Due Today -->
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60">
+                        <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">DUE TODAY</h3>
+                        <div class="text-4xl font-bold text-brand-600">1</div>
+                    </div>
+                    <!-- Overdue -->
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60">
+                        <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">OVERDUE</h3>
+                        <div class="text-4xl font-bold text-orange-500">0</div>
+                    </div>
+                    <!-- Mastered -->
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60">
+                        <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">MASTERED</h3>
+                        <div class="text-4xl font-bold text-emerald-500">0</div>
+                    </div>
+                    <!-- Daily Streak -->
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60 flex items-center justify-between">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-400 tracking-wider mb-2">DAILY STREAK</h3>
+                            <div class="text-4xl font-bold text-brand-600 flex items-center gap-2">
+                                1 <span class="text-3xl">🔥</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Bar -->
+                <div class="bg-white rounded-3xl p-3 shadow-sm border border-slate-100/60 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <!-- Subject Filter -->
+                    <div class="relative w-full sm:w-64 pl-2">
+                        <select class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm">
+                            <option>All Subjects</option>
+                            <option>Biology</option>
+                            <option>Chemistry</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="bg-slate-50 p-1.5 rounded-full flex items-center w-full sm:w-auto">
+                        <button class="flex-1 sm:flex-none px-6 py-2 rounded-full bg-brand-600 text-white font-medium text-sm shadow-sm transition-all">All Tasks</button>
+                        <button class="flex-1 sm:flex-none px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all">Due</button>
+                        <button class="flex-1 sm:flex-none px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all">Overdue</button>
+                    </div>
+                </div>
+
+                <!-- Tasks Container -->
+                <div class="flex flex-col gap-6">
+                    <!-- Single Task Card (Replicating the screenshot) -->
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100/60 max-w-sm flex flex-col gap-4">
+                        
+                        <!-- Top Row: Tags -->
+                        <div class="flex items-center justify-between">
+                            <span class="bg-slate-100 text-slate-700 font-medium px-4 py-1.5 rounded-full text-xs">Biology</span>
+                            <span class="bg-amber-100/50 text-amber-700 font-semibold px-4 py-1.5 rounded-full text-xs flex items-center gap-1.5">
+                                <i class="ph-bold ph-arrow-counter-clockwise text-amber-600"></i> pending
+                            </span>
+                        </div>
+
+                        <!-- Title -->
+                        <h2 class="text-xl font-bold text-slate-800 mt-2">jj</h2>
+
+                        <!-- Bottom Row: Date & Actions -->
+                        <div class="flex items-center justify-between mt-2 pt-2">
+                            <!-- Date (Split into two lines like screenshot) -->
+                            <div class="text-[13px] font-semibold text-slate-400 leading-tight">
+                                2026-<br>03-29
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex items-center gap-2">
+                                <button class="h-11 w-11 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors">
+                                    <i class="ph ph-gear text-xl"></i>
+                                </button>
+                                
+                                <button class="h-11 px-4 rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold text-sm flex items-center gap-1.5 transition-colors">
+                                    <i class="ph ph-file-text text-lg"></i>
+                                    Summary
+                                </button>
+                                
+                                <button class="h-11 w-11 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors">
+                                    <i class="ph-bold ph-check text-lg"></i>
+                                </button>
+                                
+                                <button class="h-11 px-5 rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-semibold text-sm transition-colors">
+                                    Review
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Firebase SDK Implementation -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        // Your provided Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+            measurementId: "G-CWQB2330GF"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // UI Elements
+        const loginScreen = document.getElementById('login-screen');
+        const appScreen = document.getElementById('app-screen');
+        const btnGoogleLogin = document.getElementById('btn-google-login');
+        const btnLogout = document.getElementById('btn-logout');
+        const errorDiv = document.getElementById('login-error');
+        const userGreeting = document.getElementById('user-greeting');
+        const userAvatar = document.getElementById('user-avatar');
+
+        // Authentication State Observer
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                showAppScreen();
+                updateUserProfile(user);
+            } else {
+                // User is signed out
+                showLoginScreen();
+            }
+        });
+
+        // Login Action
+        btnGoogleLogin.addEventListener('click', async () => {
+            try {
+                errorDiv.classList.add('hidden');
+                btnGoogleLogin.disabled = true;
+                btnGoogleLogin.innerHTML = `<i class="ph ph-spinner animate-spin text-xl"></i> Connecting...`;
+                
+                await signInWithPopup(auth, provider);
+                // State observer will handle UI change
+            } catch (error) {
+                console.error("Authentication Error:", error);
+                errorDiv.textContent = `Login failed: ${error.message}`;
+                errorDiv.classList.remove('hidden');
+                
+                // Reset button
+                btnGoogleLogin.disabled = false;
+                btnGoogleLogin.innerHTML = `
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    Continue with Google
+                `;
+            }
+        });
+
+        // Logout Action
+        btnLogout.addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // Helper Functions
+        function showAppScreen() {
+            loginScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                loginScreen.classList.add('hidden');
+                appScreen.classList.remove('hidden');
+                // Trigger reflow
+                void appScreen.offsetWidth;
+                appScreen.classList.remove('opacity-0');
+            }, 300);
+        }
+
+        function showLoginScreen() {
+            appScreen.classList.add('opacity-0');
+            setTimeout(() => {
+                appScreen.classList.add('hidden');
+                loginScreen.classList.remove('hidden');
+                // Trigger reflow
+                void loginScreen.offsetWidth;
+                loginScreen.classList.remove('opacity-0');
+            }, 300);
+        }
+
+        function updateUserProfile(user) {
+            const displayName = user.displayName || "Student";
+            userGreeting.textContent = `Hi, ${displayName}`;
+            
+            // Generate initials
+            const names = displayName.split(' ');
+            let initials = names[0].charAt(0).toUpperCase();
+            if (names.length > 1) {
+                initials += names[names.length - 1].charAt(0).toUpperCase();
+            }
+            userAvatar.textContent = initials;
+        }
+
+    </script>
+</body>
+</html>
