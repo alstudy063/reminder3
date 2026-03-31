@@ -1,1 +1,975 @@
-copy this file as it is
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFlow Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        appbg: '#f8fafc'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        /* Modal Transitions */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 200ms ease-out, transform 200ms ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 150ms ease-in, transform 150ms ease-in; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden pb-16 md:pb-0">
+
+    <!-- ==================== LOGIN SCREEN ==================== -->
+    <div id="login-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-appbg transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-3xl shadow-sm text-center max-w-md w-full mx-4 border border-slate-100">
+            <div class="flex items-center justify-center gap-2 mb-6 text-2xl font-bold">
+                <div class="bg-brand-600 text-white p-2 rounded-xl">
+                    <i class="ph ph-book-open text-2xl"></i>
+                </div>
+                <span>StudyFlow <span class="text-brand-600">Pro</span></span>
+            </div>
+            <p class="text-slate-500 mb-8">Continue as guest to start studying. You can sign in later to sync across devices.</p>
+            
+            <button id="btn-anon-login" class="w-full flex items-center justify-center gap-3 bg-brand-600 text-white hover:bg-brand-700 py-3 px-4 rounded-xl font-medium transition-colors shadow-sm mb-3">
+                <i class="ph-bold ph-user text-xl"></i>
+                Continue as Guest
+            </button>
+            <div id="login-error" class="text-red-500 text-sm mt-4 hidden"></div>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN APP SCREEN ==================== -->
+    <div id="app-screen" class="hidden flex-1 flex-col h-full opacity-0 transition-opacity duration-300">
+        
+        <!-- Top Navbar (Desktop) -->
+        <header class="bg-white border-b border-slate-100 sticky top-0 z-10">
+            <div class="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center gap-2 cursor-pointer" id="nav-brand">
+                    <div class="bg-brand-600 text-white p-2 rounded-xl flex items-center justify-center h-10 w-10">
+                        <i class="ph-bold ph-book-open text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight text-slate-900">StudyFlow <span class="text-brand-600">Pro</span></span>
+                </div>
+
+                <!-- Center Nav Links: added Account button after My Mastery -->
+                <nav class="hidden md:flex bg-slate-50/80 p-1.5 rounded-full items-center">
+                    <button class="nav-btn-home px-6 py-2 rounded-full bg-brand-50 text-brand-600 font-medium text-sm transition-colors">Home</button>
+                    <button class="nav-btn-add px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Add Topic</button>
+                    <button class="nav-btn-mastery px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">My Mastery</button>
+                    <button id="nav-btn-account-desktop" class="px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors flex items-center gap-1">
+                        <i class="ph-bold ph-user-circle text-base"></i> Account
+                    </button>
+                </nav>
+
+                <!-- Right Profile Section -->
+                <div class="flex items-center gap-4">
+                    <!-- Sync Indicator (hidden in local-only mode) -->
+                    <div id="sync-indicator" class="hidden text-brand-600 items-center gap-1 text-sm font-medium" title="Syncing with Cloud">
+                        <i class="ph ph-arrows-clockwise animate-spin text-lg"></i>
+                    </div>
+                    <button id="btn-header-sync" class="text-slate-400 hover:text-brand-600 transition-colors text-sm font-medium hidden md:flex items-center gap-1">
+                        <i class="ph ph-arrows-clockwise text-base"></i>
+                        <span>Force sync</span>
+                    </button>
+                    
+                    <span id="user-greeting" class="text-sm font-medium text-slate-700 hidden sm:block">Hi, User</span>
+                    <div id="user-avatar" class="nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-semibold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-brand-200 transition-all">
+                        <i class="ph-fill ph-user text-lg"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 overflow-y-auto p-4 sm:p-8">
+            <div class="max-w-[1400px] mx-auto space-y-8">
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">DUE TODAY</h3>
+                        <div id="stat-due" class="text-3xl sm:text-4xl font-bold text-brand-600">0</div>
+                    </div>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">OVERDUE</h3>
+                        <div id="stat-overdue" class="text-3xl sm:text-4xl font-bold text-orange-500">0</div>
+                    </div>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">MASTERED</h3>
+                        <div id="stat-mastered" class="text-3xl sm:text-4xl font-bold text-emerald-500">0</div>
+                    </div>
+                    <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
+                        <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">DAILY STREAK</h3>
+                        <div class="text-3xl sm:text-4xl font-bold text-brand-600 flex items-center gap-2">
+                            1 <span class="text-2xl sm:text-3xl">🔥</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls Bar -->
+                <div class="bg-white rounded-2xl sm:rounded-3xl p-2 sm:p-3 shadow-sm border border-slate-100/60 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <!-- Subject Filter -->
+                    <div class="relative w-full sm:w-64 pl-2">
+                        <select id="filter-subject" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium text-sm cursor-pointer">
+                            <option value="All">All Subjects</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Physics">Physics</option>
+                        </select>
+                        <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="bg-slate-50 p-1.5 rounded-full flex items-center w-full sm:w-auto overflow-x-auto no-scrollbar">
+                        <button class="filter-status-btn flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-full bg-brand-600 text-white font-medium text-sm shadow-sm transition-all whitespace-nowrap" data-status="All">All Tasks</button>
+                        <button class="filter-status-btn flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all whitespace-nowrap" data-status="Due">Due Today</button>
+                        <button class="filter-status-btn flex-1 sm:flex-none px-4 sm:px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-all whitespace-nowrap" data-status="Overdue">Overdue</button>
+                    </div>
+                </div>
+
+                <!-- Tasks Container -->
+                <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Tasks injected by JS -->
+                </div>
+                
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center">
+                    <div class="bg-slate-100 h-24 w-24 rounded-full flex items-center justify-center mb-4 text-slate-400">
+                        <i class="ph ph-check-circle text-5xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-700 mb-2">You're all caught up!</h3>
+                    <p class="text-slate-500 max-w-sm">No tasks found for this filter. Enjoy your free time or add a new topic to study.</p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Mobile Bottom Nav: added Account button after Mastery -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-2 py-2 pb-safe z-40 h-16 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
+            <button class="nav-btn-home flex flex-col items-center justify-center w-16 text-brand-600">
+                <i class="ph-fill ph-house text-2xl"></i>
+                <span class="text-[10px] font-medium mt-1">Home</span>
+            </button>
+            
+            <div class="relative -top-6">
+                <button class="nav-btn-add bg-brand-600 text-white h-14 w-14 rounded-full shadow-lg shadow-brand-500/30 flex items-center justify-center transform hover:scale-105 active:scale-95 transition-all">
+                    <i class="ph-bold ph-plus text-2xl"></i>
+                </button>
+            </div>
+            
+            <button class="nav-btn-mastery flex flex-col items-center justify-center w-16 text-slate-400 hover:text-slate-700 transition-colors">
+                <i class="ph-bold ph-chart-bar text-2xl"></i>
+                <span class="text-[10px] font-medium mt-1">Mastery</span>
+            </button>
+
+            <button id="nav-btn-account-mobile" class="flex flex-col items-center justify-center w-16 text-slate-400 hover:text-slate-700 transition-colors">
+                <i class="ph-bold ph-user-circle text-2xl"></i>
+                <span class="text-[10px] font-medium mt-1">Account</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+    
+    <!-- Modal Overlay -->
+    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
+        
+        <!-- 1. Add/Edit Topic Modal -->
+        <div id="modal-topic" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden max-h-[90vh]">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 id="modal-topic-title" class="text-xl font-bold text-slate-800">Add Topic</h2>
+                <button class="close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+            <form id="form-topic" class="p-6 overflow-y-auto space-y-4">
+                <input type="hidden" id="topic-id">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Topic Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="topic-name" required placeholder="e.g. Mitosis Phases" class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Subject</label>
+                        <div class="relative">
+                            <select id="topic-subject" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 pr-10 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+                                <option>Biology</option>
+                                <option>Chemistry</option>
+                                <option>Physics</option>
+                            </select>
+                            <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Review Date</label>
+                        <input type="date" id="topic-date" required class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Summary Link (Optional)</label>
+                    <input type="url" id="topic-link" placeholder="https://..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Notes (Optional)</label>
+                    <textarea id="topic-notes" rows="2" placeholder="Key takeaways..." class="w-full bg-slate-50 border border-slate-200 text-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all resize-none"></textarea>
+                </div>
+
+                <div class="pt-4 flex gap-3">
+                    <button type="button" id="btn-delete-topic" class="hidden px-5 py-3 rounded-xl bg-red-50 text-red-600 font-semibold hover:bg-red-100 transition-colors border border-red-100">
+                        Delete
+                    </button>
+                    <button type="submit" class="flex-1 px-5 py-3 rounded-xl bg-brand-600 text-white font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-500/30">
+                        Save Topic
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- 2. Mastery Modal -->
+        <div id="modal-mastery" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="text-xl font-bold text-slate-800">My Mastery</h2>
+                <button class="close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-6" id="mastery-container">
+                <!-- Progress bars injected via JS -->
+            </div>
+        </div>
+
+        <!-- 3. Account Modal (now includes Google Sign In for anonymous, with cloud warning) -->
+        <div id="modal-account" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <h2 class="text-xl font-bold text-slate-800">Account</h2>
+                <button class="close-modal text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                    <i class="ph-bold ph-x text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 flex flex-col items-center">
+                <div id="account-avatar-lg" class="h-20 w-20 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner">
+                    U
+                </div>
+                <h3 id="account-name" class="text-xl font-bold text-slate-800">User</h3>
+                <p id="account-email" class="text-sm text-slate-500 mb-6">Anonymous</p>
+
+                <div id="cloud-unavailable-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 w-full flex gap-3 text-left hidden">
+                    <i class="ph-fill ph-warning text-amber-500 text-xl shrink-0"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-800 mb-1">Cloud Sync Unavailable</h4>
+                        <p class="text-xs text-amber-700 leading-relaxed">Firebase not configured. Data is stored locally only. Sign-in and sync are disabled.</p>
+                    </div>
+                </div>
+
+                <div id="anon-warning" class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 w-full flex gap-3 text-left hidden">
+                    <i class="ph-fill ph-warning text-amber-500 text-xl shrink-0"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-800 mb-1">Local Storage Only</h4>
+                        <p class="text-xs text-amber-700 leading-relaxed">You are currently using the app anonymously. Sign in to back up and sync across devices (requires Firebase setup).</p>
+                    </div>
+                </div>
+
+                <div class="w-full flex flex-col gap-3">
+                    <!-- Google Sign In button (hidden if cloud unavailable) -->
+                    <button id="btn-google-signin-modal" class="hidden w-full py-3 px-4 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-semibold transition-colors flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                        </svg>
+                        Sign in with Google
+                    </button>
+                    <button id="btn-force-sync-modal" class="w-full py-3 px-4 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold transition-colors flex items-center justify-center gap-2 border border-slate-200">
+                        <i class="ph ph-arrows-clockwise text-lg"></i> Force Sync Data
+                    </button>
+                    <button id="btn-logout" class="w-full py-3 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 font-semibold transition-colors flex items-center justify-center gap-2 border border-red-100">
+                        <i class="ph ph-sign-out text-lg"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK & Application Logic (with local-only fallback) -->
+    <script type="module">
+        // ==========================================
+        // 0. DETECT CLOUD AVAILABILITY
+        // ==========================================
+        let useCloud = false;
+        let firebaseConfig = null;
+        
+        // Check if the environment provides a valid Firebase config
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+            try {
+                firebaseConfig = JSON.parse(__firebase_config);
+                if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+                    useCloud = true;
+                }
+            } catch(e) { console.warn("Invalid __firebase_config", e); }
+        }
+        
+        // If not available, we will not initialize Firestore or auth (local-only)
+        let auth, db, app;
+        let currentUser = null;
+        let unsubscribeSnapshot = null;
+        
+        if (useCloud) {
+            // Dynamically import Firebase modules only if cloud is enabled
+            const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js");
+            const { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js");
+            const { getFirestore, collection, doc, setDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
+            
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+            window.auth = auth;
+            window.db = db;
+            window.signInWithPopup = signInWithPopup;
+            window.GoogleAuthProvider = GoogleAuthProvider;
+            window.signInAnonymously = signInAnonymously;
+            window.onAuthStateChanged = onAuthStateChanged;
+            window.signOut = signOut;
+            window.collection = collection;
+            window.doc = doc;
+            window.setDoc = setDoc;
+            window.onSnapshot = onSnapshot;
+        } else {
+            // Provide dummy functions for local-only mode
+            console.log("Running in local-only mode (Firebase not configured).");
+            window.auth = null;
+            window.db = null;
+            window.signInWithPopup = () => Promise.reject(new Error("Cloud unavailable"));
+            window.GoogleAuthProvider = function() {};
+            window.signInAnonymously = () => Promise.resolve({ user: { isAnonymous: true, uid: 'anon' } });
+            window.onAuthStateChanged = (callback) => { callback({ isAnonymous: true, uid: 'anon' }); return () => {}; };
+            window.signOut = () => Promise.resolve();
+            window.collection = () => ({});
+            window.doc = () => ({});
+            window.setDoc = () => Promise.resolve();
+            window.onSnapshot = () => () => {};
+        }
+        
+        // ==========================================
+        // 1. ENVIRONMENT & FIREBASE SETUP
+        // ==========================================
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'studyflow-pro';
+        
+        // ==========================================
+        // 2. STATE & LOCAL STORAGE
+        // ==========================================
+        let tasks = [];
+        let currentSubjectFilter = 'All';
+        let currentStatusFilter = 'All';
+
+        function getLocalKey() {
+            return currentUser ? `studyflow_tasks_${currentUser.uid}` : 'studyflow_tasks_anon';
+        }
+
+        function loadLocalData() {
+            const data = localStorage.getItem(getLocalKey());
+            if (data) {
+                try {
+                    tasks = JSON.parse(data);
+                } catch (e) {
+                    tasks = [];
+                }
+            } else {
+                tasks = [];
+            }
+        }
+
+        function saveLocalData() {
+            localStorage.setItem(getLocalKey(), JSON.stringify(tasks));
+        }
+
+        const getTodayStr = () => {
+            const d = new Date();
+            const offset = d.getTimezoneOffset() * 60000;
+            return new Date(d.getTime() - offset).toISOString().split('T')[0];
+        };
+        
+        const addDaysStr = (dateStr, days) => {
+            const d = new Date(dateStr);
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
+        };
+
+        const generateId = () => crypto.randomUUID();
+
+        // ==========================================
+        // 3. UI RENDERING & LOGIC
+        // ==========================================
+        const ui = {
+            loginScreen: document.getElementById('login-screen'),
+            appScreen: document.getElementById('app-screen'),
+            tasksContainer: document.getElementById('tasks-container'),
+            emptyState: document.getElementById('empty-state'),
+            syncIndicator: document.getElementById('sync-indicator'),
+            modals: {
+                overlay: document.getElementById('modal-overlay'),
+                topic: document.getElementById('modal-topic'),
+                mastery: document.getElementById('modal-mastery'),
+                account: document.getElementById('modal-account')
+            }
+        };
+
+        function showScreen(screen) {
+            if (screen === 'app') {
+                ui.loginScreen.classList.add('opacity-0');
+                setTimeout(() => {
+                    ui.loginScreen.classList.add('hidden');
+                    ui.appScreen.classList.remove('hidden');
+                    void ui.appScreen.offsetWidth;
+                    ui.appScreen.classList.remove('opacity-0');
+                }, 300);
+            } else {
+                ui.appScreen.classList.add('opacity-0');
+                setTimeout(() => {
+                    ui.appScreen.classList.add('hidden');
+                    ui.loginScreen.classList.remove('hidden');
+                    void ui.loginScreen.offsetWidth;
+                    ui.loginScreen.classList.remove('opacity-0');
+                }, 300);
+            }
+        }
+
+        function openModal(modalId) {
+            ui.modals.overlay.classList.remove('hidden');
+            void ui.modals.overlay.offsetWidth;
+            ui.modals.overlay.classList.remove('opacity-0');
+            
+            Object.values(ui.modals).forEach(m => {
+                if(m.id && m.id !== 'modal-overlay') { m.classList.add('hidden'); m.classList.add('scale-95'); }
+            });
+
+            const target = ui.modals[modalId];
+            if (target) {
+                target.classList.remove('hidden');
+                void target.offsetWidth;
+                target.classList.remove('scale-95');
+            }
+        }
+
+        function closeModal() {
+            ui.modals.overlay.classList.add('opacity-0');
+            Object.values(ui.modals).forEach(m => {
+                if(m.id && m.id !== 'modal-overlay') { m.classList.add('scale-95'); }
+            });
+            setTimeout(() => {
+                ui.modals.overlay.classList.add('hidden');
+            }, 200);
+        }
+
+        function updateStats() {
+            const today = getTodayStr();
+            const activeTasks = tasks.filter(t => !t._deleted && !t.completed);
+            const dueToday = activeTasks.filter(t => t.nextReviewDate === today).length;
+            const overdue = activeTasks.filter(t => t.nextReviewDate < today).length;
+            const mastered = tasks.filter(t => !t._deleted && t.completed).length;
+
+            document.getElementById('stat-due').textContent = dueToday;
+            document.getElementById('stat-overdue').textContent = overdue;
+            document.getElementById('stat-mastered').textContent = mastered;
+        }
+
+        function renderTasks() {
+            const today = getTodayStr();
+            let filtered = tasks.filter(t => !t._deleted && !t.completed);
+
+            if (currentSubjectFilter !== 'All') {
+                filtered = filtered.filter(t => t.subject === currentSubjectFilter);
+            }
+            if (currentStatusFilter === 'Due') {
+                filtered = filtered.filter(t => t.nextReviewDate === today);
+            } else if (currentStatusFilter === 'Overdue') {
+                filtered = filtered.filter(t => t.nextReviewDate < today);
+            }
+
+            filtered.sort((a, b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
+
+            ui.tasksContainer.innerHTML = '';
+
+            if (filtered.length === 0) {
+                ui.emptyState.classList.remove('hidden');
+                ui.emptyState.classList.add('flex');
+            } else {
+                ui.emptyState.classList.add('hidden');
+                ui.emptyState.classList.remove('flex');
+
+                filtered.forEach(task => {
+                    const [year, month, day] = task.nextReviewDate.split('-');
+                    let badgeHtml = '';
+                    if (task.syncStatus === 'pending') {
+                        badgeHtml = `<span class="bg-amber-100/60 text-amber-700 font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs flex items-center gap-1"><i class="ph-bold ph-arrows-clockwise text-amber-600"></i> pending</span>`;
+                    }
+                    
+                    let subjColor = 'bg-slate-100 text-slate-700';
+                    if(task.subject === 'Biology') subjColor = 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+                    if(task.subject === 'Physics') subjColor = 'bg-brand-50 text-brand-700 border border-brand-100';
+                    if(task.subject === 'Chemistry') subjColor = 'bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100';
+
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col gap-3 transition-transform hover:-translate-y-1 duration-200';
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="${subjColor} font-semibold px-3 py-1 rounded-full text-[10px] sm:text-xs">${task.subject}</span>
+                            ${badgeHtml}
+                        </div>
+                        <h2 class="text-lg sm:text-xl font-bold text-slate-800 line-clamp-2" title="${task.topic}">${task.topic}</h2>
+                        ${task.notes ? `<p class="text-xs sm:text-sm text-slate-500 line-clamp-2">${task.notes}</p>` : ''}
+                        <div class="flex items-end justify-between mt-auto pt-3">
+                            <div class="text-[11px] sm:text-[13px] font-semibold text-slate-400 leading-tight">${year}-<br>${month}-${day}</div>
+                            <div class="flex items-center gap-1.5 sm:gap-2">
+                                <button class="btn-edit h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Edit"><i class="ph-fill ph-gear text-lg sm:text-xl pointer-events-none"></i></button>
+                                ${task.summaryLink ? `<a href="${task.summaryLink}" target="_blank" class="h-9 px-3 sm:h-11 sm:px-4 rounded-xl sm:rounded-2xl bg-slate-50 hover:bg-brand-50 text-slate-600 hover:text-brand-600 font-semibold text-xs sm:text-sm flex items-center gap-1.5 transition-colors" title="View Summary"><i class="ph-fill ph-file-text text-base sm:text-lg"></i><span class="hidden sm:inline">Summary</span></a>` : ''}
+                                <button class="btn-master h-9 w-9 sm:h-11 sm:w-11 rounded-xl sm:rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors" data-id="${task.id}" title="Mark Mastered"><i class="ph-bold ph-check text-base sm:text-lg pointer-events-none"></i></button>
+                                <button class="btn-review h-9 px-3 sm:h-11 sm:px-5 rounded-xl sm:rounded-2xl bg-brand-50 hover:bg-brand-100 text-brand-600 font-bold text-xs sm:text-sm transition-colors" data-id="${task.id}">Review</button>
+                            </div>
+                        </div>
+                    `;
+                    ui.tasksContainer.appendChild(card);
+                });
+            }
+            updateStats();
+        }
+
+        function renderMastery() {
+            const container = document.getElementById('mastery-container');
+            container.innerHTML = '';
+            const subjects = ['Biology', 'Chemistry', 'Physics'];
+            subjects.forEach(sub => {
+                const subTasks = tasks.filter(t => !t._deleted && t.subject === sub);
+                const total = subTasks.length;
+                const mastered = subTasks.filter(t => t.completed).length;
+                const percentage = total === 0 ? 0 : Math.round((mastered / total) * 100);
+                let colorClass = 'bg-slate-500';
+                if(sub === 'Biology') colorClass = 'bg-emerald-500';
+                if(sub === 'Physics') colorClass = 'bg-brand-500';
+                if(sub === 'Chemistry') colorClass = 'bg-fuchsia-500';
+                container.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-sm font-semibold mb-2">
+                            <span class="text-slate-700">${sub}</span>
+                            <span class="text-slate-500">${mastered}/${total} (${percentage}%)</span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div class="h-full ${colorClass} transition-all duration-500" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateAccountUI(user) {
+            const nameEl = document.getElementById('account-name');
+            const emailEl = document.getElementById('account-email');
+            const avatarNav = document.getElementById('user-avatar');
+            const avatarLg = document.getElementById('account-avatar-lg');
+            const greeting = document.getElementById('user-greeting');
+            const anonWarning = document.getElementById('anon-warning');
+            const cloudWarning = document.getElementById('cloud-unavailable-warning');
+            const googleSignInBtn = document.getElementById('btn-google-signin-modal');
+
+            // Show cloud warning if cloud unavailable
+            if (!useCloud) {
+                cloudWarning.classList.remove('hidden');
+                googleSignInBtn.classList.add('hidden'); // hide google sign-in if no cloud
+            } else {
+                cloudWarning.classList.add('hidden');
+            }
+
+            if (user && !user.isAnonymous && useCloud) {
+                const name = user.displayName || 'Student';
+                nameEl.textContent = name;
+                emailEl.textContent = user.email;
+                greeting.textContent = `Hi, ${name.split(' ')[0]}`;
+                anonWarning.classList.add('hidden');
+                googleSignInBtn.classList.add('hidden');
+                let initials = name.charAt(0).toUpperCase();
+                avatarNav.innerHTML = initials;
+                avatarLg.innerHTML = initials;
+                avatarNav.className = "nav-btn-account h-10 w-10 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-brand-200 transition-all";
+                avatarLg.className = "h-20 w-20 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner";
+            } else {
+                nameEl.textContent = 'Guest User';
+                emailEl.textContent = 'Anonymous';
+                greeting.textContent = `Hi, Guest`;
+                anonWarning.classList.remove('hidden');
+                if (useCloud) {
+                    googleSignInBtn.classList.remove('hidden');
+                }
+                avatarNav.innerHTML = '<i class="ph-fill ph-user text-lg"></i>';
+                avatarLg.innerHTML = '<i class="ph-fill ph-user text-4xl"></i>';
+                avatarNav.className = "nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-slate-300 transition-all";
+                avatarLg.className = "h-20 w-20 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-3xl font-bold mb-4 shadow-inner";
+            }
+        }
+
+        // ==========================================
+        // 4. DATA ACTIONS & SYNC (only if cloud available)
+        // ==========================================
+        async function syncToCloud() {
+            if (!useCloud || !currentUser || !navigator.onLine) return;
+            const pendingTasks = tasks.filter(t => t.syncStatus === 'pending');
+            if (pendingTasks.length === 0) return;
+
+            ui.syncIndicator.classList.remove('hidden');
+            ui.syncIndicator.classList.add('flex');
+
+            try {
+                for (const task of pendingTasks) {
+                    const docRef = window.doc(window.db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', task.id);
+                    const cloudData = { ...task, syncStatus: 'synced', _updatedAtCloud: Date.now() };
+                    await window.setDoc(docRef, cloudData);
+                    const localIdx = tasks.findIndex(t => t.id === task.id);
+                    if (localIdx > -1) {
+                        tasks[localIdx].syncStatus = 'synced';
+                    }
+                }
+                saveLocalData();
+                renderTasks();
+            } catch (error) {
+                console.error("Sync Error:", error);
+            } finally {
+                ui.syncIndicator.classList.add('hidden');
+                ui.syncIndicator.classList.remove('flex');
+            }
+        }
+
+        function mutateTask(id, modifications, isNew = false) {
+            const now = new Date().toISOString();
+            if (isNew) {
+                const newTask = {
+                    id: id,
+                    createdAt: now,
+                    updatedAt: now,
+                    completed: false,
+                    syncStatus: useCloud ? 'pending' : 'synced', // if no cloud, mark synced
+                    _deleted: false,
+                    ...modifications
+                };
+                tasks.push(newTask);
+            } else {
+                const idx = tasks.findIndex(t => t.id === id);
+                if (idx > -1) {
+                    tasks[idx] = { ...tasks[idx], ...modifications, updatedAt: now, syncStatus: useCloud ? 'pending' : 'synced' };
+                }
+            }
+            saveLocalData();
+            renderTasks();
+            if (useCloud) syncToCloud(); // Fire & forget
+        }
+
+        function setupCloudListener() {
+            if (!useCloud || !currentUser) return;
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+
+            const colRef = window.collection(window.db, 'artifacts', appId, 'users', currentUser.uid, 'reminders');
+            unsubscribeSnapshot = window.onSnapshot(colRef, (snapshot) => {
+                let hasChanges = false;
+                snapshot.docChanges().forEach((change) => {
+                    const cloudTask = change.doc.data();
+                    const localIdx = tasks.findIndex(t => t.id === cloudTask.id);
+                    if (localIdx > -1) {
+                        const localTask = tasks[localIdx];
+                        if (localTask.syncStatus === 'pending') return;
+                        if (JSON.stringify(localTask) !== JSON.stringify(cloudTask)) {
+                            tasks[localIdx] = cloudTask;
+                            hasChanges = true;
+                        }
+                    } else {
+                        tasks.push(cloudTask);
+                        hasChanges = true;
+                    }
+                });
+                if (hasChanges) {
+                    saveLocalData();
+                    renderTasks();
+                }
+            }, (error) => {
+                console.error("Firestore listen error:", error);
+            });
+        }
+
+        // ==========================================
+        // 5. EVENT LISTENERS
+        // ==========================================
+        if (useCloud) {
+            window.onAuthStateChanged(window.auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadLocalData();
+                    updateAccountUI(user);
+                    showScreen('app');
+                    renderTasks();
+                    setupCloudListener();
+                    syncToCloud();
+                } else {
+                    currentUser = null;
+                    if(unsubscribeSnapshot) unsubscribeSnapshot();
+                    showScreen('login');
+                }
+            });
+        } else {
+            // Local-only mode: simulate anonymous user immediately
+            currentUser = { isAnonymous: true, uid: 'anon' };
+            loadLocalData();
+            updateAccountUI(currentUser);
+            showScreen('app');
+            renderTasks();
+        }
+
+        // Anonymous login (for cloud case; in local-only it's automatic)
+        document.getElementById('btn-anon-login').addEventListener('click', async () => {
+            if (useCloud) {
+                try {
+                    await window.signInAnonymously(window.auth);
+                } catch (error) {
+                    document.getElementById('login-error').textContent = error.message;
+                    document.getElementById('login-error').classList.remove('hidden');
+                }
+            } else {
+                // Already in local-only mode, just show app
+                currentUser = { isAnonymous: true, uid: 'anon' };
+                loadLocalData();
+                updateAccountUI(currentUser);
+                showScreen('app');
+                renderTasks();
+            }
+        });
+
+        // Google Sign In from account modal
+        const googleBtn = document.getElementById('btn-google-signin-modal');
+        if (googleBtn) {
+            googleBtn.addEventListener('click', async () => {
+                if (!useCloud) {
+                    alert("Cloud sync is not configured. Sign-in is disabled in local-only mode.");
+                    return;
+                }
+                try {
+                    const provider = new window.GoogleAuthProvider();
+                    await window.signInWithPopup(window.auth, provider);
+                    closeModal();
+                } catch (error) {
+                    console.error(error);
+                    alert("Sign in failed: " + error.message);
+                }
+            });
+        }
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            if (useCloud) {
+                window.signOut(window.auth);
+            } else {
+                // In local-only, "logout" means clear local data and reset
+                if (confirm("Sign out will clear all local data. Continue?")) {
+                    localStorage.removeItem(getLocalKey());
+                    tasks = [];
+                    saveLocalData();
+                    renderTasks();
+                    updateAccountUI(null);
+                    showScreen('login');
+                }
+            }
+            closeModal();
+        });
+
+        document.getElementById('btn-force-sync-modal').addEventListener('click', () => {
+            if (useCloud) {
+                syncToCloud();
+            } else {
+                alert("Cloud sync is not available in local-only mode.");
+            }
+            closeModal();
+        });
+        const headerSync = document.getElementById('btn-header-sync');
+        if (headerSync) {
+            headerSync.addEventListener('click', () => {
+                if (useCloud) syncToCloud();
+                else alert("Cloud sync not available.");
+            });
+        }
+
+        // Navigation: Account buttons open account modal
+        const accountButtons = ['nav-btn-account-desktop', 'nav-btn-account-mobile'];
+        accountButtons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('click', () => {
+                    openModal('account');
+                });
+            }
+        });
+        document.querySelectorAll('.nav-btn-account').forEach(btn => {
+            btn.addEventListener('click', () => {
+                openModal('account');
+            });
+        });
+
+        // Other nav buttons
+        document.querySelectorAll('.nav-btn-home').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentSubjectFilter = 'All';
+                currentStatusFilter = 'All';
+                document.getElementById('filter-subject').value = 'All';
+                document.querySelectorAll('.filter-status-btn').forEach(b => {
+                    if (b.dataset.status === 'All') {
+                        b.classList.remove('text-slate-600', 'hover:text-slate-900');
+                        b.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
+                    } else {
+                        b.classList.add('text-slate-600', 'hover:text-slate-900');
+                        b.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                    }
+                });
+                renderTasks();
+                window.scrollTo(0,0);
+            });
+        });
+
+        document.getElementById('nav-brand').addEventListener('click', () => {
+            document.querySelector('.nav-btn-home').click();
+        });
+
+        document.querySelectorAll('.nav-btn-add').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('form-topic').reset();
+                document.getElementById('topic-id').value = '';
+                document.getElementById('topic-date').value = getTodayStr();
+                document.getElementById('modal-topic-title').textContent = 'Add Topic';
+                document.getElementById('btn-delete-topic').classList.add('hidden');
+                openModal('topic');
+            });
+        });
+
+        document.querySelectorAll('.nav-btn-mastery').forEach(btn => {
+            btn.addEventListener('click', () => {
+                renderMastery();
+                openModal('mastery');
+            });
+        });
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', closeModal);
+        });
+
+        ui.modals.overlay.addEventListener('click', (e) => {
+            if (e.target === ui.modals.overlay) closeModal();
+        });
+
+        document.getElementById('filter-subject').addEventListener('change', (e) => {
+            currentSubjectFilter = e.target.value;
+            renderTasks();
+        });
+
+        document.querySelectorAll('.filter-status-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-status-btn').forEach(b => {
+                    b.classList.remove('bg-brand-600', 'text-white', 'shadow-sm');
+                    b.classList.add('text-slate-600', 'hover:text-slate-900');
+                });
+                e.target.classList.remove('text-slate-600', 'hover:text-slate-900');
+                e.target.classList.add('bg-brand-600', 'text-white', 'shadow-sm');
+                currentStatusFilter = e.target.dataset.status;
+                renderTasks();
+            });
+        });
+
+        ui.tasksContainer.addEventListener('click', (e) => {
+            const btnEdit = e.target.closest('.btn-edit');
+            const btnMaster = e.target.closest('.btn-master');
+            const btnReview = e.target.closest('.btn-review');
+
+            if (btnEdit) {
+                const id = btnEdit.dataset.id;
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    document.getElementById('topic-id').value = task.id;
+                    document.getElementById('topic-name').value = task.topic;
+                    document.getElementById('topic-subject').value = task.subject;
+                    document.getElementById('topic-date').value = task.nextReviewDate;
+                    document.getElementById('topic-link').value = task.summaryLink || '';
+                    document.getElementById('topic-notes').value = task.notes || '';
+                    document.getElementById('modal-topic-title').textContent = 'Edit Topic';
+                    document.getElementById('btn-delete-topic').classList.remove('hidden');
+                    openModal('topic');
+                }
+            }
+            if (btnMaster) {
+                const id = btnMaster.dataset.id;
+                mutateTask(id, { completed: true });
+            }
+            if (btnReview) {
+                const id = btnReview.dataset.id;
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    const newDate = addDaysStr(getTodayStr(), 3);
+                    mutateTask(id, { nextReviewDate: newDate });
+                }
+            }
+        });
+
+        document.getElementById('form-topic').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('topic-id').value;
+            const isNew = !id;
+            const targetId = isNew ? generateId() : id;
+            const data = {
+                topic: document.getElementById('topic-name').value.trim(),
+                subject: document.getElementById('topic-subject').value,
+                nextReviewDate: document.getElementById('topic-date').value,
+                summaryLink: document.getElementById('topic-link').value.trim(),
+                notes: document.getElementById('topic-notes').value.trim()
+            };
+            mutateTask(targetId, data, isNew);
+            closeModal();
+        });
+
+        document.getElementById('btn-delete-topic').addEventListener('click', () => {
+            const id = document.getElementById('topic-id').value;
+            if (id && confirm('Are you sure you want to delete this topic?')) {
+                mutateTask(id, { _deleted: true });
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
