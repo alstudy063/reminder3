@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>StudyFlow Pro</title>
     
     <!-- Tailwind CSS -->
@@ -43,15 +43,29 @@
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         
+        /* Modal Transitions */
         .modal-enter { opacity: 0; transform: scale(0.95); }
         .modal-enter-active { opacity: 1; transform: scale(1); transition: opacity 200ms ease-out, transform 200ms ease-out; }
         .modal-exit { opacity: 1; transform: scale(1); }
         .modal-exit-active { opacity: 0; transform: scale(0.95); transition: opacity 150ms ease-in, transform 150ms ease-in; }
+
+        /* Hide login screen by default */
+        #login-screen {
+            display: none;
+        }
+        /* Show loading indicator while auth is initializing */
+        #app-screen {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #app-screen.loaded {
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="text-slate-800 antialiased h-screen flex flex-col overflow-hidden pb-16 md:pb-0">
 
-    <!-- LOGIN SCREEN (same as before) -->
+    <!-- ==================== LOGIN SCREEN (hidden by default) ==================== -->
     <div id="login-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-appbg transition-opacity duration-300">
         <div class="bg-white p-8 rounded-3xl shadow-sm text-center max-w-md w-full mx-4 border border-slate-100">
             <div class="flex items-center justify-center gap-2 mb-6 text-2xl font-bold">
@@ -79,9 +93,10 @@
         </div>
     </div>
 
-    <!-- MAIN APP SCREEN (same structure, but we'll inject sync logic) -->
+    <!-- ==================== MAIN APP SCREEN (hidden initially) ==================== -->
     <div id="app-screen" class="hidden flex-1 flex-col h-full opacity-0 transition-opacity duration-300">
-        <!-- header same as previous version -->
+        
+        <!-- Top Navbar (unchanged) -->
         <header class="bg-white border-b border-slate-100 sticky top-0 z-10">
             <div class="max-w-[1400px] mx-auto px-4 h-20 flex items-center justify-between">
                 <div class="flex items-center gap-2 cursor-pointer" id="nav-brand">
@@ -90,6 +105,7 @@
                     </div>
                     <span class="text-xl font-bold tracking-tight text-slate-900">StudyFlow <span class="text-brand-600">Pro</span></span>
                 </div>
+
                 <nav class="hidden md:flex bg-slate-50/80 p-1.5 rounded-full items-center">
                     <button class="nav-btn-home px-6 py-2 rounded-full bg-brand-50 text-brand-600 font-medium text-sm transition-colors">Home</button>
                     <button class="nav-btn-add px-6 py-2 rounded-full text-slate-600 hover:text-slate-900 font-medium text-sm transition-colors">Add Topic</button>
@@ -98,6 +114,7 @@
                         <i class="ph-bold ph-user-circle text-base"></i> Account
                     </button>
                 </nav>
+
                 <div class="flex items-center gap-4">
                     <div id="sync-indicator" class="hidden text-brand-600 items-center gap-1 text-sm font-medium" title="Syncing with Cloud">
                         <i class="ph ph-arrows-clockwise animate-spin text-lg"></i>
@@ -106,6 +123,7 @@
                         <i class="ph ph-arrows-clockwise text-base"></i>
                         <span>Force sync</span>
                     </button>
+                    
                     <span id="user-greeting" class="text-sm font-medium text-slate-700 hidden sm:block">Hi, User</span>
                     <div id="user-avatar" class="nav-btn-account h-10 w-10 rounded-full bg-slate-200 text-slate-600 flex items-center justify-center font-semibold text-sm cursor-pointer shadow-sm border-2 border-white ring-2 ring-slate-100 hover:ring-brand-200 transition-all">
                         <i class="ph-fill ph-user text-lg"></i>
@@ -116,7 +134,8 @@
 
         <main class="flex-1 overflow-y-auto p-4 sm:p-8">
             <div class="max-w-[1400px] mx-auto space-y-8">
-                <!-- Stats Grid (same as before) -->
+                
+                <!-- Stats Grid -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                     <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-sm border border-slate-100/60 flex flex-col justify-between">
                         <h3 class="text-[10px] sm:text-xs font-bold text-slate-400 tracking-wider mb-2">DUE TODAY</h3>
@@ -170,7 +189,7 @@
             </div>
         </main>
         
-        <!-- Mobile Bottom Nav -->
+        <!-- Mobile Bottom Nav (no account button) -->
         <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-2 py-2 pb-safe z-40 h-16 shadow-[0_-4px_6px_-1px_rgb(0,0,0,0.05)]">
             <button class="nav-btn-home flex flex-col items-center justify-center w-16 text-brand-600">
                 <i class="ph-fill ph-house text-2xl"></i>
@@ -185,14 +204,10 @@
                 <i class="ph-bold ph-chart-bar text-2xl"></i>
                 <span class="text-[10px] font-medium mt-1">Mastery</span>
             </button>
-            <button id="nav-btn-account-mobile" class="flex flex-col items-center justify-center w-16 text-slate-400 hover:text-slate-700 transition-colors">
-                <i class="ph-bold ph-user-circle text-2xl"></i>
-                <span class="text-[10px] font-medium mt-1">Account</span>
-            </button>
         </nav>
     </div>
 
-    <!-- MODALS (same as before) -->
+    <!-- MODALS (unchanged) -->
     <div id="modal-overlay" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity flex items-center justify-center p-4">
         <!-- Add/Edit Topic Modal -->
         <div id="modal-topic" class="bg-white rounded-3xl w-full max-w-md shadow-xl hidden scale-95 transition-transform flex-col overflow-hidden max-h-[90vh]">
@@ -242,14 +257,14 @@
         </div>
     </div>
 
-    <!-- Firebase SDK & Application Logic (with hardcoded config) -->
+    <!-- Firebase SDK & Application Logic (with auto‑anonymous) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         // ==========================================
-        // HARDCODED FIREBASE CONFIG (from your project)
+        // HARDCODED FIREBASE CONFIG
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
@@ -265,7 +280,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = "studyflow-pro"; // custom app ID for Firestore subcollection
+        const appId = "studyflow-pro";
 
         let currentUser = null;
         let unsubscribeSnapshot = null;
@@ -313,7 +328,7 @@
         const generateId = () => crypto.randomUUID();
 
         // ==========================================
-        // UI RENDERING (same as before)
+        // UI RENDERING
         // ==========================================
         const ui = {
             loginScreen: document.getElementById('login-screen'),
@@ -336,9 +351,10 @@
                     ui.loginScreen.classList.add('hidden');
                     ui.appScreen.classList.remove('hidden');
                     void ui.appScreen.offsetWidth;
-                    ui.appScreen.classList.remove('opacity-0');
+                    ui.appScreen.classList.add('loaded');
                 }, 300);
             } else {
+                // We never show login screen in normal flow, but keep function for completeness
                 ui.appScreen.classList.add('opacity-0');
                 setTimeout(() => {
                     ui.appScreen.classList.add('hidden');
@@ -509,7 +525,7 @@
         }
 
         // ==========================================
-        // CLOUD SYNC LOGIC
+        // CLOUD SYNC
         // ==========================================
         async function syncToCloud() {
             if (!currentUser || !navigator.onLine) return;
@@ -591,29 +607,40 @@
                 }
             }, (error) => {
                 console.error("Firestore listen error:", error);
-                // Optionally show a user-friendly message
             });
         }
 
         // ==========================================
-        // EVENT LISTENERS & AUTH
+        // AUTO-ANONYMOUS SIGN-IN
         // ==========================================
+        // Always start with app visible (but hidden initially) – we'll show it when auth is ready.
+        ui.appScreen.classList.remove('hidden');   // make it visible but transparent
+        // We'll add the 'loaded' class after we have a user.
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 loadLocalData();
                 updateAccountUI(user);
-                showScreen('app');
+                // Show app with fade-in
+                ui.appScreen.classList.add('loaded');
                 renderTasks();
                 setupCloudListener();
                 syncToCloud();
             } else {
-                currentUser = null;
-                if(unsubscribeSnapshot) unsubscribeSnapshot();
-                showScreen('login');
+                // No user → automatically sign in anonymously
+                signInAnonymously(auth).catch((err) => {
+                    console.error("Auto anonymous sign-in failed:", err);
+                    // Fallback: show login screen? But we avoid that; just keep loading state.
+                    // As a last resort, show error but still hide login.
+                    ui.appScreen.classList.add('loaded'); // show empty app? might not be ideal
+                });
             }
         });
 
+        // ==========================================
+        // EVENT LISTENERS (unchanged from previous working version)
+        // ==========================================
         document.getElementById('btn-google-login').addEventListener('click', async (e) => {
             const btn = e.currentTarget;
             const errDiv = document.getElementById('login-error');
@@ -653,6 +680,7 @@
         document.getElementById('btn-logout').addEventListener('click', () => {
             closeModal();
             signOut(auth);
+            // After sign out, onAuthStateChanged will trigger auto anonymous sign-in
         });
 
         document.getElementById('btn-force-sync-modal').addEventListener('click', () => {
@@ -663,7 +691,7 @@
             syncToCloud();
         });
 
-        // Navigation buttons (same as before)
+        // Navigation
         document.querySelectorAll('.nav-btn-home').forEach(btn => {
             btn.addEventListener('click', () => {
                 currentSubjectFilter = 'All';
@@ -705,13 +733,14 @@
             });
         });
 
+        // Account access via avatar and desktop account button
         document.querySelectorAll('.nav-btn-account').forEach(btn => {
             btn.addEventListener('click', () => {
                 openModal('account');
             });
         });
-        document.getElementById('nav-btn-account-desktop')?.addEventListener('click', () => openModal('account'));
-        document.getElementById('nav-btn-account-mobile')?.addEventListener('click', () => openModal('account'));
+        const desktopAccountBtn = document.getElementById('nav-btn-account-desktop');
+        if (desktopAccountBtn) desktopAccountBtn.addEventListener('click', () => openModal('account'));
 
         document.querySelectorAll('.close-modal').forEach(btn => {
             btn.addEventListener('click', closeModal);
