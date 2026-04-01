@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Modern Dynamic Pomodoro</title>
+  <!-- Plus Jakarta Sans for a very modern, premium look -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --focus: #ff3b3b;
+      --break: #4cd137;
+      --bg: #000;
+      --cursor-color: var(--focus);
+    }
+
+    * { 
+      margin: 0; padding: 0; box-sizing: border-box; 
+      font-family: 'Plus Jakarta Sans', sans-serif; 
+    }
+
+    body {
+      height: 100vh; width: 100vw; background: var(--bg); color: #fff;
+      display: flex; align-items: center; justify-content: center; 
+      overflow: hidden; transition: background 0.8s ease; cursor: none;
+    }
+
+    .cursor-glow {
+      position: fixed; width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(255,59,59,0.08) 0%, rgba(0,0,0,0) 70%);
+      border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
+      z-index: 0; transition: background 0.8s ease;
+    }
+
+    .cursor-dot {
+      position: fixed; width: 8px; height: 8px; background: var(--cursor-color);
+      border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%);
+      z-index: 1000; transition: background 0.5s ease;
+    }
+
+    .header {
+      position: fixed; top: 40px; width: 100%; padding: 0 40px;
+      display: flex; justify-content: space-between; align-items: center; z-index: 10;
+    }
+
+    .task-input {
+      background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: #fff; font-size: 0.9rem; padding: 5px 0; width: 180px; outline: none; 
+      letter-spacing: 0.5px; font-weight: 600;
+    }
+
+    /* Timer Container & Animation States */
+    .timer-container {
+      position: relative; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      z-index: 5;
+      transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .visual-timer-wrapper {
+      position: relative; 
+      width: min(85vmin, 400px); 
+      aspect-ratio: 1 / 1;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* Running State: Scale down the ring wrapper */
+    body.running .visual-timer-wrapper {
+      transform: scale(0.45);
+    }
+
+    .progress-ring { 
+      position: absolute; 
+      inset: 0; 
+      width: 100%; 
+      height: 100%; 
+      transform: rotate(-90deg); 
+    }
+
+    .time-overlay { 
+      text-align: center; 
+      cursor: pointer; 
+      user-select: none; 
+      position: relative;
+    }
+
+    .time-display-fade {
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      font-weight: 800; 
+      line-height: 1;
+      font-variant-numeric: tabular-nums; 
+      transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      
+      /* Initial size inside circle */
+      font-size: clamp(3rem, 14vmin, 6rem); 
+      letter-spacing: -3px;
+    }
+
+    /* Running State: Make numbers huge and overlaying the ring */
+    body.running .time-display-fade {
+      font-size: clamp(6rem, 30vmin, 15rem);
+      letter-spacing: -10px;
+      transform: scale(1.1);
+      z-index: 20;
+    }
+
+    .digit { 
+      display: inline-block; 
+      text-align: center; 
+      width: 0.9ch; 
+      transition: opacity 0.3s, transform 0.3s;
+      transform-origin: center;
+    }
+    .fade-effect { opacity: 0; transform: scale(0.95); }
+    
+    /* BREATHING ANIMATION ON DIGITS WHEN TIMER RUNS */
+    @keyframes breathe {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+        text-shadow: 0 0 0 rgba(255,255,255,0);
+      }
+      50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+        text-shadow: 0 0 8px currentColor;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+        text-shadow: 0 0 0 rgba(255,255,255,0);
+      }
+    }
+
+    body.running .digit {
+      animation: breathe 2s ease-in-out infinite;
+    }
+    
+    .separator { 
+      opacity: 0.2; 
+      width: 0.3ch; 
+      text-align: center; 
+      position: relative; 
+      top: -4px;
+      font-weight: 400;
+      transition: all 0.8s;
+    }
+    
+    body.running .separator {
+      opacity: 0.05;
+      margin: 0 10px;
+    }
+
+    .status-label {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 5px;
+      color: rgba(255,255,255,0.2); margin-top: 20px; font-weight: 800;
+      transition: all 0.5s;
+    }
+    
+    body.running .status-label {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    #progress { transition: stroke-dashoffset 1s linear, stroke 0.8s ease; stroke-width: 2.5; }
+    .bg-circle { stroke-width: 0.8; }
+
+    .session-side-container {
+      position: absolute; left: calc(100% + 30px); bottom: 20px;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+      transition: opacity 0.5s;
+    }
+    
+    /* Keep side container fully visible when timer is running */
+    body.running .session-side-container {
+      opacity: 1;
+    }
+
+    .session-bars-row { 
+      display: flex; 
+      gap: 8px; 
+      align-items: flex-end; 
+    }
+    
+    .v-bar-container {
+      width: 6px;        /* increased width */
+      height: 30px; 
+      background: rgba(255,255,255,0.08);
+      border-radius: 10px; 
+      overflow: hidden; 
+      position: relative;
+    }
+    
+    .v-bar-fill {
+      position: absolute; bottom: 0; left: 0; width: 100%;
+      height: 0%; background: var(--focus); transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
+    }
+
+    .global-mode-tag { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 2px; font-weight: 800; color: rgba(255,255,255,0.3); }
+
+    .corner-btn {
+      position: fixed; bottom: 40px; width: 45px; height: 45px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center; color: #444;
+      border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: all 0.3s;
+      background: rgba(255,255,255,0.02); z-index: 20;
+    }
+    .corner-btn:hover { color: #fff; background: rgba(255,255,255,0.05); transform: translateY(-2px); }
+    #resetBtn { left: 40px; } #settingsBtn { right: 40px; }
+    
+    body.running .corner-btn { opacity: 0; pointer-events: none; }
+
+    /* Modal styling */
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+      display: none; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(20px);
+    }
+    .modal.show { display: flex; }
+    .modal-content { width: 360px; padding: 35px; background: #0c0c0c; border-radius: 32px; border: 1px solid #1a1a1a; }
+    
+    .input-group { margin-bottom: 24px; }
+    .input-group label { display: block; font-size: 0.6rem; color: #666; margin-bottom: 12px; text-transform: uppercase; font-weight: 800; letter-spacing: 1px; }
+    
+    .input-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+    .input-row input { 
+      width: 70px; background: #151515; border: 1px solid #222; color: #fff; 
+      padding: 14px 5px; border-radius: 14px; text-align: center; font-weight: 700; font-size: 1.1rem; 
+    }
+    .input-row input:focus { border-color: var(--focus); outline: none; background: #1a1a1a; }
+    .input-row span { color: #333; font-weight: 800; }
+    
+    #saveBtn { 
+      width: 100%; padding: 18px; background: #fff; border: none; border-radius: 16px; 
+      font-weight: 800; cursor: pointer; transition: 0.3s; color: #000; letter-spacing: 0.5px;
+      margin-top: 10px;
+    }
+    #saveBtn:hover { background: #eee; transform: scale(1.02); }
+    
+    /* Fullscreen button in settings */
+    .fullscreen-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 20px;
+      font-size: 0.9rem;
+    }
+    .fullscreen-btn:hover {
+      background: rgba(255,255,255,0.1);
+      transform: scale(1.02);
+    }
+    
+    .edit-highlight { color: var(--focus) !important; }
+  </style>
+</head>
+<body>
+
+  <div class="cursor-glow" id="cursorGlow"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+
+  <div class="header">
+    <input type="text" class="task-input" placeholder="FOCUS MISSION...">
+    <div id="sessionDisplay" style="color: rgba(255,255,255,0.08); font-size: 0.75rem; font-weight: 800; letter-spacing: 1px;">S#1</div>
+  </div>
+
+  <div class="timer-container">
+    <div class="visual-timer-wrapper">
+      <svg class="progress-ring" viewBox="0 0 100 100">
+        <circle class="bg-circle" cx="50" cy="50" r="48" stroke="rgba(255,255,255,0.03)" fill="none" />
+        <circle id="progress" cx="50" cy="50" r="48" stroke="#ff3b3b" fill="none" stroke-linecap="round" />
+      </svg>
+      <div class="time-overlay" id="timerAction">
+        <div class="time-display-fade" id="fullTimeDisplay">
+          <!-- Numbers injected here -->
+        </div>
+        <div class="status-label" id="statusLabel">READY</div>
+      </div>
+    </div>
+    
+    <div class="session-side-container">
+      <div class="session-bars-row" id="barsRow"></div>
+      <div class="global-mode-tag" id="globalModeTag">FOCUS</div>
+    </div>
+  </div>
+
+  <div class="corner-btn" id="resetBtn" title="Reset Session">↺</div>
+  <div class="corner-btn" id="settingsBtn" title="Settings">⚙</div>
+
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <div class="input-group">
+        <label class="edit-highlight">Modify Current Timer</label>
+        <div class="input-row">
+          <input type="number" id="currHH" min="0" placeholder="HH"><span>:</span>
+          <input type="number" id="currMM" min="0" max="59" placeholder="MM"><span>:</span>
+          <input type="number" id="currSS" min="0" max="59" placeholder="SS">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Focus Duration</label>
+        <div class="input-row">
+          <input type="number" id="focusHH" min="0" placeholder="HH"><span>:</span>
+          <input type="number" id="focusMM" min="0" max="59" placeholder="MM"><span>:</span>
+          <input type="number" id="focusSS" min="0" max="59" placeholder="SS">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Break Duration</label>
+        <div class="input-row">
+          <input type="number" id="breakHH" min="0" placeholder="HH"><span>:</span>
+          <input type="number" id="breakMM" min="0" max="59" placeholder="MM"><span>:</span>
+          <input type="number" id="breakSS" min="0" max="59" placeholder="SS">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Session Count</label>
+        <div class="input-row">
+          <input type="number" id="sessionInput" style="width: 100%" value="1" min="1">
+        </div>
+      </div>
+
+      <button id="saveBtn">APPLY CHANGES</button>
+      
+      <!-- Fullscreen button inside settings -->
+      <button id="fullscreenBtn" class="fullscreen-btn">⛶ ENTER FULLSCREEN</button>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      let FOCUS_TIME = 25 * 60;
+      let BREAK_TIME = 5 * 60;
+      let remaining = FOCUS_TIME;
+      let mode = 'focus';
+      let sessions = 1; 
+      let timer = null;
+      let lastTimeStr = "";
+      let maxBars = 4;
+      let isShortFocus = true; 
+
+      const body = document.body;
+      const progress = document.getElementById('progress');
+      const statusLabel = document.getElementById('statusLabel');
+      const sessionDisplay = document.getElementById('sessionDisplay');
+      const barsRow = document.getElementById('barsRow');
+      const fullDisplay = document.getElementById('fullTimeDisplay');
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      // ----- Notification support -----
+      let notificationPermission = false;
+      function requestNotificationPermission() {
+        if ('Notification' in window) {
+          Notification.requestPermission().then(perm => {
+            notificationPermission = (perm === 'granted');
+          });
+        }
+      }
+      requestNotificationPermission();
+
+      function sendNotification(title, body) {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'granted') {
+          new Notification(title, { body: body, icon: 'https://via.placeholder.com/64?text=🍅' });
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(perm => {
+            if (perm === 'granted') new Notification(title, { body: body });
+          });
+        }
+      }
+
+      function playTone(freq, dur, type = 'sine') {
+        if(audioCtx.state==='suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+        osc.connect(g); g.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + dur);
+      }
+
+      function setupBars() {
+        const mins = FOCUS_TIME / 60;
+        isShortFocus = mins <= 25; 
+        maxBars = mins > 25 ? 5 : 4;
+        barsRow.innerHTML = '';
+        for(let i=0; i<maxBars; i++) {
+          const container = document.createElement('div');
+          container.className = 'v-bar-container';
+          const fill = document.createElement('div');
+          fill.className = 'v-bar-fill';
+          fill.id = `vbar-fill-${i}`;
+          container.appendChild(fill);
+          barsRow.appendChild(container);
+        }
+      }
+
+      function updateUI() {
+        sessionDisplay.textContent = `S#${sessions}`;
+        const total = mode === 'focus' ? FOCUS_TIME : BREAK_TIME;
+        
+        const h = Math.floor(remaining / 3600);
+        const m = Math.floor((remaining % 3600) / 60);
+        const s = remaining % 60;
+        
+        let timeStr = "";
+        if (h > 0) {
+            timeStr = h.toString().padStart(2,'0') + m.toString().padStart(2,'0') + s.toString().padStart(2,'0');
+        } else {
+            timeStr = m.toString().padStart(2,'0') + s.toString().padStart(2,'0');
+        }
+
+        if (timeStr.length !== lastTimeStr.length) {
+            fullDisplay.innerHTML = '';
+            for(let i=0; i < timeStr.length; i++) {
+                if(i > 0 && i % 2 === 0) {
+                    const sep = document.createElement('span');
+                    sep.className = 'separator';
+                    sep.textContent = ':';
+                    fullDisplay.appendChild(sep);
+                }
+                const span = document.createElement('span');
+                span.className = 'digit';
+                span.id = `digit-${i}`;
+                fullDisplay.appendChild(span);
+            }
+        }
+
+        for(let i=0; i < timeStr.length; i++) {
+            const el = document.getElementById(`digit-${i}`);
+            if (el && timeStr[i] !== (lastTimeStr[i] || "")) {
+                el.classList.add('fade-effect');
+                (function(idx, char) {
+                    setTimeout(() => { 
+                        const digitEl = document.getElementById(`digit-${idx}`);
+                        if(digitEl) {
+                            digitEl.textContent = char; 
+                            digitEl.classList.remove('fade-effect'); 
+                        }
+                    }, 100);
+                })(i, timeStr[i]);
+            }
+        }
+        lastTimeStr = timeStr;
+
+        const circ = 2 * Math.PI * 48;
+        const percRemaining = remaining / total;
+        progress.style.strokeDasharray = circ;
+        progress.style.strokeDashoffset = circ - (percRemaining * circ);
+        
+        const color = mode === 'focus' ? 'var(--focus)' : 'var(--break)';
+        progress.style.stroke = color;
+        document.getElementById('globalModeTag').textContent = mode.toUpperCase();
+        document.getElementById('globalModeTag').style.color = color;
+        document.documentElement.style.setProperty('--cursor-color', color);
+
+        const currentSessionIdx = (sessions - 1) % maxBars;
+        for(let i=0; i<maxBars; i++) {
+          const fill = document.getElementById(`vbar-fill-${i}`);
+          if(!fill) continue;
+          if (isShortFocus && mode === 'focus') {
+            const segmentSize = 1 / maxBars;
+            const overallProgress = (1 - percRemaining); 
+            const start = i * segmentSize;
+            const end = (i + 1) * segmentSize;
+            if (overallProgress >= end) fill.style.height = '100%';
+            else if (overallProgress <= start) fill.style.height = '0%';
+            else fill.style.height = `${((overallProgress - start) / segmentSize) * 100}%`;
+            fill.style.background = 'var(--focus)';
+          } else if (isShortFocus && mode === 'break') {
+            fill.style.height = '100%'; fill.style.background = 'var(--break)';
+          } else {
+            if(i < currentSessionIdx) { fill.style.height = '100%'; fill.style.background = 'var(--focus)'; }
+            else if (i === currentSessionIdx) { fill.style.height = `${(1 - percRemaining) * 100}%`; fill.style.background = color; }
+            else fill.style.height = '0%';
+          }
+        }
+      }
+
+      function startPause() {
+        if (timer) {
+          clearInterval(timer); timer = null;
+          body.classList.remove('running'); 
+          statusLabel.textContent = 'PAUSED';
+          playTone(440, 0.05);
+        } else {
+          body.classList.add('running'); 
+          statusLabel.textContent = mode.toUpperCase();
+          playTone(880, 0.05);
+          timer = setInterval(() => {
+            if (remaining > 0) { remaining--; updateUI(); }
+            else { finish(); }
+          }, 1000);
+        }
+      }
+
+      function finish() {
+        clearInterval(timer); timer = null;
+        body.classList.remove('running');
+        
+        // Play sound and send notification based on mode
+        if (mode === 'focus') {
+          playTone(660, 0.4);
+          sendNotification('🍅 Focus Complete!', `Great work! Time for a break.`);
+          mode = 'break';
+          remaining = BREAK_TIME;
+        } else {
+          playTone(880, 0.4);
+          sendNotification('☕ Break Over', `Ready to focus again? Session #${sessions+1} starts now.`);
+          sessions++;
+          mode = 'focus';
+          remaining = FOCUS_TIME;
+        }
+        updateUI();
+      }
+
+      // ----- Fullscreen API helpers -----
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(err => {
+            console.warn(`Fullscreen error: ${err.message}`);
+          });
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      // Listen for fullscreen change to update button text
+      function updateFullscreenButtonText() {
+        const btn = document.getElementById('fullscreenBtn');
+        if (btn) {
+          if (document.fullscreenElement) {
+            btn.innerHTML = '✕ EXIT FULLSCREEN';
+          } else {
+            btn.innerHTML = '⛶ ENTER FULLSCREEN';
+          }
+        }
+      }
+      document.addEventListener('fullscreenchange', updateFullscreenButtonText);
+
+      // Event handlers
+      document.getElementById('timerAction').onclick = startPause;
+      document.getElementById('saveBtn').onclick = () => {
+        const cH = parseInt(document.getElementById('currHH').value) || 0;
+        const cM = parseInt(document.getElementById('currMM').value) || 0;
+        const cS = parseInt(document.getElementById('currSS').value) || 0;
+        remaining = (cH * 3600) + (cM * 60) + cS;
+
+        const fH = parseInt(document.getElementById('focusHH').value) || 0;
+        const fM = parseInt(document.getElementById('focusMM').value) || 0;
+        const fS = parseInt(document.getElementById('focusSS').value) || 0;
+        FOCUS_TIME = (fH * 3600) + (fM * 60) + fS;
+
+        const bH = parseInt(document.getElementById('breakHH').value) || 0;
+        const bM = parseInt(document.getElementById('breakMM').value) || 0;
+        const bS = parseInt(document.getElementById('breakSS').value) || 0;
+        BREAK_TIME = (bH * 3600) + (bM * 60) + bS;
+
+        if(FOCUS_TIME === 0) FOCUS_TIME = 25 * 60;
+        sessions = parseInt(document.getElementById('sessionInput').value) || 1;
+        lastTimeStr = "";
+        setupBars(); updateUI();
+        document.getElementById('settingsModal').classList.remove('show');
+      };
+
+      document.getElementById('settingsBtn').onclick = () => {
+        document.getElementById('currHH').value = Math.floor(remaining / 3600);
+        document.getElementById('currMM').value = Math.floor((remaining % 3600) / 60);
+        document.getElementById('currSS').value = remaining % 60;
+        document.getElementById('focusHH').value = Math.floor(FOCUS_TIME / 3600);
+        document.getElementById('focusMM').value = Math.floor((FOCUS_TIME % 3600) / 60);
+        document.getElementById('focusSS').value = FOCUS_TIME % 60;
+        document.getElementById('breakHH').value = Math.floor(BREAK_TIME / 3600);
+        document.getElementById('breakMM').value = Math.floor((BREAK_TIME % 3600) / 60);
+        document.getElementById('breakSS').value = BREAK_TIME % 60;
+        document.getElementById('sessionInput').value = sessions;
+        document.getElementById('settingsModal').classList.add('show');
+      };
+
+      document.getElementById('resetBtn').onclick = () => { location.reload(); };
+      
+      // Fullscreen button click inside settings
+      document.getElementById('fullscreenBtn').onclick = () => {
+        toggleFullscreen();
+        // Optional: keep modal open, but we can close it? We'll keep open for convenience.
+      };
+
+      window.addEventListener('mousemove', (e) => {
+        document.getElementById('cursorDot').style.left = e.clientX+'px';
+        document.getElementById('cursorDot').style.top = e.clientY+'px';
+        document.getElementById('cursorGlow').style.left = e.clientX+'px';
+        document.getElementById('cursorGlow').style.top = e.clientY+'px';
+      });
+
+      // ========== KEYBOARD CONTROLS ==========
+      document.addEventListener('keydown', (e) => {
+        const modal = document.getElementById('settingsModal');
+        const isModalOpen = modal.classList.contains('show');
+        
+        // Handle F11 key for fullscreen
+        if (e.key === 'F11') {
+          e.preventDefault();
+          toggleFullscreen();
+          return;
+        }
+        
+        // ESC key exits fullscreen if in fullscreen mode, but also can close modal
+        if (e.key === 'Escape') {
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+            e.preventDefault();
+            return;
+          }
+          if (isModalOpen) {
+            modal.classList.remove('show');
+            e.preventDefault();
+            return;
+          }
+          if (document.activeElement && document.activeElement !== document.body) {
+            document.activeElement.blur();
+            e.preventDefault();
+          }
+          return;
+        }
+        
+        // If modal is open, only handle Escape above, otherwise ignore
+        if (isModalOpen) return;
+        
+        // Don't interfere with typing in input/textarea
+        const activeTag = document.activeElement?.tagName?.toLowerCase();
+        if (activeTag === 'input' || activeTag === 'textarea') return;
+        
+        // Space: start/pause
+        if (e.code === 'Space' || e.key === ' ' || e.key === 'Space') {
+          e.preventDefault();
+          startPause();
+        }
+        // 'r' or 'R': reset (reload page)
+        else if (e.key === 'r' || e.key === 'R') {
+          e.preventDefault();
+          location.reload();
+        }
+        // 's' or 'S': open settings
+        else if (e.key === 's' || e.key === 'S') {
+          e.preventDefault();
+          document.getElementById('settingsBtn').click();
+        }
+      });
+      // =======================================
+
+      setupBars(); updateUI();
+    })();
+  </script>
+</body>
+</html>
