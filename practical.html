@@ -175,6 +175,53 @@
             display: flex;
             align-items: center;
         }
+
+        /* Theme toggle switch */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        .dark .slider {
+            background-color: #4b5563;
+        }
+        .dark .slider:before {
+            background-color: #e5e7eb;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-indigo-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-slate-900 bg-gradient-animated text-gray-800 dark:text-gray-200 transition-colors duration-500">
@@ -285,7 +332,19 @@
                         </div>
                     </div>
 
-                    <!-- Appearance section removed per request -->
+                    <!-- Appearance section with theme toggle -->
+                    <div class="glass p-6 rounded-2xl hover-lift">
+                        <h3 class="font-bold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                            <i data-lucide="palette" class="w-5 h-5"></i> Appearance
+                        </h3>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">Dark Mode</span>
+                            <label class="theme-switch">
+                                <input type="checkbox" id="theme-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
 
                     <div class="glass p-6 rounded-2xl hover-lift">
                         <h3 class="font-bold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-300">
@@ -663,6 +722,37 @@
         const subunitUnitSelect = document.getElementById('subunit-unit');
         const deletePracticalBtn = document.getElementById('delete-practical-btn');
         let editingLessonId = null;
+
+        // Theme handling
+        const themeToggle = document.getElementById('theme-toggle');
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const isDark = savedTheme === 'dark';
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                if (themeToggle) themeToggle.checked = true;
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeToggle) themeToggle.checked = false;
+            }
+        }
+        function setTheme(theme) {
+            localStorage.setItem('theme', theme);
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if (themeToggle) themeToggle.checked = true;
+            } else {
+                document.documentElement.classList.remove('dark');
+                if (themeToggle) themeToggle.checked = false;
+            }
+        }
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            setTheme(isDark ? 'light' : 'dark');
+        }
+        if (themeToggle) {
+            themeToggle.addEventListener('change', toggleTheme);
+        }
 
         function saveData() {
             localStorage.setItem('physicsPracticals', JSON.stringify(practicalsData));
@@ -1476,16 +1566,6 @@
         function checkConnectionAndReload() {
             if (navigator.onLine) window.location.reload();
             else showInfoModal("Still offline. Please check your internet connection.");
-        }
-
-        // Theme management – keep saved theme but no user toggle
-        function applySavedTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
         }
 
         equationUnitSelect.addEventListener('change', (e) => populateSubunitDropdowns(e.target.value));
