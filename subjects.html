@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>StudyMaster Pro</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    /* Custom Animations mimicking React version */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideInFromBottom { from { transform: translateY(1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideInFromRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    .animate-slide-up { animation: slideInFromBottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-slide-right { animation: slideInFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    /* Hide scrollbar for clean UI but keep functionality */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* Utility for safe area on mobile */
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 overflow-hidden select-none md:select-auto">
+
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="fixed inset-0 bg-slate-50 z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
+    <div class="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+    <p class="mt-4 text-slate-500 font-medium">Loading your study space...</p>
+  </div>
+
+  <div class="flex h-screen overflow-hidden relative">
+    
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="hidden md:flex w-72 flex-col bg-white border-r border-slate-200 z-10">
+      <div class="p-6 flex items-center gap-3">
+        <div class="bg-indigo-600 p-2 rounded-xl">
+          <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+        </div>
+        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+          StudyMaster
+        </h1>
+      </div>
+      
+      <nav class="flex-1 px-4 py-6 space-y-2">
+        <button onclick="window.app.switchTab('dashboard')" id="nav-desktop-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-indigo-50 text-indigo-700 font-semibold">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+          Dashboard
+        </button>
+        <button onclick="window.app.switchTab('subjects')" id="nav-desktop-subjects" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 hover:bg-slate-50">
+          <i data-lucide="book-open" class="w-5 h-5"></i>
+          All Subjects
+        </button>
+      </nav>
+
+      <div class="p-4 border-t border-slate-100">
+        <div class="flex items-center gap-3 p-3 mb-2 rounded-xl bg-slate-50">
+          <div id="user-avatar" class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold">U</div>
+          <div class="flex-1 overflow-hidden">
+            <p id="user-name" class="text-sm font-semibold text-slate-800 truncate">Student</p>
+            <p class="text-xs text-slate-500 truncate">Keep learning!</p>
+          </div>
+        </div>
+        <button onclick="window.app.logout()" class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+      
+      <!-- Mobile Header -->
+      <header class="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 z-10">
+        <div class="flex items-center gap-2">
+          <div class="bg-indigo-600 p-1.5 rounded-lg">
+            <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+          </div>
+          <h1 class="text-lg font-bold text-slate-800">StudyMaster</h1>
+        </div>
+        <button onclick="window.app.logout()" class="text-slate-500 p-2">
+          <i data-lucide="log-out" class="w-5 h-5"></i>
+        </button>
+      </header>
+
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-y-auto pb-24 md:pb-8" id="main-scroll-area">
+        <div class="max-w-6xl mx-auto p-4 md:p-8">
+          
+          <!-- Top Bar Actions -->
+          <div class="flex justify-between items-end mb-8">
+            <div>
+              <h2 id="page-title" class="text-2xl md:text-3xl font-bold text-slate-900">Overview</h2>
+              <p id="page-subtitle" class="text-slate-500 mt-1">Let's track your progress today.</p>
+            </div>
+            <button onclick="window.app.openAddSubjectModal()" class="hidden md:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-sm shadow-indigo-200 hover:shadow-md hover:-translate-y-0.5">
+              <i data-lucide="plus" class="w-5 h-5"></i>
+              Add Subject
+            </button>
+          </div>
+
+          <!-- Dynamic Views Container -->
+          <div id="view-container"></div>
+
+        </div>
+      </div>
+
+      <!-- Floating Action Button (Mobile) -->
+      <button onclick="window.app.openAddSubjectModal()" class="md:hidden absolute bottom-24 right-4 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-95 transition-transform z-20">
+        <i data-lucide="plus" class="w-6 h-6"></i>
+      </button>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-slate-100 flex justify-around p-3 pb-safe z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+      <button onclick="window.app.switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn flex flex-col items-center p-2 rounded-xl transition-colors text-indigo-600">
+        <i data-lucide="layout-dashboard" class="w-6 h-6 mb-1"></i>
+        <span class="text-[10px] font-medium">Overview</span>
+      </button>
+      <button onclick="window.app.switchTab('subjects')" id="nav-mobile-subjects" class="nav-btn flex flex-col items-center p-2 rounded-xl transition-colors text-slate-400">
+        <i data-lucide="book-open" class="w-6 h-6 mb-1"></i>
+        <span class="text-[10px] font-medium">Subjects</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODALS & OVERLAYS -->
+
+  <!-- Subject Detail Drawer -->
+  <div id="subject-drawer" class="fixed inset-0 z-50 flex justify-end hidden">
+    <!-- Backdrop -->
+    <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity" onclick="window.app.closeSubjectDrawer()"></div>
+    
+    <!-- Panel -->
+    <div class="relative w-full md:w-96 max-w-md h-full bg-white shadow-2xl flex flex-col animate-slide-right">
+      <div id="drawer-content" class="flex flex-col h-full">
+        <!-- Content injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Subject Modal -->
+  <div id="add-subject-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onclick="window.app.closeAddSubjectModal()"></div>
+    <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 animate-zoom-in">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-slate-800">New Subject</h2>
+        <button onclick="window.app.closeAddSubjectModal()" class="text-slate-400 hover:bg-slate-100 p-2 rounded-full transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <form id="add-subject-form" onsubmit="window.app.handleAddSubject(event)">
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-slate-500 mb-2">Subject Title</label>
+          <input type="text" id="new-subject-title" placeholder="e.g. Mathematics, History" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all" required />
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-xl transition-colors shadow-md shadow-indigo-200">
+          Create Subject
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-4 right-4 z-[60] transition-all duration-300 transform -translate-y-full opacity-0 pointer-events-none">
+    <div id="toast-content" class="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg border bg-white border-slate-100 text-slate-700">
+      <i id="toast-icon" data-lucide="info" class="w-5 h-5"></i>
+      <span id="toast-message" class="font-medium text-sm">Message</span>
+    </div>
+  </div>
+
+  <!-- APPLICATION LOGIC -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    // Initialize Icons
+    lucide.createIcons();
+
+    // --- FIREBASE SETUP ---
+    const firebaseConfig = typeof __firebase_config !== 'undefined' 
+      ? JSON.parse(__firebase_config) 
+      : { projectId: "demo-project" };
+    
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'studymaster-v2';
+
+    // --- STATE MANAGEMENT ---
+    const state = {
+      user: null,
+      subjects: [],
+      activeTab: 'dashboard',
+      selectedSubjectId: null,
+      unsubscribeDb: null
+    };
+
+    // --- UTILS ---
+    const colors = ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500'];
+    
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastContent = document.getElementById('toast-content');
+      const toastIcon = document.getElementById('toast-icon');
+      const toastMessage = document.getElementById('toast-message');
+      
+      toastMessage.textContent = message;
+      
+      // Reset classes
+      toastContent.className = 'flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg border';
+      
+      if (type === 'error') {
+        toastContent.classList.add('bg-rose-50', 'border-rose-100', 'text-rose-700');
+        toastIcon.setAttribute('data-lucide', 'x');
+      } else if (type === 'success') {
+        toastContent.classList.add('bg-emerald-50', 'border-emerald-100', 'text-emerald-700');
+        toastIcon.setAttribute('data-lucide', 'check-circle-2');
+      } else {
+        toastContent.classList.add('bg-white', 'border-slate-100', 'text-slate-700');
+        toastIcon.setAttribute('data-lucide', 'info');
+      }
+      
+      lucide.createIcons({ root: toast });
+      
+      toast.classList.remove('-translate-y-full', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-full', 'opacity-0');
+      }, 3000);
+    }
+
+    function calculateProgress(subject) {
+      if (!subject.subtopics || subject.subtopics.length === 0) return 0;
+      const completed = subject.subtopics.filter(st => st.completed).length;
+      return Math.round((completed / subject.subtopics.length) * 100);
+    }
+
+    function getOverallStats() {
+      let tTasks = 0, cTasks = 0;
+      state.subjects.forEach(s => {
+        if (s.subtopics) {
+          tTasks += s.subtopics.length;
+          cTasks += s.subtopics.filter(st => st.completed).length;
+        }
+      });
+      return {
+        totalTasks: tTasks,
+        completedTasks: cTasks,
+        progress: tTasks === 0 ? 0 : Math.round((cTasks / tTasks) * 100)
+      };
+    }
+
+    // --- HTML GENERATORS ---
+    function generateProgressBar(progress, colorClass) {
+      return `
+        <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+          <div class="h-2.5 rounded-full transition-all duration-500 ease-out ${colorClass}" style="width: ${progress}%"></div>
+        </div>
+      `;
+    }
+
+    function generateSubjectCard(subject) {
+      const progress = calculateProgress(subject);
+      const taskCount = subject.subtopics?.length || 0;
+      const textColor = subject.color.replace('bg-', 'text-');
+      
+      return `
+        <div onclick="window.app.openSubjectDrawer('${subject.id}')" class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-indigo-100 hover:-translate-y-1 transition-all cursor-pointer group flex flex-col justify-between h-48">
+          <div>
+            <div class="flex justify-between items-start mb-4">
+              <div class="p-3 rounded-2xl ${subject.color} bg-opacity-10 text-opacity-90 flex items-center justify-center">
+                <i data-lucide="book-marked" class="w-6 h-6 ${textColor}"></i>
+              </div>
+              <button class="text-slate-300 group-hover:text-slate-500 p-1">
+                <i data-lucide="more-vertical" class="w-5 h-5"></i>
+              </button>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1 truncate">${subject.title}</h3>
+            <p class="text-sm text-slate-500 mb-6">${taskCount} tasks</p>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Progress</span>
+              <span class="text-sm font-bold text-slate-700">${progress}%</span>
+            </div>
+            ${generateProgressBar(progress, subject.color)}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- RENDERING ---
+    function renderNavigation() {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = btn.id.includes('desktop') 
+          ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 hover:bg-slate-50'
+          : 'nav-btn flex flex-col items-center p-2 rounded-xl transition-colors text-slate-400';
+      });
+
+      const activeDesktop = document.getElementById(`nav-desktop-${state.activeTab}`);
+      const activeMobile = document.getElementById(`nav-mobile-${state.activeTab}`);
+      
+      if(activeDesktop) activeDesktop.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-indigo-50 text-indigo-700 font-semibold';
+      if(activeMobile) activeMobile.className = 'nav-btn flex flex-col items-center p-2 rounded-xl transition-colors text-indigo-600';
+
+      document.getElementById('page-title').textContent = state.activeTab === 'dashboard' ? 'Overview' : 'My Subjects';
+      document.getElementById('page-subtitle').textContent = state.activeTab === 'dashboard' ? "Let's track your progress today." : "Manage your learning modules.";
+    }
+
+    function renderView() {
+      renderNavigation();
+      const container = document.getElementById('view-container');
+      
+      if (state.activeTab === 'dashboard') {
+        const stats = getOverallStats();
+        let recentCardsHTML = state.subjects.length === 0 
+          ? `
+            <div class="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-200 col-span-full">
+              <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="book-open" class="w-8 h-8 text-slate-400"></i>
+              </div>
+              <p class="text-slate-500 font-medium">No subjects yet.</p>
+              <button onclick="window.app.openAddSubjectModal()" class="mt-4 text-indigo-600 font-medium hover:underline">
+                Create your first subject
+              </button>
+            </div>
+          `
+          : state.subjects.slice(0, 3).map(generateSubjectCard).join('');
+
+        container.innerHTML = `
+          <div class="space-y-8 animate-slide-up">
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="p-4 bg-indigo-50 rounded-2xl text-indigo-600">
+                  <i data-lucide="book-open" class="w-8 h-8"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Total Subjects</p>
+                  <p class="text-3xl font-bold text-slate-800">${state.subjects.length}</p>
+                </div>
+              </div>
+              <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
+                <div class="p-4 bg-emerald-50 rounded-2xl text-emerald-600">
+                  <i data-lucide="check-circle-2" class="w-8 h-8"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-slate-500">Tasks Completed</p>
+                  <p class="text-3xl font-bold text-slate-800">${stats.completedTasks} <span class="text-lg text-slate-400 font-normal">/ ${stats.totalTasks}</span></p>
+                </div>
+              </div>
+              <div class="bg-gradient-to-br from-indigo-600 to-purple-600 p-6 rounded-3xl shadow-md text-white flex flex-col justify-between">
+                <div>
+                  <p class="text-indigo-100 font-medium mb-1">Overall Progress</p>
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl font-bold">${stats.progress}</span>
+                    <span class="text-xl opacity-80">%</span>
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <div class="w-full bg-white/20 rounded-full h-2">
+                    <div class="bg-white h-2 rounded-full transition-all duration-1000" style="width: ${stats.progress}%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent -->
+            <div>
+              <h3 class="text-xl font-bold text-slate-800 mb-4">Active Subjects</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                ${recentCardsHTML}
+              </div>
+              ${state.subjects.length > 3 ? `
+                <button onclick="window.app.switchTab('subjects')" class="mt-4 w-full md:w-auto text-center py-2 px-4 text-slate-600 hover:text-indigo-600 font-medium transition-colors">
+                  View all subjects &rarr;
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        const cardsHTML = state.subjects.map(generateSubjectCard).join('');
+        const addPlaceholder = `
+          <button onclick="window.app.openAddSubjectModal()" class="flex flex-col items-center justify-center h-48 bg-slate-50 hover:bg-indigo-50 border-2 border-dashed border-slate-200 hover:border-indigo-300 rounded-3xl transition-all group">
+            <div class="p-3 bg-white rounded-full text-slate-400 group-hover:text-indigo-600 group-hover:scale-110 transition-all shadow-sm">
+              <i data-lucide="plus" class="w-6 h-6"></i>
+            </div>
+            <span class="mt-3 font-medium text-slate-500 group-hover:text-indigo-600">Add New Subject</span>
+          </button>
+        `;
+        container.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 animate-slide-up">
+            ${cardsHTML}
+            ${addPlaceholder}
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function renderSubjectDrawer() {
+      if (!state.selectedSubjectId) return;
+      
+      const subject = state.subjects.find(s => s.id === state.selectedSubjectId);
+      if (!subject) {
+        window.app.closeSubjectDrawer();
+        return;
+      }
+
+      const progress = calculateProgress(subject);
+      const textColor = subject.color.replace('bg-', 'text-');
+      const drawer = document.getElementById('drawer-content');
+
+      let subtopicsHTML = '';
+      if (!subject.subtopics || subject.subtopics.length === 0) {
+        subtopicsHTML = `
+          <div class="text-center py-10">
+            <p class="text-slate-500">No tasks added yet.</p>
+          </div>
+        `;
+      } else {
+        subtopicsHTML = `<ul class="space-y-3">` + subject.subtopics.map(st => `
+          <li class="group bg-white border border-slate-100 p-3 rounded-2xl flex items-center justify-between hover:border-indigo-200 transition-colors shadow-sm">
+            <button onclick="window.app.toggleSubtopic('${subject.id}', '${st.id}')" class="flex-1 flex items-center gap-3 text-left">
+              ${st.completed 
+                ? `<i data-lucide="check-circle-2" class="w-6 h-6 ${textColor}"></i>` 
+                : `<i data-lucide="circle" class="w-6 h-6 text-slate-300 group-hover:text-indigo-300"></i>`
+              }
+              <span class="font-medium ${st.completed ? 'text-slate-400 line-through' : 'text-slate-700'}">${st.title}</span>
+            </button>
+            <button onclick="window.app.deleteSubtopic('${subject.id}', '${st.id}')" class="p-2 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity md:opacity-0 opacity-100">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </li>
+        `).join('') + `</ul>`;
+      }
+
+      drawer.innerHTML = `
+        <!-- Header -->
+        <div class="${subject.color} bg-opacity-10 p-6 border-b border-slate-100 flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="p-3 rounded-2xl ${subject.color} bg-opacity-10 text-opacity-90 flex items-center justify-center">
+                <i data-lucide="book-marked" class="w-6 h-6 ${textColor}"></i>
+              </div>
+              <h2 class="text-xl font-bold text-slate-800">${subject.title}</h2>
+            </div>
+            <div class="flex items-center gap-2 mt-4">
+              <div class="flex-1 w-32">
+                ${generateProgressBar(progress, subject.color)}
+              </div>
+              <span class="text-sm font-semibold text-slate-600">${progress}%</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="window.app.deleteSubject('${subject.id}')" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors">
+              <i data-lucide="trash-2" class="w-5 h-5"></i>
+            </button>
+            <button onclick="window.app.closeSubjectDrawer()" class="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
+              <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Subtopics List -->
+        <div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+          <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Study Tasks</h3>
+          ${subtopicsHTML}
+        </div>
+
+        <!-- Add Subtopic Input -->
+        <div class="p-4 bg-white border-t border-slate-100">
+          <form onsubmit="window.app.handleAddSubtopic(event, '${subject.id}')" class="flex items-center gap-2">
+            <input type="text" name="subtopic" placeholder="Add a new task..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all" required autocomplete="off"/>
+            <button type="submit" class="${subject.color} text-white p-3 rounded-xl hover:opacity-90 transition-opacity shadow-sm">
+              <i data-lucide="plus" class="w-5 h-5"></i>
+            </button>
+          </form>
+        </div>
+      `;
+      lucide.createIcons({ root: drawer });
+    }
+
+    // --- API ACTIONS ---
+    window.app = {
+      switchTab: (tab) => {
+        state.activeTab = tab;
+        renderView();
+      },
+      openAddSubjectModal: () => {
+        document.getElementById('new-subject-title').value = '';
+        document.getElementById('add-subject-modal').classList.remove('hidden');
+        setTimeout(() => document.getElementById('new-subject-title').focus(), 100);
+      },
+      closeAddSubjectModal: () => {
+        document.getElementById('add-subject-modal').classList.add('hidden');
+      },
+      openSubjectDrawer: (id) => {
+        state.selectedSubjectId = id;
+        renderSubjectDrawer();
+        document.getElementById('subject-drawer').classList.remove('hidden');
+      },
+      closeSubjectDrawer: () => {
+        state.selectedSubjectId = null;
+        document.getElementById('subject-drawer').classList.add('hidden');
+      },
+      logout: async () => {
+        try { await signOut(auth); } catch (error) { console.error(error); }
+      },
+      
+      // DB Mutations
+      handleAddSubject: async (e) => {
+        e.preventDefault();
+        if (!state.user) return;
+        const titleInput = document.getElementById('new-subject-title');
+        const title = titleInput.value.trim();
+        if (!title) return;
+
+        const randomColor = colors[Math.floor(Math.random() * colors.length)];
+        const newId = crypto.randomUUID();
+        const subjectRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', newId);
+        
+        try {
+          await setDoc(subjectRef, {
+            title: title,
+            color: randomColor,
+            subtopics: [],
+            createdAt: Date.now()
+          });
+          window.app.closeAddSubjectModal();
+          showToast("Subject added successfully", "success");
+        } catch (error) {
+          console.error(error);
+          showToast("Failed to add subject", "error");
+        }
+      },
+      deleteSubject: async (id) => {
+        if (!state.user || !confirm("Are you sure you want to delete this subject?")) return;
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', id));
+          window.app.closeSubjectDrawer();
+          showToast("Subject deleted", "info");
+        } catch (error) {
+          console.error(error);
+          showToast("Failed to delete subject", "error");
+        }
+      },
+      handleAddSubtopic: async (e, subjectId) => {
+        e.preventDefault();
+        if (!state.user) return;
+        
+        const input = e.target.elements.subtopic;
+        const title = input.value.trim();
+        if (!title) return;
+
+        const subject = state.subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+
+        const newSubtopic = {
+          id: crypto.randomUUID(),
+          title: title,
+          completed: false
+        };
+
+        const subjectRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', subjectId);
+        try {
+          await updateDoc(subjectRef, { subtopics: [...(subject.subtopics || []), newSubtopic] });
+          input.value = '';
+        } catch (error) {
+          console.error(error);
+          showToast("Failed to add task", "error");
+        }
+      },
+      toggleSubtopic: async (subjectId, subtopicId) => {
+        if (!state.user) return;
+        const subject = state.subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+
+        const updatedSubtopics = subject.subtopics.map(st => 
+          st.id === subtopicId ? { ...st, completed: !st.completed } : st
+        );
+
+        const subjectRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', subjectId);
+        try {
+          await updateDoc(subjectRef, { subtopics: updatedSubtopics });
+        } catch (error) {
+          console.error(error);
+          showToast("Failed to update status", "error");
+        }
+      },
+      deleteSubtopic: async (subjectId, subtopicId) => {
+        if (!state.user) return;
+        const subject = state.subjects.find(s => s.id === subjectId);
+        if (!subject) return;
+
+        const updatedSubtopics = subject.subtopics.filter(st => st.id !== subtopicId);
+        const subjectRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', subjectId);
+        try {
+          await updateDoc(subjectRef, { subtopics: updatedSubtopics });
+        } catch (error) {
+          console.error(error);
+          showToast("Failed to delete task", "error");
+        }
+      }
+    };
+
+    // --- AUTH & INIT ---
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (error) {
+        console.error("Auth error:", error);
+        showToast("Authentication failed", "error");
+        document.getElementById('loading-screen').classList.add('opacity-0', 'pointer-events-none');
+      }
+    };
+
+    initAuth();
+
+    onAuthStateChanged(auth, (user) => {
+      state.user = user;
+      
+      if (user) {
+        document.getElementById('user-avatar').textContent = user.isAnonymous ? 'A' : 'U';
+        document.getElementById('user-name').textContent = user.isAnonymous ? 'Guest User' : 'Student';
+        
+        // Setup DB Listener
+        if (state.unsubscribeDb) state.unsubscribeDb();
+        
+        const subjectsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'subjects');
+        state.unsubscribeDb = onSnapshot(subjectsRef, (snapshot) => {
+          state.subjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          state.subjects.sort((a, b) => b.createdAt - a.createdAt); // Descending order
+          
+          renderView();
+          if (state.selectedSubjectId) renderSubjectDrawer();
+          
+          document.getElementById('loading-screen').classList.add('opacity-0', 'pointer-events-none');
+        }, (error) => {
+          console.error("Firestore error:", error);
+          showToast("Error loading data", "error");
+          document.getElementById('loading-screen').classList.add('opacity-0', 'pointer-events-none');
+        });
+
+      } else {
+        if (state.unsubscribeDb) {
+          state.unsubscribeDb();
+          state.unsubscribeDb = null;
+        }
+        state.subjects = [];
+        renderView();
+        document.getElementById('loading-screen').classList.add('opacity-0', 'pointer-events-none');
+      }
+    });
+
+  </script>
+</body>
+</html>
