@@ -7,12 +7,10 @@
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    /* Custom Animations */
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideInFromBottom { from { transform: translateY(1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     @keyframes slideInFromRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -23,19 +21,18 @@
     .animate-slide-right { animation: slideInFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     .animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
-    /* Hide scrollbar for clean UI but keep functionality */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     
-    /* Utility for safe area on mobile */
     .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
   </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-900 overflow-hidden select-none md:select-auto">
 
-  <div class="flex h-screen overflow-hidden relative">
+  <!-- MAIN APP (hidden until signed in) -->
+  <div id="app-container" class="flex h-screen overflow-hidden relative hidden">
     
     <!-- DESKTOP SIDEBAR -->
     <aside class="hidden md:flex w-72 flex-col bg-white border-r border-slate-200 z-10">
@@ -60,7 +57,6 @@
       </nav>
 
       <div class="p-4 border-t border-slate-100">
-        <!-- Clickable Profile Area for Settings -->
         <button onclick="window.app.openSettings()" class="w-full flex items-center gap-3 p-3 mb-2 rounded-xl bg-slate-50 hover:bg-indigo-50 transition-colors group text-left">
           <div id="desktop-user-avatar" class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold group-hover:bg-indigo-200 transition-colors">U</div>
           <div class="flex-1 overflow-hidden">
@@ -83,7 +79,6 @@
           </div>
           <h1 class="text-lg font-bold text-slate-800">StudyMaster</h1>
         </div>
-        <!-- Clickable Mobile Avatar for Settings -->
         <button onclick="window.app.openSettings()" class="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold active:scale-95 transition-transform" id="mobile-user-avatar">
           U
         </button>
@@ -93,7 +88,6 @@
       <div class="flex-1 overflow-y-auto pb-24 md:pb-8" id="main-scroll-area">
         <div class="max-w-6xl mx-auto p-4 md:p-8">
           
-          <!-- Top Bar Actions -->
           <div class="flex justify-between items-end mb-8">
             <div>
               <h2 id="page-title" class="text-2xl md:text-3xl font-bold text-slate-900">Overview</h2>
@@ -105,20 +99,17 @@
             </button>
           </div>
 
-          <!-- Dynamic Views Container -->
           <div id="view-container"></div>
 
         </div>
       </div>
 
-      <!-- Floating Action Button (Mobile) -->
       <button onclick="window.app.openAddSubjectModal()" class="md:hidden absolute bottom-24 right-4 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-95 transition-transform z-20">
         <i data-lucide="plus" class="w-6 h-6"></i>
       </button>
 
     </main>
 
-    <!-- MOBILE BOTTOM NAV -->
     <nav class="md:hidden fixed bottom-0 w-full bg-white border-t border-slate-100 flex justify-around p-3 pb-safe z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
       <button onclick="window.app.switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn flex flex-col items-center p-2 rounded-xl transition-colors text-indigo-600">
         <i data-lucide="layout-dashboard" class="w-6 h-6 mb-1"></i>
@@ -131,22 +122,14 @@
     </nav>
   </div>
 
-  <!-- MODALS & OVERLAYS -->
-
-  <!-- Subject Detail Drawer -->
+  <!-- MODALS -->
   <div id="subject-drawer" class="fixed inset-0 z-40 flex justify-end hidden">
-    <!-- Backdrop -->
     <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm transition-opacity" onclick="window.app.closeSubjectDrawer()"></div>
-    
-    <!-- Panel -->
     <div class="relative w-full md:w-[450px] max-w-lg h-full bg-white shadow-2xl flex flex-col animate-slide-right">
-      <div id="drawer-content" class="flex flex-col h-full">
-        <!-- Content injected dynamically -->
-      </div>
+      <div id="drawer-content" class="flex flex-col h-full"></div>
     </div>
   </div>
 
-  <!-- Add Subject Modal -->
   <div id="add-subject-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onclick="window.app.closeAddSubjectModal()"></div>
     <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 animate-zoom-in">
@@ -168,11 +151,9 @@
     </div>
   </div>
 
-  <!-- Settings Modal -->
   <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onclick="window.app.closeSettings()"></div>
     <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-md animate-zoom-in flex flex-col max-h-[90vh]">
-      
       <div class="flex justify-between items-center p-6 border-b border-slate-100">
         <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
           <i data-lucide="settings" class="w-5 h-5 text-indigo-600"></i> Settings
@@ -181,44 +162,24 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
       <div class="p-6 overflow-y-auto space-y-8 flex-1">
-        
-        <!-- Account Section -->
         <section>
           <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Account</h3>
           <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
             <div class="flex items-center gap-4 mb-4">
               <div id="settings-avatar" class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-lg">U</div>
               <div>
-                <p id="settings-name" class="font-bold text-slate-800">Guest User</p>
-                <p id="settings-email" class="text-sm text-slate-500">Local Session Only</p>
+                <p id="settings-name" class="font-bold text-slate-800">Student</p>
+                <p id="settings-email" class="text-sm text-slate-500">Signed in</p>
               </div>
             </div>
-            
-            <!-- Google Sign In Block (Shown if Anonymous) -->
-            <div id="google-signin-block" class="mt-4 pt-4 border-t border-slate-200 hidden">
-              <p class="text-sm text-slate-600 mb-3">Sign in to sync your progress across devices.</p>
-              <button onclick="window.app.handleGoogleSignIn()" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-2.5 px-4 rounded-xl transition-colors shadow-sm">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Sign in with Google
-              </button>
-            </div>
-            
-            <div id="signout-block" class="mt-4 pt-4 border-t border-slate-200 hidden">
+            <div id="signout-block" class="mt-4 pt-4 border-t border-slate-200">
               <button onclick="window.app.logout()" class="w-full flex items-center justify-center gap-2 text-rose-600 hover:bg-rose-50 font-medium py-2 px-4 rounded-xl transition-colors">
                 <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
               </button>
             </div>
           </div>
         </section>
-
-        <!-- Data Section -->
         <section>
           <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Data Management</h3>
           <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden">
@@ -234,7 +195,6 @@
               </div>
               <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
             </button>
-            
             <button onclick="document.getElementById('file-upload').click()" class="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors text-left group">
               <div class="flex items-center gap-3">
                 <div class="bg-emerald-50 p-2 rounded-lg text-emerald-600 group-hover:scale-110 transition-transform">
@@ -250,8 +210,27 @@
             <input type="file" id="file-upload" accept=".json" class="hidden" onchange="window.app.handleRestore(event)">
           </div>
         </section>
-
       </div>
+    </div>
+  </div>
+
+  <!-- SIGN-IN MODAL (shown when not logged in) -->
+  <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+    <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 animate-zoom-in text-center">
+      <div class="bg-indigo-600 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i data-lucide="graduation-cap" class="w-8 h-8 text-white"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-800 mb-2">Welcome to StudyMaster</h2>
+      <p class="text-slate-500 mb-6">Sign in with Google to start tracking your learning progress.</p>
+      <button id="immediate-google-signin" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-xl transition-colors shadow-sm">
+        <svg class="w-5 h-5" viewBox="0 0 24 24">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Sign in with Google
+      </button>
     </div>
   </div>
 
@@ -263,26 +242,37 @@
     </div>
   </div>
 
-  <!-- APPLICATION LOGIC -->
+  <!-- Firebase & App Logic -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, linkWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-    // Initialize Icons
     lucide.createIcons();
 
-    // --- FIREBASE SETUP ---
-    const firebaseConfig = typeof __firebase_config !== 'undefined' 
-      ? JSON.parse(__firebase_config) 
-      : { projectId: "demo-project" };
-    
+    // ---------- YOUR FIREBASE CONFIG ----------
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+      authDomain: "studymaster-919ba.firebaseapp.com",
+      databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
+      projectId: "studymaster-919ba",
+      storageBucket: "studymaster-919ba.firebasestorage.app",
+      messagingSenderId: "426684063256",
+      appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+      measurementId: "G-CWQB2330GF"
+    };
+    // ------------------------------------------
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'studymaster-v2';
+    const appId = "studymaster-v2";  // optional, used in Firestore path
 
-    // --- STATE MANAGEMENT ---
+    // UI elements
+    const signinModal = document.getElementById('signin-modal');
+    const appContainer = document.getElementById('app-container');
+
+    // Global state
     const state = {
       user: null,
       subjects: [],
@@ -291,9 +281,9 @@
       unsubscribeDb: null
     };
 
-    // --- UTILS ---
+    // Utility functions (same as before)
     const colors = ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500'];
-    
+
     function showToast(message, type = 'info') {
       const toast = document.getElementById('toast');
       const toastContent = document.getElementById('toast-content');
@@ -373,7 +363,6 @@
       };
     }
 
-    // --- HTML GENERATORS ---
     function generateProgressBar(progress, colorClass) {
       return `
         <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
@@ -413,7 +402,6 @@
       `;
     }
 
-    // --- RENDERING ---
     function renderNavigation() {
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.className = btn.id.includes('desktop') 
@@ -453,7 +441,6 @@
 
         container.innerHTML = `
           <div class="space-y-8 animate-slide-up">
-            <!-- Stats -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-center gap-4">
                 <div class="p-4 bg-indigo-50 rounded-2xl text-indigo-600">
@@ -488,8 +475,6 @@
                 </div>
               </div>
             </div>
-
-            <!-- Recent -->
             <div>
               <h3 class="text-xl font-bold text-slate-800 mb-4">Active Subjects</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
@@ -525,7 +510,6 @@
 
     function renderSubjectDrawer() {
       if (!state.selectedSubjectId) return;
-      
       const subject = state.subjects.find(s => s.id === state.selectedSubjectId);
       if (!subject) {
         window.app.closeSubjectDrawer();
@@ -537,8 +521,6 @@
       const drawer = document.getElementById('drawer-content');
 
       let unitsHTML = '';
-
-      // Render standard units
       if (!subject.units || subject.units.length === 0) {
         unitsHTML += `
           <div class="text-center py-10">
@@ -570,7 +552,6 @@
           } else {
             subunitsHTML = `<p class="text-xs text-slate-400 mt-2 ml-2 italic mb-3">No tasks in this unit yet.</p>`;
           }
-
           return `
             <div class="bg-white border border-slate-200 rounded-2xl mb-4 overflow-hidden shadow-sm">
               <div class="bg-slate-50/50 p-3 border-b border-slate-100 flex items-center justify-between">
@@ -621,14 +602,12 @@
             </button>
           </div>
         </div>
-
         <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50">
           <div class="flex justify-between items-center mb-4">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Course Units</h3>
           </div>
           ${unitsHTML}
         </div>
-
         <div class="p-4 bg-white border-t border-slate-100 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
           <form onsubmit="window.app.handleAddUnit(event, '${subject.id}')" class="flex items-center gap-2">
             <input type="text" name="unit" placeholder="Create a new unit..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all" required autocomplete="off"/>
@@ -644,38 +623,20 @@
 
     function updateUserProfileUI(user) {
       if (!user) return;
-      
-      const isAnon = user.isAnonymous;
-      const initial = isAnon ? 'G' : (user.displayName ? user.displayName.charAt(0).toUpperCase() : 'U');
-      const name = isAnon ? 'Guest User' : (user.displayName || 'Student');
-      const email = isAnon ? 'Local Session Only' : (user.email || 'Signed in via Google');
+      const name = user.displayName || 'Student';
+      const email = user.email || 'Signed in via Google';
+      const initial = name.charAt(0).toUpperCase();
 
-      // Update Desktop Sidebar
       document.getElementById('desktop-user-avatar').textContent = initial;
       document.getElementById('desktop-user-name').textContent = name;
       document.getElementById('desktop-user-email').textContent = email;
-
-      // Update Mobile Header
       document.getElementById('mobile-user-avatar').textContent = initial;
-
-      // Update Settings Modal
       document.getElementById('settings-avatar').textContent = initial;
       document.getElementById('settings-name').textContent = name;
       document.getElementById('settings-email').textContent = email;
-
-      const signinBlock = document.getElementById('google-signin-block');
-      const signoutBlock = document.getElementById('signout-block');
-      
-      if (isAnon) {
-        signinBlock.classList.remove('hidden');
-        signoutBlock.classList.add('hidden');
-      } else {
-        signinBlock.classList.add('hidden');
-        signoutBlock.classList.remove('hidden');
-      }
     }
 
-    // --- API ACTIONS ---
+    // App API
     window.app = {
       switchTab: (tab) => {
         state.activeTab = tab;
@@ -698,8 +659,6 @@
         state.selectedSubjectId = null;
         document.getElementById('subject-drawer').classList.add('hidden');
       },
-      
-      // -- Settings & Account --
       openSettings: () => {
         document.getElementById('settings-modal').classList.remove('hidden');
       },
@@ -717,42 +676,22 @@
       handleGoogleSignIn: async () => {
         const provider = new GoogleAuthProvider();
         try {
-          if (auth.currentUser && auth.currentUser.isAnonymous) {
-            // Try linking the anonymous account to save data
-            await linkWithPopup(auth.currentUser, provider);
-            showToast("Account linked successfully!", "success");
-          } else {
-            await signInWithPopup(auth, provider);
-            showToast("Signed in with Google", "success");
-          }
+          await signInWithPopup(auth, provider);
+          showToast("Signed in with Google", "success");
         } catch (error) {
           console.error(error);
-          if (error.code === 'auth/credential-already-in-use') {
-             // Fallback: If they already have an account, just sign them in to that account
-             try {
-               await signInWithPopup(auth, provider);
-               showToast("Logged into existing account.", "success");
-             } catch(e) {
-               showToast("Sign in failed.", "error");
-             }
-          } else {
-            showToast("Authentication failed.", "error");
-          }
+          showToast("Authentication failed.", "error");
         }
       },
-
-      // -- Backup & Restore --
       handleBackup: () => {
         if (!state.subjects || state.subjects.length === 0) {
           showToast("No data to backup", "info");
           return;
         }
         try {
-          // Exclude generated firestore ID if preferred, but safe to keep.
           const dataStr = JSON.stringify(state.subjects, null, 2);
           const blob = new Blob([dataStr], { type: "application/json" });
           const url = URL.createObjectURL(blob);
-          
           const a = document.createElement('a');
           a.href = url;
           a.download = `studymaster_backup_${new Date().toISOString().split('T')[0]}.json`;
@@ -760,7 +699,6 @@
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-          
           showToast("Backup downloaded", "success");
         } catch(error) {
           console.error(error);
@@ -770,16 +708,12 @@
       handleRestore: (event) => {
         const file = event.target.files[0];
         if (!file || !state.user) return;
-        
         const reader = new FileReader();
         reader.onload = async (e) => {
           try {
             const data = JSON.parse(e.target.result);
             if (!Array.isArray(data)) throw new Error("Invalid format");
-            
             showToast("Restoring data...", "info");
-            
-            // Upload to Firestore sequentially
             for (const subject of data) {
               const ref = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', subject.id);
               await setDoc(ref, subject);
@@ -790,12 +724,10 @@
             console.error(err);
             showToast("Invalid backup file", "error");
           }
-          event.target.value = ''; // Reset input
+          event.target.value = '';
         };
         reader.readAsText(file);
       },
-
-      // -- Subjects CRUD --
       handleAddSubject: async (e) => {
         e.preventDefault();
         if (!state.user) return;
@@ -912,52 +844,40 @@
       }
     };
 
-    // --- AUTH & INIT ---
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (error) {
-        console.error("Auth error:", error);
-        showToast("Authentication failed", "error");
-      }
-    };
-
-    initAuth();
-
+    // Auth listener: show modal if no user, else hide modal and load app
     onAuthStateChanged(auth, (user) => {
       state.user = user;
-      updateUserProfileUI(user);
-      
       if (user) {
-        if (state.unsubscribeDb) state.unsubscribeDb();
+        signinModal.classList.add('hidden');
+        appContainer.classList.remove('hidden');
         
+        updateUserProfileUI(user);
+        
+        if (state.unsubscribeDb) state.unsubscribeDb();
         const subjectsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'subjects');
         state.unsubscribeDb = onSnapshot(subjectsRef, (snapshot) => {
           state.subjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           state.subjects.sort((a, b) => b.createdAt - a.createdAt);
-          
           renderView();
           if (state.selectedSubjectId) renderSubjectDrawer();
-          
         }, (error) => {
           console.error("Firestore error:", error);
           showToast("Error loading data", "error");
         });
-
       } else {
+        signinModal.classList.remove('hidden');
+        appContainer.classList.add('hidden');
         if (state.unsubscribeDb) {
           state.unsubscribeDb();
           state.unsubscribeDb = null;
         }
         state.subjects = [];
-        renderView();
       }
     });
 
+    document.getElementById('immediate-google-signin').addEventListener('click', () => {
+      window.app.handleGoogleSignIn();
+    });
   </script>
 </body>
 </html>
