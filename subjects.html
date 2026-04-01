@@ -266,7 +266,9 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = "studymaster-v2";  // optional, used in Firestore path
+    
+    // 🔧 CHANGED: Use the same appId as your Firestore security rule
+    const appId = "studyflow-pro";  // was "studymaster-v2"
 
     // UI elements
     const signinModal = document.getElementById('signin-modal');
@@ -749,8 +751,8 @@
           window.app.closeAddSubjectModal();
           showToast("Subject added", "success");
         } catch (error) {
-          console.error(error);
-          showToast("Failed to add subject", "error");
+          console.error("Add subject error:", error);
+          showToast("Failed to add subject: " + error.message, "error");
         }
       },
       deleteSubject: async (id) => {
