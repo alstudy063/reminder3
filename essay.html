@@ -3,10 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Biology Essay Reminder</title>
-  <!-- Tailwind CSS -->
+  <title>BioEssay Reminder</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
@@ -29,7 +27,7 @@
 </head>
 <body class="bg-slate-50 font-sans text-slate-900 overflow-hidden select-none md:select-auto">
 
-  <!-- LOADING SPINNER (shown while Firebase initialises) -->
+  <!-- LOADING SPINNER -->
   <div id="loading-spinner" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
     <div class="text-center">
       <div class="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
@@ -37,7 +35,7 @@
     </div>
   </div>
 
-  <!-- MAIN APP (hidden until signed in) -->
+  <!-- MAIN APP -->
   <div id="app-container" class="flex h-screen overflow-hidden relative hidden">
     
     <!-- DESKTOP SIDEBAR -->
@@ -46,9 +44,7 @@
         <div class="bg-emerald-600 p-2 rounded-xl">
           <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
         </div>
-        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600">
-          BioEssay Reminder
-        </h1>
+        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600">BioEssay Reminder</h1>
       </div>
       
       <nav class="flex-1 px-4 py-6 space-y-2">
@@ -102,7 +98,8 @@
         </div>
       </div>
 
-      <button onclick="window.app.openAddUnitModal()" class="md:hidden absolute bottom-24 right-4 w-14 h-14 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-20">
+      <!-- FIXED: mobile add button now higher (bottom-28) so it's above bottom nav -->
+      <button onclick="window.app.openAddUnitModal()" class="md:hidden fixed bottom-28 right-4 w-14 h-14 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-20">
         <i data-lucide="plus" class="w-6 h-6"></i>
       </button>
     </main>
@@ -148,6 +145,7 @@
     </div>
   </div>
 
+  <!-- Settings Modal with Mode Toggle -->
   <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
     <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onclick="window.app.closeSettings()"></div>
     <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-md p-6">
@@ -163,6 +161,27 @@
             <p id="settings-email" class="text-sm text-slate-500">Signed in</p>
           </div>
         </div>
+
+        <!-- Mode selection -->
+        <div class="bg-slate-50 rounded-xl p-3">
+          <label class="text-sm font-semibold text-slate-700 block mb-2">Suggestion Mode</label>
+          <div class="flex gap-4">
+            <label class="flex items-center gap-2">
+              <input type="radio" name="suggestionMode" value="pattern" checked> 
+              <span>Pattern (spaced repetition)</span>
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="suggestionMode" value="random"> 
+              <span>Random (pick random essays)</span>
+            </label>
+          </div>
+          <div id="randomCountContainer" class="mt-3 hidden">
+            <label class="text-xs text-slate-500">Number of random essays per day:</label>
+            <input type="number" id="randomEssayCount" min="1" max="10" value="2" class="w-full mt-1 bg-white border rounded-lg px-2 py-1">
+          </div>
+        </div>
+
+        <button onclick="window.app.saveSettings()" class="w-full bg-emerald-600 text-white py-2 rounded-xl">Save Settings</button>
         <button onclick="window.app.logout()" class="w-full flex items-center justify-center gap-2 text-rose-600 hover:bg-rose-50 py-2 rounded-xl">Sign Out</button>
         <button onclick="window.app.handleBackup()" class="w-full flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 py-2 rounded-xl">Backup Data</button>
         <button onclick="document.getElementById('file-upload').click()" class="w-full flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 py-2 rounded-xl">Restore Data</button>
@@ -178,7 +197,7 @@
     </div>
   </div>
 
-  <!-- SIGN-IN MODAL (initially hidden, shown only if not logged in) -->
+  <!-- SIGN-IN MODAL -->
   <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden">
     <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 text-center">
       <div class="bg-emerald-600 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
@@ -211,27 +230,22 @@
     const db = getFirestore(app);
     const appId = "studyflow-pro";
 
-    // Spaced repetition intervals (days)
     const REPETITION_INTERVALS = [1, 2, 4, 7, 14, 30];
-
     function computeNextReminder(currentCount, lastRemindedDate) {
-      if (currentCount === undefined) currentCount = 0;
       const interval = REPETITION_INTERVALS[Math.min(currentCount, REPETITION_INTERVALS.length - 1)];
       const next = new Date(lastRemindedDate);
       next.setDate(next.getDate() + interval);
       return next;
     }
-
-    function formatDate(date) {
-      const d = new Date(date);
-      return d.toISOString().split('T')[0];
-    }
+    function formatDate(date) { return new Date(date).toISOString().split('T')[0]; }
 
     const state = {
       user: null,
       units: [],
       activeTab: 'dashboard',
-      unsubscribeDb: null
+      unsubscribeDb: null,
+      suggestionMode: 'pattern',   // 'pattern' or 'random'
+      randomCount: 2
     };
 
     function showToast(msg, type='info') {
@@ -239,9 +253,7 @@
       const icon = document.getElementById('toast-icon');
       const msgEl = document.getElementById('toast-message');
       msgEl.textContent = msg;
-      if (type === 'error') icon.setAttribute('data-lucide', 'alert-circle');
-      else if (type === 'success') icon.setAttribute('data-lucide', 'check-circle-2');
-      else icon.setAttribute('data-lucide', 'info');
+      icon.setAttribute('data-lucide', type === 'error' ? 'alert-circle' : (type === 'success' ? 'check-circle-2' : 'info'));
       lucide.createIcons({ root: toast });
       toast.classList.remove('-translate-y-full', 'opacity-0');
       toast.classList.add('translate-y-0', 'opacity-100');
@@ -251,9 +263,9 @@
       }, 3000);
     }
 
-    function getTodaysSuggestion() {
-      const today = new Date();
-      today.setHours(0,0,0,0);
+    // Get pattern suggestion (most overdue)
+    function getPatternSuggestion() {
+      const today = new Date(); today.setHours(0,0,0,0);
       let dueEssays = [];
       for (const unit of state.units) {
         for (const essay of (unit.essays || [])) {
@@ -270,36 +282,97 @@
       return dueEssays[0];
     }
 
+    // Get random suggestions (distinct essays, not necessarily due)
+    function getRandomSuggestions(count) {
+      let allEssays = [];
+      for (const unit of state.units) {
+        for (const essay of (unit.essays || [])) {
+          allEssays.push({ unitTitle: unit.title, essay, unitId: unit.id });
+        }
+      }
+      if (allEssays.length === 0) return [];
+      // Shuffle and take first 'count'
+      for (let i = allEssays.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allEssays[i], allEssays[j]] = [allEssays[j], allEssays[i]];
+      }
+      return allEssays.slice(0, count);
+    }
+
     async function markEssayReviewed(unitId, essayId) {
       const unit = state.units.find(u => u.id === unitId);
       if (!unit) return;
       const essay = unit.essays.find(e => e.id === essayId);
       if (!essay) return;
       const now = new Date();
-      const lastReminded = now;
       const reminderCount = (essay.reminderCount || 0) + 1;
-      const nextReminder = computeNextReminder(reminderCount, lastReminded);
+      const nextReminder = computeNextReminder(reminderCount, now);
       const updatedEssays = unit.essays.map(e => 
-        e.id === essayId ? { ...e, reminderCount, lastReminded: lastReminded.toISOString(), nextReminder: nextReminder.toISOString() } : e
+        e.id === essayId ? { ...e, reminderCount, lastReminded: now.toISOString(), nextReminder: nextReminder.toISOString() } : e
       );
       const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
       await updateDoc(unitRef, { essays: updatedEssays });
-      showToast(`"${essay.title}" marked as reviewed! Next reminder: ${formatDate(nextReminder)}`, "success");
+      showToast(`"${essay.title}" marked as reviewed! Next: ${formatDate(nextReminder)}`, "success");
+      renderView(); // refresh suggestion tab
     }
 
-    // Render functions
-    function renderNavigation() {
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        btn.className = btn.id.includes('desktop') 
-          ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50'
-          : 'nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400';
+    // Render the Today's Suggestion tab based on mode
+    function renderSuggestion() {
+      if (state.units.length === 0 || !state.units.some(u => u.essays && u.essays.length > 0)) {
+        return `<div class="bg-white rounded-3xl p-8 text-center"><i data-lucide="smile" class="w-12 h-12 text-emerald-500 mx-auto mb-3"></i><h3 class="text-xl font-bold">No essays yet!</h3><p class="text-slate-500">Add some essays first.</p></div>`;
+      }
+
+      if (state.suggestionMode === 'pattern') {
+        const suggestion = getPatternSuggestion();
+        if (!suggestion) {
+          return `<div class="bg-white rounded-3xl p-8 text-center"><i data-lucide="check-circle" class="w-12 h-12 text-emerald-500 mx-auto mb-3"></i><h3 class="text-xl font-bold">No essays due today!</h3><p class="text-slate-500">You're all caught up.</p></div>`;
+        }
+        return renderEssayCard(suggestion, 'pattern');
+      } 
+      else { // random mode
+        const count = state.randomCount;
+        const suggestions = getRandomSuggestions(count);
+        if (suggestions.length === 0) {
+          return `<div class="bg-white rounded-3xl p-8 text-center">No essays available.</div>`;
+        }
+        return `<div class="space-y-6">${suggestions.map(s => renderEssayCard(s, 'random')).join('')}</div>`;
+      }
+    }
+
+    function renderEssayCard(suggestion, mode) {
+      const { unitTitle, essay, unitId } = suggestion;
+      const badgeColor = mode === 'pattern' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700';
+      const badgeText = mode === 'pattern' ? 'Pattern' : 'Random';
+      return `
+        <div class="bg-white rounded-3xl shadow-md border border-emerald-100 overflow-hidden animate-slide-up">
+          <div class="bg-emerald-50 p-4 border-b flex justify-between items-center">
+            <span class="text-sm font-semibold text-emerald-700">${escapeHtml(unitTitle)}</span>
+            <span class="text-xs px-2 py-1 rounded-full ${badgeColor} font-medium">${badgeText}</span>
+          </div>
+          <div class="p-6">
+            <h3 class="text-2xl font-bold text-slate-800 mb-2">${escapeHtml(essay.title)}</h3>
+            ${essay.description ? `<p class="text-slate-600 mb-4">${escapeHtml(essay.description)}</p>` : ''}
+            <div class="bg-slate-50 rounded-xl p-4 mb-6 space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-slate-500">Times reviewed:</span><span class="font-semibold">${essay.reminderCount || 0}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Last reminded:</span><span class="font-semibold">${essay.lastReminded ? formatDate(essay.lastReminded) : 'Never'}</span></div>
+              ${mode === 'pattern' ? `<div class="flex justify-between"><span class="text-slate-500">Next reminder:</span><span class="font-semibold">${formatDate(essay.nextReminder)}</span></div>` : ''}
+            </div>
+            <button onclick="window.app.markReviewed('${unitId}', '${essay.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+              <i data-lucide="check-circle-2" class="w-5 h-5"></i> Mark as Reviewed Today
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
       });
-      const activeDesktop = document.getElementById(`nav-desktop-${state.activeTab}`);
-      const activeMobile = document.getElementById(`nav-mobile-${state.activeTab}`);
-      if(activeDesktop) activeDesktop.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 font-semibold';
-      if(activeMobile) activeMobile.className = 'nav-btn flex flex-col items-center p-2 rounded-xl text-emerald-600';
-      const titles = { dashboard: 'Dashboard', suggestion: "Today's Suggestion", essays: 'All Essays' };
-      document.getElementById('page-title').textContent = titles[state.activeTab];
     }
 
     function renderDashboard() {
@@ -317,48 +390,15 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-white p-6 rounded-3xl shadow-sm border"><div class="flex items-center gap-4"><div class="p-4 bg-emerald-50 rounded-2xl"><i data-lucide="edit-3" class="w-8 h-8 text-emerald-600"></i></div><div><p class="text-sm text-slate-500">Total Essays</p><p class="text-3xl font-bold">${totalEssays}</p></div></div></div>
             <div class="bg-white p-6 rounded-3xl shadow-sm border"><div class="flex items-center gap-4"><div class="p-4 bg-indigo-50 rounded-2xl"><i data-lucide="repeat" class="w-8 h-8 text-indigo-600"></i></div><div><p class="text-sm text-slate-500">Total Reviews</p><p class="text-3xl font-bold">${totalReviews}</p></div></div></div>
-            <div class="bg-white p-6 rounded-3xl shadow-sm border"><div class="flex items-center gap-4"><div class="p-4 bg-amber-50 rounded-2xl"><i data-lucide="calendar" class="w-8 h-8 text-amber-600"></i></div><div><p class="text-sm text-slate-500">Due Today</p><p class="text-3xl font-bold">${dueCount}</p></div></div></div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border"><div class="flex items-center gap-4"><div class="p-4 bg-amber-50 rounded-2xl"><i data-lucide="calendar" class="w-8 h-8 text-amber-600"></i></div><div><p class="text-sm text-slate-500">Due Today (pattern)</p><p class="text-3xl font-bold">${dueCount}</p></div></div></div>
           </div>
           <div class="bg-white rounded-3xl p-6 border">
             <h3 class="text-xl font-bold mb-4">Your Units</h3>
             ${state.units.length === 0 ? '<p class="text-slate-500">No units yet. Click "New Unit" to start.</p>' : 
-              `<div class="space-y-3">${state.units.map(u => `<div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl"><span class="font-medium">${u.title}</span><span class="text-sm text-slate-500">${(u.essays||[]).length} essays</span></div>`).join('')}</div>`}
+              `<div class="space-y-3">${state.units.map(u => `<div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl"><span class="font-medium">${escapeHtml(u.title)}</span><span class="text-sm text-slate-500">${(u.essays||[]).length} essays</span></div>`).join('')}</div>`}
           </div>
         </div>
       `;
-    }
-
-    function renderSuggestion() {
-      const suggestion = getTodaysSuggestion();
-      if (!suggestion) {
-        return `<div class="bg-white rounded-3xl p-8 text-center"><i data-lucide="smile" class="w-12 h-12 text-emerald-500 mx-auto mb-3"></i><h3 class="text-xl font-bold">No essays due today!</h3><p class="text-slate-500">Add more essays or wait for next reminder.</p></div>`;
-      }
-      const { unitTitle, essay, unitId } = suggestion;
-      return `
-        <div class="bg-white rounded-3xl shadow-md border border-emerald-100 overflow-hidden animate-slide-up">
-          <div class="bg-emerald-50 p-4 border-b"><span class="text-sm font-semibold text-emerald-700">${unitTitle}</span></div>
-          <div class="p-6">
-            <h3 class="text-2xl font-bold text-slate-800 mb-2">${escapeHtml(essay.title)}</h3>
-            ${essay.description ? `<p class="text-slate-600 mb-4">${escapeHtml(essay.description)}</p>` : ''}
-            <div class="bg-slate-50 rounded-xl p-4 mb-6 space-y-2 text-sm">
-              <div class="flex justify-between"><span class="text-slate-500">Times reviewed:</span><span class="font-semibold">${essay.reminderCount || 0}</span></div>
-              <div class="flex justify-between"><span class="text-slate-500">Last reminded:</span><span class="font-semibold">${essay.lastReminded ? formatDate(essay.lastReminded) : 'Never'}</span></div>
-              <div class="flex justify-between"><span class="text-slate-500">Next reminder:</span><span class="font-semibold">${formatDate(essay.nextReminder)}</span></div>
-            </div>
-            <button onclick="window.app.markReviewed('${unitId}', '${essay.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"><i data-lucide="check-circle-2" class="w-5 h-5"></i> Mark as Reviewed Today</button>
-          </div>
-        </div>
-      `;
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, function(m) {
-        if (m === '&') return '&amp;';
-        if (m === '<') return '&lt;';
-        if (m === '>') return '&gt;';
-        return m;
-      });
     }
 
     function renderEssays() {
@@ -381,6 +421,20 @@
       return html;
     }
 
+    function renderNavigation() {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = btn.id.includes('desktop') 
+          ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50'
+          : 'nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400';
+      });
+      const activeDesktop = document.getElementById(`nav-desktop-${state.activeTab}`);
+      const activeMobile = document.getElementById(`nav-mobile-${state.activeTab}`);
+      if(activeDesktop) activeDesktop.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 font-semibold';
+      if(activeMobile) activeMobile.className = 'nav-btn flex flex-col items-center p-2 rounded-xl text-emerald-600';
+      const titles = { dashboard: 'Dashboard', suggestion: "Today's Suggestion", essays: 'All Essays' };
+      document.getElementById('page-title').textContent = titles[state.activeTab];
+    }
+
     async function renderView() {
       renderNavigation();
       const container = document.getElementById('view-container');
@@ -399,7 +453,15 @@
       });
     }
 
-    // App API
+    // Load settings from localStorage
+    function loadSettings() {
+      const savedMode = localStorage.getItem('suggestionMode');
+      const savedCount = localStorage.getItem('randomEssayCount');
+      if (savedMode === 'pattern' || savedMode === 'random') state.suggestionMode = savedMode;
+      if (savedCount && !isNaN(parseInt(savedCount))) state.randomCount = parseInt(savedCount);
+      // sync UI if settings modal open later
+    }
+
     window.app = {
       switchTab: (tab) => { state.activeTab = tab; renderView(); },
       openAddUnitModal: () => { document.getElementById('add-unit-modal').classList.remove('hidden'); },
@@ -455,8 +517,35 @@
         await markEssayReviewed(unitId, essayId);
         renderView();
       },
-      openSettings: () => { document.getElementById('settings-modal').classList.remove('hidden'); },
+      openSettings: () => {
+        // populate current values
+        document.querySelector(`input[name="suggestionMode"][value="${state.suggestionMode}"]`).checked = true;
+        document.getElementById('randomEssayCount').value = state.randomCount;
+        const randomContainer = document.getElementById('randomCountContainer');
+        if (state.suggestionMode === 'random') randomContainer.classList.remove('hidden');
+        else randomContainer.classList.add('hidden');
+        // add listener to radio buttons
+        const radios = document.querySelectorAll('input[name="suggestionMode"]');
+        radios.forEach(radio => {
+          radio.onchange = () => {
+            if (radio.value === 'random') randomContainer.classList.remove('hidden');
+            else randomContainer.classList.add('hidden');
+          };
+        });
+        document.getElementById('settings-modal').classList.remove('hidden');
+      },
       closeSettings: () => { document.getElementById('settings-modal').classList.add('hidden'); },
+      saveSettings: () => {
+        const mode = document.querySelector('input[name="suggestionMode"]:checked').value;
+        const count = parseInt(document.getElementById('randomEssayCount').value) || 2;
+        state.suggestionMode = mode;
+        state.randomCount = Math.min(10, Math.max(1, count));
+        localStorage.setItem('suggestionMode', state.suggestionMode);
+        localStorage.setItem('randomEssayCount', state.randomCount);
+        window.app.closeSettings();
+        renderView();
+        showToast(`Suggestion mode set to ${mode === 'pattern' ? 'Pattern (spaced repetition)' : 'Random'}`, "success");
+      },
       logout: async () => { await signOut(auth); window.app.closeSettings(); },
       handleBackup: () => {
         const data = JSON.stringify(state.units, null, 2);
@@ -488,17 +577,14 @@
       }
     };
 
-    // AUTH STATE HANDLER – no flashing login screen
+    // Auth & init
     const loadingSpinner = document.getElementById('loading-spinner');
     const signinModal = document.getElementById('signin-modal');
     const appContainer = document.getElementById('app-container');
 
     onAuthStateChanged(auth, (user) => {
-      // Hide loading spinner first
       loadingSpinner.classList.add('hidden');
-      
       if (user) {
-        // User is signed in – show app, hide login modal
         signinModal.classList.add('hidden');
         appContainer.classList.remove('hidden');
         state.user = user;
@@ -511,9 +597,9 @@
         });
         document.getElementById('settings-name').textContent = name;
         document.getElementById('settings-email').textContent = email;
+        loadSettings();
         startFirestoreListener(user);
       } else {
-        // No user – show login modal, hide app
         signinModal.classList.remove('hidden');
         appContainer.classList.add('hidden');
         if (state.unsubscribeDb) state.unsubscribeDb();
