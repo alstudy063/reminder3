@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Biology Essay Reminder</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideInFromBottom { from { transform: translateY(1rem); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideInFromRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    
+    .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+    .animate-slide-up { animation: slideInFromBottom 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-slide-right { animation: slideInFromRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .animate-zoom-in { animation: zoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    
+    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900 overflow-hidden select-none md:select-auto">
+
+  <!-- LOADING SPINNER (shown while Firebase initialises) -->
+  <div id="loading-spinner" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div class="text-center">
+      <div class="w-12 h-12 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-slate-500">Loading...</p>
+    </div>
+  </div>
+
+  <!-- MAIN APP (hidden until signed in) -->
+  <div id="app-container" class="flex h-screen overflow-hidden relative hidden">
+    
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="hidden md:flex w-72 flex-col bg-white border-r border-slate-200 z-10">
+      <div class="p-6 flex items-center gap-3">
+        <div class="bg-emerald-600 p-2 rounded-xl">
+          <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
+        </div>
+        <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600">
+          BioEssay Reminder
+        </h1>
+      </div>
+      
+      <nav class="flex-1 px-4 py-6 space-y-2">
+        <button onclick="window.app.switchTab('dashboard')" id="nav-desktop-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all bg-emerald-50 text-emerald-700 font-semibold">
+          <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+        </button>
+        <button onclick="window.app.switchTab('suggestion')" id="nav-desktop-suggestion" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 hover:bg-slate-50">
+          <i data-lucide="calendar-check" class="w-5 h-5"></i> Today's Suggestion
+        </button>
+        <button onclick="window.app.switchTab('essays')" id="nav-desktop-essays" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 hover:bg-slate-50">
+          <i data-lucide="edit-3" class="w-5 h-5"></i> All Essays
+        </button>
+      </nav>
+
+      <div class="p-4 border-t border-slate-100">
+        <button onclick="window.app.openSettings()" class="w-full flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-emerald-50 transition-colors group text-left">
+          <div id="desktop-user-avatar" class="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold">U</div>
+          <div class="flex-1 overflow-hidden">
+            <p id="desktop-user-name" class="text-sm font-semibold text-slate-800 truncate">Student</p>
+            <p id="desktop-user-email" class="text-xs text-slate-500 truncate">Settings</p>
+          </div>
+          <i data-lucide="settings" class="w-4 h-4 text-slate-400 group-hover:text-emerald-600"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+      <header class="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200">
+        <div class="flex items-center gap-2">
+          <div class="bg-emerald-600 p-1.5 rounded-lg">
+            <i data-lucide="book-open" class="w-5 h-5 text-white"></i>
+          </div>
+          <h1 class="text-lg font-bold text-slate-800">BioEssay Reminder</h1>
+        </div>
+        <button onclick="window.app.openSettings()" class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 font-bold" id="mobile-user-avatar">U</button>
+      </header>
+
+      <div class="flex-1 overflow-y-auto pb-24 md:pb-8" id="main-scroll-area">
+        <div class="max-w-6xl mx-auto p-4 md:p-8">
+          <div class="flex justify-between items-end mb-8">
+            <div>
+              <h2 id="page-title" class="text-2xl md:text-3xl font-bold text-slate-900">Dashboard</h2>
+              <p id="page-subtitle" class="text-slate-500 mt-1">Track your essay practice</p>
+            </div>
+            <button onclick="window.app.openAddUnitModal()" class="hidden md:flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm">
+              <i data-lucide="plus"></i> New Unit
+            </button>
+          </div>
+          <div id="view-container"></div>
+        </div>
+      </div>
+
+      <button onclick="window.app.openAddUnitModal()" class="md:hidden absolute bottom-24 right-4 w-14 h-14 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition-transform z-20">
+        <i data-lucide="plus" class="w-6 h-6"></i>
+      </button>
+    </main>
+
+    <nav class="md:hidden fixed bottom-0 w-full bg-white border-t flex justify-around p-3 pb-safe z-30">
+      <button onclick="window.app.switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn flex flex-col items-center p-2 rounded-xl text-emerald-600">
+        <i data-lucide="layout-dashboard" class="w-6 h-6 mb-1"></i>
+        <span class="text-[10px]">Home</span>
+      </button>
+      <button onclick="window.app.switchTab('suggestion')" id="nav-mobile-suggestion" class="nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400">
+        <i data-lucide="calendar-check" class="w-6 h-6 mb-1"></i>
+        <span class="text-[10px]">Today</span>
+      </button>
+      <button onclick="window.app.switchTab('essays')" id="nav-mobile-essays" class="nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400">
+        <i data-lucide="edit-3" class="w-6 h-6 mb-1"></i>
+        <span class="text-[10px]">Essays</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODALS -->
+  <div id="add-unit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onclick="window.app.closeAddUnitModal()"></div>
+    <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 animate-zoom-in">
+      <h2 class="text-xl font-bold text-slate-800 mb-4">New Unit</h2>
+      <form id="add-unit-form" onsubmit="window.app.handleAddUnit(event)">
+        <input type="text" id="new-unit-title" placeholder="e.g. Cell Biology" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 mb-4" required />
+        <button type="submit" class="w-full bg-emerald-600 text-white font-semibold py-3 rounded-xl">Create Unit</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="add-essay-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onclick="window.app.closeAddEssayModal()"></div>
+    <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-md p-6 animate-zoom-in">
+      <h2 class="text-xl font-bold text-slate-800 mb-4">New Essay Topic</h2>
+      <form id="add-essay-form" onsubmit="window.app.handleAddEssay(event)">
+        <input type="hidden" id="essay-unit-id">
+        <input type="text" id="new-essay-title" placeholder="Essay title / question" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 mb-4" required />
+        <textarea id="new-essay-description" rows="3" placeholder="Optional: hints or key points" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-emerald-500 mb-4"></textarea>
+        <button type="submit" class="w-full bg-emerald-600 text-white font-semibold py-3 rounded-xl">Add Essay</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
+    <div class="absolute inset-0 bg-slate-900/20 backdrop-blur-sm" onclick="window.app.closeSettings()"></div>
+    <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-md p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Settings</h2>
+        <button onclick="window.app.closeSettings()"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div class="flex items-center gap-4 p-3 bg-slate-50 rounded-xl">
+          <div id="settings-avatar" class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-lg">U</div>
+          <div>
+            <p id="settings-name" class="font-bold">Student</p>
+            <p id="settings-email" class="text-sm text-slate-500">Signed in</p>
+          </div>
+        </div>
+        <button onclick="window.app.logout()" class="w-full flex items-center justify-center gap-2 text-rose-600 hover:bg-rose-50 py-2 rounded-xl">Sign Out</button>
+        <button onclick="window.app.handleBackup()" class="w-full flex items-center justify-center gap-2 bg-indigo-50 text-indigo-700 py-2 rounded-xl">Backup Data</button>
+        <button onclick="document.getElementById('file-upload').click()" class="w-full flex items-center justify-center gap-2 bg-emerald-50 text-emerald-700 py-2 rounded-xl">Restore Data</button>
+        <input type="file" id="file-upload" accept=".json" class="hidden" onchange="window.app.handleRestore(event)">
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed top-4 right-4 z-[70] transition-all duration-300 transform -translate-y-full opacity-0 pointer-events-none">
+    <div class="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg bg-white border">
+      <i id="toast-icon" data-lucide="info" class="w-5 h-5"></i>
+      <span id="toast-message" class="font-medium text-sm">Message</span>
+    </div>
+  </div>
+
+  <!-- SIGN-IN MODAL (initially hidden, shown only if not logged in) -->
+  <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 text-center">
+      <div class="bg-emerald-600 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+        <i data-lucide="book-open" class="w-8 h-8 text-white"></i>
+      </div>
+      <h2 class="text-2xl font-bold mb-2">BioEssay Reminder</h2>
+      <p class="text-slate-500 mb-6">Sign in with Google to save your progress</p>
+      <button id="immediate-google-signin" class="w-full flex items-center justify-center gap-3 border border-slate-300 hover:bg-slate-50 py-3 rounded-xl">Sign in with Google</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+    lucide.createIcons();
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+      authDomain: "studymaster-919ba.firebaseapp.com",
+      projectId: "studymaster-919ba",
+      storageBucket: "studymaster-919ba.firebasestorage.app",
+      messagingSenderId: "426684063256",
+      appId: "1:426684063256:web:52c17625a9450ea9662d6d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const appId = "studyflow-pro";
+
+    // Spaced repetition intervals (days)
+    const REPETITION_INTERVALS = [1, 2, 4, 7, 14, 30];
+
+    function computeNextReminder(currentCount, lastRemindedDate) {
+      if (currentCount === undefined) currentCount = 0;
+      const interval = REPETITION_INTERVALS[Math.min(currentCount, REPETITION_INTERVALS.length - 1)];
+      const next = new Date(lastRemindedDate);
+      next.setDate(next.getDate() + interval);
+      return next;
+    }
+
+    function formatDate(date) {
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
+    }
+
+    const state = {
+      user: null,
+      units: [],
+      activeTab: 'dashboard',
+      unsubscribeDb: null
+    };
+
+    function showToast(msg, type='info') {
+      const toast = document.getElementById('toast');
+      const icon = document.getElementById('toast-icon');
+      const msgEl = document.getElementById('toast-message');
+      msgEl.textContent = msg;
+      if (type === 'error') icon.setAttribute('data-lucide', 'alert-circle');
+      else if (type === 'success') icon.setAttribute('data-lucide', 'check-circle-2');
+      else icon.setAttribute('data-lucide', 'info');
+      lucide.createIcons({ root: toast });
+      toast.classList.remove('-translate-y-full', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-full', 'opacity-0');
+      }, 3000);
+    }
+
+    function getTodaysSuggestion() {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      let dueEssays = [];
+      for (const unit of state.units) {
+        for (const essay of (unit.essays || [])) {
+          if (!essay.nextReminder) continue;
+          const nextDate = new Date(essay.nextReminder);
+          nextDate.setHours(0,0,0,0);
+          if (nextDate <= today) {
+            dueEssays.push({ unitTitle: unit.title, essay, unitId: unit.id });
+          }
+        }
+      }
+      if (dueEssays.length === 0) return null;
+      dueEssays.sort((a,b) => new Date(a.essay.nextReminder) - new Date(b.essay.nextReminder));
+      return dueEssays[0];
+    }
+
+    async function markEssayReviewed(unitId, essayId) {
+      const unit = state.units.find(u => u.id === unitId);
+      if (!unit) return;
+      const essay = unit.essays.find(e => e.id === essayId);
+      if (!essay) return;
+      const now = new Date();
+      const lastReminded = now;
+      const reminderCount = (essay.reminderCount || 0) + 1;
+      const nextReminder = computeNextReminder(reminderCount, lastReminded);
+      const updatedEssays = unit.essays.map(e => 
+        e.id === essayId ? { ...e, reminderCount, lastReminded: lastReminded.toISOString(), nextReminder: nextReminder.toISOString() } : e
+      );
+      const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
+      await updateDoc(unitRef, { essays: updatedEssays });
+      showToast(`"${essay.title}" marked as reviewed! Next reminder: ${formatDate(nextReminder)}`, "success");
+    }
+
+    // Render functions
+    function renderNavigation() {
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = btn.id.includes('desktop') 
+          ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-slate-50'
+          : 'nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400';
+      });
+      const activeDesktop = document.getElementById(`nav-desktop-${state.activeTab}`);
+      const activeMobile = document.getElementById(`nav-mobile-${state.activeTab}`);
+      if(activeDesktop) activeDesktop.className = 'nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-emerald-50 text-emerald-700 font-semibold';
+      if(activeMobile) activeMobile.className = 'nav-btn flex flex-col items-center p-2 rounded-xl text-emerald-600';
+      const titles = { dashboard: 'Dashboard', suggestion: "Today's Suggestion", essays: 'All Essays' };
+      document.getElementById('page-title').textContent = titles[state.activeTab];
+    }
+
+    function renderDashboard() {
+      let totalEssays = 0, totalReviews = 0, dueCount = 0;
+      const today = new Date(); today.setHours(0,0,0,0);
+      for (const unit of state.units) {
+        for (const essay of (unit.essays || [])) {
+          totalEssays++;
+          totalReviews += (essay.reminderCount || 0);
+          if (essay.nextReminder && new Date(essay.nextReminder) <= today) dueCount++;
+        }
+      }
+      return `
+        <div class="space-y-8 animate-slide-up">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border"><div class="flex items-center gap-4"><div class="p-4 bg-emerald-50 rounded-2xl"><i data-lucide="edit-3" class="w-8 h-8 text-emerald-600"></i></div><div><p class="text-sm text-slate-500">Total Essays</p><p class="text-3xl font-bold">${totalEssays}</p></div></div></div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border"><div class="flex items-center gap-4"><div class="p-4 bg-indigo-50 rounded-2xl"><i data-lucide="repeat" class="w-8 h-8 text-indigo-600"></i></div><div><p class="text-sm text-slate-500">Total Reviews</p><p class="text-3xl font-bold">${totalReviews}</p></div></div></div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border"><div class="flex items-center gap-4"><div class="p-4 bg-amber-50 rounded-2xl"><i data-lucide="calendar" class="w-8 h-8 text-amber-600"></i></div><div><p class="text-sm text-slate-500">Due Today</p><p class="text-3xl font-bold">${dueCount}</p></div></div></div>
+          </div>
+          <div class="bg-white rounded-3xl p-6 border">
+            <h3 class="text-xl font-bold mb-4">Your Units</h3>
+            ${state.units.length === 0 ? '<p class="text-slate-500">No units yet. Click "New Unit" to start.</p>' : 
+              `<div class="space-y-3">${state.units.map(u => `<div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl"><span class="font-medium">${u.title}</span><span class="text-sm text-slate-500">${(u.essays||[]).length} essays</span></div>`).join('')}</div>`}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSuggestion() {
+      const suggestion = getTodaysSuggestion();
+      if (!suggestion) {
+        return `<div class="bg-white rounded-3xl p-8 text-center"><i data-lucide="smile" class="w-12 h-12 text-emerald-500 mx-auto mb-3"></i><h3 class="text-xl font-bold">No essays due today!</h3><p class="text-slate-500">Add more essays or wait for next reminder.</p></div>`;
+      }
+      const { unitTitle, essay, unitId } = suggestion;
+      return `
+        <div class="bg-white rounded-3xl shadow-md border border-emerald-100 overflow-hidden animate-slide-up">
+          <div class="bg-emerald-50 p-4 border-b"><span class="text-sm font-semibold text-emerald-700">${unitTitle}</span></div>
+          <div class="p-6">
+            <h3 class="text-2xl font-bold text-slate-800 mb-2">${escapeHtml(essay.title)}</h3>
+            ${essay.description ? `<p class="text-slate-600 mb-4">${escapeHtml(essay.description)}</p>` : ''}
+            <div class="bg-slate-50 rounded-xl p-4 mb-6 space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-slate-500">Times reviewed:</span><span class="font-semibold">${essay.reminderCount || 0}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Last reminded:</span><span class="font-semibold">${essay.lastReminded ? formatDate(essay.lastReminded) : 'Never'}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Next reminder:</span><span class="font-semibold">${formatDate(essay.nextReminder)}</span></div>
+            </div>
+            <button onclick="window.app.markReviewed('${unitId}', '${essay.id}')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"><i data-lucide="check-circle-2" class="w-5 h-5"></i> Mark as Reviewed Today</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+      });
+    }
+
+    function renderEssays() {
+      if (state.units.length === 0) return `<div class="bg-white rounded-3xl p-8 text-center">No units. Create one to add essays.</div>`;
+      let html = `<div class="space-y-6">`;
+      for (const unit of state.units) {
+        html += `<div class="bg-white rounded-3xl border overflow-hidden"><div class="bg-slate-50 p-4 flex justify-between items-center"><h3 class="font-bold text-lg">${escapeHtml(unit.title)}</h3><button onclick="window.app.openAddEssayModal('${unit.id}')" class="text-emerald-600 text-sm flex items-center gap-1"><i data-lucide="plus" class="w-4 h-4"></i> Add Essay</button></div>`;
+        if (!unit.essays || unit.essays.length === 0) {
+          html += `<div class="p-6 text-center text-slate-400">No essays yet. Click "Add Essay".</div>`;
+        } else {
+          html += `<div class="divide-y">`;
+          for (const essay of unit.essays) {
+            html += `<div class="p-4"><div class="flex justify-between items-start"><div><p class="font-medium">${escapeHtml(essay.title)}</p>${essay.description ? `<p class="text-sm text-slate-500 mt-1">${escapeHtml(essay.description.substring(0,80))}${essay.description.length>80?'…':''}</p>` : ''}<div class="flex gap-3 text-xs text-slate-400 mt-2"><span>🔄 ${essay.reminderCount || 0} reviews</span><span>📅 Last: ${essay.lastReminded ? formatDate(essay.lastReminded) : '—'}</span><span>⏰ Next: ${essay.nextReminder ? formatDate(essay.nextReminder) : '—'}</span></div></div><button onclick="window.app.deleteEssay('${unit.id}', '${essay.id}')" class="text-rose-400 hover:text-rose-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+          }
+          html += `</div>`;
+        }
+        html += `</div>`;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    async function renderView() {
+      renderNavigation();
+      const container = document.getElementById('view-container');
+      if (state.activeTab === 'dashboard') container.innerHTML = renderDashboard();
+      else if (state.activeTab === 'suggestion') container.innerHTML = renderSuggestion();
+      else container.innerHTML = renderEssays();
+      lucide.createIcons();
+    }
+
+    function startFirestoreListener(user) {
+      if (state.unsubscribeDb) state.unsubscribeDb();
+      const unitsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'units');
+      state.unsubscribeDb = onSnapshot(unitsRef, (snapshot) => {
+        state.units = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderView();
+      });
+    }
+
+    // App API
+    window.app = {
+      switchTab: (tab) => { state.activeTab = tab; renderView(); },
+      openAddUnitModal: () => { document.getElementById('add-unit-modal').classList.remove('hidden'); },
+      closeAddUnitModal: () => { document.getElementById('add-unit-modal').classList.add('hidden'); },
+      handleAddUnit: async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('new-unit-title').value.trim();
+        if (!title) return;
+        const newId = crypto.randomUUID();
+        await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', newId), { title, essays: [] });
+        document.getElementById('new-unit-title').value = '';
+        window.app.closeAddUnitModal();
+        showToast(`Unit "${title}" added`, "success");
+      },
+      openAddEssayModal: (unitId) => {
+        document.getElementById('essay-unit-id').value = unitId;
+        document.getElementById('new-essay-title').value = '';
+        document.getElementById('new-essay-description').value = '';
+        document.getElementById('add-essay-modal').classList.remove('hidden');
+      },
+      closeAddEssayModal: () => { document.getElementById('add-essay-modal').classList.add('hidden'); },
+      handleAddEssay: async (e) => {
+        e.preventDefault();
+        const unitId = document.getElementById('essay-unit-id').value;
+        const title = document.getElementById('new-essay-title').value.trim();
+        const description = document.getElementById('new-essay-description').value.trim();
+        if (!title) return;
+        const unit = state.units.find(u => u.id === unitId);
+        if (!unit) return;
+        const now = new Date();
+        const newEssay = {
+          id: crypto.randomUUID(),
+          title,
+          description: description || '',
+          reminderCount: 0,
+          lastReminded: null,
+          nextReminder: computeNextReminder(0, now).toISOString(),
+          createdAt: now.toISOString()
+        };
+        const updatedEssays = [...(unit.essays || []), newEssay];
+        await updateDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId), { essays: updatedEssays });
+        window.app.closeAddEssayModal();
+        showToast(`Essay "${title}" added`, "success");
+      },
+      deleteEssay: async (unitId, essayId) => {
+        if (!confirm('Delete this essay?')) return;
+        const unit = state.units.find(u => u.id === unitId);
+        if (!unit) return;
+        const updatedEssays = (unit.essays || []).filter(e => e.id !== essayId);
+        await updateDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId), { essays: updatedEssays });
+      },
+      markReviewed: async (unitId, essayId) => {
+        await markEssayReviewed(unitId, essayId);
+        renderView();
+      },
+      openSettings: () => { document.getElementById('settings-modal').classList.remove('hidden'); },
+      closeSettings: () => { document.getElementById('settings-modal').classList.add('hidden'); },
+      logout: async () => { await signOut(auth); window.app.closeSettings(); },
+      handleBackup: () => {
+        const data = JSON.stringify(state.units, null, 2);
+        const blob = new Blob([data], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `bioessay_backup_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Backup saved', 'success');
+      },
+      handleRestore: async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            const units = JSON.parse(ev.target.result);
+            for (const unit of units) {
+              const ref = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unit.id);
+              await setDoc(ref, unit);
+            }
+            showToast('Restore complete', 'success');
+          } catch(err) { showToast('Invalid backup', 'error'); }
+          e.target.value = '';
+        };
+        reader.readAsText(file);
+      }
+    };
+
+    // AUTH STATE HANDLER – no flashing login screen
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const signinModal = document.getElementById('signin-modal');
+    const appContainer = document.getElementById('app-container');
+
+    onAuthStateChanged(auth, (user) => {
+      // Hide loading spinner first
+      loadingSpinner.classList.add('hidden');
+      
+      if (user) {
+        // User is signed in – show app, hide login modal
+        signinModal.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        state.user = user;
+        const name = user.displayName || 'Student';
+        const email = user.email || '';
+        const initial = name.charAt(0).toUpperCase();
+        ['desktop-user-avatar', 'mobile-user-avatar', 'settings-avatar'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = initial;
+        });
+        document.getElementById('settings-name').textContent = name;
+        document.getElementById('settings-email').textContent = email;
+        startFirestoreListener(user);
+      } else {
+        // No user – show login modal, hide app
+        signinModal.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+        if (state.unsubscribeDb) state.unsubscribeDb();
+        state.user = null;
+        state.units = [];
+      }
+    });
+
+    document.getElementById('immediate-google-signin').addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, new GoogleAuthProvider());
+      } catch(e) { showToast('Sign in failed', 'error'); }
+    });
+  </script>
+</body>
+</html>
