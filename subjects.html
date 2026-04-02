@@ -104,7 +104,8 @@
         </div>
       </div>
 
-      <button onclick="window.app.openAddSubjectModal()" class="md:hidden absolute bottom-24 right-4 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-95 transition-transform z-20">
+      <!-- FIXED: Mobile FAB moved up to avoid bottom nav overlap -->
+      <button onclick="window.app.openAddSubjectModal()" class="md:hidden absolute bottom-28 right-4 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-95 transition-transform z-20">
         <i data-lucide="plus" class="w-6 h-6"></i>
       </button>
 
@@ -214,8 +215,8 @@
     </div>
   </div>
 
-  <!-- SIGN-IN MODAL (shown when not logged in) -->
-  <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+  <!-- SIGN-IN MODAL (hidden by default, shown only when user is not logged in) -->
+  <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm hidden">
     <div class="relative bg-white rounded-3xl shadow-xl w-full max-w-sm p-6 animate-zoom-in text-center">
       <div class="bg-indigo-600 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
         <i data-lucide="graduation-cap" class="w-8 h-8 text-white"></i>
@@ -267,8 +268,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
-    // 🔧 CHANGED: Use the same appId as your Firestore security rule
-    const appId = "studyflow-pro";  // was "studymaster-v2"
+    // 🔧 Use the same appId as your Firestore security rule
+    const appId = "studyflow-pro";
 
     // UI elements
     const signinModal = document.getElementById('signin-modal');
@@ -846,10 +847,11 @@
       }
     };
 
-    // Auth listener: show modal if no user, else hide modal and load app
+    // Auth listener: show sign-in modal only if user is not logged in
     onAuthStateChanged(auth, (user) => {
       state.user = user;
       if (user) {
+        // User is signed in → show app, hide sign-in modal
         signinModal.classList.add('hidden');
         appContainer.classList.remove('hidden');
         
@@ -867,6 +869,7 @@
           showToast("Error loading data", "error");
         });
       } else {
+        // No user → show sign-in modal, hide app
         signinModal.classList.remove('hidden');
         appContainer.classList.add('hidden');
         if (state.unsubscribeDb) {
