@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>AL Master Flow | Premium Study Suite</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -174,6 +174,108 @@
     .modal .modal-close:hover { transform: rotate(90deg); color: #ef4444; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+    /* Bottom Sheet Styles - 2 buttons per row */
+    .sheet-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.2s ease;
+    }
+    .sheet-overlay.active {
+      visibility: visible;
+      opacity: 1;
+    }
+    .bottom-sheet {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--bg-secondary);
+      border-radius: 28px 28px 0 0;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      z-index: 1001;
+      padding: 1.5rem 1.2rem 2rem;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .bottom-sheet.active {
+      transform: translateY(0);
+    }
+    .sheet-handle {
+      width: 50px;
+      height: 5px;
+      background: var(--text-secondary);
+      border-radius: 20px;
+      margin: 0 auto 1.5rem auto;
+      opacity: 0.5;
+    }
+    .sheet-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding: 0 0.5rem;
+    }
+    .sheet-header h4 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .sheet-close {
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: transform 0.2s;
+    }
+    .sheet-close:hover {
+      transform: scale(1.1);
+      color: var(--accent);
+    }
+    /* 2‑column grid for sheet buttons */
+    .sheet-tab-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .sheet-tab-card {
+      background: var(--card-bg);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--border-color);
+      border-radius: 1.2rem;
+      padding: 1rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+    }
+    .sheet-tab-card:hover {
+      transform: translateY(-3px);
+      background: var(--bg-primary);
+      border-color: var(--accent);
+    }
+    .sheet-tab-card i {
+      font-size: 1.6rem;
+      color: var(--accent);
+    }
+    .sheet-tab-card span {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+
     /* Spaced Repetition SR Cards */
     .sr-stats { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; }
     .sr-stats span { background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 8px; font-weight: 600; }
@@ -219,20 +321,84 @@
     .app-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 25px rgba(16,185,129,0.4); z-index: 9999; opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 10px; }
     .app-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    @media (max-width: 768px) {
-      .sidebar { display: none; }
-      .main-content { padding: 1.5rem 1rem 6rem 1rem; }
-      .mobile-bottom-nav { display: flex; }
-    }
+    /* ========== MOBILE BOTTOM NAV - FIXED & GUARANTEED ========== */
     .mobile-bottom-nav {
-      display: none; position: fixed; bottom: 0; left: 0; width: 100%;
-      background: var(--card-bg); backdrop-filter: var(--glass-blur); border-top: 1px solid var(--border-color);
-      padding: 0.5rem 1rem 1.5rem 1rem; justify-content: space-around; z-index: 100; min-height: 80px;
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: var(--card-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border-top: 1px solid var(--border-color);
+      padding: 0.5rem 1rem 1.5rem 1rem;
+      justify-content: space-around;
+      z-index: 200;
+      min-height: 75px;
+      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
     }
-    .mobile-nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.85rem; color: var(--text-secondary); gap: 6px; cursor: pointer; flex: 1; text-align: center; transition: all 0.3s ease; }
-    .mobile-nav-item i { font-size: 1.5rem; transition: transform 0.3s ease; }
-    .mobile-nav-item.active { color: var(--accent); transform: translateY(-5px); }
-    .mobile-nav-item.active i { transform: scale(1.2); }
+    .mobile-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      gap: 5px;
+      cursor: pointer;
+      flex: 1;
+      text-align: center;
+      transition: all 0.2s ease;
+      padding: 5px 0;
+    }
+    .mobile-nav-item i {
+      font-size: 1.5rem;
+      transition: transform 0.2s ease;
+    }
+    .mobile-nav-item.active {
+      color: var(--accent);
+      transform: translateY(-3px);
+    }
+    .mobile-nav-item.active i {
+      transform: scale(1.15);
+    }
+    /* Force bottom bar on all screens narrower than 768px */
+    @media (max-width: 768px) {
+      .sidebar {
+        display: none;
+      }
+      .main-content {
+        padding: 1.5rem 1rem 6rem 1rem;
+      }
+      .mobile-bottom-nav {
+        display: flex !important;
+      }
+    }
+    /* Extra small devices */
+    @media (max-width: 480px) {
+      .mobile-bottom-nav {
+        padding: 0.3rem 0.5rem 1.2rem 0.5rem;
+      }
+      .mobile-nav-item span {
+        font-size: 0.7rem;
+      }
+      .mobile-nav-item i {
+        font-size: 1.3rem;
+      }
+      .sheet-tab-grid {
+        gap: 8px;
+      }
+      .sheet-tab-card {
+        padding: 0.8rem 0.3rem;
+      }
+      .sheet-tab-card i {
+        font-size: 1.4rem;
+      }
+      .sheet-tab-card span {
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -246,7 +412,21 @@
     <div id="tabContent"></div>
   </main>
 </div>
+
+<!-- Mobile Bottom Navigation (populated by JS) -->
 <div class="mobile-bottom-nav" id="mobileNav"></div>
+
+<!-- Bottom Sheet for More Tabs -->
+<div id="sheetOverlay" class="sheet-overlay"></div>
+<div id="bottomSheet" class="bottom-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <h4><i class="fas fa-th-large"></i> More Tools</h4>
+    <i class="fas fa-times sheet-close" id="closeSheetBtn"></i>
+  </div>
+  <div class="sheet-tab-grid" id="sheetTabsContainer"></div>
+</div>
+
 <div id="appToast" class="app-toast"></div>
 
 <script type="module">
@@ -420,15 +600,75 @@
 
   // Navigation
   const tabs = ['dashboard', 'revision', 'equations', 'papers', 'essays', 'pomodoro', 'definitions', 'settings'];
-  const bottomTabs = ['dashboard', 'revision', 'pomodoro', 'definitions'];
+  // For bottom nav: dashboard, revision, definitions, more (more opens sheet)
+  const mainBottomTabs = ['dashboard', 'revision', 'definitions'];
+  // For sheet: the rest of tabs (excluding the three main ones)
+  const sheetTabs = tabs.filter(t => !mainBottomTabs.includes(t));
   const icons = { dashboard:'fas fa-chart-pie', revision:'fas fa-brain', equations:'fas fa-square-root-alt', papers:'fas fa-scroll', essays:'fas fa-feather-alt', pomodoro:'fas fa-hourglass-half', definitions:'fas fa-book', settings:'fas fa-cog' };
   
+  // Bottom sheet controls
+  function openBottomSheet() {
+    document.getElementById('sheetOverlay').classList.add('active');
+    document.getElementById('bottomSheet').classList.add('active');
+  }
+  function closeBottomSheet() {
+    document.getElementById('sheetOverlay').classList.remove('active');
+    document.getElementById('bottomSheet').classList.remove('active');
+  }
+  
   function renderNav() {
+    // Desktop sidebar
     document.getElementById('navLinks').innerHTML = tabs.map(t => `<div class="nav-item ${currentTab===t?'active':''}" data-tab="${t}"><i class="${icons[t]}"></i> ${t.charAt(0).toUpperCase()+t.slice(1)}</div>`).join('');
     document.querySelectorAll('.nav-item').forEach(e => e.onclick = () => switchTab(e.dataset.tab));
     
-    document.getElementById('mobileNav').innerHTML = bottomTabs.map(t => `<div class="mobile-nav-item ${currentTab===t?'active':''}" data-tab="${t}"><i class="${icons[t]}"></i></div>`).join('') + `<div class="mobile-nav-item" data-tab="settings"><i class="fas fa-ellipsis-h"></i></div>`;
-    document.querySelectorAll('.mobile-nav-item').forEach(e => e.onclick = () => switchTab(e.dataset.tab));
+    // Mobile bottom nav: Dashboard, Revision, Definitions, More
+    const mobileNav = document.getElementById('mobileNav');
+    if (!mobileNav) return;
+    mobileNav.innerHTML = `
+      <div class="mobile-nav-item ${currentTab==='dashboard' ? 'active' : ''}" data-tab="dashboard">
+        <i class="${icons.dashboard}"></i><span>Home</span>
+      </div>
+      <div class="mobile-nav-item ${currentTab==='revision' ? 'active' : ''}" data-tab="revision">
+        <i class="${icons.revision}"></i><span>Revise</span>
+      </div>
+      <div class="mobile-nav-item ${currentTab==='definitions' ? 'active' : ''}" data-tab="definitions">
+        <i class="${icons.definitions}"></i><span>Terms</span>
+      </div>
+      <div class="mobile-nav-item" id="moreBtnMobile">
+        <i class="fas fa-ellipsis-h"></i><span>More</span>
+      </div>
+    `;
+    // Attach click events
+    document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(el => {
+      el.onclick = () => switchTab(el.dataset.tab);
+    });
+    const moreBtn = document.getElementById('moreBtnMobile');
+    if (moreBtn) moreBtn.onclick = openBottomSheet;
+    
+    // Build sheet content (2‑column grid)
+    const sheetContainer = document.getElementById('sheetTabsContainer');
+    if (sheetContainer) {
+      sheetContainer.innerHTML = sheetTabs.map(tab => `
+        <div class="sheet-tab-card" data-tab="${tab}">
+          <i class="${icons[tab]}"></i>
+          <span>${tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
+        </div>
+      `).join('');
+      // Sheet tab click handlers
+      document.querySelectorAll('.sheet-tab-card').forEach(card => {
+        card.onclick = () => {
+          const tab = card.dataset.tab;
+          switchTab(tab);
+          closeBottomSheet();
+        };
+      });
+    }
+    
+    // Close sheet events
+    const closeBtn = document.getElementById('closeSheetBtn');
+    const overlay = document.getElementById('sheetOverlay');
+    if (closeBtn) closeBtn.onclick = closeBottomSheet;
+    if (overlay) overlay.onclick = closeBottomSheet;
   }
 
   function attachCollapsible() {
@@ -890,7 +1130,12 @@
   window.handleLogout = () => signOut(auth);
 
   // Globals for inline onclicks
-  window.switchTab = async (t) => { currentTab = t; renderNav(); const map={dashboard:renderDashboard, revision:renderRevision, equations:renderEquations, papers:renderPapers, essays:renderEssays, pomodoro:renderPomodoro, definitions:renderDefinitions, settings:renderSettings}; if(map[t]) await map[t](); };
+  window.switchTab = async (t) => { 
+    currentTab = t; 
+    renderNav(); 
+    const map={dashboard:renderDashboard, revision:renderRevision, equations:renderEquations, papers:renderPapers, essays:renderEssays, pomodoro:renderPomodoro, definitions:renderDefinitions, settings:renderSettings}; 
+    if(map[t]) await map[t](); 
+  };
   window.deleteItem = async (id, col) => { if(confirm('Delete this?')) { allItems[col] = allItems[col].filter(i=>i.id!==id); await saveAll(); if(currentTab===col) switchTab(col); } };
   window.editDate = async (id, col) => {
     const idx = allItems[col].findIndex(i=>i.id===id);
