@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
+    <title>File Explorer  </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -32,7 +32,6 @@
             font-size: 14px;
         }
         .context-menu-item:hover { background-color: #f0f0f0; }
-        /* Ensure modals are centered */
         .modal-container {
             display: flex;
             align-items: center;
@@ -149,7 +148,7 @@
 
         function openDB() {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open('FileExplorerDB', 4);
+                const request = indexedDB.open('FileExplorerDB', 5);
                 request.onupgradeneeded = (e) => {
                     const db = e.target.result;
                     if (!db.objectStoreNames.contains('handles')) db.createObjectStore('handles');
@@ -162,9 +161,11 @@
             });
         }
 
+        // Save a directory handle (for special folders) - store as an object that can be restored
         async function saveHandle(key, handle) {
             const db = await openDB();
             const tx = db.transaction('handles', 'readwrite');
+            // We cannot store the handle directly if it's a FileSystemDirectoryHandle? Actually we can, IndexedDB supports it.
             tx.objectStore('handles').put({ key, handle });
             await new Promise(r => tx.oncomplete = r);
         }
@@ -173,7 +174,11 @@
             const db = await openDB();
             const tx = db.transaction('handles', 'readonly');
             const all = await new Promise(r => { const req = tx.objectStore('handles').getAll(); req.onsuccess = () => r(req.result); });
-            for (let item of all) if (item.key && item.handle) folderHandles[item.key] = item.handle;
+            for (let item of all) {
+                if (item.key && item.handle) {
+                    folderHandles[item.key] = item.handle;
+                }
+            }
             updateSettingsInputs();
         }
 
@@ -197,12 +202,9 @@
             const savedPath = await new Promise(r => { const req = store.get('currentPath'); req.onsuccess = () => r(req.result); });
             const savedTab = await new Promise(r => { const req = store.get('currentTab'); req.onsuccess = () => r(req.result); });
             if (savedDir && savedDir.name) {
-                try {
-                    await savedDir.getDirectoryHandle('dummy').catch(() => {});
-                    currentDirectoryHandle = savedDir;
-                    if (Array.isArray(savedPath)) currentPath = savedPath.filter(h => h && h.name);
-                    if (savedTab) currentTab = savedTab;
-                } catch(e) { console.warn('Saved handle invalid', e); }
+                currentDirectoryHandle = savedDir;
+                if (Array.isArray(savedPath)) currentPath = savedPath.filter(h => h && h.name);
+                if (savedTab) currentTab = savedTab;
             }
         }
 
@@ -244,8 +246,7 @@
             document.getElementById('videos-path').value = folderHandles.videos ? folderHandles.videos.name : 'Not set';
         }
 
-        // Native folder picker – its position is controlled by the browser, we cannot change it.
-        // It automatically closes when you click outside.
+        // Folder picker for settings
         async function pickFolderFor(type) {
             try {
                 const handle = await window.showDirectoryPicker();
@@ -278,12 +279,36 @@
             return { folders, files };
         }
 
-        async function renderCurrentDirectory() {
+        async function renderCurrentDirectory(prompt = false) {
             if (!currentDirectoryHandle) {
                 document.getElementById('items-grid').innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">No folder selected. Click "Computers" to pick a folder.</div>';
                 updateBreadcrumbs();
                 return;
             }
+
+            const hasPermission = await ensurePermission(currentDirectoryHandle, prompt);
+
+            if (!hasPermission) {
+                const grid = document.getElementById('items-grid');
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center py-20 text-center">
+                        <i class="ph-fill ph-lock-key text-6xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-700 font-medium text-lg">Permission Required</p>
+                        <p class="text-gray-500 text-sm mt-2 max-w-md">The browser requires your permission to access "${escapeHtml(currentDirectoryHandle.name)}" after a page reload.</p>
+                        <button id="grant-btn" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Grant Access</button>
+                    </div>
+                `;
+                document.getElementById('grant-btn').onclick = async () => {
+                    if (await ensurePermission(currentDirectoryHandle, true)) {
+                        await renderCurrentDirectory(false);
+                    } else {
+                        showToast('Permission denied.');
+                    }
+                };
+                updateBreadcrumbs();
+                return;
+            }
+
             const { folders, files } = await getFilesAndFolders(currentDirectoryHandle);
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
@@ -317,7 +342,7 @@
                 if (isFolder) {
                     currentPath.push(currentDirectoryHandle);
                     currentDirectoryHandle = handle;
-                    await renderCurrentDirectory();
+                    await renderCurrentDirectory(true);
                     addToRecent(handle, true);
                 } else {
                     await openFile(handle);
@@ -371,9 +396,9 @@
             container.innerHTML = html;
         }
 
-        async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(); }
-        async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(); }
-        async function refreshCurrentView() { await renderCurrentDirectory(); }
+        async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(true); }
+        async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(true); }
+        async function refreshCurrentView() { await renderCurrentDirectory(true); }
 
         // Rename
         let renameTarget = null, renameIsFolder = false;
@@ -386,7 +411,7 @@
                 if (!targetHandle) throw new Error('Not found');
                 await targetHandle.move(newName);
                 showToast(`Renamed to ${newName}`);
-                await renderCurrentDirectory();
+                await renderCurrentDirectory(false);
             } catch(e) { showToast('Rename failed: ' + e.message); }
             closeRenameModal();
         }
@@ -398,7 +423,7 @@
                 if (isFolder) await currentDirectoryHandle.removeEntry(name, { recursive: true });
                 else await currentDirectoryHandle.removeEntry(name);
                 showToast(`Deleted ${name}`);
-                await renderCurrentDirectory();
+                await renderCurrentDirectory(false);
             } catch(e) { showToast('Delete failed: ' + e.message); }
         }
 
@@ -408,7 +433,7 @@
             try {
                 await currentDirectoryHandle.getDirectoryHandle(folderName, { create: true });
                 showToast(`Folder "${folderName}" created`);
-                await renderCurrentDirectory();
+                await renderCurrentDirectory(false);
             } catch(e) { showToast('Error: ' + e.message); }
         }
 
@@ -421,7 +446,7 @@
                 await writable.write('');
                 await writable.close();
                 showToast(`File "${fileName}" created`);
-                await renderCurrentDirectory();
+                await renderCurrentDirectory(false);
             } catch(e) { showToast('Error: ' + e.message); }
         }
 
@@ -456,7 +481,7 @@
                     if (contextTarget.isFolder) {
                         currentPath.push(currentDirectoryHandle);
                         currentDirectoryHandle = contextTarget.handle;
-                        renderCurrentDirectory();
+                        renderCurrentDirectory(true);
                         addToRecent(contextTarget.handle, true);
                     } else { openFile(contextTarget.handle); addToRecent(contextTarget.handle, false); }
                 },
@@ -499,7 +524,7 @@
             const shortcuts = ['downloads', 'documents', 'music', 'pictures', 'videos'];
             for (const key of shortcuts) {
                 const handle = folderHandles[key];
-                if (handle) {
+                if (handle && handle.name) {
                     const card = createShortcutCard(handle.name, key);
                     grid.appendChild(card);
                 } else {
@@ -520,7 +545,7 @@
             div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium">${name}</span>`;
             div.onclick = async () => {
                 const handle = folderHandles[key];
-                if (handle) { currentPath = []; currentDirectoryHandle = handle; await renderCurrentDirectory(); }
+                if (handle) { currentPath = []; currentDirectoryHandle = handle; await renderCurrentDirectory(true); }
                 else showToast('Folder not set');
             };
             return div;
@@ -533,10 +558,14 @@
             div.onclick = async () => {
                 if (item.parentHandle) {
                     currentPath = []; currentDirectoryHandle = item.parentHandle;
-                    await renderCurrentDirectory();
-                    if (!item.isFolder) {
-                        try { const fresh = await item.parentHandle.getFileHandle(item.name); await openFile(fresh); }
-                        catch(e) { showToast('Cannot open'); }
+                    if (await ensurePermission(item.parentHandle, true)) {
+                        await renderCurrentDirectory(false);
+                        if (!item.isFolder) {
+                            try { const fresh = await item.parentHandle.getFileHandle(item.name); await openFile(fresh); }
+                            catch(e) { showToast('Cannot open'); }
+                        }
+                    } else {
+                        await renderCurrentDirectory(false);
                     }
                 } else showToast('Parent folder missing');
             };
@@ -553,7 +582,7 @@
                 const handle = await window.showDirectoryPicker();
                 currentPath = [];
                 currentDirectoryHandle = handle;
-                await renderCurrentDirectory();
+                await renderCurrentDirectory(false);
                 showToast(`Now managing: ${handle.name}`);
             } catch(e) { showToast('Cancelled'); }
         }
@@ -571,6 +600,20 @@
         }
 
         // ---------- Helpers ----------
+        async function ensurePermission(handle, prompt = true) {
+            if (!handle) return false;
+            const opts = { mode: 'readwrite' };
+            if ((await handle.queryPermission(opts)) === 'granted') return true;
+            if (prompt) {
+                try {
+                    if ((await handle.requestPermission(opts)) === 'granted') return true;
+                } catch (e) {
+                    console.error("Permission request error:", e);
+                }
+            }
+            return false;
+        }
+
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
@@ -584,11 +627,18 @@
 
         // ---------- Start ----------
         window.onload = async () => {
+            document.getElementById('settings-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeSettings();
+            });
+            document.getElementById('rename-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeRenameModal();
+            });
+
             await loadHandles();
             await loadRecentAndStarred();
             await loadCurrentState();
             await switchTab(currentTab, null);
-            if (currentDirectoryHandle) await renderCurrentDirectory();
+            if (currentDirectoryHandle) await renderCurrentDirectory(false);
             else if (currentTab === 'my-files') await renderMyFiles();
         };
     </script>
