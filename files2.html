@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer  </title>
+    <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -110,12 +110,14 @@
                 <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800"><i class="ph ph-x text-xl"></i></button>
             </div>
             <div class="p-6 space-y-4">
-                <div><label class="block text-sm font-medium mb-1">Downloads Folder</label><div class="flex gap-2"><input type="text" id="downloads-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('downloads')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
-                <div><label class="block text-sm font-medium mb-1">Documents Folder</label><div class="flex gap-2"><input type="text" id="documents-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('documents')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
-                <div><label class="block text-sm font-medium mb-1">Music Folder</label><div class="flex gap-2"><input type="text" id="music-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('music')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
-                <div><label class="block text-sm font-medium mb-1">Pictures Folder</label><div class="flex gap-2"><input type="text" id="pictures-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('pictures')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
-                <div><label class="block text-sm font-medium mb-1">Videos Folder</label><div class="flex gap-2"><input type="text" id="videos-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('videos')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
-                <div class="pt-2"><button onclick="clearAllHandles()" class="text-red-600 text-sm">Reset all saved folder permissions</button></div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium">Saved Locations</label>
+                    <button onclick="addNewLocation()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100"><i class="ph ph-plus"></i> Add</button>
+                </div>
+                <div id="locations-list" class="space-y-2 max-h-60 overflow-y-auto">
+                    <!-- Dynamic list will render here -->
+                </div>
+                <div class="pt-4 border-t mt-4"><button onclick="clearAllHandles()" class="text-red-600 text-sm">Reset all saved folder permissions</button></div>
             </div>
             <div class="px-6 py-4 border-t bg-gray-50 flex justify-end"><button onclick="closeSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button></div>
         </div>
@@ -141,7 +143,7 @@
         let currentDirectoryHandle = null;
         let currentPath = [];
         let currentTab = 'my-files';
-        let folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
+        let savedFolders = [];
         let recentFiles = [];
         let starredFiles = [];
         let contextTarget = null;
@@ -161,25 +163,85 @@
             });
         }
 
-        // Save a directory handle (for special folders) - store as an object that can be restored
-        async function saveHandle(key, handle) {
-            const db = await openDB();
-            const tx = db.transaction('handles', 'readwrite');
-            // We cannot store the handle directly if it's a FileSystemDirectoryHandle? Actually we can, IndexedDB supports it.
-            tx.objectStore('handles').put({ key, handle });
-            await new Promise(r => tx.oncomplete = r);
-        }
-
+        // ---------- File & Folder Handles Management ----------
         async function loadHandles() {
             const db = await openDB();
             const tx = db.transaction('handles', 'readonly');
-            const all = await new Promise(r => { const req = tx.objectStore('handles').getAll(); req.onsuccess = () => r(req.result); });
-            for (let item of all) {
-                if (item.key && item.handle) {
-                    folderHandles[item.key] = item.handle;
-                }
-            }
+            const req = tx.objectStore('handles').openCursor();
+            savedFolders = [];
+            
+            await new Promise(r => {
+                req.onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        const item = cursor.value;
+                        if (item && item.handle) {
+                            if (!item.id) {
+                                item.id = cursor.key || ('folder_' + Date.now() + Math.random());
+                                item.name = item.handle.name || item.key;
+                            }
+                            savedFolders.push(item);
+                        }
+                        cursor.continue();
+                    } else {
+                        r();
+                    }
+                };
+            });
             updateSettingsInputs();
+        }
+
+        function updateSettingsInputs() {
+            const list = document.getElementById('locations-list');
+            if (!list) return;
+            if (savedFolders.length === 0) {
+                list.innerHTML = '<div class="text-sm text-gray-500 italic">No locations saved yet.</div>';
+                return;
+            }
+            list.innerHTML = savedFolders.map(f => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" readonly value="${escapeHtml(f.name)}" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50">
+                    <button onclick="removeLocation('${f.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg text-sm transition-colors"><i class="ph ph-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        async function addNewLocation() {
+            try {
+                const handle = await window.showDirectoryPicker();
+                const id = 'folder_' + Date.now();
+                const folderObj = { id, name: handle.name, handle };
+                savedFolders.push(folderObj);
+                
+                const db = await openDB();
+                const tx = db.transaction('handles', 'readwrite');
+                tx.objectStore('handles').put(folderObj, id);
+                await new Promise(r => tx.oncomplete = r);
+                
+                updateSettingsInputs();
+                showToast(`Added ${handle.name}`);
+                if (currentTab === 'my-files') await renderMyFiles();
+            } catch(e) { showToast('Selection cancelled'); }
+        }
+
+        async function removeLocation(id) {
+            savedFolders = savedFolders.filter(f => f.id !== id);
+            const db = await openDB();
+            const tx = db.transaction('handles', 'readwrite');
+            tx.objectStore('handles').delete(id);
+            await new Promise(r => tx.oncomplete = r);
+            updateSettingsInputs();
+            if (currentTab === 'my-files') await renderMyFiles();
+            showToast('Location removed');
+        }
+
+        function clearAllHandles() {
+            savedFolders = [];
+            openDB().then(db => {
+                const tx = db.transaction('handles', 'readwrite');
+                tx.objectStore('handles').clear();
+                tx.oncomplete = () => { updateSettingsInputs(); showToast('All saved folder permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
+            });
         }
 
         async function saveCurrentState() {
@@ -236,35 +298,6 @@
                 const starred = await new Promise(r => { const req = tx.objectStore('starred').getAll(); req.onsuccess = () => r(req.result); });
                 starredFiles = starred.map(s => ({ id: s.id, name: s.name, handle: s.handle, parentHandle: s.parentHandle, isFolder: s.isFolder }));
             }
-        }
-
-        function updateSettingsInputs() {
-            document.getElementById('downloads-path').value = folderHandles.downloads ? folderHandles.downloads.name : 'Not set';
-            document.getElementById('documents-path').value = folderHandles.documents ? folderHandles.documents.name : 'Not set';
-            document.getElementById('music-path').value = folderHandles.music ? folderHandles.music.name : 'Not set';
-            document.getElementById('pictures-path').value = folderHandles.pictures ? folderHandles.pictures.name : 'Not set';
-            document.getElementById('videos-path').value = folderHandles.videos ? folderHandles.videos.name : 'Not set';
-        }
-
-        // Folder picker for settings
-        async function pickFolderFor(type) {
-            try {
-                const handle = await window.showDirectoryPicker();
-                folderHandles[type] = handle;
-                await saveHandle(type, handle);
-                updateSettingsInputs();
-                showToast(`${type} folder set to ${handle.name}`);
-                if (currentTab === 'my-files') renderMyFiles();
-            } catch(e) { showToast('Selection cancelled'); }
-        }
-
-        function clearAllHandles() {
-            folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
-            openDB().then(db => {
-                const tx = db.transaction('handles', 'readwrite');
-                tx.objectStore('handles').clear();
-                tx.oncomplete = () => { updateSettingsInputs(); showToast('All special folder permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
-            });
         }
 
         // ---------- File & Folder Operations ----------
@@ -521,32 +554,38 @@
         async function renderMyFiles() {
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
-            const shortcuts = ['downloads', 'documents', 'music', 'pictures', 'videos'];
-            for (const key of shortcuts) {
-                const handle = folderHandles[key];
-                if (handle && handle.name) {
-                    const card = createShortcutCard(handle.name, key);
+            
+            if (savedFolders.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-300 mt-2">
+                        <i class="ph ph-folder-open text-5xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 font-medium">No saved locations</p>
+                        <p class="text-sm text-gray-500 mb-4">Add folders to access them quickly</p>
+                        <button onclick="addNewLocation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">Add Folder</button>
+                    </div>
+                `;
+            } else {
+                for (const folder of savedFolders) {
+                    const card = createShortcutCard(folder.name, folder.handle);
                     grid.appendChild(card);
-                } else {
-                    const placeholder = document.createElement('div');
-                    placeholder.className = 'p-4 bg-gray-100 rounded-xl text-center text-gray-500';
-                    placeholder.innerHTML = `<i class="ph ph-folder-open text-3xl"></i><div class="text-sm">${key} folder not set<br><button onclick="openSettings()" class="text-blue-600 text-xs">Set in Settings</button></div>`;
-                    grid.appendChild(placeholder);
                 }
             }
+
             const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2'; recentTitle.innerText = 'Recent Files';
             grid.appendChild(recentTitle);
             for (const item of recentFiles.slice(0,4)) grid.appendChild(createRecentCard(item));
         }
 
-        function createShortcutCard(name, key) {
+        function createShortcutCard(name, handle) {
             const div = document.createElement('div');
-            div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
-            div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium">${name}</span>`;
+            div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition-colors';
+            div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium truncate w-full text-center">${escapeHtml(name)}</span>`;
             div.onclick = async () => {
-                const handle = folderHandles[key];
-                if (handle) { currentPath = []; currentDirectoryHandle = handle; await renderCurrentDirectory(true); }
-                else showToast('Folder not set');
+                if (handle) { 
+                    currentPath = []; 
+                    currentDirectoryHandle = handle; 
+                    await renderCurrentDirectory(true); 
+                }
             };
             return div;
         }
@@ -580,6 +619,22 @@
         async function pickComputerFolder() {
             try {
                 const handle = await window.showDirectoryPicker();
+                
+                // Automatically save selected locations for easier access in "My Files"
+                const exists = savedFolders.find(f => f.name === handle.name);
+                if (!exists) {
+                    const id = 'folder_' + Date.now();
+                    const folderObj = { id, name: handle.name, handle };
+                    savedFolders.push(folderObj);
+                    
+                    const db = await openDB();
+                    const tx = db.transaction('handles', 'readwrite');
+                    tx.objectStore('handles').put(folderObj, id);
+                    await new Promise(r => tx.oncomplete = r);
+                    
+                    updateSettingsInputs();
+                }
+
                 currentPath = [];
                 currentDirectoryHandle = handle;
                 await renderCurrentDirectory(false);
