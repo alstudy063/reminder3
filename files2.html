@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer - Right Click Menu</title>
+    <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -14,7 +14,6 @@
         .active-nav i { color: #001d35; }
         .file-item:hover .file-actions { opacity: 1; }
         .file-actions { opacity: 0; transition: opacity 0.2s; }
-        /* Custom context menu */
         .context-menu {
             position: fixed;
             background: white;
@@ -23,7 +22,6 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             z-index: 1000;
             min-width: 160px;
-            overflow: hidden;
         }
         .context-menu-item {
             padding: 8px 16px;
@@ -32,29 +30,26 @@
             align-items: center;
             gap: 10px;
             font-size: 14px;
-            transition: background 0.1s;
         }
-        .context-menu-item:hover {
-            background-color: #f0f0f0;
-        }
-        .context-menu-divider {
-            height: 1px;
-            background-color: #e0e0e0;
-            margin: 4px 0;
+        .context-menu-item:hover { background-color: #f0f0f0; }
+        /* Ensure modals are centered */
+        .modal-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
 <body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden">
 
-    <!-- Sidebar (unchanged) -->
+    <!-- Sidebar -->
     <aside class="w-64 min-w-[256px] flex flex-col p-4">
         <div class="flex items-center gap-2 px-2 mb-8 cursor-pointer">
             <i class="ph-fill ph-hard-drives text-3xl text-blue-600"></i>
             <span class="text-xl font-normal text-gray-700">File Explorer</span>
         </div>
         <button onclick="showNewMenu()" class="flex items-center gap-3 bg-white hover:bg-gray-50 shadow-sm border border-gray-200 rounded-2xl px-5 py-4 w-max mb-6 transition-all">
-            <i class="ph ph-plus text-xl font-bold"></i>
-            <span class="font-medium text-sm">New</span>
+            <i class="ph ph-plus text-xl font-bold"></i> <span class="font-medium text-sm">New</span>
         </button>
         <nav class="flex flex-col gap-1 flex-1">
             <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium">
@@ -103,14 +98,13 @@
             </div>
         </div>
 
-        <!-- Files Container -->
         <div class="flex-1 overflow-y-auto p-6" id="file-container">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="items-grid"></div>
         </div>
     </main>
 
     <!-- Settings Modal (centered) -->
-    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
             <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
                 <h3 class="text-lg font-medium">Settings</h3>
@@ -129,7 +123,7 @@
     </div>
 
     <!-- Rename Modal (centered) -->
-    <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+    <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
         <div class="bg-white rounded-xl w-96 p-6">
             <h3 class="text-lg font-medium mb-4">Rename</h3>
             <input type="text" id="rename-input" class="w-full border rounded-lg px-3 py-2 mb-4">
@@ -137,91 +131,111 @@
         </div>
     </div>
 
-    <!-- Custom Context Menu -->
-    <div id="context-menu" class="context-menu hidden" style="position: fixed;"></div>
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu hidden"></div>
 
     <!-- Toast -->
     <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
 
     <script>
-        // ----------------------------- Global State -----------------------------
+        // ======================= PERSISTENCE WITH INDEXEDDB =======================
         let currentDirectoryHandle = null;
         let currentPath = [];
         let currentTab = 'my-files';
         let folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
         let recentFiles = [];
         let starredFiles = [];
-        
-        // Context menu target
-        let contextTarget = { handle: null, name: null, isFolder: false, element: null };
+        let contextTarget = null;
 
-        // ----------------------------- IndexedDB Helpers (unchanged) -----------------------------
-        async function loadStoredHandles() {
-            return new Promise((resolve) => {
-                const request = indexedDB.open('FileExplorerDB', 2);
-                request.onupgradeneeded = () => {
-                    const db = request.result;
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('FileExplorerDB', 4);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
                     if (!db.objectStoreNames.contains('handles')) db.createObjectStore('handles');
                     if (!db.objectStoreNames.contains('recent')) db.createObjectStore('recent', { keyPath: 'id' });
                     if (!db.objectStoreNames.contains('starred')) db.createObjectStore('starred', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('appState')) db.createObjectStore('appState');
                 };
-                request.onsuccess = () => {
-                    const db = request.result;
-                    const tx = db.transaction(['handles', 'recent', 'starred'], 'readonly');
-                    const handleStore = tx.objectStore('handles');
-                    const recentStore = tx.objectStore('recent');
-                    const starredStore = tx.objectStore('starred');
-                    
-                    Promise.all([
-                        new Promise(r => { const get = handleStore.getAll(); get.onsuccess = () => r(get.result); }),
-                        new Promise(r => { const get = recentStore.getAll(); get.onsuccess = () => r(get.result); }),
-                        new Promise(r => { const get = starredStore.getAll(); get.onsuccess = () => r(get.result); })
-                    ]).then(([handlesList, recentList, starredList]) => {
-                        for (let item of handlesList) if (item.key && item.handle) folderHandles[item.key] = item.handle;
-                        recentFiles = recentList.map(r => ({ id: r.id, name: r.name, handle: r.handle, parentHandle: r.parentHandle, isFolder: r.isFolder }));
-                        starredFiles = starredList.map(s => ({ id: s.id, name: s.name, handle: s.handle, parentHandle: s.parentHandle, isFolder: s.isFolder }));
-                        updateSettingsInputs();
-                        resolve();
-                    });
-                };
-                request.onerror = () => resolve();
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
             });
         }
-        
+
         async function saveHandle(key, handle) {
-            return new Promise((resolve) => {
-                const request = indexedDB.open('FileExplorerDB', 2);
-                request.onsuccess = () => {
-                    const db = request.result;
-                    const tx = db.transaction('handles', 'readwrite');
-                    tx.objectStore('handles').put({ key, handle });
-                    tx.oncomplete = () => resolve();
-                };
-            });
+            const db = await openDB();
+            const tx = db.transaction('handles', 'readwrite');
+            tx.objectStore('handles').put({ key, handle });
+            await new Promise(r => tx.oncomplete = r);
         }
-        
+
+        async function loadHandles() {
+            const db = await openDB();
+            const tx = db.transaction('handles', 'readonly');
+            const all = await new Promise(r => { const req = tx.objectStore('handles').getAll(); req.onsuccess = () => r(req.result); });
+            for (let item of all) if (item.key && item.handle) folderHandles[item.key] = item.handle;
+            updateSettingsInputs();
+        }
+
+        async function saveCurrentState() {
+            if (!currentDirectoryHandle) return;
+            const db = await openDB();
+            const tx = db.transaction('appState', 'readwrite');
+            const store = tx.objectStore('appState');
+            store.put(currentDirectoryHandle, 'currentDir');
+            store.put(currentPath, 'currentPath');
+            store.put(currentTab, 'currentTab');
+            await new Promise(r => tx.oncomplete = r);
+        }
+
+        async function loadCurrentState() {
+            const db = await openDB();
+            if (!db.objectStoreNames.contains('appState')) return;
+            const tx = db.transaction('appState', 'readonly');
+            const store = tx.objectStore('appState');
+            const savedDir = await new Promise(r => { const req = store.get('currentDir'); req.onsuccess = () => r(req.result); });
+            const savedPath = await new Promise(r => { const req = store.get('currentPath'); req.onsuccess = () => r(req.result); });
+            const savedTab = await new Promise(r => { const req = store.get('currentTab'); req.onsuccess = () => r(req.result); });
+            if (savedDir && savedDir.name) {
+                try {
+                    await savedDir.getDirectoryHandle('dummy').catch(() => {});
+                    currentDirectoryHandle = savedDir;
+                    if (Array.isArray(savedPath)) currentPath = savedPath.filter(h => h && h.name);
+                    if (savedTab) currentTab = savedTab;
+                } catch(e) { console.warn('Saved handle invalid', e); }
+            }
+        }
+
         async function saveRecentList() {
-            const request = indexedDB.open('FileExplorerDB', 2);
-            request.onsuccess = () => {
-                const db = request.result;
-                const tx = db.transaction('recent', 'readwrite');
-                const store = tx.objectStore('recent');
-                store.clear();
-                for (let item of recentFiles.slice(0, 20)) store.put(item);
-            };
+            const db = await openDB();
+            const tx = db.transaction('recent', 'readwrite');
+            const store = tx.objectStore('recent');
+            store.clear();
+            for (let item of recentFiles.slice(0, 20)) store.put(item);
+            await new Promise(r => tx.oncomplete = r);
         }
-        
         async function saveStarredList() {
-            const request = indexedDB.open('FileExplorerDB', 2);
-            request.onsuccess = () => {
-                const db = request.result;
-                const tx = db.transaction('starred', 'readwrite');
-                const store = tx.objectStore('starred');
-                store.clear();
-                for (let item of starredFiles) store.put(item);
-            };
+            const db = await openDB();
+            const tx = db.transaction('starred', 'readwrite');
+            const store = tx.objectStore('starred');
+            store.clear();
+            for (let item of starredFiles) store.put(item);
+            await new Promise(r => tx.oncomplete = r);
         }
-        
+        async function loadRecentAndStarred() {
+            const db = await openDB();
+            if (db.objectStoreNames.contains('recent')) {
+                const tx = db.transaction('recent', 'readonly');
+                const recent = await new Promise(r => { const req = tx.objectStore('recent').getAll(); req.onsuccess = () => r(req.result); });
+                recentFiles = recent.map(r => ({ id: r.id, name: r.name, handle: r.handle, parentHandle: r.parentHandle, isFolder: r.isFolder }));
+            }
+            if (db.objectStoreNames.contains('starred')) {
+                const tx = db.transaction('starred', 'readonly');
+                const starred = await new Promise(r => { const req = tx.objectStore('starred').getAll(); req.onsuccess = () => r(req.result); });
+                starredFiles = starred.map(s => ({ id: s.id, name: s.name, handle: s.handle, parentHandle: s.parentHandle, isFolder: s.isFolder }));
+            }
+        }
+
         function updateSettingsInputs() {
             document.getElementById('downloads-path').value = folderHandles.downloads ? folderHandles.downloads.name : 'Not set';
             document.getElementById('documents-path').value = folderHandles.documents ? folderHandles.documents.name : 'Not set';
@@ -229,7 +243,9 @@
             document.getElementById('pictures-path').value = folderHandles.pictures ? folderHandles.pictures.name : 'Not set';
             document.getElementById('videos-path').value = folderHandles.videos ? folderHandles.videos.name : 'Not set';
         }
-        
+
+        // Native folder picker – its position is controlled by the browser, we cannot change it.
+        // It automatically closes when you click outside.
         async function pickFolderFor(type) {
             try {
                 const handle = await window.showDirectoryPicker();
@@ -240,19 +256,17 @@
                 if (currentTab === 'my-files') renderMyFiles();
             } catch(e) { showToast('Selection cancelled'); }
         }
-        
+
         function clearAllHandles() {
             folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
-            const request = indexedDB.open('FileExplorerDB', 2);
-            request.onsuccess = () => {
-                const db = request.result;
+            openDB().then(db => {
                 const tx = db.transaction('handles', 'readwrite');
                 tx.objectStore('handles').clear();
-                tx.oncomplete = () => { updateSettingsInputs(); showToast('All folder permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
-            };
+                tx.oncomplete = () => { updateSettingsInputs(); showToast('All special folder permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
+            });
         }
-        
-        // ----------------------------- File Operations -----------------------------
+
+        // ---------- File & Folder Operations ----------
         async function getFilesAndFolders(dirHandle) {
             const folders = [], files = [];
             for await (const entry of dirHandle.values()) {
@@ -263,7 +277,7 @@
             files.sort((a,b) => a.name.localeCompare(b.name));
             return { folders, files };
         }
-        
+
         async function renderCurrentDirectory() {
             if (!currentDirectoryHandle) {
                 document.getElementById('items-grid').innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">No folder selected. Click "Computers" to pick a folder.</div>';
@@ -273,15 +287,14 @@
             const { folders, files } = await getFilesAndFolders(currentDirectoryHandle);
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
-            
             for (const folder of folders) grid.appendChild(createItemCard(folder, true));
             for (const file of files) grid.appendChild(createItemCard(file, false));
-            
             if (folders.length === 0 && files.length === 0) grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">This folder is empty</div>';
             updateBreadcrumbs();
             updateStorageInfo();
+            await saveCurrentState();
         }
-        
+
         function createItemCard(handle, isFolder) {
             const div = document.createElement('div');
             div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition border border-transparent hover:border-gray-200 relative cursor-pointer';
@@ -299,7 +312,6 @@
                 <span class="text-sm font-medium truncate">${escapeHtml(handle.name)}</span>
                 ${sizeInfo}
             `;
-            // Left-click navigation/open
             div.addEventListener('click', async (e) => {
                 if (e.target.closest('.file-actions')) return;
                 if (isFolder) {
@@ -312,55 +324,42 @@
                     addToRecent(handle, false);
                 }
             });
-            // Right-click context menu
             div.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
-                e.stopPropagation();
-                contextTarget = { handle, name: handle.name, isFolder, element: div };
-                showContextMenu(e.clientX, e.clientY, isFolder);
+                contextTarget = { handle, name: handle.name, isFolder };
+                showContextMenu(e.clientX, e.clientY);
             });
             return div;
         }
-        
-        // Enhanced file opening: for media, open in new tab (browser handles video/music)
+
         async function openFile(fileHandle) {
             try {
                 const file = await fileHandle.getFile();
                 const url = URL.createObjectURL(file);
-                // For media files, we can open in new tab; browser will play them if capable
                 window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
                 showToast(`Opened ${file.name}`);
-            } catch (err) {
-                showToast(`Cannot open file: ${err.message}`);
-            }
+            } catch(err) { showToast(`Cannot open: ${err.message}`); }
         }
-        
+
         function getFileIcon(filename) {
             const ext = filename.split('.').pop().toLowerCase();
             const map = { pdf: 'ph-file-pdf text-red-500', jpg: 'ph-image text-blue-500', jpeg: 'ph-image text-blue-500', png: 'ph-image text-blue-500', gif: 'ph-image text-blue-500', svg: 'ph-image text-purple-500', doc: 'ph-file-doc text-blue-600', docx: 'ph-file-doc text-blue-600', xls: 'ph-file-xls text-green-600', xlsx: 'ph-file-xls text-green-600', ppt: 'ph-file-ppt text-orange-500', mp3: 'ph-music-note text-pink-500', mp4: 'ph-video text-purple-500', txt: 'ph-file-text text-gray-600', js: 'ph-file-code text-yellow-600', html: 'ph-file-code text-orange-500', json: 'ph-file-code text-gray-600' };
             return map[ext] ? `<i class="ph-fill ${map[ext]} text-4xl"></i>` : `<i class="ph-fill ph-file text-4xl text-gray-500"></i>`;
         }
-        
-        function formatSize(bytes) {
-            if (!bytes) return '';
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(1024));
-            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
-        }
-        
+
+        function formatSize(bytes) { if (!bytes) return ''; const sizes = ['B','KB','MB','GB']; const i = Math.floor(Math.log(bytes)/Math.log(1024)); return (bytes/Math.pow(1024,i)).toFixed(1)+' '+sizes[i]; }
+
         async function updateStorageInfo() {
             if (!currentDirectoryHandle) return;
             try {
                 let total = 0;
-                for await (const entry of currentDirectoryHandle.values()) {
-                    if (entry.kind === 'file') total += (await entry.getFile()).size;
-                }
+                for await (const entry of currentDirectoryHandle.values()) if (entry.kind === 'file') total += (await entry.getFile()).size;
                 const usedGB = (total / (1024**3)).toFixed(1);
                 document.getElementById('storage-info').innerHTML = `<div class="w-full bg-gray-200 rounded-full h-1.5 mb-2"><div class="bg-blue-600 h-1.5 rounded-full" style="width: ${Math.min(100, (total/5e9)*100)}%"></div></div><span class="text-xs text-gray-600">${usedGB} GB used (approx)</span>`;
             } catch(e) {}
         }
-        
+
         function updateBreadcrumbs() {
             const container = document.getElementById('breadcrumb-container');
             let html = `<button onclick="navigateToRoot()" class="hover:underline text-gray-700">Root</button>`;
@@ -368,16 +367,14 @@
                 html += `<i class="ph ph-caret-right mx-1"></i>`;
                 html += `<button onclick="navigateToLevel(${i})" class="hover:underline">${escapeHtml(currentPath[i].name)}</button>`;
             }
-            if (currentDirectoryHandle) {
-                html += `<i class="ph ph-caret-right mx-1"></i><span class="font-medium">${escapeHtml(currentDirectoryHandle.name)}</span>`;
-            }
+            if (currentDirectoryHandle) html += `<i class="ph ph-caret-right mx-1"></i><span class="font-medium">${escapeHtml(currentDirectoryHandle.name)}</span>`;
             container.innerHTML = html;
         }
-        
+
         async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(); }
         async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(); }
         async function refreshCurrentView() { await renderCurrentDirectory(); }
-        
+
         // Rename
         let renameTarget = null, renameIsFolder = false;
         function renameItem(name, isFolder) { renameTarget = name; renameIsFolder = isFolder; document.getElementById('rename-input').value = name; document.getElementById('rename-modal').classList.remove('hidden'); }
@@ -394,8 +391,7 @@
             closeRenameModal();
         }
         function closeRenameModal() { document.getElementById('rename-modal').classList.add('hidden'); renameTarget = null; }
-        
-        // Delete
+
         async function deleteItem(name, isFolder) {
             if (!confirm(`Delete ${name} permanently?`)) return;
             try {
@@ -405,8 +401,7 @@
                 await renderCurrentDirectory();
             } catch(e) { showToast('Delete failed: ' + e.message); }
         }
-        
-        // Create
+
         async function createNewFolder() {
             const folderName = prompt('New folder name:');
             if (!folderName) return;
@@ -416,7 +411,7 @@
                 await renderCurrentDirectory();
             } catch(e) { showToast('Error: ' + e.message); }
         }
-        
+
         async function createNewFile() {
             const fileName = prompt('New text file name (e.g., note.txt):');
             if (!fileName) return;
@@ -429,15 +424,14 @@
                 await renderCurrentDirectory();
             } catch(e) { showToast('Error: ' + e.message); }
         }
-        
-        // Star / Recent
+
         function addToRecent(handle, isFolder) {
             const id = `${handle.name}_${Date.now()}`;
             recentFiles = recentFiles.filter(r => r.name !== handle.name).slice(0, 19);
             recentFiles.unshift({ id, name: handle.name, handle, parentHandle: currentDirectoryHandle, isFolder });
             saveRecentList();
         }
-        
+
         async function toggleStar(name, isFolder) {
             const exists = starredFiles.find(s => s.name === name);
             if (exists) {
@@ -451,97 +445,54 @@
             await saveStarredList();
             if (currentTab === 'starred') renderStarred();
         }
-        
-        // ----------------------------- Context Menu -----------------------------
-        function showContextMenu(x, y, isFolder) {
+
+        // ---------- Context Menu ----------
+        function showContextMenu(x, y) {
             const menu = document.getElementById('context-menu');
             menu.innerHTML = '';
-            // Open option
-            const openItem = document.createElement('div');
-            openItem.className = 'context-menu-item';
-            openItem.innerHTML = `<i class="ph ph-folder-open"></i> Open`;
-            openItem.onclick = () => {
-                if (isFolder) {
-                    currentPath.push(currentDirectoryHandle);
-                    currentDirectoryHandle = contextTarget.handle;
-                    renderCurrentDirectory();
-                    addToRecent(contextTarget.handle, true);
-                } else {
-                    openFile(contextTarget.handle);
-                    addToRecent(contextTarget.handle, false);
-                }
-                hideContextMenu();
-            };
-            menu.appendChild(openItem);
-            
-            const renameItem = document.createElement('div');
-            renameItem.className = 'context-menu-item';
-            renameItem.innerHTML = `<i class="ph ph-pencil-simple"></i> Rename`;
-            renameItem.onclick = () => {
-                renameItemNative(contextTarget.name, isFolder);
-                hideContextMenu();
-            };
-            menu.appendChild(renameItem);
-            
-            const deleteItem = document.createElement('div');
-            deleteItem.className = 'context-menu-item';
-            deleteItem.innerHTML = `<i class="ph ph-trash"></i> Delete`;
-            deleteItem.onclick = () => {
-                deleteItemNative(contextTarget.name, isFolder);
-                hideContextMenu();
-            };
-            menu.appendChild(deleteItem);
-            
-            const starItem = document.createElement('div');
-            const isStarred = starredFiles.some(s => s.name === contextTarget.name);
-            starItem.className = 'context-menu-item';
-            starItem.innerHTML = `<i class="ph ${isStarred ? 'ph-star-fill' : 'ph-star'}"></i> ${isStarred ? 'Unstar' : 'Star'}`;
-            starItem.onclick = () => {
-                toggleStarNative(contextTarget.name, isFolder);
-                hideContextMenu();
-            };
-            menu.appendChild(starItem);
-            
-            // Position menu
+            const items = ['Open', 'Rename', 'Delete', 'Star/Unstar'];
+            const actions = [
+                () => {
+                    if (contextTarget.isFolder) {
+                        currentPath.push(currentDirectoryHandle);
+                        currentDirectoryHandle = contextTarget.handle;
+                        renderCurrentDirectory();
+                        addToRecent(contextTarget.handle, true);
+                    } else { openFile(contextTarget.handle); addToRecent(contextTarget.handle, false); }
+                },
+                () => renameItem(contextTarget.name, contextTarget.isFolder),
+                () => deleteItem(contextTarget.name, contextTarget.isFolder),
+                () => toggleStar(contextTarget.name, contextTarget.isFolder)
+            ];
+            for (let i = 0; i < items.length; i++) {
+                const div = document.createElement('div');
+                div.className = 'context-menu-item';
+                div.innerHTML = `<i class="ph ph-${items[i].toLowerCase().replace(' ','-')}"></i> ${items[i]}`;
+                div.onclick = () => { actions[i](); hideContextMenu(); };
+                menu.appendChild(div);
+            }
             menu.style.left = x + 'px';
             menu.style.top = y + 'px';
             menu.classList.remove('hidden');
-            
-            // Close when clicking outside
-            setTimeout(() => {
-                document.addEventListener('click', hideContextMenuOnClick);
-            }, 0);
+            setTimeout(() => document.addEventListener('click', hideContextMenuOnClick), 0);
         }
-        
-        function hideContextMenu() {
-            const menu = document.getElementById('context-menu');
-            menu.classList.add('hidden');
-            document.removeEventListener('click', hideContextMenuOnClick);
-        }
-        
-        function hideContextMenuOnClick(e) {
-            if (!document.getElementById('context-menu').contains(e.target)) hideContextMenu();
-        }
-        
-        // Wrappers to call existing functions
-        function renameItemNative(name, isFolder) { renameItem(name, isFolder); }
-        function deleteItemNative(name, isFolder) { deleteItem(name, isFolder); }
-        async function toggleStarNative(name, isFolder) { await toggleStar(name, isFolder); }
-        
-        // ----------------------------- Tab Rendering (unchanged logic) -----------------------------
+        function hideContextMenu() { document.getElementById('context-menu').classList.add('hidden'); document.removeEventListener('click', hideContextMenuOnClick); }
+        function hideContextMenuOnClick(e) { if (!document.getElementById('context-menu').contains(e.target)) hideContextMenu(); }
+
+        // ---------- Tab Rendering ----------
         async function switchTab(tabId, event) {
             if(event) event.preventDefault();
             currentTab = tabId;
             document.querySelectorAll('nav a').forEach(a => { a.classList.remove('active-nav'); a.classList.add('text-gray-700'); });
             const activeLink = document.querySelector(`[data-tab="${tabId}"]`);
             activeLink.classList.add('active-nav'); activeLink.classList.remove('text-gray-700');
-            
             if (tabId === 'my-files') await renderMyFiles();
             else if (tabId === 'computers') await renderComputers();
             else if (tabId === 'recent') await renderRecent();
             else if (tabId === 'starred') await renderStarred();
+            await saveCurrentState();
         }
-        
+
         async function renderMyFiles() {
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
@@ -560,53 +511,43 @@
             }
             const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2'; recentTitle.innerText = 'Recent Files';
             grid.appendChild(recentTitle);
-            const recentItems = recentFiles.slice(0,4);
-            for (const item of recentItems) {
-                const card = createRecentCard(item);
-                grid.appendChild(card);
-            }
+            for (const item of recentFiles.slice(0,4)) grid.appendChild(createRecentCard(item));
         }
-        
+
         function createShortcutCard(name, key) {
             const div = document.createElement('div');
             div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
             div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium">${name}</span>`;
             div.onclick = async () => {
                 const handle = folderHandles[key];
-                if (handle) {
-                    currentPath = [];
-                    currentDirectoryHandle = handle;
-                    await renderCurrentDirectory();
-                } else showToast('Folder not set');
+                if (handle) { currentPath = []; currentDirectoryHandle = handle; await renderCurrentDirectory(); }
+                else showToast('Folder not set');
             };
             return div;
         }
-        
+
         function createRecentCard(item) {
             const div = document.createElement('div');
             div.className = 'flex items-center gap-3 p-3 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
             div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder' : 'ph-file'} text-2xl text-gray-600"></i><span class="text-sm truncate">${escapeHtml(item.name)}</span>`;
             div.onclick = async () => {
                 if (item.parentHandle) {
-                    currentPath = [];
-                    currentDirectoryHandle = item.parentHandle;
+                    currentPath = []; currentDirectoryHandle = item.parentHandle;
                     await renderCurrentDirectory();
                     if (!item.isFolder) {
-                        try {
-                            const freshHandle = await item.parentHandle.getFileHandle(item.name);
-                            await openFile(freshHandle);
-                        } catch(e) { showToast('Cannot open file: ' + e.message); }
+                        try { const fresh = await item.parentHandle.getFileHandle(item.name); await openFile(fresh); }
+                        catch(e) { showToast('Cannot open'); }
                     }
-                } else showToast('Cannot open: parent folder missing');
+                } else showToast('Parent folder missing');
             };
             return div;
         }
-        
+
         async function renderComputers() {
             const grid = document.getElementById('items-grid');
             grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20"><i class="ph ph-computer-tower text-6xl text-gray-400"></i><p class="mt-4 text-gray-600">Pick any folder on your computer to manage</p><button onclick="pickComputerFolder()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">Select Folder</button></div>`;
         }
-        
+
         async function pickComputerFolder() {
             try {
                 const handle = await window.showDirectoryPicker();
@@ -616,41 +557,39 @@
                 showToast(`Now managing: ${handle.name}`);
             } catch(e) { showToast('Cancelled'); }
         }
-        
+
         async function renderRecent() {
             const grid = document.getElementById('items-grid');
             if (recentFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No recent files</div>';
-            else {
-                grid.innerHTML = '';
-                for (const item of recentFiles) grid.appendChild(createRecentCard(item));
-            }
+            else { grid.innerHTML = ''; for (const item of recentFiles) grid.appendChild(createRecentCard(item)); }
         }
-        
+
         async function renderStarred() {
             const grid = document.getElementById('items-grid');
             if (starredFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No starred items</div>';
-            else {
-                grid.innerHTML = '';
-                for (const item of starredFiles) grid.appendChild(createRecentCard(item));
-            }
+            else { grid.innerHTML = ''; for (const item of starredFiles) grid.appendChild(createRecentCard(item)); }
         }
-        
+
+        // ---------- Helpers ----------
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
             toast.classList.remove('opacity-0'); toast.classList.add('opacity-100');
             setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3000);
         }
-        
-        function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
-        
+        function escapeHtml(str) { return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
         function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
         function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
         function showNewMenu() { showToast('Use the buttons above to create new folders or files'); }
-        
+
+        // ---------- Start ----------
         window.onload = async () => {
-            await loadStoredHandles();
-            await switchTab('my-files');
+            await loadHandles();
+            await loadRecentAndStarred();
+            await loadCurrentState();
+            await switchTab(currentTab, null);
+            if (currentDirectoryHandle) await renderCurrentDirectory();
+            else if (currentTab === 'my-files') await renderMyFiles();
         };
     </script>
 </body>
