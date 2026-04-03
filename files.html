@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive Style File Manager</title>
+    <!-- Tailwind CSS link -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons for Google-like clean icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* Custom scrollbar css */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #dadce0;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bdc1c6;
+        }
+        .active-nav {
+            background-color: #c2e7ff; /* Google blue active state */
+            color: #001d35;
+        }
+        .active-nav i {
+            color: #001d35;
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden">
+
+    <!-- Sidebar -->
+    <!-- Sidebar annu srushtisuvudu -->
+    <aside class="w-64 min-w-[256px] flex flex-col p-4">
+        <!-- Logo Area -->
+        <div class="flex items-center gap-2 px-2 mb-8 cursor-pointer">
+            <i class="ph-fill ph-hard-drives text-3xl text-blue-600"></i>
+            <span class="text-xl font-normal text-gray-700">File Manager</span>
+        </div>
+
+        <!-- New Button -->
+        <button onclick="openNewMenu()" class="flex items-center gap-3 bg-white hover:bg-gray-50 shadow-sm border border-gray-200 rounded-2xl px-5 py-4 w-max mb-6 transition-all drop-shadow-sm">
+            <i class="ph ph-plus text-xl font-bold"></i>
+            <span class="font-medium text-sm">New</span>
+        </button>
+
+        <!-- Navigation Links -->
+        <nav class="flex flex-col gap-1 flex-1">
+            <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium">
+                <i class="ph-fill ph-folder text-lg"></i>
+                My Files
+            </a>
+            <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium text-gray-700">
+                <i class="ph ph-computer-tower text-lg text-gray-600"></i>
+                Computers
+            </a>
+            <a href="#" data-tab="shared" onclick="switchTab('shared', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium text-gray-700">
+                <i class="ph ph-users text-lg text-gray-600"></i>
+                Shared with me
+            </a>
+            <a href="#" data-tab="recent" onclick="switchTab('recent', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium text-gray-700">
+                <i class="ph ph-clock text-lg text-gray-600"></i>
+                Recent
+            </a>
+            <a href="#" data-tab="starred" onclick="switchTab('starred', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium text-gray-700">
+                <i class="ph ph-star text-lg text-gray-600"></i>
+                Starred
+            </a>
+            <a href="#" data-tab="trash" onclick="switchTab('trash', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium text-gray-700">
+                <i class="ph ph-trash text-lg text-gray-600"></i>
+                Trash
+            </a>
+        </nav>
+
+        <!-- Storage Info & Settings -->
+        <div class="mt-auto flex flex-col gap-2">
+            <button onclick="openSettings()" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium text-gray-700 text-left">
+                <i class="ph ph-gear text-lg text-gray-600"></i>
+                Settings
+            </button>
+            <div class="px-4 mt-2">
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: 45%"></div>
+                </div>
+                <span class="text-xs text-gray-600">45 GB of 100 GB used</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <!-- Mukhya content area annu srushtisuvudu -->
+    <main class="flex-1 flex flex-col bg-white rounded-3xl my-3 mr-3 shadow-sm border border-gray-100 overflow-hidden relative">
+        
+        <!-- Top Bar -->
+        <header class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+            <!-- Search -->
+            <div class="flex-1 max-w-2xl relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="ph ph-magnifying-glass text-gray-500 text-lg"></i>
+                </div>
+                <input type="text" placeholder="Search in Drive" class="block w-full pl-10 pr-3 py-3 border-transparent rounded-full bg-[#f1f3f4] focus:bg-white focus:border-transparent focus:shadow-[0_1px_3px_rgba(0,0,0,0.2)] focus:ring-0 sm:text-sm transition-all outline-none">
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <i class="ph ph-faders text-gray-500 text-lg"></i>
+                </div>
+            </div>
+
+            <!-- Right Icons -->
+            <div class="flex items-center gap-4 ml-4">
+                <button class="p-2 hover:bg-gray-100 rounded-full text-gray-600"><i class="ph ph-check-circle text-xl"></i></button>
+                <button class="p-2 hover:bg-gray-100 rounded-full text-gray-600"><i class="ph ph-question text-xl"></i></button>
+                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-medium cursor-pointer">
+                    U
+                </div>
+            </div>
+        </header>
+
+        <!-- Breadcrumbs -->
+        <div class="px-6 py-4 flex items-center gap-2 text-xl font-normal text-gray-800 border-b border-gray-100">
+            <span id="current-tab-name" class="cursor-pointer hover:underline">My Files</span>
+            <i class="ph ph-caret-right text-sm text-gray-500"></i>
+            <span id="sub-path-name" class="cursor-pointer hover:underline text-gray-500">Projects</span>
+        </div>
+
+        <!-- Files Container -->
+        <!-- File galannu thorisalu container -->
+        <div class="flex-1 overflow-y-auto p-6" id="file-container">
+            <!-- Folders Section -->
+            <h2 class="text-sm font-medium text-gray-600 mb-4">Folders</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8" id="folders-grid">
+                <!-- Javascript ninda folders illi baruttave -->
+            </div>
+
+            <!-- Files Section -->
+            <h2 class="text-sm font-medium text-gray-600 mb-4">Files</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="files-grid">
+                <!-- Javascript ninda files illi baruttave -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Settings Modal -->
+    <!-- Settings modal annu srushtisuvudu -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-medium text-gray-800">App Settings</h3>
+                <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800 p-1 rounded-full hover:bg-gray-200">
+                    <i class="ph ph-x text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Downloads Folder Location</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="downloads-path" value="C:\Users\Udara\Downloads" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <button onclick="browseFolder('downloads-path')" class="bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition">Browse</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Files downloaded from the web will be saved here.</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Documents Folder Location</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="documents-path" value="C:\Users\Udara\Documents" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <button onclick="browseFolder('documents-path')" class="bg-gray-100 border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition">Browse</button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Default location for all new text and word documents.</p>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
+                <button onclick="closeSettings()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-lg transition">Cancel</button>
+                <button onclick="saveSettings()" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <!-- Notification thorisalu toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50">
+        Settings saved successfully!
+    </div>
+
+    <script>
+        // Mock Data for Files and Folders
+        // File mattu folder gala mock data
+        const folders = [
+            { id: 1, name: 'Web Designs', color: 'text-blue-500' },
+            { id: 2, name: 'React Projects', color: 'text-green-500' },
+            { id: 3, name: 'Client Assets', color: 'text-yellow-500', starred: true },
+            { id: 4, name: 'Personal', color: 'text-gray-500' },
+            { id: 5, name: 'Downloads', color: 'text-purple-500' }
+        ];
+
+        const files = [
+            { id: 101, name: 'Project_Proposal.pdf', type: 'pdf', icon: 'ph-file-pdf', color: 'text-red-500', size: '2.4 MB', starred: true },
+            { id: 102, name: 'index.html', type: 'code', icon: 'ph-file-code', color: 'text-orange-500', size: '12 KB' },
+            { id: 103, name: 'vacation_photo.jpg', type: 'image', icon: 'ph-image', color: 'text-blue-500', size: '4.1 MB' },
+            { id: 104, name: 'Financial_Report.xlsx', type: 'excel', icon: 'ph-file-xls', color: 'text-green-600', size: '1.2 MB', starred: true },
+            { id: 105, name: 'Meeting_Notes.docx', type: 'doc', icon: 'ph-file-doc', color: 'text-blue-600', size: '45 KB' },
+            { id: 106, name: 'app_config.json', type: 'code', icon: 'ph-file-code', color: 'text-gray-600', size: '2 KB' },
+            { id: 107, name: 'logo_final.svg', type: 'image', icon: 'ph-image', color: 'text-purple-500', size: '150 KB' },
+            { id: 108, name: 'Old_Budget.xls', type: 'excel', icon: 'ph-file-xls', color: 'text-gray-400', size: '800 KB', trash: true }
+        ];
+
+        // Tab badalisuva function
+        function switchTab(tabId, event) {
+            if (event) event.preventDefault();
+
+            // Nav links update madi
+            const navItems = document.querySelectorAll('nav a');
+            navItems.forEach(item => {
+                item.classList.remove('active-nav');
+                item.classList.add('hover:bg-gray-100', 'text-gray-700');
+                
+                const icon = item.querySelector('i');
+                if (icon) icon.classList.add('text-gray-600');
+            });
+
+            // Click madida item active madi
+            const clickedItem = event ? event.currentTarget : document.querySelector(`[data-tab="${tabId}"]`);
+            if (clickedItem) {
+                clickedItem.classList.add('active-nav');
+                clickedItem.classList.remove('hover:bg-gray-100', 'text-gray-700');
+                
+                const icon = clickedItem.querySelector('i');
+                if (icon) icon.classList.remove('text-gray-600');
+                
+                // Breadcrumb update madi
+                document.getElementById('current-tab-name').innerText = clickedItem.innerText.trim();
+                
+                // Sub-path thorisabeda (hide sub-path if not in My Files)
+                const subPath = document.getElementById('sub-path-name');
+                const caret = subPath.previousElementSibling;
+                if (tabId === 'my-files') {
+                    subPath.style.display = 'inline';
+                    caret.style.display = 'inline';
+                } else {
+                    subPath.style.display = 'none';
+                    caret.style.display = 'none';
+                }
+            }
+
+            renderFilteredUI(tabId);
+        }
+
+        // Filter madida UI render madi
+        function renderFilteredUI(tabId) {
+            let filteredFolders = [];
+            let filteredFiles = [];
+
+            if (tabId === 'my-files' || tabId === 'recent') {
+                filteredFolders = folders.filter(f => !f.trash);
+                filteredFiles = files.filter(f => !f.trash);
+            } else if (tabId === 'starred') {
+                filteredFolders = folders.filter(f => f.starred && !f.trash);
+                filteredFiles = files.filter(f => f.starred && !f.trash);
+            } else if (tabId === 'trash') {
+                filteredFolders = folders.filter(f => f.trash);
+                filteredFiles = files.filter(f => f.trash);
+            } else if (tabId === 'shared') {
+                filteredFolders = [];
+                filteredFiles = files.filter(f => !f.trash).slice(0, 3); // Just show some mock data
+            } else {
+                // Computers
+                filteredFolders = [];
+                filteredFiles = [];
+            }
+
+            const foldersGrid = document.getElementById('folders-grid');
+            const filesGrid = document.getElementById('files-grid');
+            const folderTitle = document.querySelector('h2:nth-of-type(1)');
+            const fileTitle = document.querySelector('h2:nth-of-type(2)');
+
+            // Render Folders
+            if (filteredFolders.length > 0) {
+                folderTitle.style.display = 'block';
+                foldersGrid.style.display = 'grid';
+                foldersGrid.innerHTML = filteredFolders.map(folder => `
+                    <div class="flex items-center gap-3 p-3 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition border border-transparent hover:border-gray-200">
+                        <i class="ph-fill ph-folder ${folder.color} text-2xl"></i>
+                        <span class="text-sm font-medium text-gray-700 truncate">${folder.name}</span>
+                    </div>
+                `).join('');
+            } else {
+                folderTitle.style.display = 'none';
+                foldersGrid.style.display = 'none';
+                foldersGrid.innerHTML = '';
+            }
+
+            // Render Files
+            if (filteredFiles.length > 0) {
+                fileTitle.style.display = 'block';
+                filesGrid.style.display = 'grid';
+                filesGrid.innerHTML = filteredFiles.map(file => `
+                    <div class="flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition border border-transparent hover:border-gray-200 group">
+                        <div class="flex justify-between items-start mb-4">
+                            <i class="ph-fill ${file.icon} ${file.color} text-4xl"></i>
+                            <button class="text-gray-400 hover:text-gray-700 opacity-0 group-hover:opacity-100 transition">
+                                <i class="ph ph-dots-three-vertical text-xl"></i>
+                            </button>
+                        </div>
+                        <span class="text-sm font-medium text-gray-700 truncate mb-1">${file.name}</span>
+                        <span class="text-xs text-gray-500">${file.size}</span>
+                    </div>
+                `).join('');
+            } else {
+                fileTitle.style.display = 'block';
+                filesGrid.style.display = 'block'; 
+                filesGrid.innerHTML = '<div class="text-gray-500 text-sm py-4">No files found here.</div>';
+            }
+        }
+
+        // UI render maduva function
+        function renderUI() {
+            switchTab('my-files');
+        }
+
+        // Settings Modal Functions
+        // Settings modal open/close maduvudu
+        function openSettings() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+            document.getElementById('settings-modal').classList.add('flex');
+            
+            // Load saved paths from localStorage
+            // LocalStorage ninda path galannu thegeyiri
+            const savedDownloads = localStorage.getItem('downloads_path');
+            const savedDocuments = localStorage.getItem('documents_path');
+            
+            if(savedDownloads) document.getElementById('downloads-path').value = savedDownloads;
+            if(savedDocuments) document.getElementById('documents-path').value = savedDocuments;
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.add('hidden');
+            document.getElementById('settings-modal').classList.remove('flex');
+        }
+
+        function saveSettings() {
+            const dlPath = document.getElementById('downloads-path').value;
+            const docPath = document.getElementById('documents-path').value;
+            
+            // Save paths to localStorage
+            // Path galannu localStorage ge save madi
+            localStorage.setItem('downloads_path', dlPath);
+            localStorage.setItem('documents_path', docPath);
+            
+            closeSettings();
+            showToast('Settings saved successfully!');
+        }
+
+        // Simulating File System API for Browse button
+        // Browse button ge File System API simulate maduvudu
+        async function browseFolder(inputId) {
+            try {
+                // Ee API ella browser galalli kelsa madalla, adare idu advanced aagide
+                if ('showDirectoryPicker' in window) {
+                    const dirHandle = await window.showDirectoryPicker();
+                    document.getElementById(inputId).value = dirHandle.name;
+                    showToast('Folder selected: ' + dirHandle.name);
+                } else {
+                    // Fallback alert
+                    alert('Browser does not support direct folder selection. You can type the path manually.');
+                }
+            } catch (err) {
+                console.log('User cancelled folder selection');
+            }
+        }
+
+        // New Menu action
+        // Hosa menu open maduvudu
+        function openNewMenu() {
+            showToast('Ready to upload new file or create folder!');
+        }
+
+        // Toast Notification system
+        // Toast notification thorisuvudu
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // Initialize UI on load
+        // UI annu initialize madi
+        window.onload = renderUI;
+    </script>
+</body>
+</html>
