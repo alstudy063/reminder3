@@ -356,9 +356,19 @@
     .library-def-item {
       border-bottom: 1px solid var(--border-color);
       padding: 12px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 8px;
     }
     .library-def-item:last-child {
       border-bottom: none;
+    }
+    .def-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
 
     /* Toast Notification */
@@ -642,65 +652,6 @@
     renderFn(content, allItems[collection]);
   }
 
-  // ========== IMPROVED DEFINITIONS LIBRARY (group by topic) ==========
-  function renderDefLibrary(container, definitions) {
-    // Group definitions by topic (if no topic, assign "Uncategorized")
-    const groups = new Map();
-    definitions.forEach(def => {
-      const topic = def.topic && def.topic.trim() !== "" ? def.topic.trim() : "Uncategorized";
-      if (!groups.has(topic)) groups.set(topic, []);
-      groups.get(topic).push(def);
-    });
-    // Sort topics alphabetically
-    const sortedTopics = Array.from(groups.keys()).sort();
-    container.innerHTML = '';
-    for (let topic of sortedTopics) {
-      const defs = groups.get(topic);
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'topic-group';
-      // Header (collapsible)
-      const header = document.createElement('div');
-      header.className = 'topic-header';
-      header.innerHTML = `
-        <span><i class="fas fa-folder-open"></i> ${topic} (${defs.length})</span>
-        <i class="fas fa-chevron-down"></i>
-      `;
-      const contentDiv = document.createElement('div');
-      contentDiv.className = 'topic-definitions';
-      // Populate definitions
-      defs.forEach(def => {
-        const defItem = document.createElement('div');
-        defItem.className = 'library-def-item';
-        defItem.innerHTML = `
-          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px;">
-            <div style="flex:1;">
-              <strong style="font-size:1rem;">${escapeHtml(def.term || 'Untitled')}</strong>
-              <div style="color:var(--text-secondary); margin-top:4px;">${escapeHtml(def.definition)}</div>
-              <div class="sr-stats" style="margin-top:6px;">
-                <span><i class="fas fa-redo"></i> Count: ${def.count || 0}</span>
-                <span><i class="fas fa-check-circle"></i> Pass: ${def.passCount || 0}</span>
-                <span><i class="fas fa-times-circle"></i> Fail: ${def.failCount || 0}</span>
-              </div>
-            </div>
-            <button class="btn-icon" style="border-color:#ef4444; color:#ef4444; padding:4px 10px;" onclick="window.deleteItem(${def.id}, 'definitions'); this.closest('.library-def-item')?.remove();"><i class="fas fa-trash"></i> Delete</button>
-          </div>
-        `;
-        contentDiv.appendChild(defItem);
-      });
-      groupDiv.appendChild(header);
-      groupDiv.appendChild(contentDiv);
-      // Collapse/expand logic
-      header.addEventListener('click', (e) => {
-        e.stopPropagation();
-        contentDiv.classList.toggle('collapsed');
-        header.classList.toggle('collapsed');
-        const icon = header.querySelector('i.fa-chevron-down');
-        if (icon) icon.style.transform = contentDiv.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
-      });
-      container.appendChild(groupDiv);
-    }
-  }
-
   // Helper to escape HTML
   function escapeHtml(str) {
     if (!str) return '';
@@ -714,13 +665,128 @@
     });
   }
 
+  // Edit definition modal
+  function editDefinition(defId) {
+    const def = allItems.definitions.find(d => d.id === defId);
+    if (!def) return;
+    const existingTopics = [...new Set(allItems.definitions.map(d => d.topic).filter(t => t && t.trim() !== ""))];
+    const div = document.createElement('div');
+    div.className = 'modal-overlay';
+    div.innerHTML = `
+      <div class="modal">
+        <h3>Edit Definition <span class="modal-close"><i class="fas fa-times"></i></span></h3>
+        <input type="text" id="editTerm" value="${escapeHtml(def.term || '')}" placeholder="Term" style="width:100%; margin-bottom:1rem;">
+        <textarea id="editDefText" rows="4" placeholder="Definition" style="width:100%; margin-bottom:1rem;">${escapeHtml(def.definition)}</textarea>
+        <div style="margin-bottom:1rem;">
+          <label style="display:block; margin-bottom:5px;">Topic / Unit:</label>
+          <select id="editTopicSelect" style="width:100%;">
+            <option value="">-- Select existing topic --</option>
+            ${existingTopics.map(t => `<option value="${escapeHtml(t)}" ${def.topic === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('')}
+            <option value="__new__">➕ Add new topic</option>
+          </select>
+          <input type="text" id="editNewTopic" placeholder="New topic name" style="width:100%; margin-top:8px; display:none;">
+        </div>
+        <button id="saveEditDef" class="btn-icon" style="width:100%; justify-content:center; background:var(--accent); color:white;"><i class="fas fa-save"></i> Save Changes</button>
+      </div>
+    `;
+    document.body.appendChild(div);
+    const closeBtn = div.querySelector('.modal-close');
+    closeBtn.onclick = () => div.remove();
+    const topicSelect = div.querySelector('#editTopicSelect');
+    const newTopicInput = div.querySelector('#editNewTopic');
+    topicSelect.addEventListener('change', () => {
+      if (topicSelect.value === '__new__') {
+        newTopicInput.style.display = 'block';
+        newTopicInput.focus();
+      } else {
+        newTopicInput.style.display = 'none';
+      }
+    });
+    if (topicSelect.value === '__new__') newTopicInput.style.display = 'block';
+    div.querySelector('#saveEditDef').onclick = async () => {
+      const newTerm = div.querySelector('#editTerm').value.trim();
+      const newDefText = div.querySelector('#editDefText').value.trim();
+      if (!newDefText) return showToast('Definition cannot be empty', true);
+      let finalTopic = topicSelect.value;
+      if (finalTopic === '__new__') {
+        finalTopic = newTopicInput.value.trim();
+        if (!finalTopic) return showToast('Please enter a topic name', true);
+      } else if (finalTopic === "") {
+        finalTopic = undefined;
+      }
+      def.term = newTerm || 'Untitled';
+      def.definition = newDefText;
+      def.topic = finalTopic;
+      await saveAll();
+      showToast('Definition updated');
+      div.remove();
+      // refresh the library if it's open? The modal will be closed; next time user opens library it's fresh.
+      // Also refresh daily suggestions if needed.
+      renderDefinitions(); // refresh main definitions tab
+    };
+  }
+
+  // ========== IMPROVED DEFINITIONS LIBRARY (group by topic) with edit button ==========
+  function renderDefLibrary(container, definitions) {
+    const groups = new Map();
+    definitions.forEach(def => {
+      const topic = def.topic && def.topic.trim() !== "" ? def.topic.trim() : "Uncategorized";
+      if (!groups.has(topic)) groups.set(topic, []);
+      groups.get(topic).push(def);
+    });
+    const sortedTopics = Array.from(groups.keys()).sort();
+    container.innerHTML = '';
+    for (let topic of sortedTopics) {
+      const defs = groups.get(topic);
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'topic-group';
+      const header = document.createElement('div');
+      header.className = 'topic-header';
+      header.innerHTML = `
+        <span><i class="fas fa-folder-open"></i> ${escapeHtml(topic)} (${defs.length})</span>
+        <i class="fas fa-chevron-down"></i>
+      `;
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'topic-definitions';
+      defs.forEach(def => {
+        const defItem = document.createElement('div');
+        defItem.className = 'library-def-item';
+        defItem.innerHTML = `
+          <div style="flex:1;">
+            <strong style="font-size:1rem;">${escapeHtml(def.term || 'Untitled')}</strong>
+            <div style="color:var(--text-secondary); margin-top:4px;">${escapeHtml(def.definition)}</div>
+            <div class="sr-stats" style="margin-top:6px;">
+              <span><i class="fas fa-redo"></i> Count: ${def.count || 0}</span>
+              <span><i class="fas fa-check-circle"></i> Pass: ${def.passCount || 0}</span>
+              <span><i class="fas fa-times-circle"></i> Fail: ${def.failCount || 0}</span>
+            </div>
+          </div>
+          <div class="def-actions">
+            <button class="btn-icon" style="padding:4px 10px;" onclick="window.editDefinition(${def.id})"><i class="fas fa-edit"></i> Edit</button>
+            <button class="btn-icon" style="border-color:#ef4444; color:#ef4444; padding:4px 10px;" onclick="window.deleteItem(${def.id}, 'definitions'); this.closest('.library-def-item')?.remove();"><i class="fas fa-trash"></i> Delete</button>
+          </div>
+        `;
+        contentDiv.appendChild(defItem);
+      });
+      groupDiv.appendChild(header);
+      groupDiv.appendChild(contentDiv);
+      header.addEventListener('click', (e) => {
+        e.stopPropagation();
+        contentDiv.classList.toggle('collapsed');
+        header.classList.toggle('collapsed');
+        const icon = header.querySelector('i.fa-chevron-down');
+        if (icon) icon.style.transform = contentDiv.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+      });
+      container.appendChild(groupDiv);
+    }
+  }
+
   // Navigation
   const tabs = ['dashboard', 'revision', 'equations', 'papers', 'essays', 'pomodoro', 'definitions', 'settings'];
   const mainBottomTabs = ['dashboard', 'revision', 'definitions'];
   const sheetTabs = tabs.filter(t => !mainBottomTabs.includes(t));
   const icons = { dashboard:'fas fa-chart-pie', revision:'fas fa-brain', equations:'fas fa-square-root-alt', papers:'fas fa-scroll', essays:'fas fa-feather-alt', pomodoro:'fas fa-hourglass-half', definitions:'fas fa-book', settings:'fas fa-cog' };
   
-  // Bottom sheet controls
   function openBottomSheet() {
     document.getElementById('sheetOverlay').classList.add('active');
     document.getElementById('bottomSheet').classList.add('active');
@@ -731,11 +797,9 @@
   }
   
   function renderNav() {
-    // Desktop sidebar
     document.getElementById('navLinks').innerHTML = tabs.map(t => `<div class="nav-item ${currentTab===t?'active':''}" data-tab="${t}"><i class="${icons[t]}"></i> ${t.charAt(0).toUpperCase()+t.slice(1)}</div>`).join('');
     document.querySelectorAll('.nav-item').forEach(e => e.onclick = () => switchTab(e.dataset.tab));
     
-    // Mobile bottom nav
     const mobileNav = document.getElementById('mobileNav');
     if (!mobileNav) return;
     mobileNav.innerHTML = `
@@ -790,7 +854,7 @@
     });
   }
 
-  // ======== DASHBOARD (unchanged) ========
+  // ======== DASHBOARD ========
   async function renderDashboard() {
     document.getElementById('headerTitle').innerText = "Dashboard";
     const today = getTodayStr();
@@ -817,14 +881,8 @@
     document.getElementById('tabContent').innerHTML = html;
   }
 
-  // ======== REVISION, EQUATIONS, ESSAYS, PAPERS, POMODORO, SETTINGS (unchanged from original, but we keep them working) ========
-  // (They are the same as previous version, but for brevity I will include minimal working versions)
-  // For the sake of completeness, I'll include them but they are not modified.
-  // Since the code is long, I'll include them as they were but they must be present.
-  // I'll embed them in the final answer, but in this explanation I'll just indicate they remain.
-
-  // ----- REVISION -----
-  async function renderRevision() { /* same as original but I'll rewrite with proper content */ 
+  // ======== REVISION ========
+  async function renderRevision() {
     document.getElementById('headerTitle').innerText = "Revision";
     const today = getTodayStr();
     let items = allItems.revision;
@@ -832,10 +890,10 @@
     document.getElementById('tabContent').innerHTML = html;
     attachCollapsible();
     document.getElementById('addRevBtn').onclick = async () => { const title = document.getElementById('rTitle').value; if(!title) return showToast('Title required!', true); allItems.revision.push(ensureSRFields({ id:Date.now(), title, content: document.getElementById('rContent').value, subject: document.getElementById('rSubject').value })); await saveAll(); showToast('Added'); renderRevision(); };
-    function renderList(filterDue) { const list = document.getElementById('revList'); const filtered = filterDue ? items.filter(i => ensureSRFields(i).nextReviewDate <= today) : items; if(!filtered.length) { list.innerHTML = '<p style="text-align:center; padding:2rem;">No items</p>'; return; } list.innerHTML = filtered.map(i => `<div class="item-card"><div><strong>${i.title}</strong> <span class="badge">${i.subject}</span><br>${i.content ? `<small>${i.content}</small><br>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'revision')">Review Done</button><div style="display:flex; gap:5px; margin-top:5px;"><button class="btn-icon" style="padding:4px 8px;" onclick="window.editDate(${i.id}, 'revision')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" style="padding:4px 8px; border-color:#ef4444; color:#ef4444;" onclick="window.deleteItem(${i.id}, 'revision')"><i class="fas fa-trash"></i></button></div></div></div>`).join(''); }
+    function renderList(filterDue) { const list = document.getElementById('revList'); const filtered = filterDue ? items.filter(i => ensureSRFields(i).nextReviewDate <= today) : items; if(!filtered.length) { list.innerHTML = '<p style="text-align:center; padding:2rem;">No items</p>'; return; } list.innerHTML = filtered.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.title)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.content ? `<small>${escapeHtml(i.content)}</small><br>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'revision')">Review Done</button><div style="display:flex; gap:5px; margin-top:5px;"><button class="btn-icon" style="padding:4px 8px;" onclick="window.editDate(${i.id}, 'revision')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" style="padding:4px 8px; border-color:#ef4444; color:#ef4444;" onclick="window.deleteItem(${i.id}, 'revision')"><i class="fas fa-trash"></i></button></div></div></div>`).join(''); }
     document.getElementById('filterDue').onclick = () => { document.getElementById('filterDue').style.background='var(--accent)'; document.getElementById('filterDue').style.color='white'; document.getElementById('filterAll').style.background=''; document.getElementById('filterAll').style.color=''; renderList(true); };
     document.getElementById('filterAll').onclick = () => { document.getElementById('filterAll').style.background='var(--accent)'; document.getElementById('filterAll').style.color='white'; document.getElementById('filterDue').style.background=''; document.getElementById('filterDue').style.color=''; renderList(false); };
-    document.getElementById('showAllRev').onclick = () => showAllModal('revision', 'Revision Topics', (container, data) => { container.innerHTML = data.map(i => `<div style="border-bottom:1px solid var(--border-color); padding:10px; display:flex; justify-content:space-between;"><div><strong>${i.title}</strong><br>${getSRStatsHtml(i)}</div><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'revision'); this.parentElement.remove();">Delete</button></div>`).join(''); });
+    document.getElementById('showAllRev').onclick = () => showAllModal('revision', 'Revision Topics', (container, data) => { container.innerHTML = data.map(i => `<div style="border-bottom:1px solid var(--border-color); padding:10px; display:flex; justify-content:space-between;"><div><strong>${escapeHtml(i.title)}</strong><br>${getSRStatsHtml(i)}</div><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'revision'); this.parentElement.remove();">Delete</button></div>`).join(''); });
     renderList(true);
   }
   // ----- EQUATIONS -----
@@ -845,7 +903,7 @@
     document.getElementById('tabContent').innerHTML = html;
     attachCollapsible();
     document.getElementById('addEqBtn').onclick = async () => { const name = document.getElementById('eName').value; if(!name) return showToast('Name required', true); allItems.equations.push(ensureSRFields({ id:Date.now(), name, formula: document.getElementById('eFormula').value, subject: document.getElementById('eSubject').value })); await saveAll(); renderEquations(); };
-    document.getElementById('eqList').innerHTML = allItems.equations.map(i => `<div class="item-card"><div><strong>${i.name}</strong> <span class="badge">${i.subject}</span><br>${i.formula ? `<div style="font-family:monospace;">${i.formula}</div>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'equations')">Review</button><div><button class="btn-icon" onclick="window.editDate(${i.id}, 'equations')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'equations')"><i class="fas fa-trash"></i></button></div></div></div>`).join('');
+    document.getElementById('eqList').innerHTML = allItems.equations.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.name)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.formula ? `<div style="font-family:monospace;">${escapeHtml(i.formula)}</div>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'equations')">Review</button><div><button class="btn-icon" onclick="window.editDate(${i.id}, 'equations')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'equations')"><i class="fas fa-trash"></i></button></div></div></div>`).join('');
   }
   // ----- ESSAYS -----
   async function renderEssays() {
@@ -854,7 +912,7 @@
     document.getElementById('tabContent').innerHTML = html;
     attachCollapsible();
     document.getElementById('addEsBtn').onclick = async () => { const title = document.getElementById('esTitle').value; if(!title) return showToast('Title required', true); allItems.essays.push(ensureSRFields({ id:Date.now(), title, points: document.getElementById('esPoints').value, subject: document.getElementById('esSubject').value })); await saveAll(); renderEssays(); };
-    document.getElementById('esList').innerHTML = allItems.essays.map(i => `<div class="item-card"><div><strong>${i.title}</strong> <span class="badge">${i.subject}</span><br>${i.points ? `<small>${i.points}</small><br>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'essays')">Review</button><div><button class="btn-icon" onclick="window.editDate(${i.id}, 'essays')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'essays')"><i class="fas fa-trash"></i></button></div></div></div>`).join('');
+    document.getElementById('esList').innerHTML = allItems.essays.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.title)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.points ? `<small>${escapeHtml(i.points)}</small><br>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'essays')">Review</button><div><button class="btn-icon" onclick="window.editDate(${i.id}, 'essays')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'essays')"><i class="fas fa-trash"></i></button></div></div></div>`).join('');
   }
   // ----- PAPERS -----
   async function renderPapers() {
@@ -863,9 +921,9 @@
     document.getElementById('tabContent').innerHTML = html;
     attachCollapsible();
     document.getElementById('addPBtn').onclick = async () => { const marks = parseInt(document.getElementById('pMarks').value); if(isNaN(marks)) return showToast('Marks required', true); const total = parseInt(document.getElementById('pTotal').value) || 100; allItems.papers.push({ id:Date.now(), subject:document.getElementById('pSubject').value, marks, total, date:document.getElementById('pDate').value }); await saveAll(); renderPapers(); };
-    document.getElementById('pList').innerHTML = allItems.papers.map(i => `<div class="item-card"><div><strong>${i.subject}</strong> | ${i.date}<br>Score: ${i.marks}/${i.total} (${((i.marks/i.total)*100).toFixed(1)}%)</div><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'papers')"><i class="fas fa-trash"></i></button></div>`).join('');
+    document.getElementById('pList').innerHTML = allItems.papers.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.subject)}</strong> | ${i.date}<br>Score: ${i.marks}/${i.total} (${((i.marks/i.total)*100).toFixed(1)}%)</div><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'papers')"><i class="fas fa-trash"></i></button></div>`).join('');
   }
-  // ----- POMODORO (keep original) -----
+  // ----- POMODORO -----
   let pomoInterval = null, pomoTimeLeft = 25*60, pomoMode = 'focus';
   const pomoDurations = { focus: 25*60, shortBreak: 5*60, longBreak: 15*60 };
   async function renderPomodoro() {
@@ -921,7 +979,6 @@
   window.showDefAdd = function() {
     const div = document.createElement('div');
     div.className = 'modal-overlay';
-    // Gather existing topics from definitions
     const existingTopics = [...new Set(allItems.definitions.map(d => d.topic).filter(t => t && t.trim() !== ""))];
     div.innerHTML = `
       <div class="modal">
@@ -962,7 +1019,7 @@
         finalTopic = newTopicInput.value.trim();
         if (!finalTopic) return showToast('Please enter a new topic name', true);
       } else if (finalTopic === "") {
-        finalTopic = "";
+        finalTopic = undefined;
       }
       allItems.definitions.push({ id: Date.now(), term, definition: defText, topic: finalTopic || undefined, passCount: 0, failCount: 0, count: 0 });
       await saveAll();
@@ -979,7 +1036,8 @@
   window.showAllModal = showAllModal;
   window.updateDefinitionStatus = updateDefinitionStatus;
   window.handleReviewClick = handleReviewClick;
-  window.renderDefLibrary = renderDefLibrary; // expose for modal
+  window.renderDefLibrary = renderDefLibrary;
+  window.editDefinition = editDefinition;
 
   // Init
   async function init() {
