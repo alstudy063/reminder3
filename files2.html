@@ -1,1063 +1,701 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-  <title>AL Master Flow | Premium Study Suite</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <style>
-    /* Modern Premium Styles & Animations */
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    
-    :root {
-      --bg-primary: #f0f4fd;
-      --bg-secondary: #ffffff;
-      --text-primary: #0f172a;
-      --text-secondary: #64748b;
-      --card-bg: rgba(255, 255, 255, 0.75);
-      --border-color: rgba(255, 255, 255, 0.6);
-      --glass-blur: blur(24px);
-      --accent: #3b82f6;
-      --accent-hover: #2563eb;
-      --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
-      --shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.12);
-    }
-    
-    body.dark {
-      --bg-primary: #0b1120;
-      --bg-secondary: #1e293b;
-      --text-primary: #f8fafc;
-      --text-secondary: #94a3b8;
-      --card-bg: rgba(30, 41, 59, 0.7);
-      --border-color: rgba(255, 255, 255, 0.08);
-      --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
-      --shadow-hover: 0 20px 40px -12px rgba(0, 0, 0, 0.6);
-    }
-    
-    body {
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      transition: background-color 0.5s ease, color 0.5s ease;
-      font-size: var(--font-size, 16px);
-      overflow-x: hidden;
-    }
-
-    @keyframes fadeSlideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes popIn {
-      0% { opacity: 0; transform: scale(0.9); }
-      100% { opacity: 1; transform: scale(1); }
-    }
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-      70% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-    }
-
-    #tabContent > * {
-      animation: fadeSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      opacity: 0;
-    }
-
-    .app-container { display: flex; min-height: 100vh; }
-    
-    .sidebar {
-      width: 280px;
-      background: var(--card-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border-right: 1px solid var(--border-color);
-      box-shadow: 5px 0 25px rgba(0,0,0,0.02);
-      padding: 2.5rem 1.5rem;
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-      z-index: 50;
-    }
-    
-    .logo {
-      font-size: 1.8rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--accent), #8b5cf6, #ec4899);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      padding-left: 0.5rem;
-      animation: gradientFlow 5s ease infinite;
-    }
-    @keyframes gradientFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
-    .nav-links { display: flex; flex-direction: column; gap: 0.6rem; }
-    .nav-item {
-      display: flex; align-items: center; gap: 1.2rem; padding: 0.9rem 1.2rem;
-      border-radius: 16px; font-weight: 600; color: var(--text-secondary);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; position: relative; overflow: hidden;
-    }
-    .nav-item::before {
-      content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 0;
-      background: linear-gradient(90deg, rgba(59,130,246,0.1), transparent); transition: width 0.3s ease; z-index: -1;
-    }
-    .nav-item:hover { color: var(--text-primary); transform: translateX(6px); }
-    .nav-item:hover::before { width: 100%; }
-    .nav-item i { width: 24px; font-size: 1.3rem; transition: transform 0.3s ease; }
-    .nav-item:hover i { transform: scale(1.15) rotate(5deg); color: var(--accent); }
-    .nav-item.active { background: var(--bg-secondary); color: var(--accent); box-shadow: var(--shadow-soft); border-left: 4px solid var(--accent); }
-
-    .main-content { flex: 1; padding: 2.5rem 3rem; overflow-y: auto; scroll-behavior: smooth; }
-    
-    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; flex-wrap: wrap; gap: 1.5rem; animation: fadeSlideUp 0.5s ease forwards; }
-    
-    .sync-indicator {
-      display: flex; align-items: center; gap: 10px; background: var(--card-bg); backdrop-filter: var(--glass-blur);
-      padding: 8px 20px; border-radius: 40px; font-size: 0.85rem; font-weight: 600; box-shadow: var(--shadow-soft); border: 1px solid var(--border-color); transition: transform 0.3s ease;
-    }
-    .spinner { width: 18px; height: 18px; border: 2px solid var(--border-color); border-top: 2px solid var(--accent); border-radius: 50%; animation: spin 0.7s infinite linear; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    
-    .glass-card {
-      background: var(--card-bg); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur);
-      border-radius: 1.5rem; padding: 1.8rem; border: 1px solid var(--border-color); margin-bottom: 1.8rem;
-      box-shadow: var(--shadow-soft); transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
-    .glass-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
-    .glass-card h2, .glass-card h3 { font-size: 1.3rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem; letter-spacing: -0.02em; }
-    .glass-card h2 i, .glass-card h3 i { color: var(--accent); }
-    
-    .item-card {
-      background: var(--bg-secondary); border-radius: 1.2rem; padding: 1.2rem; margin-bottom: 0.85rem;
-      display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--accent);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03); transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative;
-    }
-    .item-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: var(--shadow-hover); z-index: 2; }
-    
-    .btn-icon {
-      background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);
-      padding: 8px 16px; border-radius: 2rem; cursor: pointer; font-weight: 600; font-size: 0.85rem;
-      transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.6rem; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-    }
-    .btn-icon:hover { transform: translateY(-3px); box-shadow: 0 8px 15px -3px rgba(0,0,0,0.08); color: var(--accent); border-color: var(--accent); }
-    
-    .flex-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; align-items: center; }
-    
-    input, textarea, select {
-      background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);
-      border-radius: 1rem; padding: 10px 14px; outline: none; font-size: 0.95rem; transition: all 0.3s ease; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-    }
-    input:focus, select:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); transform: translateY(-1px); }
-    
-    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
-    .badge-high { background: #fee2e2; color: #ef4444; } .badge-medium { background: #fef3c7; color: #d97706; } .badge-low { background: #d1fae5; color: #059669; }
-    body.dark .badge-high { background: rgba(239, 68, 68, 0.2); } body.dark .badge-medium { background: rgba(245, 158, 11, 0.2); } body.dark .badge-low { background: rgba(16, 185, 129, 0.2); }
-    
-    /* Collapsible Sections */
-    .add-section { background: var(--bg-secondary); border-radius: 1.2rem; border: 1px solid var(--border-color); overflow: hidden; margin-bottom: 1.8rem; transition: all 0.4s ease; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02); }
-    .add-section:hover { box-shadow: var(--shadow-soft); border-color: var(--accent); transform: translateY(-2px); }
-    .add-section-header { padding: 1.2rem 1.5rem; display: flex; align-items: center; gap: 0.8rem; font-weight: 600; cursor: pointer; background: rgba(0,0,0,0.01); transition: background 0.3s ease; user-select: none; }
-    .add-section-header:hover { background: rgba(59, 130, 246, 0.05); }
-    .add-section-header i.fa-chevron-down { margin-left: auto; transition: transform 0.4s ease; color: var(--text-secondary); }
-    .add-section-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s ease, opacity 0.4s ease, padding 0.4s ease; padding: 0 1.5rem; }
-    .add-section-content.expanded { max-height: 800px; opacity: 1; padding: 0 1.5rem 1.5rem 1.5rem; }
-
-    /* Modals */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.3s ease; }
-    .modal { background: var(--bg-secondary); border-radius: 1.8rem; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid var(--border-color); animation: popIn 0.4s ease forwards; }
-    .modal h3 { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 1.4rem; }
-    .modal .modal-close { cursor: pointer; font-size: 1.2rem; transition: transform 0.2s ease; color: var(--text-secondary); }
-    .modal .modal-close:hover { transform: rotate(90deg); color: #ef4444; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    /* Bottom Sheet Styles - 2 buttons per row */
-    .sheet-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(4px);
-      z-index: 1000;
-      visibility: hidden;
-      opacity: 0;
-      transition: visibility 0.2s, opacity 0.2s ease;
-    }
-    .sheet-overlay.active {
-      visibility: visible;
-      opacity: 1;
-    }
-    .bottom-sheet {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--bg-secondary);
-      border-radius: 28px 28px 0 0;
-      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.1);
-      transform: translateY(100%);
-      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-      z-index: 1001;
-      padding: 1.5rem 1.2rem 2rem;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .bottom-sheet.active {
-      transform: translateY(0);
-    }
-    .sheet-handle {
-      width: 50px;
-      height: 5px;
-      background: var(--text-secondary);
-      border-radius: 20px;
-      margin: 0 auto 1.5rem auto;
-      opacity: 0.5;
-    }
-    .sheet-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding: 0 0.5rem;
-    }
-    .sheet-header h4 {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    .sheet-close {
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: transform 0.2s;
-    }
-    .sheet-close:hover {
-      transform: scale(1.1);
-      color: var(--accent);
-    }
-    /* 2‑column grid for sheet buttons */
-    .sheet-tab-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .sheet-tab-card {
-      background: var(--card-bg);
-      backdrop-filter: var(--glass-blur);
-      border: 1px solid var(--border-color);
-      border-radius: 1.2rem;
-      padding: 1rem 0.5rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-align: center;
-    }
-    .sheet-tab-card:hover {
-      transform: translateY(-3px);
-      background: var(--bg-primary);
-      border-color: var(--accent);
-    }
-    .sheet-tab-card i {
-      font-size: 1.6rem;
-      color: var(--accent);
-    }
-    .sheet-tab-card span {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-primary);
-    }
-
-    /* Spaced Repetition SR Cards */
-    .sr-stats { display: flex; gap: 1rem; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem; }
-    .sr-stats span { background: rgba(0,0,0,0.05); padding: 4px 8px; border-radius: 8px; font-weight: 600; }
-    body.dark .sr-stats span { background: rgba(255,255,255,0.05); }
-    .sr-btn { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; display:flex; align-items:center; gap:5px; }
-    .sr-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4); }
-
-    /* Pomodoro Ultra Premium */
-    .pomodoro-fullscreen-wrapper {
-      position: relative; border-radius: 2rem; overflow: hidden; background: var(--bg-secondary);
-      border: 1px solid var(--border-color); box-shadow: var(--shadow-soft); padding: 3rem 2rem;
-      display: flex; flex-direction: column; align-items: center; transition: all 0.5s cubic-bezier(0.2, 0.9, 0.4, 1);
-    }
-    .pomodoro-fullscreen-wrapper:fullscreen, .pomodoro-fullscreen-wrapper:-webkit-full-screen {
-      padding: 5rem; border-radius: 0; border: none; background: #0b1120; color: white;
-    }
-    .pomo-timer-circle {
-      position: relative; width: 320px; height: 320px; margin: 2rem auto;
-      border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      background: radial-gradient(circle, rgba(59,130,246,0.05) 0%, transparent 70%);
-      transition: all 0.5s ease;
-    }
-    .pomo-timer-circle.active-glow { animation: ultraPulse 4s infinite alternate ease-in-out; }
-    @keyframes ultraPulse {
-      0% { box-shadow: 0 0 30px rgba(59,130,246,0.2), inset 0 0 20px rgba(59,130,246,0.1); }
-      100% { box-shadow: 0 0 80px rgba(59,130,246,0.6), inset 0 0 40px rgba(59,130,246,0.3); }
-    }
-    .timer-text-display { font-size: 5rem; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -2px; z-index: 10; text-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-    .pomodoro-fullscreen-wrapper:fullscreen .timer-text-display { font-size: 10rem; }
-    .pomo-keyboard-hints { margin-top: 2rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; gap: 1.5rem; opacity: 0.7; }
-    .pomo-keyboard-hints kbd { background: var(--card-bg); padding: 4px 8px; border-radius: 6px; font-family: monospace; border: 1px solid var(--border-color); box-shadow: 0 2px 0 var(--border-color); }
-
-    /* Definitions Daily Suggestion Card */
-    .def-sug-card { background: var(--card-bg); backdrop-filter: var(--glass-blur); border: 1px solid var(--border-color); border-radius: 1rem; padding: 1.5rem; transition: transform 0.3s ease; cursor: pointer; text-align: center; position: relative; overflow: hidden; margin-bottom: 1rem; }
-    .def-sug-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
-    .def-sug-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .def-sug-term { font-size: 1.6rem; font-weight: 800; color: var(--text-primary); word-break: break-word; }
-    .def-sug-badge { background: rgba(59, 130, 246, 0.15); color: var(--accent); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
-    .def-sug-hidden { display: none; font-size: 1.1rem; color: var(--text-secondary); line-height: 1.6; margin: 1.5rem 0; animation: fadeIn 0.3s ease; }
-    .def-sug-actions { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; }
-    
-    /* Topic group styles for library */
-    .topic-group {
-      margin-bottom: 1.5rem;
-      border: 1px solid var(--border-color);
-      border-radius: 1rem;
-      overflow: hidden;
-    }
-    .topic-header {
-      background: var(--card-bg);
-      padding: 0.8rem 1.2rem;
-      font-weight: 700;
-      font-size: 1.1rem;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid transparent;
-      transition: background 0.2s;
-    }
-    .topic-header:hover {
-      background: var(--bg-primary);
-    }
-    .topic-header i {
-      transition: transform 0.3s;
-    }
-    .topic-header.collapsed i {
-      transform: rotate(-90deg);
-    }
-    .topic-definitions {
-      padding: 0.5rem 1rem;
-      background: var(--bg-secondary);
-      transition: all 0.3s;
-    }
-    .topic-definitions.collapsed {
-      display: none;
-    }
-    .library-def-item {
-      border-bottom: 1px solid var(--border-color);
-      padding: 12px 0;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .library-def-item:last-child {
-      border-bottom: none;
-    }
-    .def-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    /* Toast Notification */
-    .app-toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #10b981; color: white; padding: 12px 24px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 25px rgba(16,185,129,0.4); z-index: 9999; opacity: 0; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 10px; }
-    .app-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-    /* ========== MOBILE BOTTOM NAV - FIXED & GUARANTEED ========== */
-    .mobile-bottom-nav {
-      display: none;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: var(--card-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border-top: 1px solid var(--border-color);
-      padding: 0.5rem 1rem 1.5rem 1rem;
-      justify-content: space-around;
-      z-index: 200;
-      min-height: 75px;
-      box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.05);
-    }
-    .mobile-nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      gap: 5px;
-      cursor: pointer;
-      flex: 1;
-      text-align: center;
-      transition: all 0.2s ease;
-      padding: 5px 0;
-    }
-    .mobile-nav-item i {
-      font-size: 1.5rem;
-      transition: transform 0.2s ease;
-    }
-    .mobile-nav-item.active {
-      color: var(--accent);
-      transform: translateY(-3px);
-    }
-    .mobile-nav-item.active i {
-      transform: scale(1.15);
-    }
-    /* Force bottom bar on all screens narrower than 768px */
-    @media (max-width: 768px) {
-      .sidebar {
-        display: none;
-      }
-      .main-content {
-        padding: 1.5rem 1rem 6rem 1rem;
-      }
-      .mobile-bottom-nav {
-        display: flex !important;
-      }
-    }
-    /* Extra small devices */
-    @media (max-width: 480px) {
-      .mobile-bottom-nav {
-        padding: 0.3rem 0.5rem 1.2rem 0.5rem;
-      }
-      .mobile-nav-item span {
-        font-size: 0.7rem;
-      }
-      .mobile-nav-item i {
-        font-size: 1.3rem;
-      }
-      .sheet-tab-grid {
-        gap: 8px;
-      }
-      .sheet-tab-card {
-        padding: 0.8rem 0.3rem;
-      }
-      .sheet-tab-card i {
-        font-size: 1.4rem;
-      }
-      .sheet-tab-card span {
-        font-size: 0.8rem;
-      }
-    }
-  </style>
-</head>
-<body>
-<div class="app-container">
-  <aside class="sidebar"><div class="logo">✨ AL Master Flow</div><div class="nav-links" id="navLinks"></div></aside>
-  <main class="main-content">
-    <div class="top-bar">
-      <h2 style="font-size: 1.5rem; font-weight: 800; display:flex; align-items:center; gap:0.5rem;"><i class="fas fa-graduation-cap" style="color:var(--accent);"></i> <span id="headerTitle">Dashboard</span></h2>
-      <div class="sync-indicator"><i class="fas fa-cloud-upload-alt"></i> <span id="syncText">Ready</span><div id="syncSpinner" style="display:none;" class="spinner"></div></div>
-    </div>
-    <div id="tabContent"></div>
-  </main>
-</div>
-
-<!-- Mobile Bottom Navigation (populated by JS) -->
-<div class="mobile-bottom-nav" id="mobileNav"></div>
-
-<!-- Bottom Sheet for More Tabs -->
-<div id="sheetOverlay" class="sheet-overlay"></div>
-<div id="bottomSheet" class="bottom-sheet">
-  <div class="sheet-handle"></div>
-  <div class="sheet-header">
-    <h4><i class="fas fa-th-large"></i> More Tools</h4>
-    <i class="fas fa-times sheet-close" id="closeSheetBtn"></i>
-  </div>
-  <div class="sheet-tab-grid" id="sheetTabsContainer"></div>
-</div>
-
-<div id="appToast" class="app-toast"></div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
-    authDomain: "studymaster-919ba.firebaseapp.com",
-    databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
-    projectId: "studymaster-919ba",
-    storageBucket: "studymaster-919ba.firebasestorage.app",
-    messagingSenderId: "426684063256",
-    appId: "1:426684063256:web:52c17625a9450ea9662d6d",
-  };
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
-  const provider = new GoogleAuthProvider();
-
-  let currentUser = null;
-  let currentTab = 'dashboard';
-  let subjects = ['Physics', 'Chemistry', 'Biology', 'Mathematics'];
-  let allItems = { revision: [], equations: [], papers: [], essays: [], pomodoro: [], definitions: [] };
-  let syncCount = 0;
-
-  // Settings
-  function loadSettings() {
-    return {
-      theme: localStorage.getItem('theme') || 'light',
-      accentColor: localStorage.getItem('accentColor') || '#3b82f6',
-      dailyStudyHours: localStorage.getItem('dailyStudyHours') || 2,
-    };
-  }
-  function saveSettings(settings) {
-    for (let k in settings) localStorage.setItem(k, settings[k]);
-    applyThemeAndStyle();
-  }
-  function applyThemeAndStyle() {
-    const s = loadSettings();
-    if (s.theme === 'dark') document.body.classList.add('dark'); else document.body.classList.remove('dark');
-    document.documentElement.style.setProperty('--accent', s.accentColor);
-    document.documentElement.style.setProperty('--accent-hover', s.accentColor);
-  }
-
-  // Toast
-  function showToast(msg, isError = false) {
-    const t = document.getElementById('appToast');
-    t.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${msg}`;
-    t.style.background = isError ? '#ef4444' : '#10b981';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  // Sync helpers
-  function showSync() { syncCount++; const sp=document.getElementById('syncSpinner'), tx=document.getElementById('syncText'); if(sp) sp.style.display='block'; if(tx) tx.innerText='Syncing...'; }
-  function hideSync() { syncCount--; if(syncCount<=0){ syncCount=0; const sp=document.getElementById('syncSpinner'), tx=document.getElementById('syncText'); if(sp) sp.style.display='none'; if(tx) tx.innerText='Synced'; } }
-  async function withSync(fn) { showSync(); try { return await fn(); } finally { hideSync(); } }
-  function getLocalData(key) { const d = localStorage.getItem(key); return d ? JSON.parse(d) : []; }
-  function setLocalData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
-  async function syncToFirebase(col) { if(currentUser) await withSync(async()=>set(ref(db, `users/${currentUser.uid}/${col}`), allItems[col])); }
-  async function loadAllFromFirebase() { if(!currentUser) return; await withSync(async()=>{ for(let k of Object.keys(allItems)){ const snap=await get(child(ref(db), `users/${currentUser.uid}/${k}`)); if(snap.exists()) allItems[k]=snap.val(); } }); }
-  async function saveAll() { for(let k of Object.keys(allItems)){ setLocalData(k, allItems[k]); await syncToFirebase(k); } }
-
-  // Spaced Repetition Logic (Revision, Equations, Essays)
-  function getTodayStr() { return new Date().toISOString().split('T')[0]; }
-  function calculateNextReview(item) {
-    item.reviewCount = (item.reviewCount || 0) + 1;
-    item.lastReviewedDate = getTodayStr();
-    const interval = 3 + 2 * ((item.reviewCount || 1) - 1);
-    const nextDate = new Date();
-    nextDate.setDate(nextDate.getDate() + interval);
-    item.nextReviewDate = nextDate.toISOString().split('T')[0];
-    return item;
-  }
-  function ensureSRFields(item) {
-    if(!item.nextReviewDate) item.nextReviewDate = getTodayStr();
-    if(item.reviewCount === undefined) item.reviewCount = 0;
-    return item;
-  }
-  
-  function getSRStatsHtml(item) {
-    ensureSRFields(item);
-    const today = getTodayStr();
-    const dueClass = item.nextReviewDate < today ? 'color:#ef4444;' : (item.nextReviewDate === today ? 'color:#f59e0b;' : 'color:#10b981;');
-    return `<div class="sr-stats">
-      <span><i class="fas fa-history"></i> Last: ${item.lastReviewedDate || 'Never'}</span>
-      <span style="${dueClass}"><i class="fas fa-calendar-check"></i> Next: ${item.nextReviewDate}</span>
-      <span><i class="fas fa-redo"></i> Count: ${item.reviewCount}</span>
-    </div>`;
-  }
-  
-  async function handleReviewClick(id, collection) {
-    const idx = allItems[collection].findIndex(i => i.id === id);
-    if(idx !== -1) {
-      allItems[collection][idx] = calculateNextReview(allItems[collection][idx]);
-      await saveAll();
-      showToast('Reviewed! Next interval calculated.');
-      switchTab(currentTab);
-    }
-  }
-
-  // Definition SR Logic (Weighted Daily)
-  function getDefinitionWeight(def) {
-    const f = def.failCount || 0, p = def.passCount || 0;
-    if(f > p) return 4;
-    if(p > 0 && f > 0) return 2;
-    return 1;
-  }
-  function generateDailySuggestions() {
-    const today = getTodayStr();
-    let history = JSON.parse(localStorage.getItem('suggestionsHistory') || '[]');
-    let todayEntry = history.find(h => h.date === today);
-    if(!todayEntry) {
-      let pool = [];
-      allItems.definitions.forEach(def => {
-        const w = getDefinitionWeight(def);
-        for(let i=0; i<w; i++) pool.push(def);
-      });
-      pool.sort(() => Math.random() - 0.5);
-      let selectedIds = new Set();
-      let suggestions = [];
-      for(let d of pool) {
-        if(!selectedIds.has(d.id)) {
-          suggestions.push({ ...d, sessionStatus: 'incomplete' });
-          selectedIds.add(d.id);
-          if(suggestions.length >= 30) break;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
+        .active-nav { background-color: #c2e7ff; color: #001d35; }
+        .active-nav i { color: #001d35; }
+        .file-item:hover .file-actions { opacity: 1; }
+        .file-actions { opacity: 0; transition: opacity 0.2s; }
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 160px;
         }
-      }
-      todayEntry = { date: today, definitions: suggestions };
-      history.push(todayEntry);
-      localStorage.setItem('suggestionsHistory', JSON.stringify(history));
-    }
-    return todayEntry;
-  }
-  async function updateDefinitionStatus(id, status) {
-    const defIdx = allItems.definitions.findIndex(d => d.id === id);
-    if(defIdx !== -1) {
-      if(status === 'pass') allItems.definitions[defIdx].passCount = (allItems.definitions[defIdx].passCount || 0) + 1;
-      if(status === 'fail') allItems.definitions[defIdx].failCount = (allItems.definitions[defIdx].failCount || 0) + 1;
-      allItems.definitions[defIdx].count = (allItems.definitions[defIdx].count || 0) + 1;
-      await saveAll();
-    }
-    let history = JSON.parse(localStorage.getItem('suggestionsHistory') || '[]');
-    let todayEntry = history.find(h => h.date === getTodayStr());
-    if(todayEntry) {
-      const sIdx = todayEntry.definitions.findIndex(d => d.id === id);
-      if(sIdx !== -1) {
-        todayEntry.definitions[sIdx].sessionStatus = status;
-        localStorage.setItem('suggestionsHistory', JSON.stringify(history));
-      }
-    }
-    showToast(`Marked as ${status}`);
-    renderDefinitions();
-  }
+        .context-menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        .context-menu-item:hover { background-color: #f0f0f0; }
+        .modal-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden">
 
-  // Generic Show All Modal
-  function showAllModal(collection, title, renderFn) {
-    const div = document.createElement('div');
-    div.className = 'modal-overlay';
-    div.innerHTML = `<div class="modal" style="max-width:800px; width:95%;">
-      <h3><i class="fas fa-list"></i> All ${title} <span class="modal-close"><i class="fas fa-times"></i></span></h3>
-      <div id="modalListContent"></div>
-    </div>`;
-    document.body.appendChild(div);
-    div.querySelector('.modal-close').onclick = () => div.remove();
-    const content = div.querySelector('#modalListContent');
-    renderFn(content, allItems[collection]);
-  }
-
-  // Helper to escape HTML
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-      return c;
-    });
-  }
-
-  // Edit definition modal
-  function editDefinition(defId) {
-    const def = allItems.definitions.find(d => d.id === defId);
-    if (!def) return;
-    const existingTopics = [...new Set(allItems.definitions.map(d => d.topic).filter(t => t && t.trim() !== ""))];
-    const div = document.createElement('div');
-    div.className = 'modal-overlay';
-    div.innerHTML = `
-      <div class="modal">
-        <h3>Edit Definition <span class="modal-close"><i class="fas fa-times"></i></span></h3>
-        <input type="text" id="editTerm" value="${escapeHtml(def.term || '')}" placeholder="Term" style="width:100%; margin-bottom:1rem;">
-        <textarea id="editDefText" rows="4" placeholder="Definition" style="width:100%; margin-bottom:1rem;">${escapeHtml(def.definition)}</textarea>
-        <div style="margin-bottom:1rem;">
-          <label style="display:block; margin-bottom:5px;">Topic / Unit:</label>
-          <select id="editTopicSelect" style="width:100%;">
-            <option value="">-- Select existing topic --</option>
-            ${existingTopics.map(t => `<option value="${escapeHtml(t)}" ${def.topic === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('')}
-            <option value="__new__">➕ Add new topic</option>
-          </select>
-          <input type="text" id="editNewTopic" placeholder="New topic name" style="width:100%; margin-top:8px; display:none;">
+    <!-- Sidebar -->
+    <aside class="w-64 min-w-[256px] flex flex-col p-4">
+        <div class="flex items-center gap-2 px-2 mb-8 cursor-pointer">
+            <i class="ph-fill ph-hard-drives text-3xl text-blue-600"></i>
+            <span class="text-xl font-normal text-gray-700">File Explorer</span>
         </div>
-        <button id="saveEditDef" class="btn-icon" style="width:100%; justify-content:center; background:var(--accent); color:white;"><i class="fas fa-save"></i> Save Changes</button>
-      </div>
-    `;
-    document.body.appendChild(div);
-    const closeBtn = div.querySelector('.modal-close');
-    closeBtn.onclick = () => div.remove();
-    const topicSelect = div.querySelector('#editTopicSelect');
-    const newTopicInput = div.querySelector('#editNewTopic');
-    topicSelect.addEventListener('change', () => {
-      if (topicSelect.value === '__new__') {
-        newTopicInput.style.display = 'block';
-        newTopicInput.focus();
-      } else {
-        newTopicInput.style.display = 'none';
-      }
-    });
-    if (topicSelect.value === '__new__') newTopicInput.style.display = 'block';
-    div.querySelector('#saveEditDef').onclick = async () => {
-      const newTerm = div.querySelector('#editTerm').value.trim();
-      const newDefText = div.querySelector('#editDefText').value.trim();
-      if (!newDefText) return showToast('Definition cannot be empty', true);
-      let finalTopic = topicSelect.value;
-      if (finalTopic === '__new__') {
-        finalTopic = newTopicInput.value.trim();
-        if (!finalTopic) return showToast('Please enter a topic name', true);
-      } else if (finalTopic === "") {
-        finalTopic = undefined;
-      }
-      def.term = newTerm || 'Untitled';
-      def.definition = newDefText;
-      def.topic = finalTopic;
-      await saveAll();
-      showToast('Definition updated');
-      div.remove();
-      renderDefinitions();
-    };
-  }
-
-  // ========== IMPROVED DEFINITIONS LIBRARY (group by topic) with edit button ==========
-  function renderDefLibrary(container, definitions) {
-    const groups = new Map();
-    definitions.forEach(def => {
-      const topic = def.topic && def.topic.trim() !== "" ? def.topic.trim() : "Uncategorized";
-      if (!groups.has(topic)) groups.set(topic, []);
-      groups.get(topic).push(def);
-    });
-    const sortedTopics = Array.from(groups.keys()).sort();
-    container.innerHTML = '';
-    for (let topic of sortedTopics) {
-      const defs = groups.get(topic);
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'topic-group';
-      const header = document.createElement('div');
-      header.className = 'topic-header';
-      header.innerHTML = `
-        <span><i class="fas fa-folder-open"></i> ${escapeHtml(topic)} (${defs.length})</span>
-        <i class="fas fa-chevron-down"></i>
-      `;
-      const contentDiv = document.createElement('div');
-      contentDiv.className = 'topic-definitions';
-      defs.forEach(def => {
-        const defItem = document.createElement('div');
-        defItem.className = 'library-def-item';
-        defItem.innerHTML = `
-          <div style="flex:1;">
-            <strong style="font-size:1rem;">${escapeHtml(def.term || 'Untitled')}</strong>
-            <div style="color:var(--text-secondary); margin-top:4px;">${escapeHtml(def.definition)}</div>
-            <div class="sr-stats" style="margin-top:6px;">
-              <span><i class="fas fa-redo"></i> Count: ${def.count || 0}</span>
-              <span><i class="fas fa-check-circle"></i> Pass: ${def.passCount || 0}</span>
-              <span><i class="fas fa-times-circle"></i> Fail: ${def.failCount || 0}</span>
+        <button onclick="showNewMenu()" class="flex items-center gap-3 bg-white hover:bg-gray-50 shadow-sm border border-gray-200 rounded-2xl px-5 py-4 w-max mb-6 transition-all">
+            <i class="ph ph-plus text-xl font-bold"></i> <span class="font-medium text-sm">New</span>
+        </button>
+        <nav class="flex flex-col gap-1 flex-1">
+            <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium">
+                <i class="ph-fill ph-folder text-lg"></i> My Files
+            </a>
+            <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-computer-tower text-lg"></i> Computers
+            </a>
+            <a href="#" data-tab="recent" onclick="switchTab('recent', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-clock text-lg"></i> Recent
+            </a>
+            <a href="#" data-tab="starred" onclick="switchTab('starred', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-star text-lg"></i> Starred
+            </a>
+        </nav>
+        <div class="mt-auto flex flex-col gap-2">
+            <button onclick="openSettings()" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-gear text-lg"></i> Settings
+            </button>
+            <div class="px-4 mt-2" id="storage-info">
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2"><div class="bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div></div>
+                <span class="text-xs text-gray-600">Select a folder to see storage</span>
             </div>
-          </div>
-          <div class="def-actions">
-            <button class="btn-icon" style="padding:4px 10px;" onclick="window.editDefinition(${def.id})"><i class="fas fa-edit"></i> Edit</button>
-            <button class="btn-icon" style="border-color:#ef4444; color:#ef4444; padding:4px 10px;" onclick="window.deleteItem(${def.id}, 'definitions'); this.closest('.library-def-item')?.remove();"><i class="fas fa-trash"></i> Delete</button>
-          </div>
-        `;
-        contentDiv.appendChild(defItem);
-      });
-      groupDiv.appendChild(header);
-      groupDiv.appendChild(contentDiv);
-      header.addEventListener('click', (e) => {
-        e.stopPropagation();
-        contentDiv.classList.toggle('collapsed');
-        header.classList.toggle('collapsed');
-        const icon = header.querySelector('i.fa-chevron-down');
-        if (icon) icon.style.transform = contentDiv.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
-      });
-      container.appendChild(groupDiv);
-    }
-  }
-
-  // Navigation
-  const tabs = ['dashboard', 'revision', 'equations', 'papers', 'essays', 'pomodoro', 'definitions', 'settings'];
-  const mainBottomTabs = ['dashboard', 'revision', 'definitions'];
-  const sheetTabs = tabs.filter(t => !mainBottomTabs.includes(t));
-  const icons = { dashboard:'fas fa-chart-pie', revision:'fas fa-brain', equations:'fas fa-square-root-alt', papers:'fas fa-scroll', essays:'fas fa-feather-alt', pomodoro:'fas fa-hourglass-half', definitions:'fas fa-book', settings:'fas fa-cog' };
-  
-  function openBottomSheet() {
-    document.getElementById('sheetOverlay').classList.add('active');
-    document.getElementById('bottomSheet').classList.add('active');
-  }
-  function closeBottomSheet() {
-    document.getElementById('sheetOverlay').classList.remove('active');
-    document.getElementById('bottomSheet').classList.remove('active');
-  }
-  
-  function renderNav() {
-    document.getElementById('navLinks').innerHTML = tabs.map(t => `<div class="nav-item ${currentTab===t?'active':''}" data-tab="${t}"><i class="${icons[t]}"></i> ${t.charAt(0).toUpperCase()+t.slice(1)}</div>`).join('');
-    document.querySelectorAll('.nav-item').forEach(e => e.onclick = () => switchTab(e.dataset.tab));
-    
-    const mobileNav = document.getElementById('mobileNav');
-    if (!mobileNav) return;
-    mobileNav.innerHTML = `
-      <div class="mobile-nav-item ${currentTab==='dashboard' ? 'active' : ''}" data-tab="dashboard">
-        <i class="${icons.dashboard}"></i><span>Home</span>
-      </div>
-      <div class="mobile-nav-item ${currentTab==='revision' ? 'active' : ''}" data-tab="revision">
-        <i class="${icons.revision}"></i><span>Revise</span>
-      </div>
-      <div class="mobile-nav-item ${currentTab==='definitions' ? 'active' : ''}" data-tab="definitions">
-        <i class="${icons.definitions}"></i><span>Terms</span>
-      </div>
-      <div class="mobile-nav-item" id="moreBtnMobile">
-        <i class="fas fa-ellipsis-h"></i><span>More</span>
-      </div>
-    `;
-    document.querySelectorAll('.mobile-nav-item[data-tab]').forEach(el => {
-      el.onclick = () => switchTab(el.dataset.tab);
-    });
-    const moreBtn = document.getElementById('moreBtnMobile');
-    if (moreBtn) moreBtn.onclick = openBottomSheet;
-    
-    const sheetContainer = document.getElementById('sheetTabsContainer');
-    if (sheetContainer) {
-      sheetContainer.innerHTML = sheetTabs.map(tab => `
-        <div class="sheet-tab-card" data-tab="${tab}">
-          <i class="${icons[tab]}"></i>
-          <span>${tab.charAt(0).toUpperCase() + tab.slice(1)}</span>
         </div>
-      `).join('');
-      document.querySelectorAll('.sheet-tab-card').forEach(card => {
-        card.onclick = () => {
-          switchTab(card.dataset.tab);
-          closeBottomSheet();
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col bg-white rounded-3xl my-3 mr-3 shadow-sm border border-gray-100 overflow-hidden">
+        <header class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
+            <div class="flex-1 max-w-2xl relative">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg"></i>
+                <input type="text" id="search-input" placeholder="Search in current folder" class="block w-full pl-10 pr-3 py-2 border-transparent rounded-full bg-[#f1f3f4] focus:bg-white focus:ring-0 outline-none text-sm">
+            </div>
+            <div class="flex items-center gap-4 ml-4">
+                <button onclick="refreshCurrentView()" class="p-2 hover:bg-gray-100 rounded-full"><i class="ph ph-arrow-clockwise text-xl"></i></button>
+                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-medium">U</div>
+            </div>
+        </header>
+
+        <!-- Breadcrumbs + actions -->
+        <div class="px-6 py-3 flex items-center justify-between border-b border-gray-100">
+            <div class="flex items-center gap-2 text-sm" id="breadcrumb-container"></div>
+            <div class="flex gap-2">
+                <button onclick="createNewFolder()" class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"><i class="ph ph-folder-plus"></i> New Folder</button>
+                <button onclick="createNewFile()" class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"><i class="ph ph-file-plus"></i> New Text File</button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6" id="file-container">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="items-grid"></div>
+        </div>
+    </main>
+
+    <!-- Settings Modal (centered) -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-medium">Settings</h3>
+                <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800"><i class="ph ph-x text-xl"></i></button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-sm font-medium">Saved Locations</label>
+                    <button onclick="addNewLocation()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100"><i class="ph ph-plus"></i> Add</button>
+                </div>
+                <div id="locations-list" class="space-y-2 max-h-60 overflow-y-auto">
+                    <!-- Dynamic list will render here -->
+                </div>
+                <div class="pt-4 border-t mt-4"><button onclick="clearAllHandles()" class="text-red-600 text-sm">Reset all saved folder permissions</button></div>
+            </div>
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end"><button onclick="closeSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button></div>
+        </div>
+    </div>
+
+    <!-- Rename Modal (centered) -->
+    <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
+        <div class="bg-white rounded-xl w-96 p-6">
+            <h3 class="text-lg font-medium mb-4">Rename</h3>
+            <input type="text" id="rename-input" class="w-full border rounded-lg px-3 py-2 mb-4">
+            <div class="flex justify-end gap-2"><button onclick="closeRenameModal()" class="px-3 py-1 bg-gray-200 rounded">Cancel</button><button onclick="confirmRename()" class="px-3 py-1 bg-blue-600 text-white rounded">Rename</button></div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu hidden"></div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
+
+    <script>
+        // ======================= PERSISTENCE WITH INDEXEDDB =======================
+        let currentDirectoryHandle = null;
+        let currentPath = [];
+        let currentTab = 'my-files';
+        let savedFolders = [];
+        let recentFiles = [];
+        let starredFiles = [];
+        let contextTarget = null;
+
+        function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('FileExplorerDB', 5);
+                request.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('handles')) db.createObjectStore('handles');
+                    if (!db.objectStoreNames.contains('recent')) db.createObjectStore('recent', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('starred')) db.createObjectStore('starred', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('appState')) db.createObjectStore('appState');
+                };
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // ---------- File & Folder Handles Management ----------
+        async function loadHandles() {
+            const db = await openDB();
+            const tx = db.transaction('handles', 'readonly');
+            const req = tx.objectStore('handles').openCursor();
+            savedFolders = [];
+            
+            await new Promise(r => {
+                req.onsuccess = (e) => {
+                    const cursor = e.target.result;
+                    if (cursor) {
+                        const item = cursor.value;
+                        if (item && item.handle) {
+                            if (!item.id) {
+                                item.id = cursor.key || ('folder_' + Date.now() + Math.random());
+                                item.name = item.handle.name || item.key;
+                            }
+                            savedFolders.push(item);
+                        }
+                        cursor.continue();
+                    } else {
+                        r();
+                    }
+                };
+            });
+            updateSettingsInputs();
+        }
+
+        function updateSettingsInputs() {
+            const list = document.getElementById('locations-list');
+            if (!list) return;
+            if (savedFolders.length === 0) {
+                list.innerHTML = '<div class="text-sm text-gray-500 italic">No locations saved yet.</div>';
+                return;
+            }
+            list.innerHTML = savedFolders.map(f => `
+                <div class="flex gap-2 items-center">
+                    <input type="text" readonly value="${escapeHtml(f.name)}" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50">
+                    <button onclick="removeLocation('${f.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg text-sm transition-colors"><i class="ph ph-trash"></i></button>
+                </div>
+            `).join('');
+        }
+
+        async function addNewLocation() {
+            try {
+                const handle = await window.showDirectoryPicker();
+                const id = 'folder_' + Date.now();
+                const folderObj = { id, name: handle.name, handle };
+                savedFolders.push(folderObj);
+                
+                const db = await openDB();
+                const tx = db.transaction('handles', 'readwrite');
+                tx.objectStore('handles').put(folderObj, id);
+                await new Promise(r => tx.oncomplete = r);
+                
+                updateSettingsInputs();
+                showToast(`Added ${handle.name}`);
+                if (currentTab === 'my-files') await renderMyFiles();
+            } catch(e) { showToast('Selection cancelled'); }
+        }
+
+        async function removeLocation(id) {
+            savedFolders = savedFolders.filter(f => f.id !== id);
+            const db = await openDB();
+            const tx = db.transaction('handles', 'readwrite');
+            tx.objectStore('handles').delete(id);
+            await new Promise(r => tx.oncomplete = r);
+            updateSettingsInputs();
+            if (currentTab === 'my-files') await renderMyFiles();
+            showToast('Location removed');
+        }
+
+        function clearAllHandles() {
+            savedFolders = [];
+            openDB().then(db => {
+                const tx = db.transaction('handles', 'readwrite');
+                tx.objectStore('handles').clear();
+                tx.oncomplete = () => { updateSettingsInputs(); showToast('All saved folder permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
+            });
+        }
+
+        async function saveCurrentState() {
+            if (!currentDirectoryHandle) return;
+            const db = await openDB();
+            const tx = db.transaction('appState', 'readwrite');
+            const store = tx.objectStore('appState');
+            store.put(currentDirectoryHandle, 'currentDir');
+            store.put(currentPath, 'currentPath');
+            store.put(currentTab, 'currentTab');
+            await new Promise(r => tx.oncomplete = r);
+        }
+
+        async function loadCurrentState() {
+            const db = await openDB();
+            if (!db.objectStoreNames.contains('appState')) return;
+            const tx = db.transaction('appState', 'readonly');
+            const store = tx.objectStore('appState');
+            const savedDir = await new Promise(r => { const req = store.get('currentDir'); req.onsuccess = () => r(req.result); });
+            const savedPath = await new Promise(r => { const req = store.get('currentPath'); req.onsuccess = () => r(req.result); });
+            const savedTab = await new Promise(r => { const req = store.get('currentTab'); req.onsuccess = () => r(req.result); });
+            if (savedDir && savedDir.name) {
+                currentDirectoryHandle = savedDir;
+                if (Array.isArray(savedPath)) currentPath = savedPath.filter(h => h && h.name);
+                if (savedTab) currentTab = savedTab;
+            }
+        }
+
+        async function saveRecentList() {
+            const db = await openDB();
+            const tx = db.transaction('recent', 'readwrite');
+            const store = tx.objectStore('recent');
+            store.clear();
+            for (let item of recentFiles.slice(0, 20)) store.put(item);
+            await new Promise(r => tx.oncomplete = r);
+        }
+        async function saveStarredList() {
+            const db = await openDB();
+            const tx = db.transaction('starred', 'readwrite');
+            const store = tx.objectStore('starred');
+            store.clear();
+            for (let item of starredFiles) store.put(item);
+            await new Promise(r => tx.oncomplete = r);
+        }
+        async function loadRecentAndStarred() {
+            const db = await openDB();
+            if (db.objectStoreNames.contains('recent')) {
+                const tx = db.transaction('recent', 'readonly');
+                const recent = await new Promise(r => { const req = tx.objectStore('recent').getAll(); req.onsuccess = () => r(req.result); });
+                recentFiles = recent.map(r => ({ id: r.id, name: r.name, handle: r.handle, parentHandle: r.parentHandle, isFolder: r.isFolder }));
+            }
+            if (db.objectStoreNames.contains('starred')) {
+                const tx = db.transaction('starred', 'readonly');
+                const starred = await new Promise(r => { const req = tx.objectStore('starred').getAll(); req.onsuccess = () => r(req.result); });
+                starredFiles = starred.map(s => ({ id: s.id, name: s.name, handle: s.handle, parentHandle: s.parentHandle, isFolder: s.isFolder }));
+            }
+        }
+
+        // ---------- File & Folder Operations ----------
+        async function getFilesAndFolders(dirHandle) {
+            const folders = [], files = [];
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'directory') folders.push(entry);
+                else files.push(entry);
+            }
+            folders.sort((a,b) => a.name.localeCompare(b.name));
+            files.sort((a,b) => a.name.localeCompare(b.name));
+            return { folders, files };
+        }
+
+        async function renderCurrentDirectory(prompt = false) {
+            if (!currentDirectoryHandle) {
+                document.getElementById('items-grid').innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">No folder selected. Click "Computers" to pick a folder.</div>';
+                updateBreadcrumbs();
+                return;
+            }
+
+            const hasPermission = await ensurePermission(currentDirectoryHandle, prompt);
+
+            if (!hasPermission) {
+                const grid = document.getElementById('items-grid');
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center py-20 text-center">
+                        <i class="ph-fill ph-lock-key text-6xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-700 font-medium text-lg">Permission Required</p>
+                        <p class="text-gray-500 text-sm mt-2 max-w-md">The browser requires your permission to access "${escapeHtml(currentDirectoryHandle.name)}" after a page reload.</p>
+                        <button id="grant-btn" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Grant Access</button>
+                    </div>
+                `;
+                document.getElementById('grant-btn').onclick = async () => {
+                    if (await ensurePermission(currentDirectoryHandle, true)) {
+                        await renderCurrentDirectory(false);
+                    } else {
+                        showToast('Permission denied.');
+                    }
+                };
+                updateBreadcrumbs();
+                return;
+            }
+
+            const { folders, files } = await getFilesAndFolders(currentDirectoryHandle);
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = '';
+            for (const folder of folders) grid.appendChild(createItemCard(folder, true));
+            for (const file of files) grid.appendChild(createItemCard(file, false));
+            if (folders.length === 0 && files.length === 0) grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">This folder is empty</div>';
+            updateBreadcrumbs();
+            updateStorageInfo();
+            await saveCurrentState();
+        }
+
+        function createItemCard(handle, isFolder) {
+            const div = document.createElement('div');
+            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition border border-transparent hover:border-gray-200 relative cursor-pointer';
+            const icon = isFolder ? '<i class="ph-fill ph-folder text-4xl text-yellow-600"></i>' : getFileIcon(handle.name);
+            const sizeInfo = isFolder ? '' : `<span class="text-xs text-gray-500">${formatSize(handle.size)}</span>`;
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    ${icon}
+                    <div class="file-actions flex gap-1">
+                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); renameItem('${handle.name}', ${isFolder})"><i class="ph ph-pencil-simple text-sm"></i></button>
+                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); deleteItem('${handle.name}', ${isFolder})"><i class="ph ph-trash text-sm"></i></button>
+                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); toggleStar('${handle.name}', ${isFolder})"><i class="ph ph-star text-sm"></i></button>
+                    </div>
+                </div>
+                <span class="text-sm font-medium truncate">${escapeHtml(handle.name)}</span>
+                ${sizeInfo}
+            `;
+            div.addEventListener('click', async (e) => {
+                if (e.target.closest('.file-actions')) return;
+                if (isFolder) {
+                    currentPath.push(currentDirectoryHandle);
+                    currentDirectoryHandle = handle;
+                    await renderCurrentDirectory(true);
+                    addToRecent(handle, true);
+                } else {
+                    await openFile(handle);
+                    addToRecent(handle, false);
+                }
+            });
+            div.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                contextTarget = { handle, name: handle.name, isFolder };
+                showContextMenu(e.clientX, e.clientY);
+            });
+            return div;
+        }
+
+        async function openFile(fileHandle) {
+            try {
+                const file = await fileHandle.getFile();
+                const url = URL.createObjectURL(file);
+                window.open(url, '_blank');
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                showToast(`Opened ${file.name}`);
+            } catch(err) { showToast(`Cannot open: ${err.message}`); }
+        }
+
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const map = { pdf: 'ph-file-pdf text-red-500', jpg: 'ph-image text-blue-500', jpeg: 'ph-image text-blue-500', png: 'ph-image text-blue-500', gif: 'ph-image text-blue-500', svg: 'ph-image text-purple-500', doc: 'ph-file-doc text-blue-600', docx: 'ph-file-doc text-blue-600', xls: 'ph-file-xls text-green-600', xlsx: 'ph-file-xls text-green-600', ppt: 'ph-file-ppt text-orange-500', mp3: 'ph-music-note text-pink-500', mp4: 'ph-video text-purple-500', txt: 'ph-file-text text-gray-600', js: 'ph-file-code text-yellow-600', html: 'ph-file-code text-orange-500', json: 'ph-file-code text-gray-600' };
+            return map[ext] ? `<i class="ph-fill ${map[ext]} text-4xl"></i>` : `<i class="ph-fill ph-file text-4xl text-gray-500"></i>`;
+        }
+
+        function formatSize(bytes) { if (!bytes) return ''; const sizes = ['B','KB','MB','GB']; const i = Math.floor(Math.log(bytes)/Math.log(1024)); return (bytes/Math.pow(1024,i)).toFixed(1)+' '+sizes[i]; }
+
+        async function updateStorageInfo() {
+            if (!currentDirectoryHandle) return;
+            try {
+                let total = 0;
+                for await (const entry of currentDirectoryHandle.values()) if (entry.kind === 'file') total += (await entry.getFile()).size;
+                const usedGB = (total / (1024**3)).toFixed(1);
+                document.getElementById('storage-info').innerHTML = `<div class="w-full bg-gray-200 rounded-full h-1.5 mb-2"><div class="bg-blue-600 h-1.5 rounded-full" style="width: ${Math.min(100, (total/5e9)*100)}%"></div></div><span class="text-xs text-gray-600">${usedGB} GB used (approx)</span>`;
+            } catch(e) {}
+        }
+
+        function updateBreadcrumbs() {
+            const container = document.getElementById('breadcrumb-container');
+            let html = `<button onclick="navigateToRoot()" class="hover:underline text-gray-700">Root</button>`;
+            for (let i = 0; i < currentPath.length; i++) {
+                html += `<i class="ph ph-caret-right mx-1"></i>`;
+                html += `<button onclick="navigateToLevel(${i})" class="hover:underline">${escapeHtml(currentPath[i].name)}</button>`;
+            }
+            if (currentDirectoryHandle) html += `<i class="ph ph-caret-right mx-1"></i><span class="font-medium">${escapeHtml(currentDirectoryHandle.name)}</span>`;
+            container.innerHTML = html;
+        }
+
+        async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(true); }
+        async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(true); }
+        async function refreshCurrentView() { await renderCurrentDirectory(true); }
+
+        // Rename
+        let renameTarget = null, renameIsFolder = false;
+        function renameItem(name, isFolder) { renameTarget = name; renameIsFolder = isFolder; document.getElementById('rename-input').value = name; document.getElementById('rename-modal').classList.remove('hidden'); }
+        async function confirmRename() {
+            const newName = document.getElementById('rename-input').value.trim();
+            if (!newName || newName === renameTarget) { closeRenameModal(); return; }
+            try {
+                const targetHandle = await currentDirectoryHandle.getFileHandle(renameTarget, { create: false }).catch(() => currentDirectoryHandle.getDirectoryHandle(renameTarget, { create: false }));
+                if (!targetHandle) throw new Error('Not found');
+                await targetHandle.move(newName);
+                showToast(`Renamed to ${newName}`);
+                await renderCurrentDirectory(false);
+            } catch(e) { showToast('Rename failed: ' + e.message); }
+            closeRenameModal();
+        }
+        function closeRenameModal() { document.getElementById('rename-modal').classList.add('hidden'); renameTarget = null; }
+
+        async function deleteItem(name, isFolder) {
+            if (!confirm(`Delete ${name} permanently?`)) return;
+            try {
+                if (isFolder) await currentDirectoryHandle.removeEntry(name, { recursive: true });
+                else await currentDirectoryHandle.removeEntry(name);
+                showToast(`Deleted ${name}`);
+                await renderCurrentDirectory(false);
+            } catch(e) { showToast('Delete failed: ' + e.message); }
+        }
+
+        async function createNewFolder() {
+            const folderName = prompt('New folder name:');
+            if (!folderName) return;
+            try {
+                await currentDirectoryHandle.getDirectoryHandle(folderName, { create: true });
+                showToast(`Folder "${folderName}" created`);
+                await renderCurrentDirectory(false);
+            } catch(e) { showToast('Error: ' + e.message); }
+        }
+
+        async function createNewFile() {
+            const fileName = prompt('New text file name (e.g., note.txt):');
+            if (!fileName) return;
+            try {
+                const fileHandle = await currentDirectoryHandle.getFileHandle(fileName, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write('');
+                await writable.close();
+                showToast(`File "${fileName}" created`);
+                await renderCurrentDirectory(false);
+            } catch(e) { showToast('Error: ' + e.message); }
+        }
+
+        function addToRecent(handle, isFolder) {
+            const id = `${handle.name}_${Date.now()}`;
+            recentFiles = recentFiles.filter(r => r.name !== handle.name).slice(0, 19);
+            recentFiles.unshift({ id, name: handle.name, handle, parentHandle: currentDirectoryHandle, isFolder });
+            saveRecentList();
+        }
+
+        async function toggleStar(name, isFolder) {
+            const exists = starredFiles.find(s => s.name === name);
+            if (exists) {
+                starredFiles = starredFiles.filter(s => s.name !== name);
+                showToast(`Removed from starred`);
+            } else {
+                const handle = isFolder ? await currentDirectoryHandle.getDirectoryHandle(name) : await currentDirectoryHandle.getFileHandle(name);
+                starredFiles.push({ id: `${name}_${Date.now()}`, name, handle, parentHandle: currentDirectoryHandle, isFolder });
+                showToast(`Added to starred`);
+            }
+            await saveStarredList();
+            if (currentTab === 'starred') renderStarred();
+        }
+
+        // ---------- Context Menu ----------
+        function showContextMenu(x, y) {
+            const menu = document.getElementById('context-menu');
+            menu.innerHTML = '';
+            const items = ['Open', 'Rename', 'Delete', 'Star/Unstar'];
+            const actions = [
+                () => {
+                    if (contextTarget.isFolder) {
+                        currentPath.push(currentDirectoryHandle);
+                        currentDirectoryHandle = contextTarget.handle;
+                        renderCurrentDirectory(true);
+                        addToRecent(contextTarget.handle, true);
+                    } else { openFile(contextTarget.handle); addToRecent(contextTarget.handle, false); }
+                },
+                () => renameItem(contextTarget.name, contextTarget.isFolder),
+                () => deleteItem(contextTarget.name, contextTarget.isFolder),
+                () => toggleStar(contextTarget.name, contextTarget.isFolder)
+            ];
+            for (let i = 0; i < items.length; i++) {
+                const div = document.createElement('div');
+                div.className = 'context-menu-item';
+                div.innerHTML = `<i class="ph ph-${items[i].toLowerCase().replace(' ','-')}"></i> ${items[i]}`;
+                div.onclick = () => { actions[i](); hideContextMenu(); };
+                menu.appendChild(div);
+            }
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.classList.remove('hidden');
+            setTimeout(() => document.addEventListener('click', hideContextMenuOnClick), 0);
+        }
+        function hideContextMenu() { document.getElementById('context-menu').classList.add('hidden'); document.removeEventListener('click', hideContextMenuOnClick); }
+        function hideContextMenuOnClick(e) { if (!document.getElementById('context-menu').contains(e.target)) hideContextMenu(); }
+
+        // ---------- Tab Rendering ----------
+        async function switchTab(tabId, event) {
+            if(event) event.preventDefault();
+            currentTab = tabId;
+            document.querySelectorAll('nav a').forEach(a => { a.classList.remove('active-nav'); a.classList.add('text-gray-700'); });
+            const activeLink = document.querySelector(`[data-tab="${tabId}"]`);
+            activeLink.classList.add('active-nav'); activeLink.classList.remove('text-gray-700');
+            if (tabId === 'my-files') await renderMyFiles();
+            else if (tabId === 'computers') await renderComputers();
+            else if (tabId === 'recent') await renderRecent();
+            else if (tabId === 'starred') await renderStarred();
+            await saveCurrentState();
+        }
+
+        async function renderMyFiles() {
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = '';
+            
+            if (savedFolders.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-300 mt-2">
+                        <i class="ph ph-folder-open text-5xl text-gray-400 mb-3"></i>
+                        <p class="text-gray-600 font-medium">No saved locations</p>
+                        <p class="text-sm text-gray-500 mb-4">Add folders to access them quickly</p>
+                        <button onclick="addNewLocation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">Add Folder</button>
+                    </div>
+                `;
+            } else {
+                for (const folder of savedFolders) {
+                    const card = createShortcutCard(folder.name, folder.handle);
+                    grid.appendChild(card);
+                }
+            }
+
+            const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2'; recentTitle.innerText = 'Recent Files';
+            grid.appendChild(recentTitle);
+            for (const item of recentFiles.slice(0,4)) grid.appendChild(createRecentCard(item));
+        }
+
+        function createShortcutCard(name, handle) {
+            const div = document.createElement('div');
+            div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition-colors';
+            div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium truncate w-full text-center">${escapeHtml(name)}</span>`;
+            div.onclick = async () => {
+                if (handle) { 
+                    currentPath = []; 
+                    currentDirectoryHandle = handle; 
+                    await renderCurrentDirectory(true); 
+                }
+            };
+            return div;
+        }
+
+        function createRecentCard(item) {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-3 p-3 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
+            div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder' : 'ph-file'} text-2xl text-gray-600"></i><span class="text-sm truncate">${escapeHtml(item.name)}</span>`;
+            div.onclick = async () => {
+                if (item.parentHandle) {
+                    currentPath = []; currentDirectoryHandle = item.parentHandle;
+                    if (await ensurePermission(item.parentHandle, true)) {
+                        await renderCurrentDirectory(false);
+                        if (!item.isFolder) {
+                            try { const fresh = await item.parentHandle.getFileHandle(item.name); await openFile(fresh); }
+                            catch(e) { showToast('Cannot open'); }
+                        }
+                    } else {
+                        await renderCurrentDirectory(false);
+                    }
+                } else showToast('Parent folder missing');
+            };
+            return div;
+        }
+
+        async function renderComputers() {
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20"><i class="ph ph-computer-tower text-6xl text-gray-400"></i><p class="mt-4 text-gray-600">Pick any folder on your computer to manage</p><button onclick="pickComputerFolder()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">Select Folder</button></div>`;
+        }
+
+        async function pickComputerFolder() {
+            try {
+                const handle = await window.showDirectoryPicker();
+                
+                // Automatically save selected locations for easier access in "My Files"
+                const exists = savedFolders.find(f => f.name === handle.name);
+                if (!exists) {
+                    const id = 'folder_' + Date.now();
+                    const folderObj = { id, name: handle.name, handle };
+                    savedFolders.push(folderObj);
+                    
+                    const db = await openDB();
+                    const tx = db.transaction('handles', 'readwrite');
+                    tx.objectStore('handles').put(folderObj, id);
+                    await new Promise(r => tx.oncomplete = r);
+                    
+                    updateSettingsInputs();
+                }
+
+                currentPath = [];
+                currentDirectoryHandle = handle;
+                await renderCurrentDirectory(false);
+                showToast(`Now managing: ${handle.name}`);
+            } catch(e) { showToast('Cancelled'); }
+        }
+
+        async function renderRecent() {
+            const grid = document.getElementById('items-grid');
+            if (recentFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No recent files</div>';
+            else { grid.innerHTML = ''; for (const item of recentFiles) grid.appendChild(createRecentCard(item)); }
+        }
+
+        async function renderStarred() {
+            const grid = document.getElementById('items-grid');
+            if (starredFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No starred items</div>';
+            else { grid.innerHTML = ''; for (const item of starredFiles) grid.appendChild(createRecentCard(item)); }
+        }
+
+        // ---------- Helpers ----------
+        async function ensurePermission(handle, prompt = true) {
+            if (!handle) return false;
+            const opts = { mode: 'readwrite' };
+            if ((await handle.queryPermission(opts)) === 'granted') return true;
+            if (prompt) {
+                try {
+                    if ((await handle.requestPermission(opts)) === 'granted') return true;
+                } catch (e) {
+                    console.error("Permission request error:", e);
+                }
+            }
+            return false;
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.remove('opacity-0'); toast.classList.add('opacity-100');
+            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3000);
+        }
+        function escapeHtml(str) { return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+        function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+        function showNewMenu() { showToast('Use the buttons above to create new folders or files'); }
+
+        // ---------- Start ----------
+        window.onload = async () => {
+            document.getElementById('settings-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeSettings();
+            });
+            document.getElementById('rename-modal').addEventListener('click', function(e) {
+                if (e.target === this) closeRenameModal();
+            });
+
+            await loadHandles();
+            await loadRecentAndStarred();
+            await loadCurrentState();
+            await switchTab(currentTab, null);
+            if (currentDirectoryHandle) await renderCurrentDirectory(false);
+            else if (currentTab === 'my-files') await renderMyFiles();
         };
-      });
-    }
-    
-    const closeBtn = document.getElementById('closeSheetBtn');
-    const overlay = document.getElementById('sheetOverlay');
-    if (closeBtn) closeBtn.onclick = closeBottomSheet;
-    if (overlay) overlay.onclick = closeBottomSheet;
-  }
-
-  function attachCollapsible() {
-    document.querySelectorAll('.add-section-header').forEach(h => {
-      h.onclick = () => {
-        const c = document.getElementById(h.dataset.expand);
-        c.classList.toggle('expanded');
-        h.querySelector('.fa-chevron-down').style.transform = c.classList.contains('expanded') ? 'rotate(180deg)' : '';
-      };
-    });
-  }
-
-  // ======== DASHBOARD ========
-  async function renderDashboard() {
-    document.getElementById('headerTitle').innerText = "Dashboard";
-    const today = getTodayStr();
-    const allSRItems = [...allItems.revision, ...allItems.equations, ...allItems.essays];
-    const dueTodayCount = allSRItems.filter(i => (i.nextReviewDate || today) === today).length;
-    const overdueCount = allSRItems.filter(i => (i.nextReviewDate || today) < today).length;
-    const html = `
-      <div class="glass-card" style="background: linear-gradient(135deg, var(--accent), #8b5cf6); color: white;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <h2 style="color:white;"><i class="fas fa-sun"></i> Good ${new Date().getHours() < 12 ? 'Morning' : 'Day'}!</h2>
-            <p>You have <strong>${overdueCount}</strong> overdue tasks and <strong>${dueTodayCount}</strong> tasks due today.</p>
-          </div>
-          <button class="btn-icon" style="background:rgba(255,255,255,0.2); border:none; color:white;" onclick="window.switchTab('revision')">Start Review</button>
-        </div>
-      </div>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
-        <div class="glass-card" style="text-align:center; padding:1.5rem; cursor:pointer;" onclick="window.switchTab('revision')"><i class="fas fa-brain" style="font-size:2rem; color:var(--accent);"></i><h3>Revision</h3><h2>${allItems.revision.length}</h2></div>
-        <div class="glass-card" style="text-align:center; padding:1.5rem; cursor:pointer;" onclick="window.switchTab('definitions')"><i class="fas fa-book" style="font-size:2rem; color:var(--accent);"></i><h3>Definitions</h3><h2>${allItems.definitions.length}</h2></div>
-        <div class="glass-card" style="text-align:center; padding:1.5rem; cursor:pointer;" onclick="window.switchTab('pomodoro')"><i class="fas fa-clock" style="font-size:2rem; color:var(--accent);"></i><h3>Pomodoro</h3><h2>${allItems.pomodoro.length}</h2></div>
-        <div class="glass-card" style="text-align:center; padding:1.5rem; cursor:pointer;" onclick="window.switchTab('papers')"><i class="fas fa-scroll" style="font-size:2rem; color:var(--accent);"></i><h3>Papers</h3><h2>${allItems.papers.length}</h2></div>
-      </div>
-    `;
-    document.getElementById('tabContent').innerHTML = html;
-  }
-
-  // ======== REVISION ========
-  async function renderRevision() {
-    document.getElementById('headerTitle').innerText = "Revision";
-    const today = getTodayStr();
-    let items = allItems.revision;
-    const html = `<div class="glass-card"><div class="add-section"><div class="add-section-header" data-expand="revAdd"><i class="fas fa-plus-circle"></i> Add Revision Topic <i class="fas fa-chevron-down"></i></div><div class="add-section-content" id="revAdd"><div class="flex-row"><input type="text" id="rTitle" placeholder="Topic Title (Required)" style="flex:2"><input type="text" id="rContent" placeholder="Key points (Optional)" style="flex:3"><select id="rSubject">${subjects.map(s=>`<option>${s}</option>`).join('')}</select><button id="addRevBtn" class="btn-icon"><i class="fas fa-save"></i> Save</button></div></div></div><div class="flex-row" style="margin-bottom:1.5rem;"><button id="filterDue" class="btn-icon" style="background:var(--accent); color:white;">Due Today / Overdue</button><button id="filterAll" class="btn-icon">All Topics</button><button id="showAllRev" class="btn-icon"><i class="fas fa-list"></i> Full List View</button></div><div id="revList"></div></div>`;
-    document.getElementById('tabContent').innerHTML = html;
-    attachCollapsible();
-    document.getElementById('addRevBtn').onclick = async () => { const title = document.getElementById('rTitle').value; if(!title) return showToast('Title required!', true); allItems.revision.push(ensureSRFields({ id:Date.now(), title, content: document.getElementById('rContent').value, subject: document.getElementById('rSubject').value })); await saveAll(); showToast('Added'); renderRevision(); };
-    function renderList(filterDue) { const list = document.getElementById('revList'); const filtered = filterDue ? items.filter(i => ensureSRFields(i).nextReviewDate <= today) : items; if(!filtered.length) { list.innerHTML = '<p style="text-align:center; padding:2rem;">No items</p>'; return; } list.innerHTML = filtered.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.title)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.content ? `<small>${escapeHtml(i.content)}</small><br>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'revision')">Review Done</button><div style="display:flex; gap:5px; margin-top:5px;"><button class="btn-icon" style="padding:4px 8px;" onclick="window.editDate(${i.id}, 'revision')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" style="padding:4px 8px; border-color:#ef4444; color:#ef4444;" onclick="window.deleteItem(${i.id}, 'revision')"><i class="fas fa-trash"></i></button></div></div></div>`).join(''); }
-    document.getElementById('filterDue').onclick = () => { document.getElementById('filterDue').style.background='var(--accent)'; document.getElementById('filterDue').style.color='white'; document.getElementById('filterAll').style.background=''; document.getElementById('filterAll').style.color=''; renderList(true); };
-    document.getElementById('filterAll').onclick = () => { document.getElementById('filterAll').style.background='var(--accent)'; document.getElementById('filterAll').style.color='white'; document.getElementById('filterDue').style.background=''; document.getElementById('filterDue').style.color=''; renderList(false); };
-    document.getElementById('showAllRev').onclick = () => showAllModal('revision', 'Revision Topics', (container, data) => { container.innerHTML = data.map(i => `<div style="border-bottom:1px solid var(--border-color); padding:10px; display:flex; justify-content:space-between;"><div><strong>${escapeHtml(i.title)}</strong><br>${getSRStatsHtml(i)}</div><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'revision'); this.parentElement.remove();">Delete</button></div>`).join(''); });
-    renderList(true);
-  }
-  // ----- EQUATIONS -----
-  async function renderEquations() {
-    document.getElementById('headerTitle').innerText = "Equations";
-    const html = `<div class="glass-card"><div class="add-section"><div class="add-section-header" data-expand="eqAdd"><i class="fas fa-plus-circle"></i> Add Equation <i class="fas fa-chevron-down"></i></div><div class="add-section-content" id="eqAdd"><div class="flex-row"><input type="text" id="eName" placeholder="Equation Name" style="flex:1"><input type="text" id="eFormula" placeholder="Formula" style="flex:1"><select id="eSubject">${subjects.map(s=>`<option>${s}</option>`).join('')}</select><button id="addEqBtn" class="btn-icon">Save</button></div></div></div><div id="eqList"></div></div>`;
-    document.getElementById('tabContent').innerHTML = html;
-    attachCollapsible();
-    document.getElementById('addEqBtn').onclick = async () => { const name = document.getElementById('eName').value; if(!name) return showToast('Name required', true); allItems.equations.push(ensureSRFields({ id:Date.now(), name, formula: document.getElementById('eFormula').value, subject: document.getElementById('eSubject').value })); await saveAll(); renderEquations(); };
-    document.getElementById('eqList').innerHTML = allItems.equations.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.name)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.formula ? `<div style="font-family:monospace;">${escapeHtml(i.formula)}</div>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'equations')">Review</button><div><button class="btn-icon" onclick="window.editDate(${i.id}, 'equations')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'equations')"><i class="fas fa-trash"></i></button></div></div></div>`).join('');
-  }
-  // ----- ESSAYS -----
-  async function renderEssays() {
-    document.getElementById('headerTitle').innerText = "Essays";
-    const html = `<div class="glass-card"><div class="add-section"><div class="add-section-header" data-expand="esAdd"><i class="fas fa-plus-circle"></i> Add Essay <i class="fas fa-chevron-down"></i></div><div class="add-section-content" id="esAdd"><div class="flex-row"><input type="text" id="esTitle" placeholder="Topic" style="flex:2"><input type="text" id="esPoints" placeholder="Key Points" style="flex:3"><select id="esSubject">${subjects.map(s=>`<option>${s}</option>`).join('')}</select><button id="addEsBtn" class="btn-icon">Save</button></div></div></div><div id="esList"></div></div>`;
-    document.getElementById('tabContent').innerHTML = html;
-    attachCollapsible();
-    document.getElementById('addEsBtn').onclick = async () => { const title = document.getElementById('esTitle').value; if(!title) return showToast('Title required', true); allItems.essays.push(ensureSRFields({ id:Date.now(), title, points: document.getElementById('esPoints').value, subject: document.getElementById('esSubject').value })); await saveAll(); renderEssays(); };
-    document.getElementById('esList').innerHTML = allItems.essays.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.title)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.points ? `<small>${escapeHtml(i.points)}</small><br>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'essays')">Review</button><div><button class="btn-icon" onclick="window.editDate(${i.id}, 'essays')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'essays')"><i class="fas fa-trash"></i></button></div></div></div>`).join('');
-  }
-  // ----- PAPERS -----
-  async function renderPapers() {
-    document.getElementById('headerTitle').innerText = "Past Papers";
-    const html = `<div class="glass-card"><div class="add-section"><div class="add-section-header" data-expand="pAdd"><i class="fas fa-plus-circle"></i> Add Paper <i class="fas fa-chevron-down"></i></div><div class="add-section-content" id="pAdd"><div class="flex-row"><select id="pSubject">${subjects.map(s=>`<option>${s}</option>`).join('')}</select><input type="number" id="pMarks" placeholder="Marks" style="width:100px;"><input type="number" id="pTotal" value="100" style="width:100px;"><input type="date" id="pDate" value="${getTodayStr()}"><button id="addPBtn" class="btn-icon">Save</button></div></div></div><div id="pList"></div></div>`;
-    document.getElementById('tabContent').innerHTML = html;
-    attachCollapsible();
-    document.getElementById('addPBtn').onclick = async () => { const marks = parseInt(document.getElementById('pMarks').value); if(isNaN(marks)) return showToast('Marks required', true); const total = parseInt(document.getElementById('pTotal').value) || 100; allItems.papers.push({ id:Date.now(), subject:document.getElementById('pSubject').value, marks, total, date:document.getElementById('pDate').value }); await saveAll(); renderPapers(); };
-    document.getElementById('pList').innerHTML = allItems.papers.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.subject)}</strong> | ${i.date}<br>Score: ${i.marks}/${i.total} (${((i.marks/i.total)*100).toFixed(1)}%)</div><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'papers')"><i class="fas fa-trash"></i></button></div>`).join('');
-  }
-  // ----- POMODORO -----
-  let pomoInterval = null, pomoTimeLeft = 25*60, pomoMode = 'focus';
-  const pomoDurations = { focus: 25*60, shortBreak: 5*60, longBreak: 15*60 };
-  async function renderPomodoro() {
-    document.getElementById('headerTitle').innerText = "Focus Timer";
-    const html = `<div id="pomodoroWrapper" class="pomodoro-fullscreen-wrapper"><div style="position:absolute; top:20px; right:20px;"><button id="pomoFullscreenBtn" class="btn-icon"><i class="fas fa-expand"></i></button></div><div class="flex-row"><button class="btn-icon ${pomoMode==='focus'?'active':''}" onclick="window.setPomoMode('focus')">🎯 Focus</button><button class="btn-icon ${pomoMode==='shortBreak'?'active':''}" onclick="window.setPomoMode('shortBreak')">🍵 Short Break</button><button class="btn-icon ${pomoMode==='longBreak'?'active':''}" onclick="window.setPomoMode('longBreak')">🌿 Long Break</button></div><div id="pomoCircle" class="pomo-timer-circle"><div id="pomoDisplay" class="timer-text-display">25:00</div></div><div class="flex-row"><button id="pomoPlay" class="btn-icon">Start</button><button id="pomoReset" class="btn-icon">Reset</button></div><div class="pomo-keyboard-hints"><span><kbd>Space</kbd> Play/Pause</span><span><kbd>R</kbd> Reset</span><span><kbd>F</kbd> Fullscreen</span><span><kbd>←</kbd> <kbd>→</kbd> Mode</span></div></div>`;
-    document.getElementById('tabContent').innerHTML = html;
-    const updateDisplay = () => { const d = document.getElementById('pomoDisplay'); if(d) { const m = Math.floor(pomoTimeLeft/60).toString().padStart(2,'0'); const s = (pomoTimeLeft%60).toString().padStart(2,'0'); d.innerText = `${m}:${s}`; } };
-    updateDisplay();
-    document.getElementById('pomoPlay').onclick = () => { const circle = document.getElementById('pomoCircle'); const btn = document.getElementById('pomoPlay'); if(pomoInterval) { clearInterval(pomoInterval); pomoInterval=null; circle.classList.remove('active-glow'); btn.innerHTML = '<i class="fas fa-play"></i> Start'; } else { circle.classList.add('active-glow'); btn.innerHTML = '<i class="fas fa-pause"></i> Pause'; pomoInterval = setInterval(() => { pomoTimeLeft--; updateDisplay(); if(pomoTimeLeft <= 0) { clearInterval(pomoInterval); pomoInterval=null; circle.classList.remove('active-glow'); showToast('Session Complete!'); if(pomoMode==='focus') { allItems.pomodoro.push({ id:Date.now(), type:'Focus', durationMinutes:25, date:new Date().toISOString() }); saveAll(); } pomoTimeLeft = pomoDurations[pomoMode]; updateDisplay(); btn.innerHTML = '<i class="fas fa-play"></i> Start'; } }, 1000); } };
-    document.getElementById('pomoReset').onclick = () => { clearInterval(pomoInterval); pomoInterval=null; pomoTimeLeft = pomoDurations[pomoMode]; updateDisplay(); document.getElementById('pomoCircle').classList.remove('active-glow'); document.getElementById('pomoPlay').innerHTML = '<i class="fas fa-play"></i> Start'; };
-    document.getElementById('pomoFullscreenBtn').onclick = () => { const wrap = document.getElementById('pomodoroWrapper'); if (!document.fullscreenElement) wrap.requestFullscreen(); else document.exitFullscreen(); };
-  }
-  window.setPomoMode = (mode) => { clearInterval(pomoInterval); pomoInterval=null; pomoMode=mode; pomoTimeLeft=pomoDurations[mode]; if(currentTab==='pomodoro') renderPomodoro(); };
-  // ----- SETTINGS -----
-  async function renderSettings() {
-    document.getElementById('headerTitle').innerText = "Settings";
-    const s = loadSettings();
-    const html = `<div class="glass-card" style="max-width:600px; margin:0 auto;"><h3>Appearance</h3><div class="flex-row"><button class="btn-icon" onclick="window.updateTheme('light')" style="${s.theme==='light'?'background:var(--accent);color:white':''}">Light</button><button class="btn-icon" onclick="window.updateTheme('dark')" style="${s.theme==='dark'?'background:var(--accent);color:white':''}">Dark</button></div><div class="flex-row"><label>Accent</label><input type="color" id="sColor" value="${s.accentColor}" onchange="window.updateColor(this.value)"></div><hr><h3>Cloud Sync</h3>${currentUser ? `<div>Logged in as ${currentUser.email}</div><button class="btn-icon" onclick="window.handleLogout()">Logout</button>` : `<button class="btn-icon" onclick="window.handleLogin()">Sign in with Google</button>`}</div>`;
-    document.getElementById('tabContent').innerHTML = html;
-  }
-  window.updateTheme = (t) => { saveSettings({ ...loadSettings(), theme:t }); renderSettings(); };
-  window.updateColor = (c) => { saveSettings({ ...loadSettings(), accentColor:c }); };
-
-  // ======== DEFINITIONS with Topic dropdown & library grouping ========
-  async function renderDefinitions() {
-    document.getElementById('headerTitle').innerText = "Definitions & Terms";
-    const dailyEntry = generateDailySuggestions();
-    const html = `
-      <div class="flex-row" style="margin-bottom:1.5rem;">
-        <button class="btn-icon" style="background:var(--accent); color:white;" onclick="window.showDefAdd()"><i class="fas fa-plus"></i> Add Term</button>
-        <button class="btn-icon" onclick="window.showAllModal('definitions', 'Full Library', window.renderDefLibrary)"><i class="fas fa-book"></i> Full Library</button>
-      </div>
-      <h3><i class="fas fa-bolt" style="color:#f59e0b;"></i> Today's Study List</h3>
-      <div id="defStudyList" style="margin-top:1rem; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1rem;"></div>
-    `;
-    document.getElementById('tabContent').innerHTML = html;
-    const listDiv = document.getElementById('defStudyList');
-    const pending = dailyEntry.definitions.filter(d => d.sessionStatus === 'incomplete');
-    if(pending.length === 0) {
-      listDiv.innerHTML = `<div class="glass-card" style="grid-column:1/-1; text-align:center;"><h3>🎉 All caught up!</h3><p>Come back tomorrow or add new definitions.</p></div>`;
-    } else {
-      listDiv.innerHTML = pending.map(d => {
-        // Ensure term is displayed correctly, fallback to "Untitled" only if empty
-        const displayTerm = (d.term && d.term.trim() !== "") ? d.term : "Untitled";
-        return `
-        <div class="def-sug-card" onclick="this.querySelector('.def-sug-hidden').style.display='block'; this.querySelector('.def-sug-reveal').style.display='none';">
-          <div class="def-sug-top"><div class="def-sug-term">${escapeHtml(displayTerm)}</div><div class="def-sug-badge">#${d.count || 0}</div></div>
-          <button class="btn-icon def-sug-reveal" style="width:100%; justify-content:center;">Show Definition</button>
-          <div class="def-sug-hidden">${escapeHtml(d.definition)}<div class="def-sug-actions"><button class="btn-icon" style="background:#10b981; color:white;" onclick="event.stopPropagation(); window.updateDefinitionStatus(${d.id}, 'pass')"><i class="fas fa-check"></i> Pass</button><button class="btn-icon" style="background:#ef4444; color:white;" onclick="event.stopPropagation(); window.updateDefinitionStatus(${d.id}, 'fail')"><i class="fas fa-times"></i> Fail</button></div></div>
-        </div>
-      `}).join('');
-    }
-  }
-
-  // Add definition modal with topic selection or new topic
-  window.showDefAdd = function() {
-    const div = document.createElement('div');
-    div.className = 'modal-overlay';
-    const existingTopics = [...new Set(allItems.definitions.map(d => d.topic).filter(t => t && t.trim() !== ""))];
-    div.innerHTML = `
-      <div class="modal">
-        <h3>Add Definition <span class="modal-close"><i class="fas fa-times"></i></span></h3>
-        <input type="text" id="mDefTerm" placeholder="Term (Required)" style="width:100%; margin-bottom:1rem;">
-        <textarea id="mDefText" rows="4" placeholder="Definition (Required)" style="width:100%; margin-bottom:1rem;"></textarea>
-        <div style="margin-bottom:1rem;">
-          <label style="display:block; margin-bottom:5px;">Topic / Unit:</label>
-          <select id="topicSelect" style="width:100%;">
-            <option value="">-- Select existing topic --</option>
-            ${existingTopics.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('')}
-            <option value="__new__">➕ Add new topic</option>
-          </select>
-          <input type="text" id="newTopicInput" placeholder="New topic name" style="width:100%; margin-top:8px; display:none;">
-        </div>
-        <button id="saveMDef" class="btn-icon" style="width:100%; justify-content:center; background:var(--accent); color:white;"><i class="fas fa-save"></i> Save Definition</button>
-      </div>
-    `;
-    document.body.appendChild(div);
-    const closeBtn = div.querySelector('.modal-close');
-    closeBtn.onclick = () => div.remove();
-    const topicSelect = div.querySelector('#topicSelect');
-    const newTopicInput = div.querySelector('#newTopicInput');
-    topicSelect.addEventListener('change', () => {
-      if (topicSelect.value === '__new__') {
-        newTopicInput.style.display = 'block';
-        newTopicInput.focus();
-      } else {
-        newTopicInput.style.display = 'none';
-      }
-    });
-    div.querySelector('#saveMDef').onclick = async () => {
-      const defText = div.querySelector('#mDefText').value;
-      if (!defText) return showToast('Definition text is required', true);
-      let term = div.querySelector('#mDefTerm').value.trim();
-      if (term === "") term = "Unknown Term"; // fallback but user can edit later
-      let finalTopic = topicSelect.value;
-      if (finalTopic === '__new__') {
-        finalTopic = newTopicInput.value.trim();
-        if (!finalTopic) return showToast('Please enter a new topic name', true);
-      } else if (finalTopic === "") {
-        finalTopic = undefined;
-      }
-      allItems.definitions.push({ id: Date.now(), term, definition: defText, topic: finalTopic || undefined, passCount: 0, failCount: 0, count: 0 });
-      await saveAll();
-      showToast('Added!');
-      div.remove();
-      renderDefinitions();
-    };
-  };
-
-  // ========== Global functions ==========
-  window.switchTab = async (t) => { currentTab = t; renderNav(); const map={dashboard:renderDashboard, revision:renderRevision, equations:renderEquations, papers:renderPapers, essays:renderEssays, pomodoro:renderPomodoro, definitions:renderDefinitions, settings:renderSettings}; if(map[t]) await map[t](); };
-  window.deleteItem = async (id, col) => { if(confirm('Delete this?')) { allItems[col] = allItems[col].filter(i=>i.id!==id); await saveAll(); if(currentTab===col) switchTab(col); } };
-  window.editDate = async (id, col) => { const idx = allItems[col].findIndex(i=>i.id===id); if(idx===-1) return; const newDate = prompt('Enter next review date (YYYY-MM-DD):', allItems[col][idx].nextReviewDate); if(newDate && /^\d{4}-\d{2}-\d{2}$/.test(newDate)) { allItems[col][idx].nextReviewDate = newDate; await saveAll(); switchTab(currentTab); } else if(newDate) showToast('Invalid format', true); };
-  window.showAllModal = showAllModal;
-  window.updateDefinitionStatus = updateDefinitionStatus;
-  window.handleReviewClick = handleReviewClick;
-  window.renderDefLibrary = renderDefLibrary;
-  window.editDefinition = editDefinition;
-
-  // Init
-  async function init() {
-    for(let k of Object.keys(allItems)) { allItems[k] = getLocalData(k); if(!allItems[k].length) allItems[k]=[]; }
-    // Migration: ensure every definition has a non-empty term
-    let changed = false;
-    for (let def of allItems.definitions) {
-      if (!def.term || def.term.trim() === "") {
-        def.term = "Term missing";
-        changed = true;
-      }
-    }
-    if (changed) await saveAll();
-    applyThemeAndStyle();
-    onAuthStateChanged(auth, async (u) => { currentUser=u; if(u){ await loadAllFromFirebase(); await saveAll(); } if(currentTab==='settings') renderSettings(); });
-    await switchTab('dashboard');
-  }
-  init();
-</script>
+    </script>
 </body>
 </html>
