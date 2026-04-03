@@ -3,133 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
+    <title>File Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
-        ::-webkit-scrollbar { width: 8px; }
+        /* Base Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
-        .active-nav { background-color: #c2e7ff; color: #001d35; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Stop all browser bounce/navigation on swipe */
+        html, body { overscroll-behavior-x: none; overscroll-behavior-y: none; }
+        
+        /* Smooth UI Transitions */
+        .active-nav { background-color: #c2e7ff; color: #001d35; transition: all 0.3s ease; }
         .active-nav i { color: #001d35; }
-        .file-item:hover .file-actions { opacity: 1; }
-        .file-actions { opacity: 0; transition: opacity 0.2s; }
+        
+        .file-item { transition: all 0.2s ease-out; }
+        .file-item:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.06); border-color: #e2e8f0; }
+        .file-item:hover .file-actions { opacity: 1; transform: translateY(0); }
+        .file-item:active { transform: translateY(-1px) scale(0.98); }
+        
+        .file-actions { opacity: 0; transform: translateY(-4px); transition: all 0.2s ease; }
+        
+        /* Icon Animations */
+        .file-item:hover .ph-folder { transform: scale(1.05); color: #ca8a04; transition: all 0.2s; }
+        .spin-anim { animation: spin 0.6s ease-in-out; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Context Menu */
         .context-menu {
             position: fixed;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             z-index: 1000;
-            min-width: 160px;
+            min-width: 180px;
+            transform-origin: top left;
+            animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            overflow: hidden;
         }
         .context-menu-item {
-            padding: 8px 16px;
+            padding: 10px 16px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             font-size: 14px;
+            transition: background 0.1s;
         }
-        .context-menu-item:hover { background-color: #f0f0f0; }
+        .context-menu-item:hover { background-color: #f1f5f9; color: #2563eb; }
+
+        /* Modal Animations */
         .modal-container {
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease-out;
         }
-        body { overscroll-behavior-x: none; } /* Prevents the browser's default page back/forward navigation */
+        .modal-content {
+            animation: slideUpPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Keyframes */
+        @keyframes popIn { 
+            0% { opacity: 0; transform: scale(0.95); } 
+            100% { opacity: 1; transform: scale(1); } 
+        }
+        @keyframes slideUpPop { 
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); } 
+            100% { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .animate-stagger { opacity: 0; animation: slideUpPop 0.4s forwards; }
     </style>
 </head>
-<body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden">
+<body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden select-none">
 
     <!-- Sidebar -->
-    <aside class="w-64 min-w-[256px] flex flex-col p-4">
-        <div class="flex items-center gap-2 px-2 mb-8 cursor-pointer">
+    <aside class="w-64 min-w-[256px] flex flex-col p-4 z-10">
+        <div class="flex items-center gap-2 px-2 mb-8 cursor-pointer hover:opacity-80 transition-opacity">
             <i class="ph-fill ph-hard-drives text-3xl text-blue-600"></i>
-            <span class="text-xl font-normal text-gray-700">File Explorer</span>
+            <span class="text-xl font-normal text-gray-700 tracking-tight">File Explorer</span>
         </div>
-        <button onclick="showNewMenu()" class="flex items-center gap-3 bg-white hover:bg-gray-50 shadow-sm border border-gray-200 rounded-2xl px-5 py-4 w-max mb-6 transition-all">
-            <i class="ph ph-plus text-xl font-bold"></i> <span class="font-medium text-sm">New</span>
+        <button onclick="showNewMenu()" class="flex items-center gap-3 bg-white hover:bg-gray-50 hover:shadow-md shadow-sm border border-gray-200 rounded-2xl px-5 py-4 w-max mb-6 transition-all active:scale-95">
+            <i class="ph ph-plus text-xl font-bold text-blue-600"></i> <span class="font-medium text-sm text-gray-800">New</span>
         </button>
         <nav class="flex flex-col gap-1 flex-1">
-            <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium">
-                <i class="ph-fill ph-folder text-lg"></i> My Files
+            <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium">
+                <i class="ph-fill ph-folder text-lg transition-transform group-hover:scale-110"></i> My Files
             </a>
-            <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+            <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-colors">
                 <i class="ph ph-computer-tower text-lg"></i> Computers
             </a>
-            <a href="#" data-tab="recent" onclick="switchTab('recent', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+            <a href="#" data-tab="recent" onclick="switchTab('recent', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-colors">
                 <i class="ph ph-clock text-lg"></i> Recent
             </a>
-            <a href="#" data-tab="starred" onclick="switchTab('starred', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+            <a href="#" data-tab="starred" onclick="switchTab('starred', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-colors">
                 <i class="ph ph-star text-lg"></i> Starred
             </a>
         </nav>
         <div class="mt-auto flex flex-col gap-2">
-            <button onclick="openSettings()" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+            <button onclick="openSettings()" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-all active:scale-95">
                 <i class="ph ph-gear text-lg"></i> Settings
             </button>
-            <div class="px-4 mt-2" id="storage-info">
-                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2"><div class="bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div></div>
-                <span class="text-xs text-gray-600">Select a folder to see storage</span>
+            <div class="px-4 mt-2 p-3 bg-blue-50/50 rounded-xl" id="storage-info">
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2 overflow-hidden">
+                    <div class="bg-blue-600 h-1.5 rounded-full transition-all duration-1000 ease-out" style="width: 0%"></div>
+                </div>
+                <span class="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Storage Info</span>
             </div>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col bg-white rounded-3xl my-3 mr-3 shadow-sm border border-gray-100 overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
-            <div class="flex-1 max-w-2xl relative">
-                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg"></i>
-                <input type="text" id="search-input" placeholder="Search in current folder" class="block w-full pl-10 pr-3 py-2 border-transparent rounded-full bg-[#f1f3f4] focus:bg-white focus:ring-0 outline-none text-sm">
+    <main class="flex-1 flex flex-col bg-white rounded-3xl my-3 mr-3 shadow-sm border border-gray-100 overflow-hidden relative">
+        <header class="h-16 flex items-center justify-between px-6 border-b border-gray-100/80 bg-white/80 backdrop-blur-md z-10">
+            <div class="flex-1 max-w-2xl relative group">
+                <i class="ph ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg transition-colors group-focus-within:text-blue-500"></i>
+                <input type="text" id="search-input" placeholder="Search in current folder" class="block w-full pl-12 pr-4 py-2.5 border-transparent rounded-full bg-[#f1f3f4] focus:bg-white focus:ring-2 focus:ring-blue-100 focus:shadow-sm outline-none text-sm transition-all">
             </div>
             <div class="flex items-center gap-4 ml-4">
-                <button onclick="refreshCurrentView()" class="p-2 hover:bg-gray-100 rounded-full"><i class="ph ph-arrow-clockwise text-xl"></i></button>
-                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-medium">U</div>
+                <button onclick="refreshCurrentView(this)" class="p-2.5 hover:bg-gray-100 rounded-full transition-colors active:bg-gray-200"><i class="ph ph-arrow-clockwise text-xl text-gray-600"></i></button>
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 text-white flex items-center justify-center font-medium shadow-sm cursor-pointer hover:opacity-90 transition-opacity">U</div>
             </div>
         </header>
 
         <!-- Breadcrumbs + actions -->
-        <div class="px-6 py-3 flex items-center justify-between border-b border-gray-100">
-            <div class="flex items-center gap-2 text-sm" id="breadcrumb-container"></div>
+        <div class="px-6 py-3 flex items-center justify-between border-b border-gray-50 bg-gray-50/30">
+            <div class="flex items-center gap-2 text-sm text-gray-600" id="breadcrumb-container"></div>
             <div class="flex gap-2">
-                <button onclick="createNewFolder()" class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"><i class="ph ph-folder-plus"></i> New Folder</button>
-                <button onclick="createNewFile()" class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"><i class="ph ph-file-plus"></i> New Text File</button>
+                <button onclick="createNewFolder()" class="px-3 py-1.5 text-sm bg-gray-100/80 rounded-lg hover:bg-gray-200 transition-colors active:scale-95 flex items-center gap-2 font-medium text-gray-700"><i class="ph ph-folder-plus text-lg text-blue-600"></i> Folder</button>
+                <button onclick="createNewFile()" class="px-3 py-1.5 text-sm bg-gray-100/80 rounded-lg hover:bg-gray-200 transition-colors active:scale-95 flex items-center gap-2 font-medium text-gray-700"><i class="ph ph-file-plus text-lg text-blue-600"></i> File</button>
             </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-6" id="file-container">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="items-grid"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-5 pb-10" id="items-grid"></div>
         </div>
     </main>
 
-    <!-- Settings Modal (centered) -->
-    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-medium">Settings</h3>
-                <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800"><i class="ph ph-x text-xl"></i></button>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-gray-900/40 hidden z-50 modal-container">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-content border border-gray-100">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2"><i class="ph-fill ph-gear text-blue-600"></i> Settings</h3>
+                <button onclick="closeSettings()" class="p-1 text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded-full transition-all active:scale-90"><i class="ph ph-x text-lg"></i></button>
             </div>
             <div class="p-6 space-y-4">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="block text-sm font-medium">Saved Locations</label>
-                    <button onclick="addNewLocation()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-100"><i class="ph ph-plus"></i> Add</button>
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-semibold text-gray-700">Saved Locations</label>
+                    <button onclick="addNewLocation()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors active:scale-95 font-medium flex items-center gap-1"><i class="ph ph-plus-circle"></i> Add</button>
                 </div>
-                <div id="locations-list" class="space-y-2 max-h-60 overflow-y-auto">
+                <div id="locations-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
                     <!-- Dynamic list will render here -->
                 </div>
-                <div class="pt-4 border-t mt-4"><button onclick="clearAllHandles()" class="text-red-600 text-sm">Reset all saved folder permissions</button></div>
+                <div class="pt-5 border-t border-gray-100 mt-5 flex justify-center">
+                    <button onclick="clearAllHandles()" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors active:scale-95">Revoke All Permissions</button>
+                </div>
             </div>
-            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end"><button onclick="closeSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button></div>
         </div>
     </div>
 
-    <!-- Rename Modal (centered) -->
-    <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
-        <div class="bg-white rounded-xl w-96 p-6">
-            <h3 class="text-lg font-medium mb-4">Rename</h3>
-            <input type="text" id="rename-input" class="w-full border rounded-lg px-3 py-2 mb-4">
-            <div class="flex justify-end gap-2"><button onclick="closeRenameModal()" class="px-3 py-1 bg-gray-200 rounded">Cancel</button><button onclick="confirmRename()" class="px-3 py-1 bg-blue-600 text-white rounded">Rename</button></div>
+    <!-- Rename Modal -->
+    <div id="rename-modal" class="fixed inset-0 bg-gray-900/40 hidden z-50 modal-container">
+        <div class="bg-white rounded-xl w-96 p-6 modal-content shadow-2xl">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800">Rename Item</h3>
+            <input type="text" id="rename-input" class="w-full border-2 border-blue-100 rounded-lg px-4 py-2.5 mb-5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm font-medium">
+            <div class="flex justify-end gap-3">
+                <button onclick="closeRenameModal()" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors active:scale-95">Cancel</button>
+                <button onclick="confirmRename()" class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm active:scale-95">Rename</button>
+            </div>
         </div>
     </div>
 
@@ -137,7 +186,7 @@
     <div id="context-menu" class="context-menu hidden"></div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800/95 backdrop-blur text-white px-6 py-3 rounded-full shadow-2xl text-sm font-medium transition-all duration-300 opacity-0 scale-90 pointer-events-none z-50 flex items-center gap-2 border border-gray-700"></div>
 
     <script>
         // ======================= PERSISTENCE WITH INDEXEDDB =======================
@@ -184,9 +233,7 @@
                             savedFolders.push(item);
                         }
                         cursor.continue();
-                    } else {
-                        r();
-                    }
+                    } else r();
                 };
             });
             updateSettingsInputs();
@@ -196,13 +243,18 @@
             const list = document.getElementById('locations-list');
             if (!list) return;
             if (savedFolders.length === 0) {
-                list.innerHTML = '<div class="text-sm text-gray-500 italic">No locations saved yet.</div>';
+                list.innerHTML = '<div class="text-sm text-gray-500 italic text-center py-4">No locations saved yet.</div>';
                 return;
             }
             list.innerHTML = savedFolders.map(f => `
-                <div class="flex gap-2 items-center">
-                    <input type="text" readonly value="${escapeHtml(f.name)}" class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50">
-                    <button onclick="removeLocation('${f.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-2 rounded-lg text-sm transition-colors"><i class="ph ph-trash"></i></button>
+                <div class="flex gap-2 items-center group">
+                    <div class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 flex items-center gap-2 text-gray-700">
+                        <i class="ph-fill ph-folder text-blue-400 text-lg"></i>
+                        <span class="truncate">${escapeHtml(f.name)}</span>
+                    </div>
+                    <button onclick="removeLocation('${f.id}')" class="bg-white border border-gray-200 text-red-500 hover:text-white hover:bg-red-500 hover:border-red-500 px-3 py-2 rounded-lg text-sm transition-all shadow-sm active:scale-95" title="Remove">
+                        <i class="ph ph-trash text-lg"></i>
+                    </button>
                 </div>
             `).join('');
         }
@@ -220,9 +272,9 @@
                 await new Promise(r => tx.oncomplete = r);
                 
                 updateSettingsInputs();
-                showToast(`Added ${handle.name}`);
+                showToast(`<i class="ph-fill ph-check-circle text-green-400 text-lg"></i> Added ${handle.name}`);
                 if (currentTab === 'my-files') await renderMyFiles();
-            } catch(e) { showToast('Selection cancelled'); }
+            } catch(e) { /* Cancelled */ }
         }
 
         async function removeLocation(id) {
@@ -233,7 +285,6 @@
             await new Promise(r => tx.oncomplete = r);
             updateSettingsInputs();
             if (currentTab === 'my-files') await renderMyFiles();
-            showToast('Location removed');
         }
 
         function clearAllHandles() {
@@ -241,7 +292,7 @@
             openDB().then(db => {
                 const tx = db.transaction('handles', 'readwrite');
                 tx.objectStore('handles').clear();
-                tx.oncomplete = () => { updateSettingsInputs(); showToast('All saved folder permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
+                tx.oncomplete = () => { updateSettingsInputs(); showToast('All permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
             });
         }
 
@@ -314,8 +365,17 @@
         }
 
         async function renderCurrentDirectory(prompt = false) {
+            const grid = document.getElementById('items-grid');
+            
             if (!currentDirectoryHandle) {
-                document.getElementById('items-grid').innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">No folder selected. Click "Computers" to pick a folder.</div>';
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center py-32 animate-fade-in">
+                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                            <i class="ph-fill ph-magnifying-glass text-4xl text-gray-400"></i>
+                        </div>
+                        <h2 class="text-xl font-medium text-gray-700 mb-2">No Folder Selected</h2>
+                        <p class="text-gray-500 text-sm">Select a folder from Computers to view its contents.</p>
+                    </div>`;
                 updateBreadcrumbs();
                 return;
             }
@@ -323,32 +383,47 @@
             const hasPermission = await ensurePermission(currentDirectoryHandle, prompt);
 
             if (!hasPermission) {
-                const grid = document.getElementById('items-grid');
                 grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center py-20 text-center">
-                        <i class="ph-fill ph-lock-key text-6xl text-gray-400 mb-4"></i>
-                        <p class="text-gray-700 font-medium text-lg">Permission Required</p>
-                        <p class="text-gray-500 text-sm mt-2 max-w-md">The browser requires your permission to access "${escapeHtml(currentDirectoryHandle.name)}" after a page reload.</p>
-                        <button id="grant-btn" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">Grant Access</button>
+                    <div class="col-span-full flex flex-col items-center py-24 text-center animate-fade-in">
+                        <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-6">
+                            <i class="ph-fill ph-lock-key text-5xl text-orange-400"></i>
+                        </div>
+                        <h2 class="text-2xl font-semibold text-gray-800 mb-2">Permission Required</h2>
+                        <p class="text-gray-500 text-sm max-w-md mx-auto mb-8 leading-relaxed">The browser requires your permission to read the contents of "<span class="font-medium text-gray-700">${escapeHtml(currentDirectoryHandle.name)}</span>" after a page reload for security reasons.</p>
+                        <button id="grant-btn" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg font-medium transition-all active:scale-95 flex items-center gap-2">
+                            <i class="ph-bold ph-check"></i> Grant Access
+                        </button>
                     </div>
                 `;
                 document.getElementById('grant-btn').onclick = async () => {
-                    if (await ensurePermission(currentDirectoryHandle, true)) {
-                        await renderCurrentDirectory(false);
-                    } else {
-                        showToast('Permission denied.');
-                    }
+                    if (await ensurePermission(currentDirectoryHandle, true)) await renderCurrentDirectory(false);
                 };
                 updateBreadcrumbs();
                 return;
             }
 
             const { folders, files } = await getFilesAndFolders(currentDirectoryHandle);
-            const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
-            for (const folder of folders) grid.appendChild(createItemCard(folder, true));
-            for (const file of files) grid.appendChild(createItemCard(file, false));
-            if (folders.length === 0 && files.length === 0) grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">This folder is empty</div>';
+            
+            let delay = 0;
+            const appendWithDelay = (element) => {
+                element.style.animationDelay = `${delay}s`;
+                element.classList.add('animate-stagger');
+                grid.appendChild(element);
+                delay += 0.03;
+            };
+
+            for (const folder of folders) appendWithDelay(createItemCard(folder, true));
+            for (const file of files) appendWithDelay(createItemCard(file, false));
+            
+            if (folders.length === 0 && files.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center py-20 text-center animate-fade-in">
+                        <i class="ph-fill ph-folder-open text-6xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-600 font-medium">This folder is empty</p>
+                    </div>`;
+            }
+            
             updateBreadcrumbs();
             updateStorageInfo();
             await saveCurrentState();
@@ -356,23 +431,51 @@
 
         function createItemCard(handle, isFolder) {
             const div = document.createElement('div');
-            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition border border-transparent hover:border-gray-200 relative cursor-pointer';
-            const icon = isFolder ? '<i class="ph-fill ph-folder text-4xl text-yellow-600"></i>' : getFileIcon(handle.name);
-            const sizeInfo = isFolder ? '' : `<span class="text-xs text-gray-500">${formatSize(handle.size)}</span>`;
+            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] rounded-2xl border border-transparent relative cursor-pointer group bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]';
+            const icon = isFolder ? '<i class="ph-fill ph-folder text-[40px] text-yellow-500/90"></i>' : getFileIcon(handle.name);
+            
             div.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    ${icon}
-                    <div class="file-actions flex gap-1">
-                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); renameItem('${handle.name}', ${isFolder})"><i class="ph ph-pencil-simple text-sm"></i></button>
-                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); deleteItem('${handle.name}', ${isFolder})"><i class="ph ph-trash text-sm"></i></button>
-                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); toggleStar('${handle.name}', ${isFolder})"><i class="ph ph-star text-sm"></i></button>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-blue-50/50 rounded-xl">${icon}</div>
+                    <div class="file-actions flex gap-1 bg-white shadow-sm border border-gray-100 rounded-lg p-1 absolute top-3 right-3">
+                        <button class="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" onclick="event.stopPropagation(); renameItem('${handle.name}', ${isFolder})" title="Rename"><i class="ph ph-pencil-simple"></i></button>
+                        <button class="p-1.5 hover:bg-red-50 text-red-500 rounded-md transition-colors" onclick="event.stopPropagation(); deleteItem('${handle.name}', ${isFolder})" title="Delete"><i class="ph ph-trash"></i></button>
+                        <button class="p-1.5 hover:bg-yellow-50 text-yellow-500 rounded-md transition-colors" onclick="event.stopPropagation(); toggleStar('${handle.name}', ${isFolder})" title="Star"><i class="ph-fill ph-star"></i></button>
                     </div>
                 </div>
-                <span class="text-sm font-medium truncate">${escapeHtml(handle.name)}</span>
-                ${sizeInfo}
+                <div class="mt-auto">
+                    <span class="text-sm font-semibold text-gray-800 block truncate" title="${escapeHtml(handle.name)}">${escapeHtml(handle.name)}</span>
+                    ${!isFolder 
+                        ? `<div class="flex justify-between items-center mt-1.5">
+                            <span class="file-size text-[11px] font-medium text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Loading...</span>
+                            <span class="file-date text-[11px] text-gray-400"></span>
+                           </div>` 
+                        : `<span class="text-[11px] font-medium text-gray-500 mt-1.5 block">File Folder</span>`
+                    }
+                </div>
             `;
+
+            // Asynchronously fetch real details for files to prevent lagging the UI render
+            if (!isFolder) {
+                handle.getFile().then(file => {
+                    const sizeEl = div.querySelector('.file-size');
+                    const dateEl = div.querySelector('.file-date');
+                    if(sizeEl) sizeEl.innerText = formatSize(file.size);
+                    if(dateEl) {
+                        const date = new Date(file.lastModified);
+                        dateEl.innerText = date.toLocaleDateString(undefined, {month:'short', day:'numeric'});
+                    }
+                }).catch(e => {
+                    const sizeEl = div.querySelector('.file-size');
+                    if(sizeEl) { sizeEl.innerText = 'Unknown'; sizeEl.classList.add('bg-red-50', 'text-red-400'); }
+                });
+            }
+
             div.addEventListener('click', async (e) => {
                 if (e.target.closest('.file-actions')) return;
+                div.classList.add('scale-95'); // Click feedback
+                setTimeout(() => div.classList.remove('scale-95'), 150);
+
                 if (isFolder) {
                     currentPath.push(currentDirectoryHandle);
                     currentDirectoryHandle = handle;
@@ -383,6 +486,7 @@
                     addToRecent(handle, false);
                 }
             });
+
             div.addEventListener('contextmenu', (e) => {
                 e.preventDefault();
                 contextTarget = { handle, name: handle.name, isFolder };
@@ -397,46 +501,67 @@
                 const url = URL.createObjectURL(file);
                 window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
-                showToast(`Opened ${file.name}`);
-            } catch(err) { showToast(`Cannot open: ${err.message}`); }
+                showToast(`<i class="ph-bold ph-arrow-square-out text-lg"></i> Opened ${file.name}`);
+            } catch(err) { showToast(`<i class="ph-fill ph-warning-circle text-red-400 text-lg"></i> Cannot open file`); }
         }
 
         function getFileIcon(filename) {
             const ext = filename.split('.').pop().toLowerCase();
-            const map = { pdf: 'ph-file-pdf text-red-500', jpg: 'ph-image text-blue-500', jpeg: 'ph-image text-blue-500', png: 'ph-image text-blue-500', gif: 'ph-image text-blue-500', svg: 'ph-image text-purple-500', doc: 'ph-file-doc text-blue-600', docx: 'ph-file-doc text-blue-600', xls: 'ph-file-xls text-green-600', xlsx: 'ph-file-xls text-green-600', ppt: 'ph-file-ppt text-orange-500', mp3: 'ph-music-note text-pink-500', mp4: 'ph-video text-purple-500', txt: 'ph-file-text text-gray-600', js: 'ph-file-code text-yellow-600', html: 'ph-file-code text-orange-500', json: 'ph-file-code text-gray-600' };
-            return map[ext] ? `<i class="ph-fill ${map[ext]} text-4xl"></i>` : `<i class="ph-fill ph-file text-4xl text-gray-500"></i>`;
+            const map = { pdf: 'ph-file-pdf text-red-500', jpg: 'ph-image text-blue-500', jpeg: 'ph-image text-blue-500', png: 'ph-image text-blue-500', gif: 'ph-image text-blue-500', svg: 'ph-image text-purple-500', doc: 'ph-file-doc text-blue-600', docx: 'ph-file-doc text-blue-600', xls: 'ph-file-xls text-green-600', xlsx: 'ph-file-xls text-green-600', ppt: 'ph-file-ppt text-orange-500', mp3: 'ph-music-note text-pink-500', mp4: 'ph-video text-purple-500', txt: 'ph-file-text text-gray-500', js: 'ph-file-code text-yellow-500', html: 'ph-file-code text-orange-500', json: 'ph-file-code text-gray-600' };
+            return map[ext] ? `<i class="ph-fill ${map[ext]} text-[40px]"></i>` : `<i class="ph-fill ph-file text-[40px] text-gray-400"></i>`;
         }
 
-        function formatSize(bytes) { if (!bytes) return ''; const sizes = ['B','KB','MB','GB']; const i = Math.floor(Math.log(bytes)/Math.log(1024)); return (bytes/Math.pow(1024,i)).toFixed(1)+' '+sizes[i]; }
+        function formatSize(bytes) { if (!bytes) return '0 B'; const sizes = ['B','KB','MB','GB']; const i = Math.floor(Math.log(bytes)/Math.log(1024)); return (bytes/Math.pow(1024,i)).toFixed(1)+' '+sizes[i]; }
 
         async function updateStorageInfo() {
             if (!currentDirectoryHandle) return;
             try {
                 let total = 0;
+                // Just scan the top level to give a quick estimate without hanging the browser
                 for await (const entry of currentDirectoryHandle.values()) if (entry.kind === 'file') total += (await entry.getFile()).size;
-                const usedGB = (total / (1024**3)).toFixed(1);
-                document.getElementById('storage-info').innerHTML = `<div class="w-full bg-gray-200 rounded-full h-1.5 mb-2"><div class="bg-blue-600 h-1.5 rounded-full" style="width: ${Math.min(100, (total/5e9)*100)}%"></div></div><span class="text-xs text-gray-600">${usedGB} GB used (approx)</span>`;
+                const usedGB = (total / (1024**3)).toFixed(2);
+                const percent = Math.min(100, (total/5e9)*100);
+                const bar = document.querySelector('#storage-info .bg-blue-600');
+                if (bar) bar.style.width = `${percent}%`;
+                
+                const textSpan = document.querySelector('#storage-info span');
+                if (textSpan) textSpan.innerText = `${usedGB} GB in top folder`;
             } catch(e) {}
         }
 
         function updateBreadcrumbs() {
             const container = document.getElementById('breadcrumb-container');
-            let html = `<button onclick="navigateToRoot()" class="hover:underline text-gray-700">Root</button>`;
+            let html = `<button onclick="navigateToRoot()" class="hover:text-blue-600 transition-colors font-medium flex items-center gap-1"><i class="ph-fill ph-hard-drive"></i> Root</button>`;
             for (let i = 0; i < currentPath.length; i++) {
-                html += `<i class="ph ph-caret-right mx-1"></i>`;
-                html += `<button onclick="navigateToLevel(${i})" class="hover:underline">${escapeHtml(currentPath[i].name)}</button>`;
+                html += `<i class="ph ph-caret-right mx-1.5 text-gray-400 text-xs"></i>`;
+                html += `<button onclick="navigateToLevel(${i})" class="hover:text-blue-600 transition-colors truncate max-w-[120px]">${escapeHtml(currentPath[i].name)}</button>`;
             }
-            if (currentDirectoryHandle) html += `<i class="ph ph-caret-right mx-1"></i><span class="font-medium">${escapeHtml(currentDirectoryHandle.name)}</span>`;
+            if (currentDirectoryHandle) {
+                html += `<i class="ph ph-caret-right mx-1.5 text-gray-400 text-xs"></i><span class="font-semibold text-gray-800 truncate max-w-[200px]">${escapeHtml(currentDirectoryHandle.name)}</span>`;
+            }
             container.innerHTML = html;
         }
 
         async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(true); }
         async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(true); }
-        async function refreshCurrentView() { await renderCurrentDirectory(true); }
+        async function refreshCurrentView(btnElement) {
+            if (btnElement) {
+                const icon = btnElement.querySelector('i');
+                icon.classList.add('spin-anim');
+                setTimeout(() => icon.classList.remove('spin-anim'), 600);
+            }
+            await renderCurrentDirectory(true); 
+        }
 
         // Rename
         let renameTarget = null, renameIsFolder = false;
-        function renameItem(name, isFolder) { renameTarget = name; renameIsFolder = isFolder; document.getElementById('rename-input').value = name; document.getElementById('rename-modal').classList.remove('hidden'); }
+        function renameItem(name, isFolder) { 
+            renameTarget = name; renameIsFolder = isFolder; 
+            const input = document.getElementById('rename-input');
+            input.value = name; 
+            document.getElementById('rename-modal').classList.remove('hidden'); 
+            setTimeout(() => { input.focus(); input.select(); }, 100);
+        }
         async function confirmRename() {
             const newName = document.getElementById('rename-input').value.trim();
             if (!newName || newName === renameTarget) { closeRenameModal(); return; }
@@ -444,7 +569,7 @@
                 const targetHandle = await currentDirectoryHandle.getFileHandle(renameTarget, { create: false }).catch(() => currentDirectoryHandle.getDirectoryHandle(renameTarget, { create: false }));
                 if (!targetHandle) throw new Error('Not found');
                 await targetHandle.move(newName);
-                showToast(`Renamed to ${newName}`);
+                showToast(`<i class="ph-fill ph-check-circle text-green-400"></i> Renamed successfully`);
                 await renderCurrentDirectory(false);
             } catch(e) { showToast('Rename failed: ' + e.message); }
             closeRenameModal();
@@ -452,34 +577,34 @@
         function closeRenameModal() { document.getElementById('rename-modal').classList.add('hidden'); renameTarget = null; }
 
         async function deleteItem(name, isFolder) {
-            if (!confirm(`Delete ${name} permanently?`)) return;
+            if (!confirm(`Are you sure you want to delete "${name}" permanently?`)) return;
             try {
                 if (isFolder) await currentDirectoryHandle.removeEntry(name, { recursive: true });
                 else await currentDirectoryHandle.removeEntry(name);
-                showToast(`Deleted ${name}`);
+                showToast(`<i class="ph-fill ph-trash text-red-400 text-lg"></i> Deleted ${name}`);
                 await renderCurrentDirectory(false);
             } catch(e) { showToast('Delete failed: ' + e.message); }
         }
 
         async function createNewFolder() {
-            const folderName = prompt('New folder name:');
+            const folderName = prompt('Enter new folder name:');
             if (!folderName) return;
             try {
                 await currentDirectoryHandle.getDirectoryHandle(folderName, { create: true });
-                showToast(`Folder "${folderName}" created`);
+                showToast(`<i class="ph-fill ph-folder-plus text-blue-400 text-lg"></i> Folder created`);
                 await renderCurrentDirectory(false);
             } catch(e) { showToast('Error: ' + e.message); }
         }
 
         async function createNewFile() {
-            const fileName = prompt('New text file name (e.g., note.txt):');
+            const fileName = prompt('Enter new text file name (e.g., note.txt):');
             if (!fileName) return;
             try {
                 const fileHandle = await currentDirectoryHandle.getFileHandle(fileName, { create: true });
                 const writable = await fileHandle.createWritable();
                 await writable.write('');
                 await writable.close();
-                showToast(`File "${fileName}" created`);
+                showToast(`<i class="ph-fill ph-file-plus text-blue-400 text-lg"></i> File created`);
                 await renderCurrentDirectory(false);
             } catch(e) { showToast('Error: ' + e.message); }
         }
@@ -495,11 +620,11 @@
             const exists = starredFiles.find(s => s.name === name);
             if (exists) {
                 starredFiles = starredFiles.filter(s => s.name !== name);
-                showToast(`Removed from starred`);
+                showToast(`<i class="ph ph-star text-yellow-400 text-lg"></i> Removed from starred`);
             } else {
                 const handle = isFolder ? await currentDirectoryHandle.getDirectoryHandle(name) : await currentDirectoryHandle.getFileHandle(name);
                 starredFiles.push({ id: `${name}_${Date.now()}`, name, handle, parentHandle: currentDirectoryHandle, isFolder });
-                showToast(`Added to starred`);
+                showToast(`<i class="ph-fill ph-star text-yellow-400 text-lg"></i> Added to starred`);
             }
             await saveStarredList();
             if (currentTab === 'starred') renderStarred();
@@ -509,29 +634,37 @@
         function showContextMenu(x, y) {
             const menu = document.getElementById('context-menu');
             menu.innerHTML = '';
-            const items = ['Open', 'Rename', 'Delete', 'Star/Unstar'];
-            const actions = [
-                () => {
+            const isStarred = starredFiles.some(s => s.name === contextTarget.name);
+            
+            const items = [
+                { name: 'Open', icon: 'ph-folder-open text-blue-500', action: () => {
                     if (contextTarget.isFolder) {
                         currentPath.push(currentDirectoryHandle);
                         currentDirectoryHandle = contextTarget.handle;
                         renderCurrentDirectory(true);
                         addToRecent(contextTarget.handle, true);
                     } else { openFile(contextTarget.handle); addToRecent(contextTarget.handle, false); }
-                },
-                () => renameItem(contextTarget.name, contextTarget.isFolder),
-                () => deleteItem(contextTarget.name, contextTarget.isFolder),
-                () => toggleStar(contextTarget.name, contextTarget.isFolder)
+                }},
+                { name: 'Rename', icon: 'ph-pencil-simple text-gray-500', action: () => renameItem(contextTarget.name, contextTarget.isFolder) },
+                { name: isStarred ? 'Unstar Item' : 'Star Item', icon: `ph-star text-yellow-500 ${isStarred ? 'ph-fill' : ''}`, action: () => toggleStar(contextTarget.name, contextTarget.isFolder) },
+                { name: 'Delete', icon: 'ph-trash text-red-500', action: () => deleteItem(contextTarget.name, contextTarget.isFolder) }
             ];
-            for (let i = 0; i < items.length; i++) {
+
+            items.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'context-menu-item';
-                div.innerHTML = `<i class="ph ph-${items[i].toLowerCase().replace(' ','-')}"></i> ${items[i]}`;
-                div.onclick = () => { actions[i](); hideContextMenu(); };
+                div.className = 'context-menu-item group';
+                div.innerHTML = `<i class="${item.icon} text-lg group-hover:scale-110 transition-transform"></i> <span class="font-medium text-gray-700 group-hover:text-gray-900">${item.name}</span>`;
+                div.onclick = () => { item.action(); hideContextMenu(); };
                 menu.appendChild(div);
-            }
-            menu.style.left = x + 'px';
-            menu.style.top = y + 'px';
+            });
+            
+            // Keep menu within screen bounds
+            const menuWidth = 180; const menuHeight = items.length * 40;
+            const posX = (x + menuWidth > window.innerWidth) ? window.innerWidth - menuWidth - 10 : x;
+            const posY = (y + menuHeight > window.innerHeight) ? window.innerHeight - menuHeight - 10 : y;
+
+            menu.style.left = posX + 'px';
+            menu.style.top = posY + 'px';
             menu.classList.remove('hidden');
             setTimeout(() => document.addEventListener('click', hideContextMenuOnClick), 0);
         }
@@ -542,9 +675,13 @@
         async function switchTab(tabId, event) {
             if(event) event.preventDefault();
             currentTab = tabId;
-            document.querySelectorAll('nav a').forEach(a => { a.classList.remove('active-nav'); a.classList.add('text-gray-700'); });
+            document.querySelectorAll('nav a').forEach(a => { 
+                a.classList.remove('active-nav'); 
+                a.classList.add('text-gray-700'); 
+            });
             const activeLink = document.querySelector(`[data-tab="${tabId}"]`);
             activeLink.classList.add('active-nav'); activeLink.classList.remove('text-gray-700');
+            
             if (tabId === 'my-files') await renderMyFiles();
             else if (tabId === 'computers') await renderComputers();
             else if (tabId === 'recent') await renderRecent();
@@ -558,29 +695,48 @@
             
             if (savedFolders.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-300 mt-2">
-                        <i class="ph ph-folder-open text-5xl text-gray-400 mb-3"></i>
-                        <p class="text-gray-600 font-medium">No saved locations</p>
-                        <p class="text-sm text-gray-500 mb-4">Add folders to access them quickly</p>
-                        <button onclick="addNewLocation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">Add Folder</button>
+                    <div class="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200 mt-2 animate-fade-in transition-all hover:bg-gray-50">
+                        <div class="p-4 bg-white rounded-full shadow-sm mb-4"><i class="ph-fill ph-map-pin text-4xl text-blue-400"></i></div>
+                        <p class="text-gray-800 font-semibold text-lg">No saved locations</p>
+                        <p class="text-sm text-gray-500 mb-6 text-center max-w-sm">Pin frequently used folders to your home screen for instant access.</p>
+                        <button onclick="addNewLocation()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow font-medium transition-all active:scale-95 flex items-center gap-2"><i class="ph-bold ph-plus"></i> Add Folder</button>
                     </div>
                 `;
             } else {
+                let delay = 0;
                 for (const folder of savedFolders) {
                     const card = createShortcutCard(folder.name, folder.handle);
+                    card.style.animationDelay = `${delay}s`;
+                    card.classList.add('animate-stagger');
                     grid.appendChild(card);
+                    delay += 0.05;
                 }
             }
 
-            const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2'; recentTitle.innerText = 'Recent Files';
+            const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-bold text-gray-800 mt-8 mb-2 uppercase tracking-wider flex items-center gap-2'; recentTitle.innerHTML = '<i class="ph-fill ph-clock-counter-clockwise text-blue-500"></i> Recent Files';
             grid.appendChild(recentTitle);
-            for (const item of recentFiles.slice(0,4)) grid.appendChild(createRecentCard(item));
+            
+            let delay = 0;
+            for (const item of recentFiles.slice(0,5)) {
+                const card = createRecentCard(item);
+                card.style.animationDelay = `${delay}s`;
+                card.classList.add('animate-stagger');
+                grid.appendChild(card);
+                delay += 0.05;
+            }
         }
 
         function createShortcutCard(name, handle) {
             const div = document.createElement('div');
-            div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition-colors';
-            div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium truncate w-full text-center">${escapeHtml(name)}</span>`;
+            div.className = 'flex flex-col items-center p-6 bg-white border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 shadow-sm hover:shadow-md rounded-2xl cursor-pointer transition-all active:scale-95 group';
+            div.innerHTML = `
+                <div class="relative mb-3 group-hover:-translate-y-1 transition-transform duration-300">
+                    <i class="ph-fill ph-folder text-[56px] text-blue-500 drop-shadow-sm"></i>
+                    <i class="ph-fill ph-push-pin absolute bottom-0 right-0 text-white bg-blue-600 p-1 rounded-full text-xs border-2 border-white shadow-sm"></i>
+                </div>
+                <span class="text-sm font-semibold text-gray-800 truncate w-full text-center">${escapeHtml(name)}</span>
+                <span class="text-[11px] text-gray-400 font-medium mt-1 uppercase">Pinned Folder</span>
+            `;
             div.onclick = async () => {
                 if (handle) { 
                     currentPath = []; 
@@ -593,8 +749,15 @@
 
         function createRecentCard(item) {
             const div = document.createElement('div');
-            div.className = 'flex items-center gap-3 p-3 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
-            div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder' : 'ph-file'} text-2xl text-gray-600"></i><span class="text-sm truncate">${escapeHtml(item.name)}</span>`;
+            div.className = 'flex items-center gap-4 p-4 bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 rounded-2xl cursor-pointer transition-all active:scale-95 group';
+            const icon = item.isFolder ? 'ph-folder text-yellow-500' : 'ph-file-text text-blue-500';
+            div.innerHTML = `
+                <div class="p-2.5 bg-gray-50 rounded-xl group-hover:bg-white transition-colors border border-transparent group-hover:border-gray-100"><i class="ph-fill ${icon} text-3xl"></i></div>
+                <div class="flex flex-col overflow-hidden">
+                    <span class="text-sm font-semibold text-gray-800 truncate">${escapeHtml(item.name)}</span>
+                    <span class="text-xs text-gray-400 mt-0.5 truncate">${item.isFolder ? 'Folder' : 'File'} • Click to open</span>
+                </div>
+            `;
             div.onclick = async () => {
                 if (item.parentHandle) {
                     currentPath = []; currentDirectoryHandle = item.parentHandle;
@@ -604,9 +767,7 @@
                             try { const fresh = await item.parentHandle.getFileHandle(item.name); await openFile(fresh); }
                             catch(e) { showToast('Cannot open'); }
                         }
-                    } else {
-                        await renderCurrentDirectory(false);
-                    }
+                    } else await renderCurrentDirectory(false);
                 } else showToast('Parent folder missing');
             };
             return div;
@@ -614,14 +775,27 @@
 
         async function renderComputers() {
             const grid = document.getElementById('items-grid');
-            grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20"><i class="ph ph-computer-tower text-6xl text-gray-400"></i><p class="mt-4 text-gray-600">Pick any folder on your computer to manage</p><button onclick="pickComputerFolder()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">Select Folder</button></div>`;
+            grid.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-24 animate-fade-in">
+                    <div class="relative mb-6">
+                        <i class="ph-duotone ph-desktop text-[100px] text-blue-500"></i>
+                        <div class="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-sm">
+                            <i class="ph-fill ph-hard-drive text-2xl text-gray-700"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Local Drives</h2>
+                    <p class="text-gray-500 text-center max-w-md mb-8">Select any folder or drive on your computer. It will automatically be pinned to your "My Files" dashboard for quick access.</p>
+                    <button onclick="pickComputerFolder()" class="px-8 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl shadow hover:shadow-lg transition-all active:scale-95 font-medium flex items-center gap-2">
+                        <i class="ph-bold ph-magnifying-glass-plus text-lg"></i> Browse System
+                    </button>
+                </div>
+            `;
         }
 
         async function pickComputerFolder() {
             try {
                 const handle = await window.showDirectoryPicker();
                 
-                // Automatically save selected locations for easier access in "My Files"
                 const exists = savedFolders.find(f => f.name === handle.name);
                 if (!exists) {
                     const id = 'folder_' + Date.now();
@@ -639,20 +813,51 @@
                 currentPath = [];
                 currentDirectoryHandle = handle;
                 await renderCurrentDirectory(false);
-                showToast(`Now managing: ${handle.name}`);
-            } catch(e) { showToast('Cancelled'); }
+                showToast(`<i class="ph-fill ph-check-circle text-green-400"></i> Now managing: ${handle.name}`);
+            } catch(e) { /* Cancelled */ }
         }
 
         async function renderRecent() {
             const grid = document.getElementById('items-grid');
-            if (recentFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No recent files</div>';
-            else { grid.innerHTML = ''; for (const item of recentFiles) grid.appendChild(createRecentCard(item)); }
+            if (recentFiles.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center py-24 animate-fade-in">
+                        <i class="ph-duotone ph-clock text-7xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500 font-medium text-lg">No recent activity</p>
+                    </div>`;
+            } else { 
+                grid.innerHTML = ''; 
+                let delay = 0;
+                for (const item of recentFiles) {
+                    const card = createRecentCard(item);
+                    card.style.animationDelay = `${delay}s`;
+                    card.classList.add('animate-stagger');
+                    grid.appendChild(card);
+                    delay += 0.04;
+                }
+            }
         }
 
         async function renderStarred() {
             const grid = document.getElementById('items-grid');
-            if (starredFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No starred items</div>';
-            else { grid.innerHTML = ''; for (const item of starredFiles) grid.appendChild(createRecentCard(item)); }
+            if (starredFiles.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center py-24 animate-fade-in">
+                        <i class="ph-duotone ph-star text-7xl text-yellow-200 mb-4"></i>
+                        <p class="text-gray-500 font-medium text-lg">No starred items</p>
+                        <p class="text-sm text-gray-400 mt-2">Right click any file or folder and select "Star Item"</p>
+                    </div>`;
+            } else { 
+                grid.innerHTML = ''; 
+                let delay = 0;
+                for (const item of starredFiles) {
+                    const card = createRecentCard(item);
+                    card.style.animationDelay = `${delay}s`;
+                    card.classList.add('animate-stagger');
+                    grid.appendChild(card);
+                    delay += 0.04;
+                }
+            }
         }
 
         // ---------- Helpers ----------
@@ -661,57 +866,61 @@
             const opts = { mode: 'readwrite' };
             if ((await handle.queryPermission(opts)) === 'granted') return true;
             if (prompt) {
-                try {
-                    if ((await handle.requestPermission(opts)) === 'granted') return true;
-                } catch (e) {
-                    console.error("Permission request error:", e);
-                }
+                try { if ((await handle.requestPermission(opts)) === 'granted') return true; } catch (e) {}
             }
             return false;
         }
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.remove('opacity-0'); toast.classList.add('opacity-100');
-            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3000);
+            toast.innerHTML = msg;
+            toast.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'scale-100');
+            setTimeout(() => { 
+                toast.classList.remove('opacity-100', 'scale-100'); 
+                toast.classList.add('opacity-0', 'scale-90', 'pointer-events-none'); 
+            }, 3000);
         }
         function escapeHtml(str) { return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
         function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
         function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-        function showNewMenu() { showToast('Use the buttons above to create new folders or files'); }
+        function showNewMenu() { showToast('<i class="ph-fill ph-info text-blue-400 text-lg"></i> Use the folder/file buttons above'); }
 
-        // ---------- Touchpad Gesture Navigation ----------
+        // ---------- Touchpad Gesture Navigation (Strict Back/Forward block) ----------
         let gestureCooldown = false;
         window.addEventListener('wheel', (e) => {
-            // Ignore if mostly scrolling vertically, or if a modal is open
-            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) return;
-            if (!document.getElementById('settings-modal').classList.contains('hidden')) return;
-            if (!document.getElementById('rename-modal').classList.contains('hidden')) return;
+            // Check if swipe is horizontal and prominent
+            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
+                
+                // Strictly prevent the browser from doing the history back/forward animation
+                e.preventDefault(); 
 
-            // Threshold for a deliberate horizontal swipe
-            if (!gestureCooldown && Math.abs(e.deltaX) > 40) {
-                gestureCooldown = true;
-                setTimeout(() => gestureCooldown = false, 600); // Cooldown to prevent rapid jumping
+                if (!document.getElementById('settings-modal').classList.contains('hidden')) return;
+                if (!document.getElementById('rename-modal').classList.contains('hidden')) return;
 
-                const tabsOrder = ['my-files', 'computers', 'recent', 'starred'];
-                const currentIndex = tabsOrder.indexOf(currentTab);
+                if (!gestureCooldown && Math.abs(e.deltaX) > 50) {
+                    gestureCooldown = true;
+                    setTimeout(() => gestureCooldown = false, 800); // Wait for physical swipe to stop
 
-                if (e.deltaX < 0) {
-                    // Swipe right (scroll left) -> Go Up a folder OR Prev Tab
-                    if (currentDirectoryHandle && currentPath.length > 0) {
-                        navigateToLevel(currentPath.length - 1);
-                    } else if (currentIndex > 0) {
-                        switchTab(tabsOrder[currentIndex - 1]);
-                    }
-                } else if (e.deltaX > 0) {
-                    // Swipe left (scroll right) -> Next Tab
-                    if (currentPath.length === 0 && currentIndex < tabsOrder.length - 1) {
-                        switchTab(tabsOrder[currentIndex + 1]);
+                    const tabsOrder = ['my-files', 'computers', 'recent', 'starred'];
+                    const currentIndex = tabsOrder.indexOf(currentTab);
+
+                    if (e.deltaX < 0) {
+                        // Swipe Right (Go back/up)
+                        if (currentDirectoryHandle && currentPath.length > 0) {
+                            navigateToLevel(currentPath.length - 1);
+                        } else if (currentIndex > 0) {
+                            switchTab(tabsOrder[currentIndex - 1]);
+                        }
+                    } else if (e.deltaX > 0) {
+                        // Swipe Left (Go Forward/Next tab)
+                        if (currentPath.length === 0 && currentIndex < tabsOrder.length - 1) {
+                            switchTab(tabsOrder[currentIndex + 1]);
+                        }
                     }
                 }
             }
-        }, { passive: true });
+        }, { passive: false }); // Needs to be false to allow preventDefault to block browser nav
 
         // ---------- Start ----------
         window.onload = async () => {
