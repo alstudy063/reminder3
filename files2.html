@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
+    <title>File Explorer </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -37,9 +37,24 @@
             align-items: center;
             justify-content: center;
         }
+
+        /* --- Premium Animations & Copy Prevention --- */
+        body { -webkit-user-select: none; user-select: none; } /* Disable copy text */
+        input, textarea { -webkit-user-select: text !important; user-select: text !important; } /* Allow in inputs */
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .animate-fade-in { animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-up { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-pop { animation: popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* Apply smooth transitions to interactive elements */
+        button, a, .file-item { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden">
+<body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden select-none">
 
     <!-- Sidebar -->
     <aside class="w-64 min-w-[256px] flex flex-col p-4">
@@ -103,8 +118,8 @@
     </main>
 
     <!-- Settings Modal (centered) -->
-    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+    <div id="settings-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 modal-container transition-all duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-pop overflow-hidden">
             <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
                 <h3 class="text-lg font-medium">Settings</h3>
                 <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800"><i class="ph ph-x text-xl"></i></button>
@@ -124,16 +139,35 @@
     </div>
 
     <!-- Rename Modal (centered) -->
-    <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50 modal-container">
-        <div class="bg-white rounded-xl w-96 p-6">
+    <div id="rename-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm hidden items-center justify-center z-50 modal-container transition-all duration-300">
+        <div class="bg-white rounded-xl w-96 p-6 shadow-2xl animate-pop">
             <h3 class="text-lg font-medium mb-4">Rename</h3>
-            <input type="text" id="rename-input" class="w-full border rounded-lg px-3 py-2 mb-4">
-            <div class="flex justify-end gap-2"><button onclick="closeRenameModal()" class="px-3 py-1 bg-gray-200 rounded">Cancel</button><button onclick="confirmRename()" class="px-3 py-1 bg-blue-600 text-white rounded">Rename</button></div>
+            <input type="text" id="rename-input" class="w-full border rounded-lg px-3 py-2 mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            <div class="flex justify-end gap-2"><button onclick="closeRenameModal()" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 rounded transition-colors">Cancel</button><button onclick="confirmRename()" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition-colors shadow-md shadow-blue-500/30">Rename</button></div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden items-center justify-center z-[60] modal-container transition-all duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] animate-pop m-4 overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50/80 backdrop-blur-sm">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <i id="preview-icon" class="ph-fill ph-file text-2xl text-blue-500"></i>
+                    <h3 id="preview-title" class="text-lg font-medium truncate max-w-sm">Filename.ext</h3>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="preview-open-btn" class="px-4 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-sm font-medium transition-colors">Open Externally</button>
+                    <button onclick="closePreviewModal()" class="p-2 hover:bg-gray-200 rounded-full transition-colors"><i class="ph ph-x text-xl text-gray-600"></i></button>
+                </div>
+            </div>
+            <div id="preview-content" class="p-6 flex-1 overflow-auto flex items-center justify-center bg-gray-100/50 relative">
+                <!-- Content injected here -->
+            </div>
         </div>
     </div>
 
     <!-- Context Menu -->
-    <div id="context-menu" class="context-menu hidden"></div>
+    <div id="context-menu" class="context-menu hidden animate-pop origin-top-left"></div>
 
     <!-- Toast -->
     <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
@@ -345,18 +379,21 @@
             const { folders, files } = await getFilesAndFolders(currentDirectoryHandle);
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
-            for (const folder of folders) grid.appendChild(createItemCard(folder, true));
-            for (const file of files) grid.appendChild(createItemCard(file, false));
-            if (folders.length === 0 && files.length === 0) grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">This folder is empty</div>';
+            
+            let animIndex = 0;
+            for (const folder of folders) grid.appendChild(createItemCard(folder, true, animIndex++));
+            for (const file of files) grid.appendChild(createItemCard(file, false, animIndex++));
+            if (folders.length === 0 && files.length === 0) grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-10 animate-fade-in">This folder is empty</div>';
             updateBreadcrumbs();
             updateStorageInfo();
             await saveCurrentState();
         }
 
-        function createItemCard(handle, isFolder) {
+        function createItemCard(handle, isFolder, index = 0) {
             const div = document.createElement('div');
-            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition border border-transparent hover:border-gray-200 relative cursor-pointer';
-            const icon = isFolder ? '<i class="ph-fill ph-folder text-4xl text-yellow-600"></i>' : getFileIcon(handle.name);
+            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition-all duration-300 border border-transparent hover:border-gray-200 hover:shadow-md hover:-translate-y-1 relative cursor-pointer animate-slide-up opacity-0';
+            div.style.animationDelay = `${Math.min(index * 0.04, 0.8)}s`;
+            const icon = isFolder ? '<i class="ph-fill ph-folder text-4xl text-yellow-600 drop-shadow-sm"></i>' : getFileIcon(handle.name);
             const sizeInfo = isFolder ? '' : `<span class="text-xs text-gray-500">${formatSize(handle.size)}</span>`;
             div.innerHTML = `
                 <div class="flex justify-between items-start mb-3">
@@ -390,14 +427,75 @@
             return div;
         }
 
+        let currentPreviewUrl = null;
+
         async function openFile(fileHandle) {
             try {
                 const file = await fileHandle.getFile();
-                const url = URL.createObjectURL(file);
-                window.open(url, '_blank');
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
-                showToast(`Opened ${file.name}`);
+                const ext = file.name.split('.').pop().toLowerCase();
+                const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext);
+                const isVideo = ['mp4', 'webm', 'ogg'].includes(ext);
+                const isAudio = ['mp3', 'wav', 'ogg'].includes(ext);
+
+                if (isImage || isVideo || isAudio) {
+                    showPreviewModal(file, isImage ? 'image' : isVideo ? 'video' : 'audio', ext);
+                } else {
+                    const url = URL.createObjectURL(file);
+                    window.open(url, '_blank');
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
+                    showToast(`Opened ${file.name}`);
+                }
             } catch(err) { showToast(`Cannot open: ${err.message}`); }
+        }
+
+        function showPreviewModal(file, type, ext) {
+            const modal = document.getElementById('preview-modal');
+            const content = document.getElementById('preview-content');
+            const title = document.getElementById('preview-title');
+            const icon = document.getElementById('preview-icon');
+            const openBtn = document.getElementById('preview-open-btn');
+            
+            title.innerText = file.name;
+            icon.className = `ph-fill ${type === 'image' ? 'ph-image text-blue-500' : type === 'video' ? 'ph-video text-purple-500' : 'ph-music-notes text-pink-500'} text-2xl`;
+            
+            if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
+            currentPreviewUrl = URL.createObjectURL(file);
+            
+            content.innerHTML = '<div class="absolute inset-0 flex items-center justify-center"><i class="ph ph-spinner-gap text-3xl animate-spin text-gray-400"></i></div>';
+            
+            setTimeout(() => {
+                if (type === 'image') {
+                    content.innerHTML = `<img src="${currentPreviewUrl}" class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-sm animate-pop relative z-10">`;
+                } else if (type === 'video') {
+                    content.innerHTML = `<video src="${currentPreviewUrl}" controls autoplay class="max-w-full max-h-[70vh] rounded-lg shadow-md animate-pop relative z-10 bg-black"></video>`;
+                } else if (type === 'audio') {
+                    content.innerHTML = `
+                    <div class="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl border border-gray-100 flex flex-col items-center gap-6 animate-pop relative z-10">
+                        <div class="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mb-2 shadow-inner">
+                            <i class="ph-fill ph-music-notes text-5xl text-pink-500"></i>
+                        </div>
+                        <h4 class="text-lg font-medium text-gray-800 truncate w-full text-center px-4">${file.name}</h4>
+                        <audio src="${currentPreviewUrl}" controls autoplay class="w-full"></audio>
+                    </div>`;
+                }
+            }, 100);
+
+            openBtn.onclick = () => window.open(currentPreviewUrl, '_blank');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closePreviewModal() {
+            const modal = document.getElementById('preview-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            const content = document.getElementById('preview-content');
+            content.innerHTML = ''; // Stop playback
+            if (currentPreviewUrl) {
+                URL.revokeObjectURL(currentPreviewUrl);
+                currentPreviewUrl = null;
+            }
         }
 
         function getFileIcon(filename) {
@@ -555,31 +653,33 @@
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
             
+            let animIndex = 0;
             if (savedFolders.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-300 mt-2">
-                        <i class="ph ph-folder-open text-5xl text-gray-400 mb-3"></i>
+                    <div class="col-span-full flex flex-col items-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-300 mt-2 animate-fade-in">
+                        <i class="ph ph-folder-open text-5xl text-gray-400 mb-3 animate-bounce" style="animation-duration: 2s"></i>
                         <p class="text-gray-600 font-medium">No saved locations</p>
                         <p class="text-sm text-gray-500 mb-4">Add folders to access them quickly</p>
-                        <button onclick="addNewLocation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">Add Folder</button>
+                        <button onclick="addNewLocation()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors shadow-md shadow-blue-500/20">Add Folder</button>
                     </div>
                 `;
             } else {
                 for (const folder of savedFolders) {
-                    const card = createShortcutCard(folder.name, folder.handle);
+                    const card = createShortcutCard(folder.name, folder.handle, animIndex++);
                     grid.appendChild(card);
                 }
             }
 
-            const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2'; recentTitle.innerText = 'Recent Files';
+            const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2 animate-fade-in'; recentTitle.innerText = 'Recent Files';
             grid.appendChild(recentTitle);
-            for (const item of recentFiles.slice(0,4)) grid.appendChild(createRecentCard(item));
+            for (const item of recentFiles.slice(0,4)) grid.appendChild(createRecentCard(item, animIndex++));
         }
 
-        function createShortcutCard(name, handle) {
+        function createShortcutCard(name, handle, index = 0) {
             const div = document.createElement('div');
-            div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition-colors';
-            div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium truncate w-full text-center">${escapeHtml(name)}</span>`;
+            div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition-all duration-300 hover:shadow-md hover:-translate-y-1 animate-slide-up opacity-0';
+            div.style.animationDelay = `${Math.min(index * 0.04, 0.8)}s`;
+            div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500 drop-shadow-sm"></i><span class="mt-2 text-sm font-medium truncate w-full text-center">${escapeHtml(name)}</span>`;
             div.onclick = async () => {
                 if (handle) { 
                     currentPath = []; 
@@ -590,10 +690,11 @@
             return div;
         }
 
-        function createRecentCard(item) {
+        function createRecentCard(item, index = 0) {
             const div = document.createElement('div');
-            div.className = 'flex items-center gap-3 p-3 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
-            div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder' : 'ph-file'} text-2xl text-gray-600"></i><span class="text-sm truncate">${escapeHtml(item.name)}</span>`;
+            div.className = 'flex items-center gap-3 p-3 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer transition-all duration-300 hover:shadow-sm hover:-translate-y-0.5 animate-slide-up opacity-0';
+            div.style.animationDelay = `${Math.min(index * 0.04, 0.8)}s`;
+            div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder text-yellow-600' : 'ph-file text-gray-600'} text-2xl drop-shadow-sm"></i><span class="text-sm truncate font-medium">${escapeHtml(item.name)}</span>`;
             div.onclick = async () => {
                 if (item.parentHandle) {
                     currentPath = []; currentDirectoryHandle = item.parentHandle;
@@ -613,7 +714,7 @@
 
         async function renderComputers() {
             const grid = document.getElementById('items-grid');
-            grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20"><i class="ph ph-computer-tower text-6xl text-gray-400"></i><p class="mt-4 text-gray-600">Pick any folder on your computer to manage</p><button onclick="pickComputerFolder()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">Select Folder</button></div>`;
+            grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20 animate-fade-in"><i class="ph ph-computer-tower text-6xl text-gray-400 mb-2"></i><p class="mt-4 text-gray-600 font-medium">Pick any folder on your computer to manage</p><button onclick="pickComputerFolder()" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/30 transition-all hover:-translate-y-1">Select Folder</button></div>`;
         }
 
         async function pickComputerFolder() {
@@ -644,14 +745,14 @@
 
         async function renderRecent() {
             const grid = document.getElementById('items-grid');
-            if (recentFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No recent files</div>';
-            else { grid.innerHTML = ''; for (const item of recentFiles) grid.appendChild(createRecentCard(item)); }
+            if (recentFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500 animate-fade-in">No recent files</div>';
+            else { grid.innerHTML = ''; let i = 0; for (const item of recentFiles) grid.appendChild(createRecentCard(item, i++)); }
         }
 
         async function renderStarred() {
             const grid = document.getElementById('items-grid');
-            if (starredFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No starred items</div>';
-            else { grid.innerHTML = ''; for (const item of starredFiles) grid.appendChild(createRecentCard(item)); }
+            if (starredFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500 animate-fade-in">No starred items</div>';
+            else { grid.innerHTML = ''; let i = 0; for (const item of starredFiles) grid.appendChild(createRecentCard(item, i++)); }
         }
 
         // ---------- Helpers ----------
@@ -687,6 +788,9 @@
             });
             document.getElementById('rename-modal').addEventListener('click', function(e) {
                 if (e.target === this) closeRenameModal();
+            });
+            document.getElementById('preview-modal').addEventListener('click', function(e) {
+                if (e.target === this) closePreviewModal();
             });
 
             await loadHandles();
