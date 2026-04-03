@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local File Explorer</title>
+    <title>File Explorer - Right Click Menu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -14,22 +14,48 @@
         .active-nav i { color: #001d35; }
         .file-item:hover .file-actions { opacity: 1; }
         .file-actions { opacity: 0; transition: opacity 0.2s; }
+        /* Custom context menu */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
+            min-width: 160px;
+            overflow: hidden;
+        }
+        .context-menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            transition: background 0.1s;
+        }
+        .context-menu-item:hover {
+            background-color: #f0f0f0;
+        }
+        .context-menu-divider {
+            height: 1px;
+            background-color: #e0e0e0;
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden">
 
-    <!-- Sidebar -->
+    <!-- Sidebar (unchanged) -->
     <aside class="w-64 min-w-[256px] flex flex-col p-4">
         <div class="flex items-center gap-2 px-2 mb-8 cursor-pointer">
             <i class="ph-fill ph-hard-drives text-3xl text-blue-600"></i>
             <span class="text-xl font-normal text-gray-700">File Explorer</span>
         </div>
-
         <button onclick="showNewMenu()" class="flex items-center gap-3 bg-white hover:bg-gray-50 shadow-sm border border-gray-200 rounded-2xl px-5 py-4 w-max mb-6 transition-all">
             <i class="ph ph-plus text-xl font-bold"></i>
             <span class="font-medium text-sm">New</span>
         </button>
-
         <nav class="flex flex-col gap-1 flex-1">
             <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium">
                 <i class="ph-fill ph-folder text-lg"></i> My Files
@@ -44,15 +70,12 @@
                 <i class="ph ph-star text-lg"></i> Starred
             </a>
         </nav>
-
         <div class="mt-auto flex flex-col gap-2">
             <button onclick="openSettings()" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
                 <i class="ph ph-gear text-lg"></i> Settings
             </button>
             <div class="px-4 mt-2" id="storage-info">
-                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div>
-                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2"><div class="bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div></div>
                 <span class="text-xs text-gray-600">Select a folder to see storage</span>
             </div>
         </div>
@@ -86,7 +109,7 @@
         </div>
     </main>
 
-    <!-- Settings Modal -->
+    <!-- Settings Modal (centered) -->
     <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
             <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
@@ -94,28 +117,18 @@
                 <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800"><i class="ph ph-x text-xl"></i></button>
             </div>
             <div class="p-6 space-y-4">
-                <div><label class="block text-sm font-medium mb-1">Downloads Folder</label>
-                    <div class="flex gap-2"><input type="text" id="downloads-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('downloads')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
-                </div>
-                <div><label class="block text-sm font-medium mb-1">Documents Folder</label>
-                    <div class="flex gap-2"><input type="text" id="documents-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('documents')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
-                </div>
-                <div><label class="block text-sm font-medium mb-1">Music Folder</label>
-                    <div class="flex gap-2"><input type="text" id="music-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('music')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
-                </div>
-                <div><label class="block text-sm font-medium mb-1">Pictures Folder</label>
-                    <div class="flex gap-2"><input type="text" id="pictures-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('pictures')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
-                </div>
-                <div><label class="block text-sm font-medium mb-1">Videos Folder</label>
-                    <div class="flex gap-2"><input type="text" id="videos-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('videos')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
-                </div>
+                <div><label class="block text-sm font-medium mb-1">Downloads Folder</label><div class="flex gap-2"><input type="text" id="downloads-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('downloads')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
+                <div><label class="block text-sm font-medium mb-1">Documents Folder</label><div class="flex gap-2"><input type="text" id="documents-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('documents')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
+                <div><label class="block text-sm font-medium mb-1">Music Folder</label><div class="flex gap-2"><input type="text" id="music-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('music')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
+                <div><label class="block text-sm font-medium mb-1">Pictures Folder</label><div class="flex gap-2"><input type="text" id="pictures-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('pictures')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
+                <div><label class="block text-sm font-medium mb-1">Videos Folder</label><div class="flex gap-2"><input type="text" id="videos-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('videos')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div></div>
                 <div class="pt-2"><button onclick="clearAllHandles()" class="text-red-600 text-sm">Reset all saved folder permissions</button></div>
             </div>
             <div class="px-6 py-4 border-t bg-gray-50 flex justify-end"><button onclick="closeSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button></div>
         </div>
     </div>
 
-    <!-- Rename Modal -->
+    <!-- Rename Modal (centered) -->
     <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
         <div class="bg-white rounded-xl w-96 p-6">
             <h3 class="text-lg font-medium mb-4">Rename</h3>
@@ -124,20 +137,25 @@
         </div>
     </div>
 
+    <!-- Custom Context Menu -->
+    <div id="context-menu" class="context-menu hidden" style="position: fixed;"></div>
+
     <!-- Toast -->
     <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
 
     <script>
-        // ----------------------------- File System Access API Manager -----------------------------
+        // ----------------------------- Global State -----------------------------
         let currentDirectoryHandle = null;
         let currentPath = [];
         let currentTab = 'my-files';
-        
         let folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
         let recentFiles = [];
         let starredFiles = [];
         
-        // IndexedDB helpers
+        // Context menu target
+        let contextTarget = { handle: null, name: null, isFolder: false, element: null };
+
+        // ----------------------------- IndexedDB Helpers (unchanged) -----------------------------
         async function loadStoredHandles() {
             return new Promise((resolve) => {
                 const request = indexedDB.open('FileExplorerDB', 2);
@@ -281,6 +299,7 @@
                 <span class="text-sm font-medium truncate">${escapeHtml(handle.name)}</span>
                 ${sizeInfo}
             `;
+            // Left-click navigation/open
             div.addEventListener('click', async (e) => {
                 if (e.target.closest('.file-actions')) return;
                 if (isFolder) {
@@ -289,38 +308,31 @@
                     await renderCurrentDirectory();
                     addToRecent(handle, true);
                 } else {
-                    // OPEN FILE
                     await openFile(handle);
                     addToRecent(handle, false);
                 }
             });
+            // Right-click context menu
+            div.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                contextTarget = { handle, name: handle.name, isFolder, element: div };
+                showContextMenu(e.clientX, e.clientY, isFolder);
+            });
             return div;
         }
         
-        // FIXED: Proper file opening with blob URL and download fallback
+        // Enhanced file opening: for media, open in new tab (browser handles video/music)
         async function openFile(fileHandle) {
             try {
                 const file = await fileHandle.getFile();
                 const url = URL.createObjectURL(file);
-                // For images, PDFs, text files, we can open in a new tab
-                const mimeType = file.type;
-                if (mimeType.startsWith('image/') || mimeType === 'application/pdf' || mimeType.startsWith('text/')) {
-                    window.open(url, '_blank');
-                } else {
-                    // For other files, trigger download
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = file.name;
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                }
-                // Revoke URL after a delay to allow download
+                // For media files, we can open in new tab; browser will play them if capable
+                window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
                 showToast(`Opened ${file.name}`);
             } catch (err) {
                 showToast(`Cannot open file: ${err.message}`);
-                console.error(err);
             }
         }
         
@@ -394,7 +406,7 @@
             } catch(e) { showToast('Delete failed: ' + e.message); }
         }
         
-        // Create new
+        // Create
         async function createNewFolder() {
             const folderName = prompt('New folder name:');
             if (!folderName) return;
@@ -440,7 +452,83 @@
             if (currentTab === 'starred') renderStarred();
         }
         
-        // ----------------------------- Tab Rendering -----------------------------
+        // ----------------------------- Context Menu -----------------------------
+        function showContextMenu(x, y, isFolder) {
+            const menu = document.getElementById('context-menu');
+            menu.innerHTML = '';
+            // Open option
+            const openItem = document.createElement('div');
+            openItem.className = 'context-menu-item';
+            openItem.innerHTML = `<i class="ph ph-folder-open"></i> Open`;
+            openItem.onclick = () => {
+                if (isFolder) {
+                    currentPath.push(currentDirectoryHandle);
+                    currentDirectoryHandle = contextTarget.handle;
+                    renderCurrentDirectory();
+                    addToRecent(contextTarget.handle, true);
+                } else {
+                    openFile(contextTarget.handle);
+                    addToRecent(contextTarget.handle, false);
+                }
+                hideContextMenu();
+            };
+            menu.appendChild(openItem);
+            
+            const renameItem = document.createElement('div');
+            renameItem.className = 'context-menu-item';
+            renameItem.innerHTML = `<i class="ph ph-pencil-simple"></i> Rename`;
+            renameItem.onclick = () => {
+                renameItemNative(contextTarget.name, isFolder);
+                hideContextMenu();
+            };
+            menu.appendChild(renameItem);
+            
+            const deleteItem = document.createElement('div');
+            deleteItem.className = 'context-menu-item';
+            deleteItem.innerHTML = `<i class="ph ph-trash"></i> Delete`;
+            deleteItem.onclick = () => {
+                deleteItemNative(contextTarget.name, isFolder);
+                hideContextMenu();
+            };
+            menu.appendChild(deleteItem);
+            
+            const starItem = document.createElement('div');
+            const isStarred = starredFiles.some(s => s.name === contextTarget.name);
+            starItem.className = 'context-menu-item';
+            starItem.innerHTML = `<i class="ph ${isStarred ? 'ph-star-fill' : 'ph-star'}"></i> ${isStarred ? 'Unstar' : 'Star'}`;
+            starItem.onclick = () => {
+                toggleStarNative(contextTarget.name, isFolder);
+                hideContextMenu();
+            };
+            menu.appendChild(starItem);
+            
+            // Position menu
+            menu.style.left = x + 'px';
+            menu.style.top = y + 'px';
+            menu.classList.remove('hidden');
+            
+            // Close when clicking outside
+            setTimeout(() => {
+                document.addEventListener('click', hideContextMenuOnClick);
+            }, 0);
+        }
+        
+        function hideContextMenu() {
+            const menu = document.getElementById('context-menu');
+            menu.classList.add('hidden');
+            document.removeEventListener('click', hideContextMenuOnClick);
+        }
+        
+        function hideContextMenuOnClick(e) {
+            if (!document.getElementById('context-menu').contains(e.target)) hideContextMenu();
+        }
+        
+        // Wrappers to call existing functions
+        function renameItemNative(name, isFolder) { renameItem(name, isFolder); }
+        function deleteItemNative(name, isFolder) { deleteItem(name, isFolder); }
+        async function toggleStarNative(name, isFolder) { await toggleStar(name, isFolder); }
+        
+        // ----------------------------- Tab Rendering (unchanged logic) -----------------------------
         async function switchTab(tabId, event) {
             if(event) event.preventDefault();
             currentTab = tabId;
@@ -470,7 +558,6 @@
                     grid.appendChild(placeholder);
                 }
             }
-            // Show recent 4 files
             const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2'; recentTitle.innerText = 'Recent Files';
             grid.appendChild(recentTitle);
             const recentItems = recentFiles.slice(0,4);
@@ -501,12 +588,10 @@
             div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder' : 'ph-file'} text-2xl text-gray-600"></i><span class="text-sm truncate">${escapeHtml(item.name)}</span>`;
             div.onclick = async () => {
                 if (item.parentHandle) {
-                    // Navigate to parent folder first
                     currentPath = [];
                     currentDirectoryHandle = item.parentHandle;
                     await renderCurrentDirectory();
                     if (!item.isFolder) {
-                        // Then open the file (handle might be stale, re-fetch)
                         try {
                             const freshHandle = await item.parentHandle.getFileHandle(item.name);
                             await openFile(freshHandle);
