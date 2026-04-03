@@ -964,7 +964,8 @@
       listDiv.innerHTML = `<div class="glass-card" style="grid-column:1/-1; text-align:center;"><h3>🎉 All caught up!</h3><p>Come back tomorrow or add new definitions.</p></div>`;
     } else {
       listDiv.innerHTML = pending.map(d => {
-        const displayTerm = d.term && d.term.trim() !== "" ? d.term : "Untitled";
+        // Ensure term is displayed correctly, fallback to "Untitled" only if empty
+        const displayTerm = (d.term && d.term.trim() !== "") ? d.term : "Untitled";
         return `
         <div class="def-sug-card" onclick="this.querySelector('.def-sug-hidden').style.display='block'; this.querySelector('.def-sug-reveal').style.display='none';">
           <div class="def-sug-top"><div class="def-sug-term">${escapeHtml(displayTerm)}</div><div class="def-sug-badge">#${d.count || 0}</div></div>
@@ -983,7 +984,7 @@
     div.innerHTML = `
       <div class="modal">
         <h3>Add Definition <span class="modal-close"><i class="fas fa-times"></i></span></h3>
-        <input type="text" id="mDefTerm" placeholder="Term (Optional, defaults to 'Unknown')" style="width:100%; margin-bottom:1rem;">
+        <input type="text" id="mDefTerm" placeholder="Term (Required)" style="width:100%; margin-bottom:1rem;">
         <textarea id="mDefText" rows="4" placeholder="Definition (Required)" style="width:100%; margin-bottom:1rem;"></textarea>
         <div style="margin-bottom:1rem;">
           <label style="display:block; margin-bottom:5px;">Topic / Unit:</label>
@@ -1014,7 +1015,7 @@
       const defText = div.querySelector('#mDefText').value;
       if (!defText) return showToast('Definition text is required', true);
       let term = div.querySelector('#mDefTerm').value.trim();
-      if (term === "") term = "Unknown Term";
+      if (term === "") term = "Unknown Term"; // fallback but user can edit later
       let finalTopic = topicSelect.value;
       if (finalTopic === '__new__') {
         finalTopic = newTopicInput.value.trim();
@@ -1043,7 +1044,7 @@
   // Init
   async function init() {
     for(let k of Object.keys(allItems)) { allItems[k] = getLocalData(k); if(!allItems[k].length) allItems[k]=[]; }
-    // Ensure every definition has a term (migration)
+    // Migration: ensure every definition has a non-empty term
     let changed = false;
     for (let def of allItems.definitions) {
       if (!def.term || def.term.trim() === "") {
