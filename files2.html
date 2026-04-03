@@ -129,28 +129,23 @@
 
     <script>
         // ----------------------------- File System Access API Manager -----------------------------
-        let currentDirectoryHandle = null;      // Handle of current folder
-        let currentPath = [];                   // Stack of directory handles for breadcrumbs
+        let currentDirectoryHandle = null;
+        let currentPath = [];
         let currentTab = 'my-files';
         
-        // Stored root handles for special folders (Downloads, Documents, etc.)
-        let folderHandles = {
-            downloads: null, documents: null, music: null, pictures: null, videos: null
-        };
+        let folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
+        let recentFiles = [];
+        let starredFiles = [];
         
-        // Recently accessed files (max 20)
-        let recentFiles = [];  // store { name, handle, parentHandle }
-        let starredFiles = [];  // store { name, handle, parentHandle }
-        
-        // Load persisted handles from IndexedDB
+        // IndexedDB helpers
         async function loadStoredHandles() {
             return new Promise((resolve) => {
-                const request = indexedDB.open('FileExplorerDB', 1);
+                const request = indexedDB.open('FileExplorerDB', 2);
                 request.onupgradeneeded = () => {
                     const db = request.result;
                     if (!db.objectStoreNames.contains('handles')) db.createObjectStore('handles');
-                    if (!db.objectStoreNames.contains('recent')) db.createObjectStore('recent');
-                    if (!db.objectStoreNames.contains('starred')) db.createObjectStore('starred');
+                    if (!db.objectStoreNames.contains('recent')) db.createObjectStore('recent', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('starred')) db.createObjectStore('starred', { keyPath: 'id' });
                 };
                 request.onsuccess = () => {
                     const db = request.result;
@@ -164,11 +159,9 @@
                         new Promise(r => { const get = recentStore.getAll(); get.onsuccess = () => r(get.result); }),
                         new Promise(r => { const get = starredStore.getAll(); get.onsuccess = () => r(get.result); })
                     ]).then(([handlesList, recentList, starredList]) => {
-                        for (let item of handlesList) {
-                            if (item.key && item.handle) folderHandles[item.key] = item.handle;
-                        }
-                        recentFiles = recentList.map(r => ({ name: r.name, handle: r.handle, parentHandle: r.parentHandle }));
-                        starredFiles = starredList.map(s => ({ name: s.name, handle: s.handle, parentHandle: s.parentHandle }));
+                        for (let item of handlesList) if (item.key && item.handle) folderHandles[item.key] = item.handle;
+                        recentFiles = recentList.map(r => ({ id: r.id, name: r.name, handle: r.handle, parentHandle: r.parentHandle, isFolder: r.isFolder }));
+                        starredFiles = starredList.map(s => ({ id: s.id, name: s.name, handle: s.handle, parentHandle: s.parentHandle, isFolder: s.isFolder }));
                         updateSettingsInputs();
                         resolve();
                     });
@@ -179,7 +172,7 @@
         
         async function saveHandle(key, handle) {
             return new Promise((resolve) => {
-                const request = indexedDB.open('FileExplorerDB', 1);
+                const request = indexedDB.open('FileExplorerDB', 2);
                 request.onsuccess = () => {
                     const db = request.result;
                     const tx = db.transaction('handles', 'readwrite');
@@ -190,7 +183,7 @@
         }
         
         async function saveRecentList() {
-            const request = indexedDB.open('FileExplorerDB', 1);
+            const request = indexedDB.open('FileExplorerDB', 2);
             request.onsuccess = () => {
                 const db = request.result;
                 const tx = db.transaction('recent', 'readwrite');
@@ -201,7 +194,7 @@
         }
         
         async function saveStarredList() {
-            const request = indexedDB.open('FileExplorerDB', 1);
+            const request = indexedDB.open('FileExplorerDB', 2);
             request.onsuccess = () => {
                 const db = request.result;
                 const tx = db.transaction('starred', 'readwrite');
@@ -232,7 +225,7 @@
         
         function clearAllHandles() {
             folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
-            const request = indexedDB.open('FileExplorerDB', 1);
+            const request = indexedDB.open('FileExplorerDB', 2);
             request.onsuccess = () => {
                 const db = request.result;
                 const tx = db.transaction('handles', 'readwrite');
@@ -248,7 +241,6 @@
                 if (entry.kind === 'directory') folders.push(entry);
                 else files.push(entry);
             }
-            // sort by name
             folders.sort((a,b) => a.name.localeCompare(b.name));
             files.sort((a,b) => a.name.localeCompare(b.name));
             return { folders, files };
@@ -264,16 +256,9 @@
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
             
-            // Render folders
-            for (const folder of folders) {
-                const card = createItemCard(folder, true);
-                grid.appendChild(card);
-            }
-            // Render files
-            for (const file of files) {
-                const card = createItemCard(file, false);
-                grid.appendChild(card);
-            }
+            for (const folder of folders) grid.appendChild(createItemCard(folder, true));
+            for (const file of files) grid.appendChild(createItemCard(file, false));
+            
             if (folders.length === 0 && files.length === 0) grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">This folder is empty</div>';
             updateBreadcrumbs();
             updateStorageInfo();
@@ -281,7 +266,7 @@
         
         function createItemCard(handle, isFolder) {
             const div = document.createElement('div');
-            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition border border-transparent hover:border-gray-200 relative';
+            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition border border-transparent hover:border-gray-200 relative cursor-pointer';
             const icon = isFolder ? '<i class="ph-fill ph-folder text-4xl text-yellow-600"></i>' : getFileIcon(handle.name);
             const sizeInfo = isFolder ? '' : `<span class="text-xs text-gray-500">${formatSize(handle.size)}</span>`;
             div.innerHTML = `
@@ -304,14 +289,39 @@
                     await renderCurrentDirectory();
                     addToRecent(handle, true);
                 } else {
-                    // open file (download)
-                    const file = await handle.getFile();
-                    const url = URL.createObjectURL(file);
-                    window.open(url, '_blank');
+                    // OPEN FILE
+                    await openFile(handle);
                     addToRecent(handle, false);
                 }
             });
             return div;
+        }
+        
+        // FIXED: Proper file opening with blob URL and download fallback
+        async function openFile(fileHandle) {
+            try {
+                const file = await fileHandle.getFile();
+                const url = URL.createObjectURL(file);
+                // For images, PDFs, text files, we can open in a new tab
+                const mimeType = file.type;
+                if (mimeType.startsWith('image/') || mimeType === 'application/pdf' || mimeType.startsWith('text/')) {
+                    window.open(url, '_blank');
+                } else {
+                    // For other files, trigger download
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+                // Revoke URL after a delay to allow download
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                showToast(`Opened ${file.name}`);
+            } catch (err) {
+                showToast(`Cannot open file: ${err.message}`);
+                console.error(err);
+            }
         }
         
         function getFileIcon(filename) {
@@ -354,7 +364,6 @@
         
         async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(); }
         async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(); }
-        
         async function refreshCurrentView() { await renderCurrentDirectory(); }
         
         // Rename
@@ -385,7 +394,7 @@
             } catch(e) { showToast('Delete failed: ' + e.message); }
         }
         
-        // Create new folder
+        // Create new
         async function createNewFolder() {
             const folderName = prompt('New folder name:');
             if (!folderName) return;
@@ -411,8 +420,9 @@
         
         // Star / Recent
         function addToRecent(handle, isFolder) {
+            const id = `${handle.name}_${Date.now()}`;
             recentFiles = recentFiles.filter(r => r.name !== handle.name).slice(0, 19);
-            recentFiles.unshift({ name: handle.name, handle, parentHandle: currentDirectoryHandle, isFolder });
+            recentFiles.unshift({ id, name: handle.name, handle, parentHandle: currentDirectoryHandle, isFolder });
             saveRecentList();
         }
         
@@ -423,7 +433,7 @@
                 showToast(`Removed from starred`);
             } else {
                 const handle = isFolder ? await currentDirectoryHandle.getDirectoryHandle(name) : await currentDirectoryHandle.getFileHandle(name);
-                starredFiles.push({ name, handle, parentHandle: currentDirectoryHandle, isFolder });
+                starredFiles.push({ id: `${name}_${Date.now()}`, name, handle, parentHandle: currentDirectoryHandle, isFolder });
                 showToast(`Added to starred`);
             }
             await saveStarredList();
@@ -445,7 +455,6 @@
         }
         
         async function renderMyFiles() {
-            // Show special folders as shortcuts
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
             const shortcuts = ['downloads', 'documents', 'music', 'pictures', 'videos'];
@@ -481,7 +490,6 @@
                     currentPath = [];
                     currentDirectoryHandle = handle;
                     await renderCurrentDirectory();
-                    switchTab('my-files'); // stay but now inside folder
                 } else showToast('Folder not set');
             };
             return div;
@@ -493,14 +501,16 @@
             div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder' : 'ph-file'} text-2xl text-gray-600"></i><span class="text-sm truncate">${escapeHtml(item.name)}</span>`;
             div.onclick = async () => {
                 if (item.parentHandle) {
+                    // Navigate to parent folder first
                     currentPath = [];
                     currentDirectoryHandle = item.parentHandle;
                     await renderCurrentDirectory();
                     if (!item.isFolder) {
-                        // open file
-                        const file = await item.handle.getFile();
-                        const url = URL.createObjectURL(file);
-                        window.open(url, '_blank');
+                        // Then open the file (handle might be stale, re-fetch)
+                        try {
+                            const freshHandle = await item.parentHandle.getFileHandle(item.name);
+                            await openFile(freshHandle);
+                        } catch(e) { showToast('Cannot open file: ' + e.message); }
                     }
                 } else showToast('Cannot open: parent folder missing');
             };
@@ -518,7 +528,6 @@
                 currentPath = [];
                 currentDirectoryHandle = handle;
                 await renderCurrentDirectory();
-                switchTab('my-files');
                 showToast(`Now managing: ${handle.name}`);
             } catch(e) { showToast('Cancelled'); }
         }
@@ -552,7 +561,7 @@
         
         function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
         function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-        function showNewMenu() { showToast('Use right-click or buttons to create new items'); }
+        function showNewMenu() { showToast('Use the buttons above to create new folders or files'); }
         
         window.onload = async () => {
             await loadStoredHandles();
