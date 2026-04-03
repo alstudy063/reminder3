@@ -3,410 +3,561 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Local File Manager - Google Drive Style</title>
+    <title>Local File Explorer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
         .active-nav { background-color: #c2e7ff; color: #001d35; }
         .active-nav i { color: #001d35; }
         .file-item:hover .file-actions { opacity: 1; }
+        .file-actions { opacity: 0; transition: opacity 0.2s; }
     </style>
 </head>
 <body class="bg-[#f8fafd] text-[#1f1f1f] h-screen flex font-sans overflow-hidden">
 
-    <!-- Sidebar (same as before, slightly modified) -->
+    <!-- Sidebar -->
     <aside class="w-64 min-w-[256px] flex flex-col p-4">
         <div class="flex items-center gap-2 px-2 mb-8 cursor-pointer">
             <i class="ph-fill ph-hard-drives text-3xl text-blue-600"></i>
-            <span class="text-xl font-normal text-gray-700">Local File Manager</span>
+            <span class="text-xl font-normal text-gray-700">File Explorer</span>
         </div>
 
-        <button onclick="openLocalFolder()" class="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white shadow-sm rounded-2xl px-5 py-4 w-max mb-6 transition-all">
-            <i class="ph ph-folder-open text-xl font-bold"></i>
-            <span class="font-medium text-sm">Open Local Folder</span>
+        <button onclick="showNewMenu()" class="flex items-center gap-3 bg-white hover:bg-gray-50 shadow-sm border border-gray-200 rounded-2xl px-5 py-4 w-max mb-6 transition-all">
+            <i class="ph ph-plus text-xl font-bold"></i>
+            <span class="font-medium text-sm">New</span>
         </button>
 
         <nav class="flex flex-col gap-1 flex-1">
-            <a href="#" data-tab="home" onclick="switchTab('home', event)" class="active-nav flex items-center gap-4 px-4 py-2 rounded-full transition-colors text-sm font-medium">
-                <i class="ph-fill ph-folder text-lg"></i> Home
+            <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium">
+                <i class="ph-fill ph-folder text-lg"></i> My Files
+            </a>
+            <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-computer-tower text-lg"></i> Computers
+            </a>
+            <a href="#" data-tab="recent" onclick="switchTab('recent', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-clock text-lg"></i> Recent
+            </a>
+            <a href="#" data-tab="starred" onclick="switchTab('starred', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-star text-lg"></i> Starred
             </a>
         </nav>
 
         <div class="mt-auto flex flex-col gap-2">
-            <button onclick="showInfo()" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm text-gray-700">
-                <i class="ph ph-info text-lg"></i> About
+            <button onclick="openSettings()" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2 rounded-full text-sm font-medium text-gray-700">
+                <i class="ph ph-gear text-lg"></i> Settings
             </button>
+            <div class="px-4 mt-2" id="storage-info">
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: 0%"></div>
+                </div>
+                <span class="text-xs text-gray-600">Select a folder to see storage</span>
+            </div>
         </div>
     </aside>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col bg-white rounded-3xl my-3 mr-3 shadow-sm border border-gray-100 overflow-hidden">
-        <header class="h-16 flex items-center justify-between px-6 border-b">
+        <header class="h-16 flex items-center justify-between px-6 border-b border-gray-100">
             <div class="flex-1 max-w-2xl relative">
-                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                <input type="text" id="search-input" placeholder="Search in current folder" class="w-full pl-10 pr-3 py-2 rounded-full bg-[#f1f3f4] focus:bg-white outline-none">
+                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-lg"></i>
+                <input type="text" id="search-input" placeholder="Search in current folder" class="block w-full pl-10 pr-3 py-2 border-transparent rounded-full bg-[#f1f3f4] focus:bg-white focus:ring-0 outline-none text-sm">
             </div>
-            <div class="flex items-center gap-2">
-                <button onclick="createNewFile()" class="p-2 hover:bg-gray-100 rounded-full" title="New text file"><i class="ph ph-file-plus text-xl"></i></button>
-                <button onclick="createNewFolder()" class="p-2 hover:bg-gray-100 rounded-full" title="New folder"><i class="ph ph-folder-plus text-xl"></i></button>
-                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center">U</div>
+            <div class="flex items-center gap-4 ml-4">
+                <button onclick="refreshCurrentView()" class="p-2 hover:bg-gray-100 rounded-full"><i class="ph ph-arrow-clockwise text-xl"></i></button>
+                <div class="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-medium">U</div>
             </div>
         </header>
 
-        <!-- Breadcrumbs + current path -->
-        <div class="px-6 py-3 flex items-center gap-2 text-sm border-b" id="breadcrumb-area">
-            <span class="text-gray-500">No folder opened. Click "Open Local Folder" to start.</span>
+        <!-- Breadcrumbs + actions -->
+        <div class="px-6 py-3 flex items-center justify-between border-b border-gray-100">
+            <div class="flex items-center gap-2 text-sm" id="breadcrumb-container"></div>
+            <div class="flex gap-2">
+                <button onclick="createNewFolder()" class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"><i class="ph ph-folder-plus"></i> New Folder</button>
+                <button onclick="createNewFile()" class="px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"><i class="ph ph-file-plus"></i> New Text File</button>
+            </div>
         </div>
 
-        <!-- Files container -->
+        <!-- Files Container -->
         <div class="flex-1 overflow-y-auto p-6" id="file-container">
-            <div id="folder-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4" id="items-grid"></div>
         </div>
     </main>
 
-    <!-- Modal for rename / new item -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-xl w-96 p-5">
-            <h3 class="text-lg font-medium mb-3" id="modal-title">Rename</h3>
-            <input type="text" id="modal-input" class="w-full border rounded-lg px-3 py-2 mb-4">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal()" class="px-4 py-2 text-gray-600">Cancel</button>
-                <button onclick="confirmModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Confirm</button>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-medium">Settings</h3>
+                <button onclick="closeSettings()" class="text-gray-500 hover:text-gray-800"><i class="ph ph-x text-xl"></i></button>
             </div>
+            <div class="p-6 space-y-4">
+                <div><label class="block text-sm font-medium mb-1">Downloads Folder</label>
+                    <div class="flex gap-2"><input type="text" id="downloads-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('downloads')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
+                </div>
+                <div><label class="block text-sm font-medium mb-1">Documents Folder</label>
+                    <div class="flex gap-2"><input type="text" id="documents-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('documents')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
+                </div>
+                <div><label class="block text-sm font-medium mb-1">Music Folder</label>
+                    <div class="flex gap-2"><input type="text" id="music-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('music')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
+                </div>
+                <div><label class="block text-sm font-medium mb-1">Pictures Folder</label>
+                    <div class="flex gap-2"><input type="text" id="pictures-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('pictures')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
+                </div>
+                <div><label class="block text-sm font-medium mb-1">Videos Folder</label>
+                    <div class="flex gap-2"><input type="text" id="videos-path" readonly class="flex-1 border rounded-lg px-3 py-2 text-sm bg-gray-50"> <button onclick="pickFolderFor('videos')" class="bg-gray-100 px-3 rounded-lg">Pick</button></div>
+                </div>
+                <div class="pt-2"><button onclick="clearAllHandles()" class="text-red-600 text-sm">Reset all saved folder permissions</button></div>
+            </div>
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end"><button onclick="closeSettings()" class="px-4 py-2 bg-blue-600 text-white rounded-lg">Close</button></div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="rename-modal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl w-96 p-6">
+            <h3 class="text-lg font-medium mb-4">Rename</h3>
+            <input type="text" id="rename-input" class="w-full border rounded-lg px-3 py-2 mb-4">
+            <div class="flex justify-end gap-2"><button onclick="closeRenameModal()" class="px-3 py-1 bg-gray-200 rounded">Cancel</button><button onclick="confirmRename()" class="px-3 py-1 bg-blue-600 text-white rounded">Rename</button></div>
         </div>
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full text-sm transition-opacity opacity-0 pointer-events-none z-50"></div>
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-full shadow-lg text-sm transition-opacity duration-300 opacity-0 pointer-events-none z-50"></div>
 
     <script>
-        // ==================== LOCAL FILE SYSTEM MANAGEMENT ====================
-        let currentDirectoryHandle = null;      // The directory handle we are viewing
-        let currentFiles = [];                  // Array of {name, handle, isDirectory, size?}
-        let pendingAction = null;               // { type: 'rename', item, isDir } or { type: 'newFile', parentHandle }
-        let modalInput = document.getElementById('modal-input');
+        // ----------------------------- File System Access API Manager -----------------------------
+        let currentDirectoryHandle = null;      // Handle of current folder
+        let currentPath = [];                   // Stack of directory handles for breadcrumbs
+        let currentTab = 'my-files';
         
-        // Helper: show toast
+        // Stored root handles for special folders (Downloads, Documents, etc.)
+        let folderHandles = {
+            downloads: null, documents: null, music: null, pictures: null, videos: null
+        };
+        
+        // Recently accessed files (max 20)
+        let recentFiles = [];  // store { name, handle, parentHandle }
+        let starredFiles = [];  // store { name, handle, parentHandle }
+        
+        // Load persisted handles from IndexedDB
+        async function loadStoredHandles() {
+            return new Promise((resolve) => {
+                const request = indexedDB.open('FileExplorerDB', 1);
+                request.onupgradeneeded = () => {
+                    const db = request.result;
+                    if (!db.objectStoreNames.contains('handles')) db.createObjectStore('handles');
+                    if (!db.objectStoreNames.contains('recent')) db.createObjectStore('recent');
+                    if (!db.objectStoreNames.contains('starred')) db.createObjectStore('starred');
+                };
+                request.onsuccess = () => {
+                    const db = request.result;
+                    const tx = db.transaction(['handles', 'recent', 'starred'], 'readonly');
+                    const handleStore = tx.objectStore('handles');
+                    const recentStore = tx.objectStore('recent');
+                    const starredStore = tx.objectStore('starred');
+                    
+                    Promise.all([
+                        new Promise(r => { const get = handleStore.getAll(); get.onsuccess = () => r(get.result); }),
+                        new Promise(r => { const get = recentStore.getAll(); get.onsuccess = () => r(get.result); }),
+                        new Promise(r => { const get = starredStore.getAll(); get.onsuccess = () => r(get.result); })
+                    ]).then(([handlesList, recentList, starredList]) => {
+                        for (let item of handlesList) {
+                            if (item.key && item.handle) folderHandles[item.key] = item.handle;
+                        }
+                        recentFiles = recentList.map(r => ({ name: r.name, handle: r.handle, parentHandle: r.parentHandle }));
+                        starredFiles = starredList.map(s => ({ name: s.name, handle: s.handle, parentHandle: s.parentHandle }));
+                        updateSettingsInputs();
+                        resolve();
+                    });
+                };
+                request.onerror = () => resolve();
+            });
+        }
+        
+        async function saveHandle(key, handle) {
+            return new Promise((resolve) => {
+                const request = indexedDB.open('FileExplorerDB', 1);
+                request.onsuccess = () => {
+                    const db = request.result;
+                    const tx = db.transaction('handles', 'readwrite');
+                    tx.objectStore('handles').put({ key, handle });
+                    tx.oncomplete = () => resolve();
+                };
+            });
+        }
+        
+        async function saveRecentList() {
+            const request = indexedDB.open('FileExplorerDB', 1);
+            request.onsuccess = () => {
+                const db = request.result;
+                const tx = db.transaction('recent', 'readwrite');
+                const store = tx.objectStore('recent');
+                store.clear();
+                for (let item of recentFiles.slice(0, 20)) store.put(item);
+            };
+        }
+        
+        async function saveStarredList() {
+            const request = indexedDB.open('FileExplorerDB', 1);
+            request.onsuccess = () => {
+                const db = request.result;
+                const tx = db.transaction('starred', 'readwrite');
+                const store = tx.objectStore('starred');
+                store.clear();
+                for (let item of starredFiles) store.put(item);
+            };
+        }
+        
+        function updateSettingsInputs() {
+            document.getElementById('downloads-path').value = folderHandles.downloads ? folderHandles.downloads.name : 'Not set';
+            document.getElementById('documents-path').value = folderHandles.documents ? folderHandles.documents.name : 'Not set';
+            document.getElementById('music-path').value = folderHandles.music ? folderHandles.music.name : 'Not set';
+            document.getElementById('pictures-path').value = folderHandles.pictures ? folderHandles.pictures.name : 'Not set';
+            document.getElementById('videos-path').value = folderHandles.videos ? folderHandles.videos.name : 'Not set';
+        }
+        
+        async function pickFolderFor(type) {
+            try {
+                const handle = await window.showDirectoryPicker();
+                folderHandles[type] = handle;
+                await saveHandle(type, handle);
+                updateSettingsInputs();
+                showToast(`${type} folder set to ${handle.name}`);
+                if (currentTab === 'my-files') renderMyFiles();
+            } catch(e) { showToast('Selection cancelled'); }
+        }
+        
+        function clearAllHandles() {
+            folderHandles = { downloads: null, documents: null, music: null, pictures: null, videos: null };
+            const request = indexedDB.open('FileExplorerDB', 1);
+            request.onsuccess = () => {
+                const db = request.result;
+                const tx = db.transaction('handles', 'readwrite');
+                tx.objectStore('handles').clear();
+                tx.oncomplete = () => { updateSettingsInputs(); showToast('All folder permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
+            };
+        }
+        
+        // ----------------------------- File Operations -----------------------------
+        async function getFilesAndFolders(dirHandle) {
+            const folders = [], files = [];
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'directory') folders.push(entry);
+                else files.push(entry);
+            }
+            // sort by name
+            folders.sort((a,b) => a.name.localeCompare(b.name));
+            files.sort((a,b) => a.name.localeCompare(b.name));
+            return { folders, files };
+        }
+        
+        async function renderCurrentDirectory() {
+            if (!currentDirectoryHandle) {
+                document.getElementById('items-grid').innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">No folder selected. Click "Computers" to pick a folder.</div>';
+                updateBreadcrumbs();
+                return;
+            }
+            const { folders, files } = await getFilesAndFolders(currentDirectoryHandle);
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = '';
+            
+            // Render folders
+            for (const folder of folders) {
+                const card = createItemCard(folder, true);
+                grid.appendChild(card);
+            }
+            // Render files
+            for (const file of files) {
+                const card = createItemCard(file, false);
+                grid.appendChild(card);
+            }
+            if (folders.length === 0 && files.length === 0) grid.innerHTML = '<div class="text-gray-500 col-span-full text-center py-10">This folder is empty</div>';
+            updateBreadcrumbs();
+            updateStorageInfo();
+        }
+        
+        function createItemCard(handle, isFolder) {
+            const div = document.createElement('div');
+            div.className = 'file-item flex flex-col p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl transition border border-transparent hover:border-gray-200 relative';
+            const icon = isFolder ? '<i class="ph-fill ph-folder text-4xl text-yellow-600"></i>' : getFileIcon(handle.name);
+            const sizeInfo = isFolder ? '' : `<span class="text-xs text-gray-500">${formatSize(handle.size)}</span>`;
+            div.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    ${icon}
+                    <div class="file-actions flex gap-1">
+                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); renameItem('${handle.name}', ${isFolder})"><i class="ph ph-pencil-simple text-sm"></i></button>
+                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); deleteItem('${handle.name}', ${isFolder})"><i class="ph ph-trash text-sm"></i></button>
+                        <button class="p-1 hover:bg-gray-300 rounded" onclick="event.stopPropagation(); toggleStar('${handle.name}', ${isFolder})"><i class="ph ph-star text-sm"></i></button>
+                    </div>
+                </div>
+                <span class="text-sm font-medium truncate">${escapeHtml(handle.name)}</span>
+                ${sizeInfo}
+            `;
+            div.addEventListener('click', async (e) => {
+                if (e.target.closest('.file-actions')) return;
+                if (isFolder) {
+                    currentPath.push(currentDirectoryHandle);
+                    currentDirectoryHandle = handle;
+                    await renderCurrentDirectory();
+                    addToRecent(handle, true);
+                } else {
+                    // open file (download)
+                    const file = await handle.getFile();
+                    const url = URL.createObjectURL(file);
+                    window.open(url, '_blank');
+                    addToRecent(handle, false);
+                }
+            });
+            return div;
+        }
+        
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const map = { pdf: 'ph-file-pdf text-red-500', jpg: 'ph-image text-blue-500', jpeg: 'ph-image text-blue-500', png: 'ph-image text-blue-500', gif: 'ph-image text-blue-500', svg: 'ph-image text-purple-500', doc: 'ph-file-doc text-blue-600', docx: 'ph-file-doc text-blue-600', xls: 'ph-file-xls text-green-600', xlsx: 'ph-file-xls text-green-600', ppt: 'ph-file-ppt text-orange-500', mp3: 'ph-music-note text-pink-500', mp4: 'ph-video text-purple-500', txt: 'ph-file-text text-gray-600', js: 'ph-file-code text-yellow-600', html: 'ph-file-code text-orange-500', json: 'ph-file-code text-gray-600' };
+            return map[ext] ? `<i class="ph-fill ${map[ext]} text-4xl"></i>` : `<i class="ph-fill ph-file text-4xl text-gray-500"></i>`;
+        }
+        
+        function formatSize(bytes) {
+            if (!bytes) return '';
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(1024));
+            return (bytes / Math.pow(1024, i)).toFixed(1) + ' ' + sizes[i];
+        }
+        
+        async function updateStorageInfo() {
+            if (!currentDirectoryHandle) return;
+            try {
+                let total = 0;
+                for await (const entry of currentDirectoryHandle.values()) {
+                    if (entry.kind === 'file') total += (await entry.getFile()).size;
+                }
+                const usedGB = (total / (1024**3)).toFixed(1);
+                document.getElementById('storage-info').innerHTML = `<div class="w-full bg-gray-200 rounded-full h-1.5 mb-2"><div class="bg-blue-600 h-1.5 rounded-full" style="width: ${Math.min(100, (total/5e9)*100)}%"></div></div><span class="text-xs text-gray-600">${usedGB} GB used (approx)</span>`;
+            } catch(e) {}
+        }
+        
+        function updateBreadcrumbs() {
+            const container = document.getElementById('breadcrumb-container');
+            let html = `<button onclick="navigateToRoot()" class="hover:underline text-gray-700">Root</button>`;
+            for (let i = 0; i < currentPath.length; i++) {
+                html += `<i class="ph ph-caret-right mx-1"></i>`;
+                html += `<button onclick="navigateToLevel(${i})" class="hover:underline">${escapeHtml(currentPath[i].name)}</button>`;
+            }
+            if (currentDirectoryHandle) {
+                html += `<i class="ph ph-caret-right mx-1"></i><span class="font-medium">${escapeHtml(currentDirectoryHandle.name)}</span>`;
+            }
+            container.innerHTML = html;
+        }
+        
+        async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(); }
+        async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(); }
+        
+        async function refreshCurrentView() { await renderCurrentDirectory(); }
+        
+        // Rename
+        let renameTarget = null, renameIsFolder = false;
+        function renameItem(name, isFolder) { renameTarget = name; renameIsFolder = isFolder; document.getElementById('rename-input').value = name; document.getElementById('rename-modal').classList.remove('hidden'); }
+        async function confirmRename() {
+            const newName = document.getElementById('rename-input').value.trim();
+            if (!newName || newName === renameTarget) { closeRenameModal(); return; }
+            try {
+                const targetHandle = await currentDirectoryHandle.getFileHandle(renameTarget, { create: false }).catch(() => currentDirectoryHandle.getDirectoryHandle(renameTarget, { create: false }));
+                if (!targetHandle) throw new Error('Not found');
+                await targetHandle.move(newName);
+                showToast(`Renamed to ${newName}`);
+                await renderCurrentDirectory();
+            } catch(e) { showToast('Rename failed: ' + e.message); }
+            closeRenameModal();
+        }
+        function closeRenameModal() { document.getElementById('rename-modal').classList.add('hidden'); renameTarget = null; }
+        
+        // Delete
+        async function deleteItem(name, isFolder) {
+            if (!confirm(`Delete ${name} permanently?`)) return;
+            try {
+                if (isFolder) await currentDirectoryHandle.removeEntry(name, { recursive: true });
+                else await currentDirectoryHandle.removeEntry(name);
+                showToast(`Deleted ${name}`);
+                await renderCurrentDirectory();
+            } catch(e) { showToast('Delete failed: ' + e.message); }
+        }
+        
+        // Create new folder
+        async function createNewFolder() {
+            const folderName = prompt('New folder name:');
+            if (!folderName) return;
+            try {
+                await currentDirectoryHandle.getDirectoryHandle(folderName, { create: true });
+                showToast(`Folder "${folderName}" created`);
+                await renderCurrentDirectory();
+            } catch(e) { showToast('Error: ' + e.message); }
+        }
+        
+        async function createNewFile() {
+            const fileName = prompt('New text file name (e.g., note.txt):');
+            if (!fileName) return;
+            try {
+                const fileHandle = await currentDirectoryHandle.getFileHandle(fileName, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write('');
+                await writable.close();
+                showToast(`File "${fileName}" created`);
+                await renderCurrentDirectory();
+            } catch(e) { showToast('Error: ' + e.message); }
+        }
+        
+        // Star / Recent
+        function addToRecent(handle, isFolder) {
+            recentFiles = recentFiles.filter(r => r.name !== handle.name).slice(0, 19);
+            recentFiles.unshift({ name: handle.name, handle, parentHandle: currentDirectoryHandle, isFolder });
+            saveRecentList();
+        }
+        
+        async function toggleStar(name, isFolder) {
+            const exists = starredFiles.find(s => s.name === name);
+            if (exists) {
+                starredFiles = starredFiles.filter(s => s.name !== name);
+                showToast(`Removed from starred`);
+            } else {
+                const handle = isFolder ? await currentDirectoryHandle.getDirectoryHandle(name) : await currentDirectoryHandle.getFileHandle(name);
+                starredFiles.push({ name, handle, parentHandle: currentDirectoryHandle, isFolder });
+                showToast(`Added to starred`);
+            }
+            await saveStarredList();
+            if (currentTab === 'starred') renderStarred();
+        }
+        
+        // ----------------------------- Tab Rendering -----------------------------
+        async function switchTab(tabId, event) {
+            if(event) event.preventDefault();
+            currentTab = tabId;
+            document.querySelectorAll('nav a').forEach(a => { a.classList.remove('active-nav'); a.classList.add('text-gray-700'); });
+            const activeLink = document.querySelector(`[data-tab="${tabId}"]`);
+            activeLink.classList.add('active-nav'); activeLink.classList.remove('text-gray-700');
+            
+            if (tabId === 'my-files') await renderMyFiles();
+            else if (tabId === 'computers') await renderComputers();
+            else if (tabId === 'recent') await renderRecent();
+            else if (tabId === 'starred') await renderStarred();
+        }
+        
+        async function renderMyFiles() {
+            // Show special folders as shortcuts
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = '';
+            const shortcuts = ['downloads', 'documents', 'music', 'pictures', 'videos'];
+            for (const key of shortcuts) {
+                const handle = folderHandles[key];
+                if (handle) {
+                    const card = createShortcutCard(handle.name, key);
+                    grid.appendChild(card);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'p-4 bg-gray-100 rounded-xl text-center text-gray-500';
+                    placeholder.innerHTML = `<i class="ph ph-folder-open text-3xl"></i><div class="text-sm">${key} folder not set<br><button onclick="openSettings()" class="text-blue-600 text-xs">Set in Settings</button></div>`;
+                    grid.appendChild(placeholder);
+                }
+            }
+            // Show recent 4 files
+            const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-medium text-gray-600 mt-4 mb-2'; recentTitle.innerText = 'Recent Files';
+            grid.appendChild(recentTitle);
+            const recentItems = recentFiles.slice(0,4);
+            for (const item of recentItems) {
+                const card = createRecentCard(item);
+                grid.appendChild(card);
+            }
+        }
+        
+        function createShortcutCard(name, key) {
+            const div = document.createElement('div');
+            div.className = 'flex flex-col items-center p-4 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
+            div.innerHTML = `<i class="ph-fill ph-folder text-5xl text-blue-500"></i><span class="mt-2 text-sm font-medium">${name}</span>`;
+            div.onclick = async () => {
+                const handle = folderHandles[key];
+                if (handle) {
+                    currentPath = [];
+                    currentDirectoryHandle = handle;
+                    await renderCurrentDirectory();
+                    switchTab('my-files'); // stay but now inside folder
+                } else showToast('Folder not set');
+            };
+            return div;
+        }
+        
+        function createRecentCard(item) {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-3 p-3 bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl cursor-pointer';
+            div.innerHTML = `<i class="ph-fill ${item.isFolder ? 'ph-folder' : 'ph-file'} text-2xl text-gray-600"></i><span class="text-sm truncate">${escapeHtml(item.name)}</span>`;
+            div.onclick = async () => {
+                if (item.parentHandle) {
+                    currentPath = [];
+                    currentDirectoryHandle = item.parentHandle;
+                    await renderCurrentDirectory();
+                    if (!item.isFolder) {
+                        // open file
+                        const file = await item.handle.getFile();
+                        const url = URL.createObjectURL(file);
+                        window.open(url, '_blank');
+                    }
+                } else showToast('Cannot open: parent folder missing');
+            };
+            return div;
+        }
+        
+        async function renderComputers() {
+            const grid = document.getElementById('items-grid');
+            grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20"><i class="ph ph-computer-tower text-6xl text-gray-400"></i><p class="mt-4 text-gray-600">Pick any folder on your computer to manage</p><button onclick="pickComputerFolder()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg">Select Folder</button></div>`;
+        }
+        
+        async function pickComputerFolder() {
+            try {
+                const handle = await window.showDirectoryPicker();
+                currentPath = [];
+                currentDirectoryHandle = handle;
+                await renderCurrentDirectory();
+                switchTab('my-files');
+                showToast(`Now managing: ${handle.name}`);
+            } catch(e) { showToast('Cancelled'); }
+        }
+        
+        async function renderRecent() {
+            const grid = document.getElementById('items-grid');
+            if (recentFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No recent files</div>';
+            else {
+                grid.innerHTML = '';
+                for (const item of recentFiles) grid.appendChild(createRecentCard(item));
+            }
+        }
+        
+        async function renderStarred() {
+            const grid = document.getElementById('items-grid');
+            if (starredFiles.length === 0) grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">No starred items</div>';
+            else {
+                grid.innerHTML = '';
+                for (const item of starredFiles) grid.appendChild(createRecentCard(item));
+            }
+        }
+        
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
-            toast.classList.remove('opacity-0');
-            toast.classList.add('opacity-100');
-            setTimeout(() => {
-                toast.classList.remove('opacity-100');
-                toast.classList.add('opacity-0');
-            }, 2500);
+            toast.classList.remove('opacity-0'); toast.classList.add('opacity-100');
+            setTimeout(() => { toast.classList.remove('opacity-100'); toast.classList.add('opacity-0'); }, 3000);
         }
-
-        // Open a local folder (user picks)
-        async function openLocalFolder() {
-            try {
-                const dirHandle = await window.showDirectoryPicker();
-                currentDirectoryHandle = dirHandle;
-                await loadDirectory(dirHandle);
-                switchTab('home'); // ensure UI state
-                showToast(`Opened: ${dirHandle.name}`);
-            } catch (err) {
-                if (err.name !== 'AbortError') showToast('Error opening folder: ' + err.message);
-            }
-        }
-
-        // Load directory contents
-        async function loadDirectory(dirHandle) {
-            const items = [];
-            try {
-                for await (const [name, handle] of dirHandle.entries()) {
-                    const isDir = handle.kind === 'directory';
-                    let size = null;
-                    if (!isDir) {
-                        try {
-                            const file = await handle.getFile();
-                            size = formatFileSize(file.size);
-                        } catch(e) { size = '? KB'; }
-                    }
-                    items.push({ name, handle, isDirectory: isDir, size: size || (isDir ? '' : 'Unknown') });
-                }
-                // Sort: directories first, then files
-                items.sort((a,b) => {
-                    if (a.isDirectory === b.isDirectory) return a.name.localeCompare(b.name);
-                    return a.isDirectory ? -1 : 1;
-                });
-                currentFiles = items;
-                renderCurrentFolder();
-                updateBreadcrumb();
-            } catch (err) {
-                showToast('Failed to read directory: ' + err.message);
-            }
-        }
-
-        function formatFileSize(bytes) {
-            if (!bytes) return '0 KB';
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / 1048576).toFixed(1) + ' MB';
-        }
-
-        // Render files/folders as grid
-        function renderCurrentFolder() {
-            const container = document.getElementById('folder-grid');
-            if (!currentDirectoryHandle) {
-                container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">No folder opened. Click "Open Local Folder" to start managing your files.</div>`;
-                return;
-            }
-            if (currentFiles.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center text-gray-500 py-10">This folder is empty.</div>`;
-                return;
-            }
-            container.innerHTML = currentFiles.map(item => `
-                <div class="file-item relative bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl p-4 cursor-pointer transition group" 
-                     ondblclick="${item.isDirectory ? `navigateToFolder('${escapeJs(item.name)}')` : `downloadFile('${escapeJs(item.name)}')`}">
-                    <div class="flex justify-between items-start">
-                        <i class="ph-fill ${item.isDirectory ? 'ph-folder text-amber-500' : getFileIcon(item.name)} text-4xl"></i>
-                        <div class="file-actions opacity-0 group-hover:opacity-100 flex gap-1">
-                            <button onclick="event.stopPropagation(); renameItem('${escapeJs(item.name)}', ${item.isDirectory})" class="p-1 rounded hover:bg-gray-300"><i class="ph ph-pencil-simple"></i></button>
-                            <button onclick="event.stopPropagation(); deleteItem('${escapeJs(item.name)}', ${item.isDirectory})" class="p-1 rounded hover:bg-gray-300"><i class="ph ph-trash"></i></button>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <div class="text-sm font-medium truncate" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</div>
-                        ${!item.isDirectory ? `<div class="text-xs text-gray-500">${item.size || ''}</div>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function getFileIcon(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            if (['jpg','jpeg','png','gif','svg','webp'].includes(ext)) return 'ph-image text-blue-500';
-            if (['pdf'].includes(ext)) return 'ph-file-pdf text-red-500';
-            if (['doc','docx'].includes(ext)) return 'ph-file-doc text-blue-600';
-            if (['xls','xlsx','csv'].includes(ext)) return 'ph-file-xls text-green-600';
-            if (['html','css','js','json','xml'].includes(ext)) return 'ph-file-code text-orange-500';
-            if (['txt','md'].includes(ext)) return 'ph-file-text text-gray-600';
-            if (['zip','rar','7z'].includes(ext)) return 'ph-file-zip text-gray-500';
-            return 'ph-file text-gray-500';
-        }
-
-        function escapeHtml(str) {
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
-        function escapeJs(str) {
-            return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        }
-
-        // Navigate into a subfolder
-        async function navigateToFolder(folderName) {
-            if (!currentDirectoryHandle) return;
-            const item = currentFiles.find(f => f.name === folderName && f.isDirectory);
-            if (!item) return;
-            const subDir = await currentDirectoryHandle.getDirectoryHandle(folderName);
-            currentDirectoryHandle = subDir;
-            await loadDirectory(subDir);
-        }
-
-        // Go up one level
-        async function navigateUp() {
-            if (!currentDirectoryHandle) return;
-            const parent = await currentDirectoryHandle.getParent();
-            if (parent) {
-                currentDirectoryHandle = parent;
-                await loadDirectory(parent);
-            } else {
-                showToast('Already at root of selected folder.');
-            }
-        }
-
-        // Update breadcrumb with clickable path
-        async function updateBreadcrumb() {
-            const breadDiv = document.getElementById('breadcrumb-area');
-            if (!currentDirectoryHandle) {
-                breadDiv.innerHTML = `<span class="text-gray-500">No folder opened.</span>`;
-                return;
-            }
-            // Build path hierarchy
-            let handles = [];
-            let current = currentDirectoryHandle;
-            while (current) {
-                handles.unshift(current);
-                try { current = await current.getParent(); } catch(e) { break; }
-            }
-            let html = `<button onclick="navigateUp()" class="hover:underline text-blue-600"><i class="ph ph-arrow-u-up-left"></i> Up</button> <span class="mx-1">|</span> `;
-            for (let i = 0; i < handles.length; i++) {
-                const h = handles[i];
-                const name = i === handles.length-1 ? h.name : `<span class="hover:underline cursor-pointer" onclick="navigateToBreadcrumb(${i})">${escapeHtml(h.name)}</span>`;
-                html += name;
-                if (i < handles.length-1) html += ` <i class="ph ph-caret-right text-xs"></i> `;
-            }
-            breadDiv.innerHTML = html;
-        }
-        window.navigateToBreadcrumb = async function(index) {
-            // Reconstruct handle path
-            let handles = [];
-            let cur = currentDirectoryHandle;
-            while (cur) {
-                handles.unshift(cur);
-                try { cur = await cur.getParent(); } catch(e) { break; }
-            }
-            if (index < handles.length) {
-                currentDirectoryHandle = handles[index];
-                await loadDirectory(currentDirectoryHandle);
-            }
-        }
-
-        // Rename item
-        function renameItem(name, isDir) {
-            const item = currentFiles.find(f => f.name === name && f.isDirectory === isDir);
-            if (!item) return;
-            pendingAction = { type: 'rename', oldName: name, handle: item.handle, isDir };
-            document.getElementById('modal-title').innerText = `Rename ${isDir ? 'Folder' : 'File'}`;
-            modalInput.value = name;
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal').classList.add('flex');
-        }
-
-        async function confirmModal() {
-            const newName = modalInput.value.trim();
-            if (!newName) { closeModal(); return; }
-            if (pendingAction.type === 'rename') {
-                const { oldName, handle, isDir } = pendingAction;
-                try {
-                    if (isDir) {
-                        await currentDirectoryHandle.getDirectoryHandle(oldName); // check existence
-                        const newDir = await currentDirectoryHandle.move(oldName, newName);
-                        // reload
-                        await loadDirectory(currentDirectoryHandle);
-                        showToast(`Renamed to ${newName}`);
-                    } else {
-                        const fileHandle = await currentDirectoryHandle.getFileHandle(oldName);
-                        const newFile = await fileHandle.move(newName);
-                        await loadDirectory(currentDirectoryHandle);
-                        showToast(`Renamed to ${newName}`);
-                    }
-                } catch(e) { showToast('Rename failed: ' + e.message); }
-            } else if (pendingAction.type === 'newFile') {
-                // create new text file
-                try {
-                    const fileHandle = await currentDirectoryHandle.getFileHandle(newName, { create: true });
-                    const writable = await fileHandle.createWritable();
-                    await writable.write('');
-                    await writable.close();
-                    await loadDirectory(currentDirectoryHandle);
-                    showToast(`Created file: ${newName}`);
-                } catch(e) { showToast('Failed to create file: ' + e.message); }
-            } else if (pendingAction.type === 'newFolder') {
-                try {
-                    await currentDirectoryHandle.getDirectoryHandle(newName, { create: true });
-                    await loadDirectory(currentDirectoryHandle);
-                    showToast(`Created folder: ${newName}`);
-                } catch(e) { showToast('Failed to create folder: ' + e.message); }
-            }
-            closeModal();
-        }
-
-        function closeModal() {
-            document.getElementById('modal').classList.add('hidden');
-            document.getElementById('modal').classList.remove('flex');
-            pendingAction = null;
-        }
-
-        // Delete item (move to trash via API? we'll just remove)
-        async function deleteItem(name, isDir) {
-            if (!confirm(`Delete ${name} permanently?`)) return;
-            try {
-                if (isDir) {
-                    await currentDirectoryHandle.removeEntry(name, { recursive: true });
-                } else {
-                    await currentDirectoryHandle.removeEntry(name);
-                }
-                await loadDirectory(currentDirectoryHandle);
-                showToast(`Deleted ${name}`);
-            } catch(e) {
-                showToast('Delete failed: ' + e.message);
-            }
-        }
-
-        // Download a file (copy to browser's download folder)
-        async function downloadFile(fileName) {
-            const fileHandle = await currentDirectoryHandle.getFileHandle(fileName);
-            const file = await fileHandle.getFile();
-            const url = URL.createObjectURL(file);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            showToast(`Downloaded ${fileName}`);
-        }
-
-        // Create new text file
-        function createNewFile() {
-            if (!currentDirectoryHandle) { showToast('Open a folder first'); return; }
-            pendingAction = { type: 'newFile' };
-            document.getElementById('modal-title').innerText = 'New File Name';
-            modalInput.value = 'untitled.txt';
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal').classList.add('flex');
-        }
-
-        function createNewFolder() {
-            if (!currentDirectoryHandle) { showToast('Open a folder first'); return; }
-            pendingAction = { type: 'newFolder' };
-            document.getElementById('modal-title').innerText = 'New Folder Name';
-            modalInput.value = 'New Folder';
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('modal').classList.add('flex');
-        }
-
-        // Tab handling (simple)
-        function switchTab(tabId, event) {
-            if(event) event.preventDefault();
-            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active-nav'));
-            if(event) event.currentTarget.classList.add('active-nav');
-            // only home tab is relevant; nothing else
-        }
-
-        function showInfo() {
-            alert("Local File Manager\n\n- Click 'Open Local Folder' to select any folder on your computer.\n- Double-click folders to enter.\n- Use the 'Up' button or breadcrumb to navigate.\n- Right-click (or hover) to see rename/delete icons.\n- Create new text files or folders using the toolbar buttons.\n- Supported in modern Chrome, Edge, Opera.");
-        }
-
-        // Search filter (simple client-side)
-        document.getElementById('search-input')?.addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            if (!currentDirectoryHandle) return;
-            const filtered = currentFiles.filter(f => f.name.toLowerCase().includes(term));
-            const container = document.getElementById('folder-grid');
-            if (filtered.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center text-gray-500">No matches</div>`;
-                return;
-            }
-            container.innerHTML = filtered.map(item => `
-                <div class="file-item relative bg-[#f0f4f9] hover:bg-[#e4e9f0] rounded-xl p-4 cursor-pointer transition group" 
-                     ondblclick="${item.isDirectory ? `navigateToFolder('${escapeJs(item.name)}')` : `downloadFile('${escapeJs(item.name)}')`}">
-                    <div class="flex justify-between items-start">
-                        <i class="ph-fill ${item.isDirectory ? 'ph-folder text-amber-500' : getFileIcon(item.name)} text-4xl"></i>
-                        <div class="file-actions opacity-0 group-hover:opacity-100 flex gap-1">
-                            <button onclick="event.stopPropagation(); renameItem('${escapeJs(item.name)}', ${item.isDirectory})" class="p-1 rounded hover:bg-gray-300"><i class="ph ph-pencil-simple"></i></button>
-                            <button onclick="event.stopPropagation(); deleteItem('${escapeJs(item.name)}', ${item.isDirectory})" class="p-1 rounded hover:bg-gray-300"><i class="ph ph-trash"></i></button>
-                        </div>
-                    </div>
-                    <div class="mt-2">
-                        <div class="text-sm font-medium truncate">${escapeHtml(item.name)}</div>
-                        ${!item.isDirectory ? `<div class="text-xs text-gray-500">${item.size || ''}</div>` : ''}
-                    </div>
-                </div>
-            `).join('');
-        });
+        
+        function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+        
+        function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
+        function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
+        function showNewMenu() { showToast('Use right-click or buttons to create new items'); }
+        
+        window.onload = async () => {
+            await loadStoredHandles();
+            await switchTab('my-files');
+        };
     </script>
 </body>
 </html>
