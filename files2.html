@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
+    
+    <!-- PWA Meta Tags & Manifest -->
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzI1NjNlYiIvPjwvc3ZnPg==">
+    <link rel="manifest" href='data:application/manifest+json;utf-8,%7B%22name%22%3A%22File%20Explorer%22%2C%22short_name%22%3A%22Files%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafd%22%2C%22theme_color%22%3A%22%232563eb%22%7D'>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -223,6 +229,34 @@
 
     <!-- Toast -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800/95 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.2)] text-sm font-medium transition-all duration-300 opacity-0 translate-y-4 scale-95 pointer-events-none z-50 flex items-center gap-2 border border-gray-700"></div>
+
+    <!-- Offline PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'file-explorer-v1';
+                    const urlsToCache = [
+                        location.href,
+                        'https://cdn.tailwindcss.com',
+                        'https://unpkg.com/@phosphor-icons/web'
+                    ];
+                    self.addEventListener('install', event => {
+                        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)).catch(()=>{}));
+                    });
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
+                    });
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(reg => console.log('Offline Mode Caching Ready'))
+                    .catch(err => console.log('Offline mode caching may require standard hosting', err));
+            });
+        }
+    </script>
 
     <script>
         // ======================= PERSISTENCE WITH INDEXEDDB =======================
