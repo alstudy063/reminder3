@@ -6,7 +6,7 @@
     <title>Biology Definitions • Smart Study with Cloud Sync</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <script type="importmap">
         {
             "imports": {
@@ -18,7 +18,23 @@
     </script>
     <style>
         * { font-family: 'Inter', sans-serif; }
-        body { min-height: 100vh; padding-bottom: 90px; transition: background-color 0.25s, color 0.2s; }
+        
+        /* Stop Copying Text - Security */
+        body { 
+            min-height: 100vh; 
+            padding-bottom: 90px; 
+            transition: background-color 0.3s ease, color 0.3s ease; 
+            -webkit-user-select: none; /* Safari */
+            -moz-user-select: none; /* Firefox */
+            -ms-user-select: none; /* IE10+/Edge */
+            user-select: none; /* Standard */
+        }
+        /* Allow typing in inputs */
+        input, textarea, select {
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+
         body.theme-light { background: #f3f4f6; color: #111827; }
         body.theme-dark { background: #0f172a; color: #eef2ff; }
 
@@ -32,7 +48,6 @@
         .theme-dark .text-gray-800 { color: #f1f5f9 !important; }
         .theme-dark .bg-blue-100, .theme-dark .bg-purple-100, .theme-dark .bg-green-100, .theme-dark .bg-red-100 { background-color: #1e293b !important; }
         .theme-dark .bg-blue-50, .theme-dark .bg-purple-50, .theme-dark .bg-green-50 { background-color: #0f172a !important; }
-        /* Gradients */
         .theme-dark .bg-gradient-to-r.from-purple-50.to-indigo-50 {
             background: linear-gradient(to right, #1e293b, #0f172a) !important;
             border-color: #334155 !important;
@@ -62,7 +77,7 @@
         .theme-dark .nav-item.active { color: #818cf8; background: rgba(129,140,248,0.15); }
         /* Modals and cards */
         .theme-dark .modal-content { background-color: #1e293b !important; border-color: #334155 !important; }
-        .theme-dark .lesson-card, .theme-dark .suggestion-card, .theme-dark .stat-card { background-color: #1e293b !important; border-color: #334155 !important; }
+        .theme-dark .lesson-card, .theme-dark .stat-card { background-color: #1e293b !important; border-color: #334155 !important; }
         .theme-dark .definition-text { color: #cbd5e1 !important; }
         /* History items */
         .theme-dark .collapsible-header { color: #f1f5f9 !important; }
@@ -71,48 +86,212 @@
         .theme-dark ::-webkit-scrollbar-track { background: #1e293b; }
         .theme-dark ::-webkit-scrollbar-thumb { background: #475569; }
 
-        /* Common styles */
-        .bottom-nav { backdrop-filter: blur(16px); border-radius: 2rem; width: calc(100% - 2rem); max-width: 500px; left: 50%; transform: translateX(-50%); bottom: 1.25rem; z-index: 50; transition: background 0.2s, border 0.2s; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 0.5rem 0.25rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 500; transition: all 0.2s; color: #64748b; }
-        .nav-item i { font-size: 1.5rem; margin-bottom: 2px; }
-        .nav-item.active { color: #3b82f6; background: rgba(59,130,246,0.12); transform: translateY(-2px); }
-        .lesson-card, .suggestion-card, .stat-card { transition: all 0.2s ease; }
-        .lesson-card:hover, .suggestion-card:hover { transform: translateY(-3px); box-shadow: 0 12px 20px -12px rgba(0,0,0,0.15); }
-        .suggestion-card { cursor: pointer; }
+        /* Animation & UI Enhancements */
+        @keyframes fadeSlideUpCard {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-card {
+            animation: fadeSlideUpCard 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) backwards;
+        }
+
+        /* Menu Popup Animation */
+        @keyframes popOutMenu {
+            0% { opacity: 0; transform: scale(0.9) translateY(-15px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .menu-animate {
+            animation: popOutMenu 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform-origin: top right;
+        }
+
+        /* Modern Input Fields */
+        .modern-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem; /* rounded-xl */
+            border: 2px solid transparent;
+            background-color: #f3f4f6; /* gray-100 */
+            color: #1f2937; /* gray-800 */
+            font-size: 0.95rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
+            outline: none;
+            margin-top: 0.5rem;
+        }
+        .modern-input::placeholder {
+            color: #9ca3af;
+        }
+        .modern-input:focus {
+            background-color: #ffffff;
+            border-color: #3b82f6; /* blue-500 */
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15), inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+        .theme-dark .modern-input {
+            background-color: #0f172a; /* darker bg */
+            color: #f1f5f9;
+            border-color: #334155;
+            box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.2);
+        }
+        .theme-dark .modern-input::placeholder {
+            color: #64748b;
+        }
+        .theme-dark .modern-input:focus {
+            background-color: #1e293b;
+            border-color: #818cf8;
+            box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.15), inset 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .bottom-nav { backdrop-filter: blur(16px); border-radius: 2rem; width: calc(100% - 2rem); max-width: 500px; left: 50%; transform: translateX(-50%); bottom: 1.25rem; z-index: 50; transition: background 0.3s, border 0.3s; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        
+        /* Enhanced Button Nav Animations */
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 0.5rem 0.25rem; border-radius: 2rem; font-size: 0.7rem; font-weight: 500; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); color: #64748b; }
+        .nav-item i { font-size: 1.5rem; margin-bottom: 2px; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .nav-item:active { transform: scale(0.92); }
+        .nav-item.active { color: #3b82f6; background: rgba(59,130,246,0.12); transform: translateY(-4px); }
+        .nav-item.active i { transform: scale(1.15); }
+
+        /* Smooth Card Hovers */
+        .lesson-card, .stat-card { transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .lesson-card:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1), 0 8px 10px -5px rgba(0,0,0,0.05); }
+        .theme-dark .lesson-card:hover { box-shadow: 0 15px 30px -5px rgba(0,0,0,0.4); }
+        
+        /* Daily Suggestion Card Styles - Enhanced */
+        .def-sug-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+        .theme-dark .def-sug-card {
+            background: rgba(30, 41, 59, 0.75);
+            border-color: rgba(51, 65, 85, 0.8);
+            box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+        }
+        .def-sug-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .theme-dark .def-sug-card:hover {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+        }
+        .def-sug-card:active { transform: scale(0.98); transition: all 0.1s; }
+
+        .def-sug-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; gap: 1rem; }
+        .def-sug-term { font-size: 1.6rem; font-weight: 800; word-break: break-word; line-height: 1.3; color: #111827; transition: color 0.3s; }
+        .theme-dark .def-sug-term { color: #f1f5f9; }
+        
+        .def-sug-badge {
+            background: rgba(30, 58, 138, 0.1); color: #ef4444; padding: 0.25rem 0.85rem; border-radius: 9999px;
+            font-size: 0.875rem; font-weight: 700; white-space: nowrap; transition: background 0.3s, transform 0.3s;
+        }
+        .theme-dark .def-sug-badge { background: rgba(30, 58, 138, 0.3); color: #f87171; }
+        .def-sug-card:hover .def-sug-badge { transform: scale(1.05); }
+
+        .def-sug-reveal {
+            width: 100%; background: transparent; border: 1px solid rgba(156, 163, 175, 0.4); color: #374151;
+            padding: 0.75rem; border-radius: 9999px; font-weight: 600; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); text-align: center;
+        }
+        .theme-dark .def-sug-reveal { border-color: rgba(71, 85, 105, 0.6); color: #cbd5e1; }
+        .def-sug-reveal:hover { background: rgba(156, 163, 175, 0.1); transform: translateY(-2px); }
+        .theme-dark .def-sug-reveal:hover { background: rgba(71, 85, 105, 0.3); }
+
+        .def-sug-hidden { display: none; animation: fadeInBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .def-sug-card.is-revealed .def-sug-hidden { display: block; }
+        .def-sug-card.is-revealed .def-sug-reveal { display: none; }
+        
+        @keyframes fadeInBounce {
+            from { opacity: 0; transform: translateY(-15px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .def-sug-desc { font-size: 1.05rem; line-height: 1.7; margin-bottom: 1.5rem; color: #4b5563; }
+        .theme-dark .def-sug-desc { color: #cbd5e1; }
+        
+        .def-sug-actions { display: flex; gap: 0.75rem; }
+        
+        /* Springy Action Buttons */
+        .def-btn {
+            flex: 1; padding: 0.75rem; border-radius: 9999px; font-weight: 600; display: flex;
+            align-items: center; justify-content: center; gap: 0.5rem; color: white;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .def-btn:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2); }
+        .def-btn:active { transform: translateY(1px) scale(0.95); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); transition: all 0.1s; }
+        .def-btn-pass { background: #10b981; }
+        .def-btn-fail { background: #ef4444; }
+
+        @media (max-width: 480px) {
+            .def-sug-card { padding: 1.25rem; }
+            .def-sug-term { font-size: 1.4rem; }
+        }
+
         .definition-text { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.4s cubic-bezier(0.2,0.9,0.4,1.1), opacity 0.3s ease; }
         .definition-text.active { max-height: 300px; opacity: 1; margin-top: 0.5rem; }
-        .modal { background-color: rgba(0,0,0,0.7); opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 100; }
+        
+        /* Modal Spring Animation */
+        @keyframes modalPop {
+            0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal { background-color: rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 100; backdrop-filter: blur(4px); }
         .modal:not(.hidden) { opacity: 1; pointer-events: auto; }
-        .modal-content { transform: scale(0.96); transition: transform 0.2s ease-out; border-radius: 1.5rem; max-width: 92%; width: 500px; max-height: 85vh; overflow-y: auto; }
-        .modal:not(.hidden) .modal-content { transform: scale(1); }
-        .toast { padding: 0.75rem 1.25rem; border-radius: 2rem; font-weight: 500; backdrop-filter: blur(12px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); transform: translateX(120%); transition: transform 0.25s, opacity 0.2s; }
+        .modal-content { transform: scale(0.9) translateY(20px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-radius: 1.5rem; max-width: 92%; width: 500px; max-height: 85vh; overflow-y: auto; }
+        .modal:not(.hidden) .modal-content { animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        
+        .toast { padding: 0.75rem 1.25rem; border-radius: 2rem; font-weight: 500; backdrop-filter: blur(12px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2); transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s; }
         .toast.show { transform: translateX(0); }
-        .daily-badge { background: #8b5cf6; color: white; border-radius: 999px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 600; }
+        
+        .daily-badge { background: #8b5cf6; color: white; border-radius: 999px; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 600; transition: transform 0.3s; }
+        .group:hover .daily-badge { transform: scale(1.1) rotate(3deg); }
+        
         .lessons-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
-        .header-icon-btn { transition: all 0.2s; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 999px; }
-        .header-icon-btn:hover { background: rgba(0,0,0,0.05); }
+        
+        .header-icon-btn { transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 999px; }
+        .header-icon-btn:hover { background: rgba(0,0,0,0.05); transform: translateY(-2px); }
+        .header-icon-btn:active { transform: scale(0.9); }
         .theme-dark .header-icon-btn:hover { background: rgba(255,255,255,0.08); }
-        .user-avatar { width: 36px; height: 36px; border-radius: 999px; object-fit: cover; border: 2px solid #3b82f6; }
+        
+        .user-avatar { width: 36px; height: 36px; border-radius: 999px; object-fit: cover; border: 2px solid #3b82f6; transition: transform 0.3s; }
+        .user-avatar:hover { transform: scale(1.1); }
         .theme-dark .user-avatar { border-color: #818cf8; }
         .sync-spinner { margin-left: 0.5rem; display: inline-flex; align-items: center; }
         .last-sync { font-size: 0.7rem; color: #6b7280; margin-top: 0.25rem; }
         .theme-dark .last-sync { color: #94a3b8; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 10px; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .theme-dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* General Section Transition */
+        #main-content-section, #suggestions-section, #settings-section, #history-section {
+            animation: fadeSlideUpSection 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+        }
+        @keyframes fadeSlideUpSection {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="theme-light">
 
     <div class="max-w-5xl mx-auto px-4 pt-5 pb-2 flex justify-between items-center">
         <div class="flex items-center gap-2">
-            <i class="fas fa-dna text-blue-600 text-2xl"></i>
-            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-gray-900">A/L Biology<span class="text-blue-500">·</span>Definitions</h1>
+            <i class="fas fa-dna text-blue-600 text-2xl" style="animation: fadeSlideUpCard 0.6s ease-out;"></i>
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-gray-900 animate-card" style="animation-delay: 0.1s;">A/L Biology<span class="text-blue-500">·</span>Definitions</h1>
         </div>
-        <div class="flex gap-2 items-center">
-            <div id="user-profile" class="flex items-center gap-2 cursor-pointer" onclick="window.toggleAuthMenu()">
+        <div class="flex gap-2 items-center animate-card" style="animation-delay: 0.2s;">
+            <div id="user-profile" class="flex items-center gap-2 cursor-pointer" onclick="window.toggleAuthMenu(event)">
                 <img id="user-avatar" src="https://via.placeholder.com/36" alt="avatar" class="user-avatar hidden">
-                <i id="user-icon" class="fas fa-user-circle text-2xl text-gray-500"></i>
+                <i id="user-icon" class="fas fa-user-circle text-2xl text-gray-500 hover:text-blue-500 transition"></i>
                 <span id="user-name" class="text-sm font-medium hidden md:inline-block text-gray-700"></span>
             </div>
             <div id="sync-spinner" class="sync-spinner hidden">
@@ -123,62 +302,77 @@
         </div>
     </div>
 
-    <div id="auth-menu" class="hidden absolute right-4 top-16 bg-white rounded-xl shadow-lg border border-gray-200 p-2 z-50 w-48">
-        <div id="auth-status" class="text-sm p-2 text-gray-700"></div>
-        <button id="google-signin-btn" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-lg flex items-center gap-2 text-gray-700"><i class="fab fa-google"></i> Sign in with Google</button>
-        <button id="google-signout-btn" class="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded-lg hidden text-gray-700"><i class="fas fa-sign-out-alt"></i> Sign out</button>
+    <!-- Auth Menu with Pop-out Animation -->
+    <div id="auth-menu" class="hidden absolute right-4 top-16 bg-white/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-100 p-2 z-50 w-56">
+        <div id="auth-status" class="text-sm p-3 text-gray-700 font-medium border-b border-gray-100 mb-2"></div>
+        <button id="google-signin-btn" class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 rounded-xl flex items-center gap-3 text-gray-700 transition font-medium"><i class="fab fa-google text-blue-500"></i> Sign in with Google</button>
+        <button id="google-signout-btn" class="w-full text-left px-4 py-2.5 text-sm hover:bg-red-50 rounded-xl hidden items-center gap-3 text-red-600 transition font-medium"><i class="fas fa-sign-out-alt"></i> Sign out</button>
     </div>
 
     <div class="max-w-5xl mx-auto px-4 pb-8">
         <div id="main-content-section" class="space-y-6">
-            <div id="daily-suggestions-section-trigger" class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-5 border border-purple-200 cursor-pointer hover:shadow-lg transition-all group" onclick="window.showSection('suggestions-section')">
+            <div id="daily-suggestions-section-trigger" class="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-5 border border-purple-200 cursor-pointer transition-all group animate-card" style="animation-delay: 0.1s;" onclick="window.showSection('suggestions-section')">
                 <div class="flex justify-between items-center">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center"><i class="fas fa-lightbulb text-purple-600 text-xl"></i></div>
+                        <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center transition transform group-hover:scale-110 group-hover:rotate-12 duration-300"><i class="fas fa-lightbulb text-purple-600 text-xl"></i></div>
                         <div><h2 class="text-lg font-bold text-purple-800">Daily Smart Suggestions</h2><p class="text-sm text-gray-500">Tap any card to reveal definition</p></div>
                     </div>
                     <div class="daily-badge bg-purple-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm"><span id="daily-suggestions-count-display">0</span> left</div>
                 </div>
             </div>
-            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-200">
+            <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-3 rounded-xl shadow-sm border border-gray-200 animate-card" style="animation-delay: 0.2s;">
                 <div class="flex items-center gap-2"><i class="fas fa-filter text-blue-500"></i><span class="text-sm font-medium text-gray-700">Filter by lesson</span></div>
-                <select id="filter-lesson" class="bg-white border border-gray-300 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-400 outline-none transition text-gray-800"><option value="">📚 All Lessons</option></select>
+                <select id="filter-lesson" class="modern-input !mt-0 !w-auto bg-white"><option value="">📚 All Lessons</option></select>
             </div>
-            <div><div class="flex items-center justify-between mb-3"><h2 class="text-xl font-semibold flex items-center gap-2 text-gray-800"><i class="fas fa-layer-group text-blue-500"></i> Your Lessons</h2><span id="lessons-count-badge" class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">0</span></div><div id="definitions-display" class="lessons-grid"></div></div>
+            <div class="animate-card" style="animation-delay: 0.3s;">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="text-xl font-semibold flex items-center gap-2 text-gray-800"><i class="fas fa-layer-group text-blue-500"></i> Your Lessons</h2>
+                    <span id="lessons-count-badge" class="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">0</span>
+                </div>
+                <div id="definitions-display" class="lessons-grid"></div>
+            </div>
         </div>
-        <div id="suggestions-section" class="hidden space-y-4"><div class="flex items-center gap-3 mb-2"><button onclick="window.showSection('main-content-section')" class="text-blue-500 hover:underline text-sm flex items-center gap-1"><i class="fas fa-arrow-left"></i> Back</button><h3 class="text-2xl font-bold flex items-center gap-2 text-gray-800"><i class="fas fa-lightbulb text-purple-500"></i> Today's Study List</h3><span class="text-xs text-gray-500">(Tap card to reveal/hide definition)</span></div><div id="daily-suggestions-container" class="flex flex-col gap-3"></div></div>
-        <div id="settings-section" class="hidden space-y-6">
-            <div class="flex items-center gap-3 mb-2"><button onclick="window.showSection('main-content-section')" class="text-blue-500 hover:underline text-sm"><i class="fas fa-arrow-left"></i> Back</button><h3 class="text-2xl font-bold text-gray-800">Stats & Settings</h3></div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center shadow-sm"><i class="fas fa-book-open text-blue-500 text-2xl mb-1"></i><p class="text-xs uppercase tracking-wide text-gray-500">Total</p><p id="total-definitions-count" class="text-2xl font-bold text-gray-800">0</p></div>
-                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center"><i class="fas fa-calendar-day text-purple-500 text-2xl mb-1"></i><p class="text-xs uppercase text-gray-500">Suggested today</p><p id="suggested-definitions-count" class="text-2xl font-bold text-gray-800">0</p></div>
-                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center"><i class="fas fa-check-circle text-green-500 text-2xl mb-1"></i><p class="text-xs uppercase text-gray-500">Passed total</p><p id="total-passed-count" class="text-2xl font-bold text-gray-800">0</p></div>
-                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center"><i class="fas fa-times-circle text-red-500 text-2xl mb-1"></i><p class="text-xs uppercase text-gray-500">Failed total</p><p id="total-failed-count" class="text-2xl font-bold text-gray-800">0</p></div>
+        
+        <div id="suggestions-section" class="hidden space-y-4">
+            <div class="flex items-center gap-3 mb-2 animate-card" style="animation-delay: 0.05s;">
+                <button onclick="window.showSection('main-content-section')" class="text-blue-500 hover:underline text-sm flex items-center gap-1 transition transform hover:-translate-x-1"><i class="fas fa-arrow-left"></i> Back</button>
+                <h3 class="text-2xl font-bold flex items-center gap-2 text-gray-800"><i class="fas fa-lightbulb text-purple-500 animate-pulse"></i> Today's Study List</h3>
             </div>
-            <div class="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+            <div id="daily-suggestions-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;"></div>
+        </div>
+
+        <div id="settings-section" class="hidden space-y-6">
+            <div class="flex items-center gap-3 mb-2 animate-card" style="animation-delay: 0.05s;"><button onclick="window.showSection('main-content-section')" class="text-blue-500 hover:underline text-sm transition transform hover:-translate-x-1"><i class="fas fa-arrow-left"></i> Back</button><h3 class="text-2xl font-bold text-gray-800">Stats & Settings</h3></div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center shadow-sm animate-card" style="animation-delay: 0.1s;"><i class="fas fa-book-open text-blue-500 text-2xl mb-1"></i><p class="text-xs uppercase tracking-wide text-gray-500">Total</p><p id="total-definitions-count" class="text-2xl font-bold text-gray-800">0</p></div>
+                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center animate-card" style="animation-delay: 0.15s;"><i class="fas fa-calendar-day text-purple-500 text-2xl mb-1"></i><p class="text-xs uppercase text-gray-500">Suggested today</p><p id="suggested-definitions-count" class="text-2xl font-bold text-gray-800">0</p></div>
+                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center animate-card" style="animation-delay: 0.2s;"><i class="fas fa-check-circle text-green-500 text-2xl mb-1"></i><p class="text-xs uppercase text-gray-500">Passed total</p><p id="total-passed-count" class="text-2xl font-bold text-gray-800">0</p></div>
+                <div class="stat-card bg-white p-4 rounded-2xl border border-gray-200 text-center animate-card" style="animation-delay: 0.25s;"><i class="fas fa-times-circle text-red-500 text-2xl mb-1"></i><p class="text-xs uppercase text-gray-500">Failed total</p><p id="total-failed-count" class="text-2xl font-bold text-gray-800">0</p></div>
+            </div>
+            <div class="bg-white rounded-2xl border border-gray-200 p-5 space-y-3 animate-card" style="animation-delay: 0.3s;">
                 <div class="flex items-center justify-between">
                     <span class="font-semibold text-gray-800"><i class="fas fa-cloud-upload-alt mr-2"></i> Cloud Sync</span>
                     <span id="sync-status" class="text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full">⚠️ Signed out (local only)</span>
                 </div>
                 <div id="user-info-panel" class="text-sm text-gray-600"></div>
                 <div id="last-sync-time" class="last-sync text-xs text-gray-500">Last synced: --</div>
-                <button id="force-sync-btn" class="w-full bg-indigo-100 text-indigo-700 py-2 rounded-xl text-sm mt-2 hidden"><i class="fas fa-sync-alt mr-1"></i> Force Sync Now</button>
+                <button id="force-sync-btn" class="w-full bg-indigo-100 text-indigo-700 hover:bg-indigo-200 py-2 rounded-xl text-sm mt-2 hidden transition"><i class="fas fa-sync-alt mr-1"></i> Force Sync Now</button>
             </div>
-            <div class="bg-white rounded-2xl border border-gray-200 p-5 space-y-5">
+            <div class="bg-white rounded-2xl border border-gray-200 p-5 space-y-5 animate-card" style="animation-delay: 0.4s;">
                 <h4 class="font-semibold text-gray-800"><i class="fas fa-database mr-2"></i> Data Management</h4>
                 <div class="flex flex-wrap gap-2">
-                    <button id="import-data" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-import mr-1"></i> Import JSON</button>
-                    <button id="export-data" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-export mr-1"></i> Export Backup</button>
-                    <button id="reset-progress-btn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-chart-line mr-1"></i> Reset Progress</button>
-                    <button id="clear-all-data-btn" class="bg-red-800 hover:bg-red-900 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-trash-alt mr-1"></i> Clear All Data</button>
+                    <button id="import-data" class="bg-green-600 hover:bg-green-700 transition transform hover:scale-105 active:scale-95 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-import mr-1"></i> Import JSON</button>
+                    <button id="export-data" class="bg-blue-600 hover:bg-blue-700 transition transform hover:scale-105 active:scale-95 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-file-export mr-1"></i> Export Backup</button>
+                    <button id="reset-progress-btn" class="bg-red-600 hover:bg-red-700 transition transform hover:scale-105 active:scale-95 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-chart-line mr-1"></i> Reset Progress</button>
+                    <button id="clear-all-data-btn" class="bg-red-800 hover:bg-red-900 transition transform hover:scale-105 active:scale-95 text-white px-4 py-2 rounded-xl text-sm shadow"><i class="fas fa-trash-alt mr-1"></i> Clear All Data</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div><p class="text-xs text-gray-500 mb-1">📋 Copy backup code</p><textarea id="backup-data-textarea" rows="2" class="w-full text-xs bg-gray-50 border border-gray-200 rounded-xl p-2 text-gray-800" readonly placeholder="Click 'Copy Backup Data'"></textarea><button id="copy-backup-btn" class="mt-1 w-full bg-indigo-100 text-indigo-700 py-1.5 rounded-xl text-sm"><i class="fas fa-copy mr-1"></i> Copy to Clipboard</button></div>
-                    <div><p class="text-xs text-gray-500 mb-1">📥 Paste & restore</p><textarea id="restore-data-textarea" rows="2" class="w-full text-xs border border-gray-200 rounded-xl p-2 bg-gray-50 text-gray-800" placeholder='Paste backup JSON here...'></textarea><button id="load-backup-btn" class="mt-1 w-full bg-blue-100 text-blue-700 py-1.5 rounded-xl text-sm"><i class="fas fa-upload mr-1"></i> Merge Data</button></div>
+                    <div><p class="text-xs text-gray-500 mb-1">📋 Copy backup code</p><textarea id="backup-data-textarea" rows="2" class="modern-input text-xs" readonly placeholder="Click 'Copy Backup Data'"></textarea><button id="copy-backup-btn" class="mt-1 w-full bg-indigo-100 hover:bg-indigo-200 text-indigo-700 py-1.5 rounded-xl text-sm transition"><i class="fas fa-copy mr-1"></i> Copy to Clipboard</button></div>
+                    <div><p class="text-xs text-gray-500 mb-1">📥 Paste & restore</p><textarea id="restore-data-textarea" rows="2" class="modern-input text-xs" placeholder='Paste backup JSON here...'></textarea><button id="load-backup-btn" class="mt-1 w-full bg-blue-100 hover:bg-blue-200 text-blue-700 py-1.5 rounded-xl text-sm transition"><i class="fas fa-upload mr-1"></i> Merge Data</button></div>
                 </div>
             </div>
         </div>
-        <div id="history-section" class="hidden"><div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold flex items-center gap-2 text-gray-800"><i class="fas fa-history"></i> Study History</h3><button id="back-from-history" class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-sm"><i class="fas fa-arrow-left"></i> Back</button></div><div id="history-container" class="space-y-3"></div></div>
+        <div id="history-section" class="hidden"><div class="flex justify-between items-center mb-4 animate-card" style="animation-delay: 0.05s;"><h3 class="text-2xl font-bold flex items-center gap-2 text-gray-800"><i class="fas fa-history"></i> Study History</h3><button id="back-from-history" class="px-3 py-1 rounded-full bg-gray-200 hover:bg-gray-300 transition text-gray-700 text-sm"><i class="fas fa-arrow-left"></i> Back</button></div><div id="history-container" class="space-y-3"></div></div>
     </div>
 
     <div id="bottom-nav" class="bottom-nav fixed flex justify-around p-1.5 bg-white/90 border border-gray-200 backdrop-blur-lg shadow-lg">
@@ -188,17 +382,44 @@
         <button id="nav-settings" class="nav-item"><i class="fas fa-chart-simple"></i><span>Stats</span></button>
     </div>
 
-    <div id="addContentModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-5 rounded-2xl w-full max-w-md border border-gray-200"><div class="flex justify-between border-b border-gray-200 pb-2 mb-3"><h3 class="text-xl font-bold text-gray-800"><i class="fas fa-plus-circle text-blue-500"></i> Add New</h3><button class="close-modal-btn text-3xl text-gray-500 hover:text-gray-800">&times;</button></div><div class="space-y-4"><div class="bg-blue-50 p-3 rounded-xl"><h4 class="font-semibold text-gray-800">New Lesson</h4><form id="add-lesson-form" class="flex gap-2 mt-2"><input type="text" id="new-lesson-name" placeholder="e.g., Cell Biology" class="flex-1 p-2 rounded-lg border border-gray-300 bg-white text-gray-800" required><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 rounded-xl text-sm">Add</button></form></div><div class="bg-green-50 p-3 rounded-xl"><h4 class="font-semibold text-gray-800">New Definition</h4><form id="add-definition-form" class="space-y-2 mt-2"><select id="add-definition-lesson" class="w-full p-2 rounded-lg border border-gray-300 bg-white text-gray-800" required></select><input type="text" id="new-definition-topic" placeholder="Topic / Term" class="w-full p-2 rounded-lg border border-gray-300 bg-white text-gray-800" required><textarea id="new-definition-text" rows="2" placeholder="Definition content..." class="w-full p-2 rounded-lg border border-gray-300 bg-white text-gray-800" required></textarea><button type="submit" class="bg-green-600 hover:bg-green-700 text-white w-full py-2 rounded-xl">Save Definition</button></form></div></div></div></div>
-    <div id="lessonDefinitionsModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-5 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-gray-200"><div class="flex justify-between sticky top-0 bg-white pb-2"><h3 id="lesson-definitions-modal-title" class="text-xl font-bold text-gray-800"></h3><button id="close-lesson-definitions-modal" class="text-2xl text-gray-500 hover:text-gray-800">&times;</button></div><div id="lesson-definitions-container" class="grid gap-2 mt-2"></div></div></div>
-    <div id="editDefinitionModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-5 rounded-2xl w-full max-w-md border border-gray-200"><div class="flex justify-between mb-3"><h3 class="font-bold text-gray-800"><i class="fas fa-edit text-yellow-500"></i> Edit Definition</h3><button id="close-edit-modal-btn" class="text-2xl text-gray-500 hover:text-gray-800">&times;</button></div><form id="edit-definition-form" class="space-y-3"><input type="hidden" id="edit-definition-id"><select id="edit-definition-lesson" class="w-full p-2 rounded-lg border border-gray-300 bg-white text-gray-800" required></select><input type="text" id="edit-definition-topic" class="w-full p-2 rounded-lg border border-gray-300 bg-white text-gray-800" required><textarea id="edit-definition-text" rows="3" class="w-full p-2 rounded-lg border border-gray-300 bg-white text-gray-800" required></textarea><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded-xl">Update</button></form></div></div>
-    <div id="infoModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-6 rounded-2xl text-center max-w-sm border border-gray-200"><h3 id="modal-title" class="text-lg font-bold mb-2 text-gray-800"></h3><p id="modal-message" class="mb-4 text-gray-600"></p><button id="close-info-modal" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-full">OK</button></div></div>
-    <div id="confirmModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-5 rounded-2xl text-center border border-gray-200"><h3 class="text-lg font-bold text-gray-800">Confirm</h3><p id="confirm-message" class="my-3 text-gray-600"></p><div class="flex gap-3 justify-center"><button id="cancel-confirm-modal" class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-full">Cancel</button><button id="confirm-action" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-full">Yes, Delete</button></div></div></div>
+    <!-- Modals with Modern Inputs -->
+    <div id="addContentModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-6 rounded-2xl w-full max-w-md border border-gray-200 shadow-2xl"><div class="flex justify-between border-b border-gray-200 pb-3 mb-4"><h3 class="text-xl font-bold text-gray-800"><i class="fas fa-plus-circle text-blue-500 mr-1"></i> Add New</h3><button class="close-modal-btn text-3xl text-gray-500 hover:text-red-500 transition leading-none">&times;</button></div><div class="space-y-5"><div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100/50"><h4 class="font-semibold text-gray-800 mb-1">New Lesson</h4><form id="add-lesson-form" class="flex gap-2"><input type="text" id="new-lesson-name" placeholder="e.g., Cell Biology" class="modern-input" required><button type="submit" class="bg-blue-600 hover:bg-blue-700 transition transform hover:scale-105 active:scale-95 text-white px-5 mt-2 rounded-xl text-sm shadow-sm font-medium">Add</button></form></div><div class="bg-green-50/50 p-4 rounded-2xl border border-green-100/50"><h4 class="font-semibold text-gray-800 mb-1">New Definition</h4><form id="add-definition-form" class="space-y-1"><select id="add-definition-lesson" class="modern-input" required></select><input type="text" id="new-definition-topic" placeholder="Topic / Term" class="modern-input" required><textarea id="new-definition-text" rows="2" placeholder="Definition content..." class="modern-input" required></textarea><button type="submit" class="bg-green-600 hover:bg-green-700 transition transform hover:-translate-y-1 active:scale-95 text-white w-full py-2.5 mt-3 rounded-xl shadow-md font-medium">Save Definition</button></form></div></div></div></div>
+    
+    <div id="lessonDefinitionsModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-5 rounded-2xl w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-gray-200 shadow-2xl"><div class="flex justify-between sticky top-0 bg-white pb-2 z-10"><h3 id="lesson-definitions-modal-title" class="text-xl font-bold text-gray-800"></h3><button id="close-lesson-definitions-modal" class="text-2xl text-gray-500 hover:text-red-500 transition">&times;</button></div><div id="lesson-definitions-container" class="grid gap-2 mt-2"></div></div></div>
+    
+    <div id="editDefinitionModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-6 rounded-2xl w-full max-w-md border border-gray-200 shadow-2xl"><div class="flex justify-between mb-4"><h3 class="font-bold text-xl text-gray-800"><i class="fas fa-edit text-yellow-500 mr-1"></i> Edit Definition</h3><button id="close-edit-modal-btn" class="text-2xl text-gray-500 hover:text-red-500 transition leading-none">&times;</button></div><form id="edit-definition-form" class="space-y-2"><input type="hidden" id="edit-definition-id"><select id="edit-definition-lesson" class="modern-input" required></select><input type="text" id="edit-definition-topic" class="modern-input" required><textarea id="edit-definition-text" rows="3" class="modern-input" required></textarea><button type="submit" class="bg-blue-600 hover:bg-blue-700 transition transform hover:-translate-y-1 active:scale-95 text-white w-full py-2.5 mt-3 rounded-xl shadow-md font-medium">Update Definition</button></form></div></div>
+    
+    <div id="infoModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-6 rounded-2xl text-center max-w-sm border border-gray-200 shadow-2xl"><h3 id="modal-title" class="text-lg font-bold mb-2 text-gray-800"></h3><p id="modal-message" class="mb-5 text-gray-600"></p><button id="close-info-modal" class="bg-blue-600 hover:bg-blue-700 transition transform hover:scale-105 active:scale-95 text-white px-6 py-2.5 rounded-full shadow-md font-medium">OK</button></div></div>
+    
+    <div id="confirmModal" class="modal fixed inset-0 flex items-center justify-center hidden"><div class="modal-content bg-white p-6 rounded-2xl text-center border border-gray-200 shadow-2xl"><h3 class="text-lg font-bold text-gray-800">Confirm</h3><p id="confirm-message" class="my-4 text-gray-600"></p><div class="flex gap-3 justify-center"><button id="cancel-confirm-modal" class="bg-gray-200 hover:bg-gray-300 transition text-gray-800 px-5 py-2.5 rounded-full font-medium">Cancel</button><button id="confirm-action" class="bg-red-600 hover:bg-red-700 transition transform hover:scale-105 active:scale-95 text-white px-5 py-2.5 rounded-full shadow-md font-medium">Yes, Delete</button></div></div></div>
+    
     <div id="toast-container" class="fixed bottom-24 right-4 z-[9999] flex flex-col gap-2"></div>
 
     <script type="module">
         import { initializeApp } from "firebase/app";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "firebase/auth";
         import { getDatabase, ref, set, get, onValue } from "firebase/database";
+
+        // Security - Anti Copy Logic
+        document.addEventListener('contextmenu', event => {
+            const tagName = event.target.tagName.toLowerCase();
+            if (tagName !== 'input' && tagName !== 'textarea') {
+                event.preventDefault();
+            }
+        });
+        document.addEventListener('copy', event => {
+            const tagName = event.target.tagName.toLowerCase();
+            if (tagName !== 'input' && tagName !== 'textarea') {
+                event.preventDefault();
+                showToast("Copying is disabled! 🛑", "error");
+            }
+        });
+        document.addEventListener('cut', event => {
+            const tagName = event.target.tagName.toLowerCase();
+            if (tagName !== 'input' && tagName !== 'textarea') {
+                event.preventDefault();
+            }
+        });
 
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
@@ -408,21 +629,30 @@
             container.innerHTML = '';
             let lessonsToShow = filterId ? lessons.filter(l => definitions.some(d=>d.lessonId===l.id && l.id===filterId)) : [...lessons];
             if(lessonsToShow.length===0) { container.innerHTML='<div class="col-span-full text-center py-8 text-gray-400">📭 No lessons yet. Tap + to add.</div>'; }
-            else lessonsToShow.forEach(lesson => container.appendChild(createLessonCard(lesson)));
+            else {
+                // Render with staggered animation
+                lessonsToShow.forEach((lesson, index) => {
+                    container.appendChild(createLessonCard(lesson, index));
+                });
+            }
 
             if (!document.getElementById('suggestions-section').classList.contains('hidden')) showSuggestionsContent();
             if (!document.getElementById('history-section').classList.contains('hidden')) renderHistory();
         }
 
-        function createLessonCard(lesson) {
+        function createLessonCard(lesson, index = 0) {
             const card = document.createElement('div');
-            card.className = 'lesson-card bg-white rounded-2xl border border-gray-200 p-4 cursor-pointer transition hover:shadow-md';
+            // Adding staggered animation classes
+            card.className = 'lesson-card bg-white rounded-2xl border border-gray-200 p-4 cursor-pointer transition hover:shadow-md animate-card';
+            card.style.animationDelay = `${(index * 0.05) + 0.3}s`; 
+            
             const defCount = definitions.filter(d=>d.lessonId===lesson.id).length;
-            card.innerHTML = `<div class="flex justify-between items-start"><h3 class="font-bold text-lg truncate text-gray-800">${escapeHtml(lesson.name)}</h3><span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">${defCount} terms</span></div><div class="mt-3 flex justify-between items-center"><button class="view-lesson-defs text-blue-500 text-sm font-medium flex items-center gap-1"><i class="fas fa-eye"></i> View</button><button class="delete-lesson-btn bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs" data-id="${lesson.id}" data-name="${escapeHtml(lesson.name)}"><i class="fas fa-trash-alt"></i> Delete</button></div>`;
+            card.innerHTML = `<div class="flex justify-between items-start"><h3 class="font-bold text-lg truncate text-gray-800">${escapeHtml(lesson.name)}</h3><span class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">${defCount} terms</span></div><div class="mt-3 flex justify-between items-center"><button class="view-lesson-defs text-blue-500 text-sm font-medium flex items-center gap-1 transition transform hover:scale-105"><i class="fas fa-eye"></i> View</button><button class="delete-lesson-btn bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded-full text-xs transition transform hover:scale-105 active:scale-95" data-id="${lesson.id}" data-name="${escapeHtml(lesson.name)}"><i class="fas fa-trash-alt"></i> Delete</button></div>`;
             card.setAttribute('data-id', lesson.id);
             card.addEventListener('click', (e) => { if(!e.target.closest('.delete-lesson-btn')) window.showLessonDefinitionsModal(lesson.id); });
             return card;
         }
+        
         window.showLessonDefinitionsModal = (lessonId) => {
             const lesson = lessons.find(l=>l.id===lessonId);
             if(!lesson) return;
@@ -430,14 +660,20 @@
             const container = document.getElementById('lesson-definitions-container');
             container.innerHTML = '';
             if(defs.length===0) container.innerHTML='<p class="text-center text-gray-500">No definitions in this lesson.</p>';
-            else defs.forEach(def=>container.appendChild(createDefinitionCard(def)));
+            else defs.forEach((def, index) => {
+                const defCard = createDefinitionCard(def);
+                defCard.classList.add('animate-card');
+                defCard.style.animationDelay = `${index * 0.05}s`;
+                container.appendChild(defCard);
+            });
             document.getElementById('lesson-definitions-modal-title').textContent = lesson.name;
             openModal('lessonDefinitionsModal');
         };
+        
         function createDefinitionCard(def) {
             const div = document.createElement('div');
-            div.className = 'border border-gray-200 rounded-xl p-3 bg-gray-50';
-            div.innerHTML = `<div class="flex justify-between items-start"><h4 class="font-semibold text-md text-gray-800">${escapeHtml(def.topic)}</h4><span class="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Repeated: ${def.count}</span></div><p class="definition-text text-sm text-gray-600 mt-1" id="def-text-${def.id}">${escapeHtml(def.definition)}</p><div class="flex justify-between items-center mt-2"><button class="toggle-def-btn bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-eye mr-1"></i> Show</button><div><button class="edit-def-btn bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded-full text-xs mr-1" data-id="${def.id}"><i class="fas fa-edit"></i></button><button class="delete-def-btn bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded-full text-xs" data-id="${def.id}" data-topic="${escapeHtml(def.topic)}"><i class="fas fa-trash"></i></button></div></div>`;
+            div.className = 'border border-gray-200 rounded-xl p-3 bg-gray-50 transition hover:shadow-sm';
+            div.innerHTML = `<div class="flex justify-between items-start"><h4 class="font-semibold text-md text-gray-800">${escapeHtml(def.topic)}</h4><span class="text-xs font-mono bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Repeated: ${def.count}</span></div><p class="definition-text text-sm text-gray-600 mt-1" id="def-text-${def.id}">${escapeHtml(def.definition)}</p><div class="flex justify-between items-center mt-2"><button class="toggle-def-btn bg-blue-500 hover:bg-blue-600 transition transform active:scale-95 text-white px-3 py-1 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-eye mr-1"></i> Show</button><div class="flex gap-1"><button class="edit-def-btn bg-yellow-500 hover:bg-yellow-600 transition transform hover:scale-105 active:scale-95 text-white px-2 py-1 rounded-full text-xs" data-id="${def.id}"><i class="fas fa-edit"></i></button><button class="delete-def-btn bg-red-500 hover:bg-red-600 transition transform hover:scale-105 active:scale-95 text-white px-2 py-1 rounded-full text-xs" data-id="${def.id}" data-topic="${escapeHtml(def.topic)}"><i class="fas fa-trash"></i></button></div></div>`;
             return div;
         }
 
@@ -449,6 +685,7 @@
             const shuffled = weighted.sort(()=>0.5-Math.random());
             return Array.from(new Set(shuffled.slice(0,30)));
         }
+        
         function initializeDailySession() {
             const today = new Date().toISOString().slice(0,10);
             if(!suggestionsHistory.some(e=>e.date===today)) {
@@ -460,57 +697,66 @@
                 }
             }
         }
+        
         function showSuggestionsContent() {
             const container = document.getElementById('daily-suggestions-container');
             container.innerHTML = '';
             const today = new Date().toISOString().slice(0,10);
             const entry = suggestionsHistory.find(e=>e.date===today);
             const incomplete = entry?.definitions.filter(d=>d.sessionStatus!=='passed' && d.sessionStatus!=='failed') || [];
-            if(!incomplete.length){ container.innerHTML='<div class="p-6 text-center bg-white rounded-2xl border border-gray-200 text-gray-600">🎉 All caught up! Great job.</div>'; return; }
-            incomplete.forEach(def=>{
+            
+            if(!incomplete.length){ 
+                container.style.display = 'block'; 
+                container.innerHTML='<div class="p-6 text-center bg-white rounded-2xl border border-gray-200 text-gray-600 animate-card">🎉 All caught up! Great job.</div>'; 
+                return; 
+            }
+            
+            container.style.display = 'grid'; 
+            
+            incomplete.forEach((def, index)=>{
                 const card = document.createElement('div');
-                card.className = 'suggestion-card bg-white rounded-xl p-4 border border-gray-200 shadow-sm transition hover:shadow-md';
+                card.className = 'def-sug-card animate-card';
+                card.style.animationDelay = `${index * 0.06}s`; // Staggered entry
                 card.setAttribute('data-id', def.id);
                 card.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <h4 class="font-bold text-md text-gray-800">${escapeHtml(def.topic)}</h4>
-                        <span class="text-xs bg-gray-200 text-gray-700 px-2 rounded-full">#${def.count}</span>
+                    <div class="def-sug-top">
+                        <div class="def-sug-term">${escapeHtml(def.topic)}</div>
+                        <span class="def-sug-badge">#${def.count}</span>
                     </div>
-                    <p class="definition-text text-sm text-gray-600 mt-1" id="sug-text-${def.id}">${escapeHtml(def.definition)}</p>
-                    <div class="flex justify-between items-center mt-3">
-                        <button class="toggle-def-btn bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded-full text-xs shadow-sm transition" data-id="${def.id}">
-                            <i class="fas fa-eye mr-1"></i> Show Definition
-                        </button>
-                        <div id="pass-fail-buttons-${def.id}" class="flex gap-2">
-                            <button class="pass-def-btn bg-green-500 hover:bg-green-600 text-white p-2 rounded-full text-xs shadow-sm transition" data-id="${def.id}" title="Pass"><i class="fas fa-check"></i></button>
-                            <button class="fail-def-btn bg-red-500 hover:bg-red-600 text-white p-2 rounded-full text-xs shadow-sm transition" data-id="${def.id}" title="Fail"><i class="fas fa-times"></i></button>
+                    <button class="def-sug-reveal">Show Definition</button>
+                    <div class="def-sug-hidden">
+                        <div class="def-sug-desc">${escapeHtml(def.definition)}</div>
+                        <div class="def-sug-actions">
+                            <button class="def-btn def-btn-pass pass-def-btn" data-id="${def.id}"><i class="fas fa-check"></i> Pass</button>
+                            <button class="def-btn def-btn-fail fail-def-btn" data-id="${def.id}"><i class="fas fa-times"></i> Fail</button>
                         </div>
                     </div>
                 `;
+                
+                // Add click listener to card to reveal definition
                 card.addEventListener('click', (e) => {
-                    if (e.target.closest('.pass-def-btn') || e.target.closest('.fail-def-btn') || e.target.closest('.toggle-def-btn')) return;
-                    const defText = document.getElementById(`sug-text-${def.id}`);
-                    if (defText) {
-                        defText.classList.toggle('active');
-                        const toggleBtn = card.querySelector('.toggle-def-btn');
-                        if (toggleBtn) {
-                            toggleBtn.innerHTML = defText.classList.contains('active') ? '<i class="fas fa-eye-slash mr-1"></i> Hide Definition' : '<i class="fas fa-eye mr-1"></i> Show Definition';
-                        }
-                    }
+                    // Prevent triggering if clicked on action buttons
+                    if (e.target.closest('.def-btn')) return;
+                    card.classList.add('is-revealed');
                 });
+                
                 container.appendChild(card);
             });
         }
+        
         function renderHistory() {
             const container = document.getElementById('history-container');
             container.innerHTML = '';
-            if(!suggestionsHistory.length){ container.innerHTML='<div class="text-center py-6 text-gray-500">No history yet.</div>'; return; }
-            suggestionsHistory.forEach(entry=>{
+            if(!suggestionsHistory.length){ container.innerHTML='<div class="text-center py-6 text-gray-500 animate-card">No history yet.</div>'; return; }
+            suggestionsHistory.forEach((entry, index)=>{
                 const dateStr = new Date(entry.date+'T00:00').toLocaleDateString();
                 const wrapper = document.createElement('div');
-                wrapper.className = 'bg-white rounded-xl border border-gray-200 p-3';
-                wrapper.innerHTML = `<div class="collapsible-header flex justify-between cursor-pointer font-semibold p-2 text-gray-800"><span>📅 ${dateStr}</span><i class="fas fa-chevron-down text-gray-500"></i></div><div class="collapsible-content hidden mt-2 space-y-2"></div>`;
+                wrapper.className = 'bg-white rounded-xl border border-gray-200 p-3 animate-card';
+                wrapper.style.animationDelay = `${index * 0.05}s`;
+                wrapper.innerHTML = `<div class="collapsible-header flex justify-between cursor-pointer font-semibold p-2 text-gray-800 transition hover:bg-gray-50 rounded-lg"><span>📅 ${dateStr}</span><i class="fas fa-chevron-down text-gray-500 transition transform"></i></div><div class="collapsible-content hidden mt-2 space-y-2"></div>`;
                 const contentDiv = wrapper.querySelector('.collapsible-content');
+                const headerIcon = wrapper.querySelector('i');
+                
                 entry.definitions.forEach(def=>{
                     const badge = def.sessionStatus==='passed'?'<span class="text-green-600 text-xs bg-green-100 px-2 py-0.5 rounded-full">✔ Passed</span>':(def.sessionStatus==='failed'?'<span class="text-red-600 text-xs bg-red-100 px-2 py-0.5 rounded-full">✖ Failed</span>':'');
                     const item = document.createElement('div');
@@ -518,7 +764,11 @@
                     item.innerHTML = `<div class="flex justify-between"><span class="font-medium text-gray-800">${escapeHtml(def.topic)}</span>${badge}</div><p class="text-xs text-gray-500">${escapeHtml(def.definition)}</p>`;
                     contentDiv.appendChild(item);
                 });
-                wrapper.querySelector('.collapsible-header').addEventListener('click',()=>{ contentDiv.classList.toggle('hidden'); });
+                
+                wrapper.querySelector('.collapsible-header').addEventListener('click',()=>{ 
+                    contentDiv.classList.toggle('hidden'); 
+                    headerIcon.classList.toggle('rotate-180');
+                });
                 container.appendChild(wrapper);
             });
         }
@@ -699,24 +949,28 @@
         });
 
         document.body.addEventListener('click', (e) => {
-            const toggleBtn = e.target.closest('.toggle-def-btn');
-            if (toggleBtn) {
+            // Updated Toggle Logic for main lessons (if any old ones exist)
+            const oldToggleBtn = e.target.closest('.toggle-def-btn');
+            if (oldToggleBtn) {
                 e.preventDefault();
-                const card = toggleBtn.closest('.suggestion-card');
+                const card = oldToggleBtn.closest('.bg-gray-50');
                 if (card) {
-                    const defId = toggleBtn.dataset.id;
-                    const defText = document.getElementById(`sug-text-${defId}`);
+                    const defId = oldToggleBtn.dataset.id;
+                    const defText = document.getElementById(`def-text-${defId}`);
                     if (defText) {
                         defText.classList.toggle('active');
-                        toggleBtn.innerHTML = defText.classList.contains('active') ? '<i class="fas fa-eye-slash mr-1"></i> Hide Definition' : '<i class="fas fa-eye mr-1"></i> Show Definition';
+                        oldToggleBtn.innerHTML = defText.classList.contains('active') ? '<i class="fas fa-eye-slash mr-1"></i> Hide' : '<i class="fas fa-eye mr-1"></i> Show';
                     }
                 }
                 return;
             }
+            
+            // Handle Pass / Fail from the new suggestion cards
             const pass = e.target.closest('.pass-def-btn');
-            if (pass) { triggerHaptic(); markDefStatus(pass.dataset.id, 'passed'); return; }
+            if (pass) { e.stopPropagation(); triggerHaptic(); markDefStatus(pass.dataset.id, 'passed'); return; }
             const fail = e.target.closest('.fail-def-btn');
-            if (fail) { triggerHaptic(); markDefStatus(fail.dataset.id, 'failed'); return; }
+            if (fail) { e.stopPropagation(); triggerHaptic(); markDefStatus(fail.dataset.id, 'failed'); return; }
+            
             const edit = e.target.closest('.edit-def-btn');
             if (edit) {
                 const def = definitions.find(d => d.id === edit.dataset.id);
@@ -821,8 +1075,31 @@
             const map = { 'main-content-section':'nav-home', 'suggestions-section':'nav-suggestions', 'settings-section':'nav-settings' };
             if(map[sectionId]) document.getElementById(map[sectionId])?.classList.add('active');
         };
-        window.toggleAuthMenu = () => { document.getElementById('auth-menu').classList.toggle('hidden'); };
-        window.addEventListener('click', (event) => { if (event.target.classList && event.target.classList.contains('modal')) closeModal(event.target.id); });
+        
+        window.toggleAuthMenu = (event) => { 
+            if(event) event.stopPropagation();
+            const menu = document.getElementById('auth-menu');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('menu-animate');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('menu-animate');
+            }
+        };
+
+        window.addEventListener('click', (event) => { 
+            // Close modals if clicked outside
+            if (event.target.classList && event.target.classList.contains('modal')) closeModal(event.target.id); 
+            
+            // Close auth menu if clicked outside
+            const menu = document.getElementById('auth-menu');
+            const profile = document.getElementById('user-profile');
+            if (menu && profile && !menu.classList.contains('hidden') && !menu.contains(event.target) && !profile.contains(event.target)) {
+                menu.classList.add('hidden');
+                menu.classList.remove('menu-animate');
+            }
+        });
 
         const setTheme = (theme) => {
             const body = document.body;
@@ -831,7 +1108,7 @@
             body.classList.toggle('theme-light', !isDark);
             localStorage.setItem('app-theme', theme);
             const sunIcon = document.querySelector('#theme-switch-header i');
-            if (sunIcon) sunIcon.className = isDark ? 'fas fa-moon text-indigo-200 text-lg' : 'fas fa-sun text-yellow-500 text-lg';
+            if (sunIcon) sunIcon.className = isDark ? 'fas fa-moon text-indigo-200 text-lg transition transform rotate-12' : 'fas fa-sun text-yellow-500 text-lg transition transform rotate-90';
         };
         const savedTheme = localStorage.getItem('app-theme') || 'light';
         setTheme(savedTheme);
