@@ -106,11 +106,8 @@
             <i class="ph ph-plus text-xl font-bold text-blue-600"></i> <span class="font-medium text-sm text-gray-800">New</span>
         </button>
         <nav class="flex flex-col gap-1 flex-1">
-            <a href="#" data-tab="my-files" onclick="switchTab('my-files', event)" class="active-nav flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium">
-                <i class="ph-fill ph-folder text-lg transition-transform group-hover:scale-110"></i> My Files
-            </a>
-            <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-colors">
-                <i class="ph ph-computer-tower text-lg"></i> Computers (Drives)
+            <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="active-nav flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium">
+                <i class="ph-fill ph-computer-tower text-lg transition-transform group-hover:scale-110"></i> Computers (Drives)
             </a>
             <a href="#" data-tab="recent" onclick="switchTab('recent', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-colors">
                 <i class="ph ph-clock text-lg"></i> Recent
@@ -216,12 +213,33 @@
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 bg-gray-900/40 hidden z-50 modal-container">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-content border border-gray-100 p-6">
-            <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4"><i class="ph-fill ph-gear text-blue-600"></i> Settings</h3>
-            <p class="text-sm text-gray-500 mb-6">Manage all your saved connections and permissions here.</p>
-            <div class="pt-5 border-t border-gray-100 flex justify-center gap-3">
-                <button onclick="closeSettings()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition-colors active:scale-95">Close</button>
-                <button onclick="clearAllHandles()" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors active:scale-95"><i class="ph-bold ph-warning-circle mb-0.5 inline-block align-middle"></i> Revoke All Data</button>
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-content border border-gray-100 flex flex-col max-h-[85vh]">
+            <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/80 backdrop-blur rounded-t-2xl">
+                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2"><i class="ph-fill ph-gear text-blue-600"></i> Settings & Connections</h3>
+                <button onclick="closeSettings()" class="text-gray-400 hover:text-gray-800 transition-colors p-1 hover:bg-gray-200 rounded-lg"><i class="ph-bold ph-x text-lg"></i></button>
+            </div>
+            
+            <div class="p-6 flex-1 overflow-y-auto space-y-6 bg-white">
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider">Local Folders</label>
+                        <button onclick="pickComputerFolder()" class="text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 font-medium flex items-center gap-1 active:scale-95 transition-all"><i class="ph-bold ph-plus"></i> Add</button>
+                    </div>
+                    <div id="settings-local-list" class="space-y-2"></div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-3">
+                        <label class="block text-sm font-bold text-gray-700 uppercase tracking-wider">FTP Servers</label>
+                        <button onclick="openFtpModal()" class="text-xs bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg hover:bg-purple-100 font-medium flex items-center gap-1 active:scale-95 transition-all"><i class="ph-bold ph-plus"></i> Add</button>
+                    </div>
+                    <div id="settings-ftp-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="p-5 border-t border-gray-100 bg-gray-50/80 rounded-b-2xl flex justify-between items-center">
+                <button onclick="clearAllHandles()" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-all active:scale-95"><i class="ph-bold ph-warning-circle"></i> Revoke All Data</button>
+                <button onclick="closeSettings()" class="px-6 py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-black transition-all active:scale-95 shadow-sm">Done</button>
             </div>
         </div>
     </div>
@@ -237,7 +255,7 @@
         let currentDirectoryHandle = null;
         let currentFtpContext = null; 
         let currentPath = [];
-        let currentTab = 'my-files';
+        let currentTab = 'computers';
         let savedFolders = [];
         let savedFTPs = []; // Array for FTP servers
         let recentFiles = [];
@@ -264,6 +282,48 @@
         }
 
         // ---------- Handle & Connection Management ----------
+        function updateSettingsInputs() {
+            const localList = document.getElementById('settings-local-list');
+            const ftpList = document.getElementById('settings-ftp-list');
+            
+            if (localList) {
+                localList.innerHTML = savedFolders.length === 0 
+                    ? '<p class="text-sm text-gray-400 italic">No local folders saved.</p>'
+                    : savedFolders.map(f => `
+                        <div class="flex justify-between items-center p-2.5 bg-gray-50 border border-gray-100 rounded-lg group hover:border-blue-200 transition-colors">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <i class="ph-fill ph-folder text-blue-500 text-xl"></i>
+                                <span class="text-sm text-gray-700 truncate font-medium">${escapeHtml(f.name)}</span>
+                            </div>
+                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="renameLocation('${f.id}', 'local_location', '${escapeHtml(f.name)}')" class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"><i class="ph-bold ph-pencil-simple"></i></button>
+                                <button onclick="removeLocation('${f.id}', 'local')" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"><i class="ph-bold ph-trash"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+
+            if (ftpList) {
+                ftpList.innerHTML = savedFTPs.length === 0 
+                    ? '<p class="text-sm text-gray-400 italic">No FTP servers saved.</p>'
+                    : savedFTPs.map(f => `
+                        <div class="flex justify-between items-center p-2.5 bg-gray-50 border border-gray-100 rounded-lg group hover:border-purple-200 transition-colors">
+                            <div class="flex items-center gap-3 overflow-hidden">
+                                <i class="ph-fill ph-hard-drives text-purple-500 text-xl"></i>
+                                <div class="flex flex-col truncate">
+                                    <span class="text-sm text-gray-700 truncate font-medium leading-tight">${escapeHtml(f.name)}</span>
+                                    <span class="text-[11px] text-gray-400 truncate">${escapeHtml(f.host)}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="renameLocation('${f.id}', 'ftp_location', '${escapeHtml(f.name)}')" class="p-1.5 text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded transition-colors"><i class="ph-bold ph-pencil-simple"></i></button>
+                                <button onclick="removeLocation('${f.id}', 'ftp')" class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"><i class="ph-bold ph-trash"></i></button>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+        }
+
         async function loadHandlesAndFTPs() {
             const db = await openDB();
             
@@ -294,6 +354,7 @@
                     reqFtp.onsuccess = () => r(reqFtp.result || []); 
                 });
             }
+            updateSettingsInputs();
         }
 
         function openFtpModal() {
@@ -326,6 +387,7 @@
             await new Promise(r => tx.oncomplete = r);
 
             closeFtpModal();
+            updateSettingsInputs();
             showToast(`<i class="ph-fill ph-check-circle text-green-400"></i> Saved FTP Server`);
             if (currentTab === 'computers') renderComputers();
         }
@@ -343,6 +405,7 @@
                 tx.objectStore('ftp').delete(id);
                 await new Promise(r => tx.oncomplete = r);
             }
+            updateSettingsInputs();
             if (currentTab === 'computers') await renderComputers();
             showToast('Removed location');
         }
@@ -353,6 +416,7 @@
             openDB().then(db => {
                 const tx1 = db.transaction('handles', 'readwrite'); tx1.objectStore('handles').clear();
                 const tx2 = db.transaction('ftp', 'readwrite'); if(db.objectStoreNames.contains('ftp')) tx2.objectStore('ftp').clear();
+                updateSettingsInputs();
                 closeSettings();
                 showToast('All permissions and connections cleared'); 
                 if(currentTab === 'computers') renderComputers();
@@ -659,6 +723,7 @@
                         const tx = db.transaction('handles', 'readwrite');
                         tx.objectStore('handles').put(loc, loc.id);
                         await new Promise(r => tx.oncomplete = r);
+                        updateSettingsInputs();
                         if (currentTab === 'computers') renderComputers();
                         showToast(`Renamed connection to ${newName}`);
                     }
@@ -670,6 +735,7 @@
                         const tx = db.transaction('ftp', 'readwrite');
                         tx.objectStore('ftp').put(ftp);
                         await new Promise(r => tx.oncomplete = r);
+                        updateSettingsInputs();
                         if (currentTab === 'computers') renderComputers();
                         showToast(`Renamed server to ${newName}`);
                     }
@@ -705,8 +771,7 @@
             document.querySelector(`[data-tab="${tabId}"]`).classList.add('active-nav'); 
             document.querySelector(`[data-tab="${tabId}"]`).classList.remove('text-gray-700');
             
-            if (tabId === 'my-files') await renderMyFiles();
-            else if (tabId === 'computers') await renderComputers();
+            if (tabId === 'computers') await renderComputers();
             else if (tabId === 'recent') await renderRecent();
             else if (tabId === 'starred') await renderStarred();
             await saveCurrentState();
@@ -775,12 +840,6 @@
             return div;
         }
 
-        async function renderMyFiles() {
-            const grid = document.getElementById('items-grid');
-            grid.innerHTML = `<div class="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl"><i class="ph-fill ph-monitor text-6xl text-gray-200 mb-4"></i><p class="text-gray-500 font-medium text-lg">My Files Dashboard</p><p class="text-sm text-gray-400 mt-2 text-center max-w-sm">Go to "Computers" to connect Local Drives or FTP Servers to start exploring files.</p><button onclick="switchTab('computers')" class="mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium shadow-sm active:scale-95">Go to Computers</button></div>`;
-            updateBreadcrumbs();
-        }
-
         async function pickComputerFolder() {
             try {
                 const handle = await window.showDirectoryPicker();
@@ -792,6 +851,7 @@
                     const db = await openDB();
                     const tx = db.transaction('handles', 'readwrite'); tx.objectStore('handles').put(folderObj, id);
                     await new Promise(r => tx.oncomplete = r);
+                    updateSettingsInputs();
                 }
                 currentPath = []; currentDirectoryHandle = handle; await renderCurrentDirectory(false);
                 showToast(`Opened: ${handle.name}`);
@@ -847,6 +907,10 @@
             await loadHandlesAndFTPs();
             await loadRecentAndStarred();
             await loadCurrentState();
+            
+            // Re-route fallback to computers if old session had my-files active
+            if(currentTab === 'my-files') currentTab = 'computers';
+            
             await switchTab(currentTab, null);
             if (currentFtpContext) renderFtpDirectory();
             else if (currentDirectoryHandle) await renderCurrentDirectory(false);
