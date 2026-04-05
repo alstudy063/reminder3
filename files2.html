@@ -3,13 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer</title>
-    
-    <!-- PWA Meta Tags & Manifest -->
-    <meta name="theme-color" content="#2563eb">
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzI1NjNlYiIvPjwvc3ZnPg==">
-    <link rel="manifest" href='data:application/manifest+json;utf-8,%7B%22name%22%3A%22File%20Explorer%22%2C%22short_name%22%3A%22Files%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f8fafd%22%2C%22theme_color%22%3A%22%232563eb%22%7D'>
-
+    <title>File Explorer - සැකසුම් සුරකිනු ලැබේ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
@@ -116,7 +110,7 @@
                 <i class="ph-fill ph-folder text-lg transition-transform group-hover:scale-110"></i> My Files
             </a>
             <a href="#" data-tab="computers" onclick="switchTab('computers', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-colors">
-                <i class="ph ph-computer-tower text-lg"></i> Computers
+                <i class="ph ph-computer-tower text-lg"></i> Computers (Drives)
             </a>
             <a href="#" data-tab="recent" onclick="switchTab('recent', event)" class="hover:bg-gray-100 flex items-center gap-4 px-4 py-2.5 rounded-full text-sm font-medium text-gray-700 transition-colors">
                 <i class="ph ph-clock text-lg"></i> Recent
@@ -174,24 +168,22 @@
         </div>
     </main>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-gray-900/40 hidden z-50 modal-container">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-content border border-gray-100">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50 rounded-t-2xl">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2"><i class="ph-fill ph-gear text-blue-600"></i> Settings</h3>
-                <button onclick="closeSettings()" class="p-1 text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded-full transition-all active:scale-90"><i class="ph ph-x text-lg"></i></button>
+    <!-- FTP Add Modal -->
+    <div id="ftp-modal" class="fixed inset-0 bg-gray-900/40 hidden z-50 modal-container">
+        <div class="bg-white rounded-xl w-96 p-6 modal-content shadow-2xl">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2"><i class="ph-fill ph-hard-drives text-blue-500"></i> Add FTP Server</h3>
+            <div class="space-y-3">
+                <div><label class="text-xs font-semibold text-gray-500 uppercase">Alias / Name</label><input type="text" id="ftp-name" class="w-full border-2 border-blue-100 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none" placeholder="My Remote Server"></div>
+                <div class="flex gap-2">
+                    <div class="flex-1"><label class="text-xs font-semibold text-gray-500 uppercase">Host</label><input type="text" id="ftp-host" class="w-full border-2 border-blue-100 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none" placeholder="ftp.example.com"></div>
+                    <div class="w-20"><label class="text-xs font-semibold text-gray-500 uppercase">Port</label><input type="number" id="ftp-port" value="21" class="w-full border-2 border-blue-100 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"></div>
+                </div>
+                <div><label class="text-xs font-semibold text-gray-500 uppercase">Username</label><input type="text" id="ftp-user" class="w-full border-2 border-blue-100 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"></div>
+                <div><label class="text-xs font-semibold text-gray-500 uppercase">Password</label><input type="password" id="ftp-pass" class="w-full border-2 border-blue-100 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"></div>
             </div>
-            <div class="p-6 space-y-4">
-                <div class="flex justify-between items-center mb-3">
-                    <label class="block text-sm font-semibold text-gray-700">Saved Locations</label>
-                    <button onclick="addNewLocation()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors active:scale-95 font-medium flex items-center gap-1"><i class="ph ph-plus-circle"></i> Add</button>
-                </div>
-                <div id="locations-list" class="space-y-2.5 max-h-60 overflow-y-auto pr-1">
-                    <!-- Dynamic list will render here -->
-                </div>
-                <div class="pt-5 border-t border-gray-100 mt-5 flex justify-center">
-                    <button onclick="clearAllHandles()" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors active:scale-95"><i class="ph-bold ph-warning-circle mb-0.5 inline-block align-middle"></i> Revoke All Permissions</button>
-                </div>
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeFtpModal()" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors active:scale-95">Cancel</button>
+                <button onclick="saveFtpConnection()" class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm active:scale-95">Save Server</button>
             </div>
         </div>
     </div>
@@ -203,7 +195,7 @@
             <input type="text" id="rename-input" class="w-full border-2 border-blue-100 rounded-lg px-4 py-2.5 mb-5 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm font-medium">
             <div class="flex justify-end gap-3">
                 <button onclick="closeRenameModal()" class="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors active:scale-95">Cancel</button>
-                <button onclick="confirmRename()" class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm active:scale-95">Rename</button>
+                <button onclick="confirmRename()" class="px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors shadow-sm active:scale-95">Save</button>
             </div>
         </div>
     </div>
@@ -218,8 +210,18 @@
                     <button onclick="closePreview()" class="p-2 text-gray-500 hover:bg-red-100 hover:text-red-500 rounded-lg transition-colors" title="Close (Esc)"><i class="ph-bold ph-x"></i></button>
                 </div>
             </div>
-            <div id="preview-content" class="flex-1 overflow-auto bg-[#f8fafd] flex items-center justify-center relative p-4">
-                <!-- Preview content goes here -->
+            <div id="preview-content" class="flex-1 overflow-auto bg-[#f8fafd] flex items-center justify-center relative p-4"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-gray-900/40 hidden z-50 modal-container">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl modal-content border border-gray-100 p-6">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4"><i class="ph-fill ph-gear text-blue-600"></i> Settings</h3>
+            <p class="text-sm text-gray-500 mb-6">Manage all your saved connections and permissions here.</p>
+            <div class="pt-5 border-t border-gray-100 flex justify-center gap-3">
+                <button onclick="closeSettings()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium transition-colors active:scale-95">Close</button>
+                <button onclick="clearAllHandles()" class="text-red-500 hover:text-red-700 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-medium transition-colors active:scale-95"><i class="ph-bold ph-warning-circle mb-0.5 inline-block align-middle"></i> Revoke All Data</button>
             </div>
         </div>
     </div>
@@ -230,52 +232,28 @@
     <!-- Toast -->
     <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-gray-800/95 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.2)] text-sm font-medium transition-all duration-300 opacity-0 translate-y-4 scale-95 pointer-events-none z-50 flex items-center gap-2 border border-gray-700"></div>
 
-    <!-- Offline PWA Service Worker -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                const swCode = `
-                    const CACHE_NAME = 'file-explorer-v1';
-                    const urlsToCache = [
-                        location.href,
-                        'https://cdn.tailwindcss.com',
-                        'https://unpkg.com/@phosphor-icons/web'
-                    ];
-                    self.addEventListener('install', event => {
-                        event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)).catch(()=>{}));
-                    });
-                    self.addEventListener('fetch', event => {
-                        event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
-                    });
-                `;
-                const blob = new Blob([swCode], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                navigator.serviceWorker.register(swUrl)
-                    .then(reg => console.log('Offline Mode Caching Ready'))
-                    .catch(err => console.log('Offline mode caching may require standard hosting', err));
-            });
-        }
-    </script>
-
     <script>
         // ======================= PERSISTENCE WITH INDEXEDDB =======================
         let currentDirectoryHandle = null;
+        let currentFtpContext = null; 
         let currentPath = [];
         let currentTab = 'my-files';
         let savedFolders = [];
+        let savedFTPs = []; // Array for FTP servers
         let recentFiles = [];
         let starredFiles = [];
         let contextTarget = null;
-        let currentRenderId = 0; // Prevent racing renders
+        let currentRenderId = 0; 
         let currentPreviewUrl = null;
 
         function openDB() {
             return new Promise((resolve, reject) => {
-                const request = indexedDB.open('FileExplorerDB', 5);
+                // Upgraded to version 6 to support FTP store
+                const request = indexedDB.open('FileExplorerDB', 6);
                 request.onupgradeneeded = (e) => {
                     const db = e.target.result;
                     if (!db.objectStoreNames.contains('handles')) db.createObjectStore('handles');
+                    if (!db.objectStoreNames.contains('ftp')) db.createObjectStore('ftp', { keyPath: 'id' });
                     if (!db.objectStoreNames.contains('recent')) db.createObjectStore('recent', { keyPath: 'id' });
                     if (!db.objectStoreNames.contains('starred')) db.createObjectStore('starred', { keyPath: 'id' });
                     if (!db.objectStoreNames.contains('appState')) db.createObjectStore('appState');
@@ -285,95 +263,109 @@
             });
         }
 
-        // ---------- File & Folder Handles Management ----------
-        async function loadHandles() {
+        // ---------- Handle & Connection Management ----------
+        async function loadHandlesAndFTPs() {
             const db = await openDB();
-            const tx = db.transaction('handles', 'readonly');
-            const req = tx.objectStore('handles').openCursor();
-            savedFolders = [];
             
+            // Load Local Folders
+            const txFolders = db.transaction('handles', 'readonly');
+            const reqFolders = txFolders.objectStore('handles').openCursor();
+            savedFolders = [];
             await new Promise(r => {
-                req.onsuccess = (e) => {
+                reqFolders.onsuccess = (e) => {
                     const cursor = e.target.result;
                     if (cursor) {
                         const item = cursor.value;
                         if (item && item.handle) {
-                            if (!item.id) {
-                                item.id = cursor.key || ('folder_' + Date.now() + Math.random());
-                                item.name = item.handle.name || item.key;
-                            }
+                            if (!item.id) item.id = cursor.key || ('folder_' + Date.now() + Math.random());
+                            if (!item.name) item.name = item.handle.name || item.key;
                             savedFolders.push(item);
                         }
                         cursor.continue();
                     } else r();
                 };
             });
-            updateSettingsInputs();
-        }
 
-        function updateSettingsInputs() {
-            const list = document.getElementById('locations-list');
-            if (!list) return;
-            if (savedFolders.length === 0) {
-                list.innerHTML = '<div class="text-sm text-gray-500 italic text-center py-4">No locations saved yet.</div>';
-                return;
+            // Load FTP Servers
+            if (db.objectStoreNames.contains('ftp')) {
+                const txFtp = db.transaction('ftp', 'readonly');
+                const reqFtp = txFtp.objectStore('ftp').getAll();
+                savedFTPs = await new Promise(r => { 
+                    reqFtp.onsuccess = () => r(reqFtp.result || []); 
+                });
             }
-            list.innerHTML = savedFolders.map(f => `
-                <div class="flex gap-2 items-center group">
-                    <div class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 flex items-center gap-2 text-gray-700">
-                        <i class="ph-fill ph-folder text-blue-400 text-lg"></i>
-                        <span class="truncate">${escapeHtml(f.name)}</span>
-                    </div>
-                    <button onclick="removeLocation('${f.id}')" class="bg-white border border-gray-200 text-red-500 hover:text-white hover:bg-red-500 hover:border-red-500 px-3 py-2 rounded-lg text-sm transition-all shadow-sm active:scale-95" title="Remove">
-                        <i class="ph ph-trash text-lg"></i>
-                    </button>
-                </div>
-            `).join('');
         }
 
-        async function addNewLocation() {
-            try {
-                const handle = await window.showDirectoryPicker();
-                const id = 'folder_' + Date.now();
-                const folderObj = { id, name: handle.name, handle };
-                savedFolders.push(folderObj);
-                
-                const db = await openDB();
-                const tx = db.transaction('handles', 'readwrite');
-                tx.objectStore('handles').put(folderObj, id);
-                await new Promise(r => tx.oncomplete = r);
-                
-                updateSettingsInputs();
-                showToast(`<i class="ph-fill ph-check-circle text-green-400 text-lg"></i> Added ${handle.name}`);
-                if (currentTab === 'my-files') await renderMyFiles();
-            } catch(e) { /* Cancelled */ }
+        function openFtpModal() {
+            document.getElementById('ftp-modal').classList.remove('hidden');
+            document.getElementById('ftp-name').value = '';
+            document.getElementById('ftp-host').value = '';
+            document.getElementById('ftp-user').value = '';
+            document.getElementById('ftp-pass').value = '';
+        }
+        
+        function closeFtpModal() {
+            document.getElementById('ftp-modal').classList.add('hidden');
         }
 
-        async function removeLocation(id) {
-            savedFolders = savedFolders.filter(f => f.id !== id);
+        async function saveFtpConnection() {
+            const name = document.getElementById('ftp-name').value.trim();
+            const host = document.getElementById('ftp-host').value.trim();
+            const port = document.getElementById('ftp-port').value.trim();
+            const user = document.getElementById('ftp-user').value.trim();
+            const pass = document.getElementById('ftp-pass').value;
+
+            if (!name || !host) return showToast('Name and Host are required!');
+
+            const newFtp = { id: 'ftp_' + Date.now(), name, host, port, user, pass };
+            savedFTPs.push(newFtp);
+
             const db = await openDB();
-            const tx = db.transaction('handles', 'readwrite');
-            tx.objectStore('handles').delete(id);
+            const tx = db.transaction('ftp', 'readwrite');
+            tx.objectStore('ftp').put(newFtp);
             await new Promise(r => tx.oncomplete = r);
-            updateSettingsInputs();
-            if (currentTab === 'my-files') await renderMyFiles();
+
+            closeFtpModal();
+            showToast(`<i class="ph-fill ph-check-circle text-green-400"></i> Saved FTP Server`);
+            if (currentTab === 'computers') renderComputers();
+        }
+
+        async function removeLocation(id, type) {
+            const db = await openDB();
+            if (type === 'local') {
+                savedFolders = savedFolders.filter(f => f.id !== id);
+                const tx = db.transaction('handles', 'readwrite');
+                tx.objectStore('handles').delete(id);
+                await new Promise(r => tx.oncomplete = r);
+            } else if (type === 'ftp') {
+                savedFTPs = savedFTPs.filter(f => f.id !== id);
+                const tx = db.transaction('ftp', 'readwrite');
+                tx.objectStore('ftp').delete(id);
+                await new Promise(r => tx.oncomplete = r);
+            }
+            if (currentTab === 'computers') await renderComputers();
+            showToast('Removed location');
         }
 
         function clearAllHandles() {
             savedFolders = [];
+            savedFTPs = [];
             openDB().then(db => {
-                const tx = db.transaction('handles', 'readwrite');
-                tx.objectStore('handles').clear();
-                tx.oncomplete = () => { updateSettingsInputs(); showToast('All permissions cleared'); if(currentTab === 'my-files') renderMyFiles(); };
+                const tx1 = db.transaction('handles', 'readwrite'); tx1.objectStore('handles').clear();
+                const tx2 = db.transaction('ftp', 'readwrite'); if(db.objectStoreNames.contains('ftp')) tx2.objectStore('ftp').clear();
+                closeSettings();
+                showToast('All permissions and connections cleared'); 
+                if(currentTab === 'computers') renderComputers();
+                else switchTab('computers');
             });
         }
 
         async function saveCurrentState() {
-            if (!currentDirectoryHandle) return;
+            if (!currentDirectoryHandle && !currentFtpContext) return;
             const db = await openDB();
             const tx = db.transaction('appState', 'readwrite');
             const store = tx.objectStore('appState');
-            store.put(currentDirectoryHandle, 'currentDir');
+            if (currentDirectoryHandle) store.put(currentDirectoryHandle, 'currentDir');
             store.put(currentPath, 'currentPath');
             store.put(currentTab, 'currentTab');
             await new Promise(r => tx.oncomplete = r);
@@ -394,37 +386,32 @@
             }
         }
 
+        // ---------- State Loaders ----------
         async function saveRecentList() {
             const db = await openDB();
             const tx = db.transaction('recent', 'readwrite');
-            const store = tx.objectStore('recent');
-            store.clear();
-            for (let item of recentFiles.slice(0, 20)) store.put(item);
-            await new Promise(r => tx.oncomplete = r);
+            tx.objectStore('recent').clear();
+            for (let item of recentFiles.slice(0, 20)) tx.objectStore('recent').put(item);
         }
         async function saveStarredList() {
             const db = await openDB();
             const tx = db.transaction('starred', 'readwrite');
-            const store = tx.objectStore('starred');
-            store.clear();
-            for (let item of starredFiles) store.put(item);
-            await new Promise(r => tx.oncomplete = r);
+            tx.objectStore('starred').clear();
+            for (let item of starredFiles) tx.objectStore('starred').put(item);
         }
         async function loadRecentAndStarred() {
             const db = await openDB();
             if (db.objectStoreNames.contains('recent')) {
-                const tx = db.transaction('recent', 'readonly');
-                const recent = await new Promise(r => { const req = tx.objectStore('recent').getAll(); req.onsuccess = () => r(req.result); });
-                recentFiles = recent.map(r => ({ id: r.id, name: r.name, handle: r.handle, parentHandle: r.parentHandle, isFolder: r.isFolder }));
+                const req = db.transaction('recent', 'readonly').objectStore('recent').getAll();
+                recentFiles = await new Promise(r => { req.onsuccess = () => r(req.result || []); });
             }
             if (db.objectStoreNames.contains('starred')) {
-                const tx = db.transaction('starred', 'readonly');
-                const starred = await new Promise(r => { const req = tx.objectStore('starred').getAll(); req.onsuccess = () => r(req.result); });
-                starredFiles = starred.map(s => ({ id: s.id, name: s.name, handle: s.handle, parentHandle: s.parentHandle, isFolder: s.isFolder }));
+                const req = db.transaction('starred', 'readonly').objectStore('starred').getAll();
+                starredFiles = await new Promise(r => { req.onsuccess = () => r(req.result || []); });
             }
         }
 
-        // ---------- File & Folder Operations ----------
+        // ---------- File Operations ----------
         async function getFilesAndFolders(dirHandle) {
             const folders = [], files = [];
             for await (const entry of dirHandle.values()) {
@@ -437,37 +424,26 @@
         }
 
         async function renderCurrentDirectory(prompt = false) {
+            currentFtpContext = null; // Clear FTP context if switching to local
             const renderId = ++currentRenderId;
             const grid = document.getElementById('items-grid');
-            document.getElementById('search-input').value = ''; // Reset search on nav
+            document.getElementById('search-input').value = '';
             
             if (!currentDirectoryHandle) {
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-32 animate-fade-in">
-                        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-                            <i class="ph-fill ph-magnifying-glass text-4xl text-gray-400"></i>
-                        </div>
-                        <h2 class="text-xl font-medium text-gray-700 mb-2">No Folder Selected</h2>
-                        <p class="text-gray-500 text-sm">Select a folder from Computers to view its contents.</p>
-                    </div>`;
-                updateBreadcrumbs();
+                switchTab('computers');
                 return;
             }
 
             const hasPermission = await ensurePermission(currentDirectoryHandle, prompt);
-            if (renderId !== currentRenderId) return; // Abort if navigated away
+            if (renderId !== currentRenderId) return; 
 
             if (!hasPermission) {
                 grid.innerHTML = `
                     <div class="col-span-full flex flex-col items-center py-24 text-center animate-fade-in">
-                        <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-6">
-                            <i class="ph-fill ph-lock-key text-5xl text-orange-400"></i>
-                        </div>
+                        <div class="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center mb-6"><i class="ph-fill ph-lock-key text-5xl text-orange-400"></i></div>
                         <h2 class="text-2xl font-semibold text-gray-800 mb-2">Permission Required</h2>
-                        <p class="text-gray-500 text-sm max-w-md mx-auto mb-8 leading-relaxed">The browser requires your permission to read the contents of "<span class="font-medium text-gray-700">${escapeHtml(currentDirectoryHandle.name)}</span>" after a page reload.</p>
-                        <button id="grant-btn" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md hover:shadow-lg font-medium transition-all active:scale-95 flex items-center gap-2">
-                            <i class="ph-bold ph-check"></i> Grant Access
-                        </button>
+                        <p class="text-gray-500 text-sm max-w-md mx-auto mb-8">The browser requires permission to read "${escapeHtml(currentDirectoryHandle.name)}" after a reload.</p>
+                        <button id="grant-btn" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md active:scale-95 flex items-center gap-2"><i class="ph-bold ph-check"></i> Grant Access</button>
                     </div>
                 `;
                 document.getElementById('grant-btn').onclick = async () => {
@@ -481,7 +457,6 @@
             if (renderId !== currentRenderId) return; 
             
             grid.innerHTML = '';
-            
             let delay = 0;
             const appendWithDelay = (element) => {
                 element.style.animationDelay = `${delay}s`;
@@ -494,12 +469,7 @@
             for (const file of files) appendWithDelay(createItemCard(file, false));
             
             if (folders.length === 0 && files.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center py-20 text-center animate-fade-in">
-                        <i class="ph-fill ph-folder-open text-6xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-600 font-medium">This folder is empty</p>
-                        <p class="text-sm text-gray-400 mt-2">Drag and drop files here to copy them.</p>
-                    </div>`;
+                grid.innerHTML = `<div class="col-span-full flex flex-col items-center py-20 text-center animate-fade-in"><i class="ph-fill ph-folder-open text-6xl text-gray-300 mb-4"></i><p class="text-gray-600 font-medium">This folder is empty</p></div>`;
             }
             
             updateBreadcrumbs();
@@ -507,9 +477,36 @@
             await saveCurrentState();
         }
 
+        // ---------- MOCK FTP VIEW ----------
+        async function renderFtpDirectory() {
+            currentDirectoryHandle = null; 
+            const renderId = ++currentRenderId;
+            const grid = document.getElementById('items-grid');
+            document.getElementById('search-input').value = '';
+
+            grid.innerHTML = `
+                <div class="col-span-full flex flex-col items-center justify-center py-16 animate-fade-in">
+                    <div class="relative mb-6">
+                        <i class="ph-duotone ph-hard-drives text-[80px] text-blue-500"></i>
+                        <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-1.5 shadow-sm border border-gray-100">
+                            <div class="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                        </div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Connected to ${escapeHtml(currentFtpContext.name)}</h2>
+                    <p class="text-gray-500 font-mono text-sm bg-gray-100 px-3 py-1 rounded-md mb-8">${escapeHtml(currentFtpContext.user)}@${escapeHtml(currentFtpContext.host)}:${currentFtpContext.port}</p>
+                    
+                    <div class="bg-yellow-50/80 border border-yellow-200/60 p-6 rounded-2xl max-w-xl text-left shadow-sm">
+                        <h3 class="font-bold text-yellow-800 mb-2 flex items-center gap-2"><i class="ph-fill ph-info text-xl"></i> Web Browser Limitation Notice</h3>
+                        <p class="text-yellow-700 text-sm leading-relaxed mb-3">Pure client-side HTML/JavaScript running in a web browser is restricted by standard web security protocols and <b>cannot establish raw TCP connections</b> (Port 21) directly to FTP servers.</p>
+                        <p class="text-yellow-700 text-sm leading-relaxed">To view real files here, this frontend requires a Node.js or Python backend proxy to translate web requests into FTP commands. Your credentials have been saved securely in your browser's local database for when the backend is ready.</p>
+                    </div>
+                </div>
+            `;
+            updateBreadcrumbs();
+        }
+
         function createItemCard(handle, isFolder) {
             const div = document.createElement('div');
-            // search-item class added for the real-time search logic
             div.className = 'file-item search-item flex flex-col p-4 bg-[#f0f4f9] rounded-2xl border border-transparent relative cursor-pointer group bg-white shadow-[0_2px_8px_rgba(0,0,0,0.02)]';
             const icon = isFolder ? '<i class="ph-fill ph-folder text-[40px] text-yellow-500/90 drop-shadow-sm"></i>' : getFileIcon(handle.name);
             
@@ -517,7 +514,7 @@
                 <div class="flex justify-between items-start mb-4">
                     <div class="p-2 bg-blue-50/50 rounded-xl">${icon}</div>
                     <div class="file-actions flex gap-1 bg-white shadow-sm border border-gray-100 rounded-lg p-1 absolute top-3 right-3">
-                        <button class="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" onclick="event.stopPropagation(); renameItem('${handle.name}', ${isFolder})" title="Rename"><i class="ph ph-pencil-simple"></i></button>
+                        <button class="p-1.5 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" onclick="renameLocation('${handle.name}', 'file', '${handle.name}', event)" title="Rename"><i class="ph ph-pencil-simple"></i></button>
                         <button class="p-1.5 hover:bg-red-50 text-red-500 rounded-md transition-colors" onclick="event.stopPropagation(); deleteItem('${handle.name}', ${isFolder})" title="Delete"><i class="ph ph-trash"></i></button>
                         <button class="p-1.5 hover:bg-yellow-50 text-yellow-500 rounded-md transition-colors" onclick="event.stopPropagation(); toggleStar('${handle.name}', ${isFolder})" title="Star"><i class="ph-fill ph-star"></i></button>
                     </div>
@@ -534,53 +531,24 @@
                 </div>
             `;
 
-            // Asynchronously fetch real details for files with a nice skeleton to real transition
             if (!isFolder) {
                 handle.getFile().then(file => {
-                    const sizeEl = div.querySelector('.file-size');
-                    const dateEl = div.querySelector('.file-date');
-                    if(sizeEl) {
-                        sizeEl.classList.remove('skeleton', 'w-12', 'h-4', 'inline-block');
-                        sizeEl.classList.add('text-gray-400', 'bg-gray-100');
-                        sizeEl.innerText = formatSize(file.size);
-                    }
-                    if(dateEl) {
-                        const date = new Date(file.lastModified);
-                        dateEl.classList.remove('skeleton', 'w-16', 'h-4', 'inline-block');
-                        dateEl.classList.add('text-gray-400');
-                        dateEl.innerText = date.toLocaleDateString(undefined, {month:'short', day:'numeric'});
-                    }
+                    const sizeEl = div.querySelector('.file-size'); const dateEl = div.querySelector('.file-date');
+                    if(sizeEl) { sizeEl.classList.remove('skeleton', 'w-12', 'h-4'); sizeEl.classList.add('text-gray-400', 'bg-gray-100'); sizeEl.innerText = formatSize(file.size); }
+                    if(dateEl) { const d = new Date(file.lastModified); dateEl.classList.remove('skeleton', 'w-16', 'h-4'); dateEl.classList.add('text-gray-400'); dateEl.innerText = d.toLocaleDateString(undefined, {month:'short', day:'numeric'}); }
                 }).catch(e => {
                     const sizeEl = div.querySelector('.file-size');
-                    if(sizeEl) { 
-                        sizeEl.classList.remove('skeleton', 'w-12', 'h-4', 'inline-block');
-                        sizeEl.innerText = 'Unknown'; 
-                        sizeEl.classList.add('bg-red-50', 'text-red-400'); 
-                    }
+                    if(sizeEl) { sizeEl.classList.remove('skeleton', 'w-12', 'h-4'); sizeEl.innerText = 'Unknown'; sizeEl.classList.add('bg-red-50', 'text-red-400'); }
                 });
             }
 
             div.addEventListener('click', async (e) => {
                 if (e.target.closest('.file-actions')) return;
-                div.classList.add('scale-95'); // Click feedback
-                setTimeout(() => div.classList.remove('scale-95'), 150);
-
-                if (isFolder) {
-                    currentPath.push(currentDirectoryHandle);
-                    currentDirectoryHandle = handle;
-                    await renderCurrentDirectory(true);
-                    addToRecent(handle, true);
-                } else {
-                    await openFile(handle);
-                    addToRecent(handle, false);
-                }
+                div.classList.add('scale-95'); setTimeout(() => div.classList.remove('scale-95'), 150);
+                if (isFolder) { currentPath.push(currentDirectoryHandle); currentDirectoryHandle = handle; await renderCurrentDirectory(true); addToRecent(handle, true); }
+                else { await openFile(handle); addToRecent(handle, false); }
             });
-
-            div.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                contextTarget = { handle, name: handle.name, isFolder };
-                showContextMenu(e.clientX, e.clientY);
-            });
+            div.addEventListener('contextmenu', (e) => { e.preventDefault(); contextTarget = { handle, name: handle.name, isFolder }; showContextMenu(e.clientX, e.clientY); });
             return div;
         }
 
@@ -588,69 +556,42 @@
             try {
                 const file = await fileHandle.getFile();
                 const ext = file.name.split('.').pop().toLowerCase();
-                const imgExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp', 'ico'];
+                const imgExts = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'bmp'];
                 const vidExts = ['mp4', 'webm', 'ogg'];
                 const audExts = ['mp3', 'wav', 'ogg', 'aac'];
                 const txtExts = ['txt', 'json', 'js', 'html', 'css', 'md', 'csv', 'py', 'java', 'c', 'cpp', 'xml'];
 
-                // Prepare preview modal UI
                 document.getElementById('preview-title').innerHTML = `<i class="ph-fill ${getFileIcon(file.name).match(/ph-[a-z-]+/)[0]} text-blue-500"></i> <span>${escapeHtml(file.name)}</span>`;
                 const contentDiv = document.getElementById('preview-content');
-                
                 contentDiv.innerHTML = '<div class="flex flex-col items-center"><i class="ph-duotone ph-spinner-gap animate-spin text-4xl text-blue-500 mb-3"></i><p class="text-gray-500 font-medium">Loading preview...</p></div>';
                 document.getElementById('preview-modal').classList.remove('hidden');
 
                 if (currentPreviewUrl) URL.revokeObjectURL(currentPreviewUrl);
                 currentPreviewUrl = URL.createObjectURL(file);
+                document.getElementById('preview-open-btn').onclick = () => window.open(currentPreviewUrl, '_blank');
 
-                document.getElementById('preview-open-btn').onclick = () => {
-                    window.open(currentPreviewUrl, '_blank');
-                };
-
-                // Render specific media type
-                if (imgExts.includes(ext)) {
-                    contentDiv.innerHTML = `<img src="${currentPreviewUrl}" class="max-w-full max-h-full object-contain rounded-lg shadow-sm border border-gray-200 bg-white">`;
-                } else if (vidExts.includes(ext)) {
-                    contentDiv.innerHTML = `<video src="${currentPreviewUrl}" controls autoplay class="max-w-full max-h-full rounded-lg shadow-sm border border-gray-200 bg-black"></video>`;
-                } else if (audExts.includes(ext)) {
-                    contentDiv.innerHTML = `
-                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 w-full max-w-md flex flex-col items-center">
-                            <div class="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mb-6">
-                                <i class="ph-fill ph-music-notes text-5xl text-pink-500 animate-pulse"></i>
-                            </div>
-                            <p class="font-semibold text-gray-800 mb-4 text-center truncate w-full px-4">${escapeHtml(file.name)}</p>
-                            <audio src="${currentPreviewUrl}" controls autoplay class="w-full outline-none"></audio>
-                        </div>`;
+                if (imgExts.includes(ext)) { contentDiv.innerHTML = `<img src="${currentPreviewUrl}" class="max-w-full max-h-full object-contain rounded-lg shadow-sm">`; }
+                else if (vidExts.includes(ext)) { contentDiv.innerHTML = `<video src="${currentPreviewUrl}" controls autoplay class="max-w-full max-h-full rounded-lg shadow-sm bg-black"></video>`; }
+                else if (audExts.includes(ext)) {
+                    contentDiv.innerHTML = `<div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center"><div class="w-24 h-24 bg-pink-50 rounded-full flex items-center justify-center mb-6"><i class="ph-fill ph-music-notes text-5xl text-pink-500 animate-pulse"></i></div><p class="font-semibold text-gray-800 mb-4 text-center">${escapeHtml(file.name)}</p><audio src="${currentPreviewUrl}" controls autoplay></audio></div>`;
                 } else if (txtExts.includes(ext)) {
                     const text = await file.text();
-                    contentDiv.innerHTML = `<pre class="w-full h-full text-left bg-white p-6 rounded-xl overflow-auto text-sm text-gray-800 shadow-inner border border-gray-200 whitespace-pre-wrap font-mono selection:bg-blue-200">${escapeHtml(text)}</pre>`;
+                    contentDiv.innerHTML = `<pre class="w-full h-full text-left bg-white p-6 rounded-xl overflow-auto text-sm text-gray-800 shadow-inner border border-gray-200 whitespace-pre-wrap font-mono">${escapeHtml(text)}</pre>`;
                 } else {
-                    contentDiv.innerHTML = `
-                        <div class="flex flex-col items-center bg-white p-10 rounded-2xl shadow-sm border border-gray-100 text-center">
-                            <i class="ph-duotone ph-file-dashed text-7xl text-gray-400 mb-5"></i>
-                            <p class="text-gray-800 font-semibold text-lg mb-2">No Preview Available</p>
-                            <p class="text-gray-500 text-sm mb-6 max-w-sm">This file type (.${ext}) cannot be previewed directly within the browser.</p>
-                            <button onclick="window.open('${currentPreviewUrl}', '_blank')" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-medium shadow-sm active:scale-95 flex items-center gap-2"><i class="ph-bold ph-arrow-square-out"></i> Open Externally</button>
-                        </div>`;
+                    contentDiv.innerHTML = `<div class="flex flex-col items-center bg-white p-10 rounded-2xl text-center"><i class="ph-duotone ph-file-dashed text-7xl text-gray-400 mb-5"></i><p class="text-gray-800 font-semibold text-lg mb-2">No Preview Available</p><button onclick="window.open('${currentPreviewUrl}', '_blank')" class="px-6 py-2.5 bg-blue-600 text-white rounded-xl mt-4">Open Externally</button></div>`;
                 }
-            } catch(err) { 
-                showToast(`<i class="ph-fill ph-warning-circle text-red-400 text-lg"></i> Cannot open file`); 
-                closePreview();
-            }
+            } catch(err) { showToast(`Cannot open file`); closePreview(); }
         }
 
         function closePreview() {
             document.getElementById('preview-modal').classList.add('hidden');
             document.getElementById('preview-content').innerHTML = ''; 
-            if (currentPreviewUrl) {
-                URL.revokeObjectURL(currentPreviewUrl);
-                currentPreviewUrl = null;
-            }
+            if (currentPreviewUrl) { URL.revokeObjectURL(currentPreviewUrl); currentPreviewUrl = null; }
         }
 
         function getFileIcon(filename) {
             const ext = filename.split('.').pop().toLowerCase();
-            const map = { pdf: 'ph-file-pdf text-red-500', jpg: 'ph-image text-blue-500', jpeg: 'ph-image text-blue-500', png: 'ph-image text-blue-500', gif: 'ph-image text-blue-500', svg: 'ph-image text-purple-500', doc: 'ph-file-doc text-blue-600', docx: 'ph-file-doc text-blue-600', xls: 'ph-file-xls text-green-600', xlsx: 'ph-file-xls text-green-600', ppt: 'ph-file-ppt text-orange-500', mp3: 'ph-music-note text-pink-500', mp4: 'ph-video text-purple-500', txt: 'ph-file-text text-gray-500', js: 'ph-file-code text-yellow-500', html: 'ph-file-code text-orange-500', json: 'ph-file-code text-gray-600', zip: 'ph-file-archive text-gray-700', rar: 'ph-file-archive text-gray-700' };
+            const map = { pdf: 'ph-file-pdf text-red-500', jpg: 'ph-image text-blue-500', png: 'ph-image text-blue-500', mp4: 'ph-video text-purple-500', txt: 'ph-file-text text-gray-500', zip: 'ph-file-archive text-gray-700' };
             return map[ext] ? `<i class="ph-fill ${map[ext]} text-[40px] drop-shadow-sm"></i>` : `<i class="ph-fill ph-file text-[40px] text-gray-400 drop-shadow-sm"></i>`;
         }
 
@@ -661,25 +602,26 @@
             try {
                 let total = 0;
                 for await (const entry of currentDirectoryHandle.values()) if (entry.kind === 'file') total += (await entry.getFile()).size;
-                const usedGB = (total / (1024**3)).toFixed(2);
                 const percent = Math.min(100, (total/5e9)*100);
-                const bar = document.querySelector('#storage-info .bg-blue-600');
-                if (bar) bar.style.width = `${percent}%`;
-                
-                const textSpan = document.querySelector('#storage-info span');
-                if (textSpan) textSpan.innerText = `${usedGB} GB in top folder`;
+                document.querySelector('#storage-info .bg-blue-600').style.width = `${percent}%`;
+                document.querySelector('#storage-info span').innerText = `${(total / (1024**3)).toFixed(2)} GB in folder`;
             } catch(e) {}
         }
 
         function updateBreadcrumbs() {
             const container = document.getElementById('breadcrumb-container');
-            let html = `<button onclick="navigateToRoot()" class="hover:text-blue-600 hover:scale-105 transition-all font-medium flex items-center gap-1 active:scale-95"><i class="ph-fill ph-hard-drive"></i> Root</button>`;
-            for (let i = 0; i < currentPath.length; i++) {
-                html += `<i class="ph ph-caret-right mx-1.5 text-gray-400 text-xs"></i>`;
-                html += `<button onclick="navigateToLevel(${i})" class="hover:text-blue-600 hover:scale-105 transition-all truncate max-w-[120px] active:scale-95">${escapeHtml(currentPath[i].name)}</button>`;
-            }
-            if (currentDirectoryHandle) {
-                html += `<i class="ph ph-caret-right mx-1.5 text-gray-400 text-xs"></i><span class="font-semibold text-gray-800 truncate max-w-[200px] bg-blue-50 px-2 py-0.5 rounded-md text-blue-800">${escapeHtml(currentDirectoryHandle.name)}</span>`;
+            let html = `<button onclick="switchTab('computers')" class="hover:text-blue-600 hover:scale-105 transition-all font-medium flex items-center gap-1"><i class="ph-fill ph-hard-drives"></i> Computers</button>`;
+            
+            if (currentFtpContext) {
+                html += `<i class="ph ph-caret-right mx-1.5 text-gray-400 text-xs"></i><span class="font-semibold text-gray-800 bg-blue-50 px-2 py-0.5 rounded-md text-blue-800">${escapeHtml(currentFtpContext.name)}</span>`;
+            } else if (currentDirectoryHandle || currentPath.length > 0) {
+                for (let i = 0; i < currentPath.length; i++) {
+                    html += `<i class="ph ph-caret-right mx-1.5 text-gray-400 text-xs"></i>`;
+                    html += `<button onclick="navigateToLevel(${i})" class="hover:text-blue-600 hover:scale-105 transition-all truncate max-w-[120px]">${escapeHtml(currentPath[i].name)}</button>`;
+                }
+                if (currentDirectoryHandle) {
+                    html += `<i class="ph ph-caret-right mx-1.5 text-gray-400 text-xs"></i><span class="font-semibold text-gray-800 truncate max-w-[200px] bg-blue-50 px-2 py-0.5 rounded-md text-blue-800">${escapeHtml(currentDirectoryHandle.name)}</span>`;
+                }
             }
             container.innerHTML = html;
         }
@@ -687,32 +629,58 @@
         async function navigateToRoot() { currentDirectoryHandle = currentPath[0] || null; currentPath = []; await renderCurrentDirectory(true); }
         async function navigateToLevel(idx) { const newPath = currentPath.slice(0, idx+1); currentDirectoryHandle = newPath[newPath.length-1]; currentPath = newPath.slice(0, -1); await renderCurrentDirectory(true); }
         async function refreshCurrentView(btnElement) {
-            if (btnElement) {
-                const icon = btnElement.querySelector('i');
-                icon.classList.add('spin-anim');
-                setTimeout(() => icon.classList.remove('spin-anim'), 600);
-            }
-            await renderCurrentDirectory(true); 
+            if (btnElement) { const icon = btnElement.querySelector('i'); icon.classList.add('spin-anim'); setTimeout(() => icon.classList.remove('spin-anim'), 600); }
+            if (currentFtpContext) renderFtpDirectory(); else if (currentDirectoryHandle) await renderCurrentDirectory(true); 
         }
 
-        // Rename
-        let renameTarget = null, renameIsFolder = false;
-        function renameItem(name, isFolder) { 
-            renameTarget = name; renameIsFolder = isFolder; 
+        // ---------- Unified Rename Logic ----------
+        let renameTarget = null, renameMode = 'file'; 
+        
+        function renameLocation(id, type, currentName, event) {
+            if (event) event.stopPropagation();
+            renameMode = type; 
+            renameTarget = id; 
             const input = document.getElementById('rename-input');
-            input.value = name; 
+            input.value = currentName; 
             document.getElementById('rename-modal').classList.remove('hidden'); 
             setTimeout(() => { input.focus(); input.select(); }, 100);
         }
+
         async function confirmRename() {
             const newName = document.getElementById('rename-input').value.trim();
-            if (!newName || newName === renameTarget) { closeRenameModal(); return; }
+            if (!newName) { closeRenameModal(); return; }
+
             try {
-                const targetHandle = await currentDirectoryHandle.getFileHandle(renameTarget, { create: false }).catch(() => currentDirectoryHandle.getDirectoryHandle(renameTarget, { create: false }));
-                if (!targetHandle) throw new Error('Not found');
-                await targetHandle.move(newName);
-                showToast(`<i class="ph-fill ph-check-circle text-green-400 text-lg"></i> Renamed successfully`);
-                await renderCurrentDirectory(false);
+                if (renameMode === 'local_location') {
+                    const loc = savedFolders.find(f => f.id === renameTarget);
+                    if (loc && loc.name !== newName) {
+                        loc.name = newName;
+                        const db = await openDB();
+                        const tx = db.transaction('handles', 'readwrite');
+                        tx.objectStore('handles').put(loc, loc.id);
+                        await new Promise(r => tx.oncomplete = r);
+                        if (currentTab === 'computers') renderComputers();
+                        showToast(`Renamed connection to ${newName}`);
+                    }
+                } else if (renameMode === 'ftp_location') {
+                    const ftp = savedFTPs.find(f => f.id === renameTarget);
+                    if (ftp && ftp.name !== newName) {
+                        ftp.name = newName;
+                        const db = await openDB();
+                        const tx = db.transaction('ftp', 'readwrite');
+                        tx.objectStore('ftp').put(ftp);
+                        await new Promise(r => tx.oncomplete = r);
+                        if (currentTab === 'computers') renderComputers();
+                        showToast(`Renamed server to ${newName}`);
+                    }
+                } else if (renameMode === 'file') {
+                    if (newName === renameTarget) return;
+                    const targetHandle = await currentDirectoryHandle.getFileHandle(renameTarget, { create: false }).catch(() => currentDirectoryHandle.getDirectoryHandle(renameTarget, { create: false }));
+                    if (!targetHandle) throw new Error('Not found');
+                    await targetHandle.move(newName);
+                    showToast(`Renamed file to ${newName}`);
+                    await renderCurrentDirectory(false);
+                }
             } catch(e) { showToast('Rename failed: ' + e.message); }
             closeRenameModal();
         }
@@ -723,106 +691,19 @@
             try {
                 if (isFolder) await currentDirectoryHandle.removeEntry(name, { recursive: true });
                 else await currentDirectoryHandle.removeEntry(name);
-                showToast(`<i class="ph-fill ph-trash text-red-400 text-lg"></i> Deleted ${name}`);
+                showToast(`Deleted ${name}`);
                 await renderCurrentDirectory(false);
             } catch(e) { showToast('Delete failed: ' + e.message); }
         }
 
-        async function createNewFolder() {
-            const folderName = prompt('Enter new folder name:');
-            if (!folderName) return;
-            try {
-                await currentDirectoryHandle.getDirectoryHandle(folderName, { create: true });
-                showToast(`<i class="ph-fill ph-folder-plus text-blue-400 text-lg"></i> Folder created`);
-                await renderCurrentDirectory(false);
-            } catch(e) { showToast('Error: ' + e.message); }
-        }
-
-        async function createNewFile() {
-            const fileName = prompt('Enter new text file name (e.g., note.txt):');
-            if (!fileName) return;
-            try {
-                const fileHandle = await currentDirectoryHandle.getFileHandle(fileName, { create: true });
-                const writable = await fileHandle.createWritable();
-                await writable.write('');
-                await writable.close();
-                showToast(`<i class="ph-fill ph-file-plus text-blue-400 text-lg"></i> File created`);
-                await renderCurrentDirectory(false);
-            } catch(e) { showToast('Error: ' + e.message); }
-        }
-
-        function addToRecent(handle, isFolder) {
-            const id = `${handle.name}_${Date.now()}`;
-            recentFiles = recentFiles.filter(r => r.name !== handle.name).slice(0, 19);
-            recentFiles.unshift({ id, name: handle.name, handle, parentHandle: currentDirectoryHandle, isFolder });
-            saveRecentList();
-        }
-
-        async function toggleStar(name, isFolder) {
-            const exists = starredFiles.find(s => s.name === name);
-            if (exists) {
-                starredFiles = starredFiles.filter(s => s.name !== name);
-                showToast(`<i class="ph ph-star text-yellow-400 text-lg"></i> Removed from starred`);
-            } else {
-                const handle = isFolder ? await currentDirectoryHandle.getDirectoryHandle(name) : await currentDirectoryHandle.getFileHandle(name);
-                starredFiles.push({ id: `${name}_${Date.now()}`, name, handle, parentHandle: currentDirectoryHandle, isFolder });
-                showToast(`<i class="ph-fill ph-star text-yellow-400 text-lg"></i> Added to starred`);
-            }
-            await saveStarredList();
-            if (currentTab === 'starred') renderStarred();
-        }
-
-        // ---------- Context Menu ----------
-        function showContextMenu(x, y) {
-            const menu = document.getElementById('context-menu');
-            menu.innerHTML = '';
-            const isStarred = starredFiles.some(s => s.name === contextTarget.name);
-            
-            const items = [
-                { name: 'Open', icon: 'ph-folder-open text-blue-500', action: () => {
-                    if (contextTarget.isFolder) {
-                        currentPath.push(currentDirectoryHandle);
-                        currentDirectoryHandle = contextTarget.handle;
-                        renderCurrentDirectory(true);
-                        addToRecent(contextTarget.handle, true);
-                    } else { openFile(contextTarget.handle); addToRecent(contextTarget.handle, false); }
-                }},
-                { name: 'Rename', icon: 'ph-pencil-simple text-gray-500', action: () => renameItem(contextTarget.name, contextTarget.isFolder) },
-                { name: isStarred ? 'Unstar Item' : 'Star Item', icon: `ph-star text-yellow-500 ${isStarred ? 'ph-fill' : ''}`, action: () => toggleStar(contextTarget.name, contextTarget.isFolder) },
-                { name: 'Delete', icon: 'ph-trash text-red-500', action: () => deleteItem(contextTarget.name, contextTarget.isFolder) }
-            ];
-
-            items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'context-menu-item group';
-                div.innerHTML = `<i class="${item.icon} text-lg group-hover:scale-110 transition-transform"></i> <span class="font-medium text-gray-700 group-hover:text-gray-900">${item.name}</span>`;
-                div.onclick = () => { item.action(); hideContextMenu(); };
-                menu.appendChild(div);
-            });
-            
-            const menuWidth = 180; const menuHeight = items.length * 40;
-            const posX = (x + menuWidth > window.innerWidth) ? window.innerWidth - menuWidth - 10 : x;
-            const posY = (y + menuHeight > window.innerHeight) ? window.innerHeight - menuHeight - 10 : y;
-
-            menu.style.left = posX + 'px';
-            menu.style.top = posY + 'px';
-            menu.classList.remove('hidden');
-            setTimeout(() => document.addEventListener('click', hideContextMenuOnClick), 0);
-        }
-        function hideContextMenu() { document.getElementById('context-menu').classList.add('hidden'); document.removeEventListener('click', hideContextMenuOnClick); }
-        function hideContextMenuOnClick(e) { if (!document.getElementById('context-menu').contains(e.target)) hideContextMenu(); }
-
-        // ---------- Tab Rendering ----------
+        // ---------- TAB RENDERING: Computers Dashboard ----------
         async function switchTab(tabId, event) {
             if(event) event.preventDefault();
             currentTab = tabId;
-            document.getElementById('search-input').value = ''; // Clear search
-            document.querySelectorAll('nav a').forEach(a => { 
-                a.classList.remove('active-nav'); 
-                a.classList.add('text-gray-700'); 
-            });
-            const activeLink = document.querySelector(`[data-tab="${tabId}"]`);
-            activeLink.classList.add('active-nav'); activeLink.classList.remove('text-gray-700');
+            document.getElementById('search-input').value = ''; 
+            document.querySelectorAll('nav a').forEach(a => { a.classList.remove('active-nav'); a.classList.add('text-gray-700'); });
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active-nav'); 
+            document.querySelector(`[data-tab="${tabId}"]`).classList.remove('text-gray-700');
             
             if (tabId === 'my-files') await renderMyFiles();
             else if (tabId === 'computers') await renderComputers();
@@ -831,312 +712,145 @@
             await saveCurrentState();
         }
 
-        async function renderMyFiles() {
+        async function renderComputers() {
+            currentDirectoryHandle = null;
+            currentFtpContext = null;
             const grid = document.getElementById('items-grid');
             grid.innerHTML = '';
             
-            if (savedFolders.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-20 bg-gray-50/50 rounded-3xl border-2 border-dashed border-gray-200 mt-2 animate-fade-in transition-all hover:bg-gray-50">
-                        <div class="p-4 bg-white rounded-full shadow-sm mb-4"><i class="ph-fill ph-map-pin text-4xl text-blue-400"></i></div>
-                        <p class="text-gray-800 font-semibold text-lg">No saved locations</p>
-                        <p class="text-sm text-gray-500 mb-6 text-center max-w-sm">Pin frequently used folders to your home screen for instant access.</p>
-                        <button onclick="addNewLocation()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow font-medium transition-all active:scale-95 flex items-center gap-2"><i class="ph-bold ph-plus"></i> Add Folder</button>
-                    </div>
-                `;
-            } else {
-                let delay = 0;
-                for (const folder of savedFolders) {
-                    const card = createShortcutCard(folder.name, folder.handle);
-                    card.style.animationDelay = `${delay}s`;
-                    card.classList.add('animate-stagger');
-                    grid.appendChild(card);
-                    delay += 0.05;
-                }
-            }
+            // Section 1: Local Drives
+            const localTitle = document.createElement('div'); 
+            localTitle.className = 'col-span-full flex justify-between items-center mt-2 mb-2'; 
+            localTitle.innerHTML = `<div class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-hard-drive text-blue-500"></i> Local Disks</div> <button onclick="pickComputerFolder()" class="text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors font-medium flex items-center gap-1"><i class="ph-bold ph-plus"></i> Add Local Folder</button>`;
+            grid.appendChild(localTitle);
 
-            const recentTitle = document.createElement('div'); recentTitle.className = 'col-span-full text-sm font-bold text-gray-800 mt-8 mb-2 uppercase tracking-wider flex items-center gap-2'; recentTitle.innerHTML = '<i class="ph-fill ph-clock-counter-clockwise text-blue-500"></i> Recent Files';
-            grid.appendChild(recentTitle);
-            
             let delay = 0;
-            for (const item of recentFiles.slice(0,5)) {
-                const card = createRecentCard(item);
-                card.style.animationDelay = `${delay}s`;
-                card.classList.add('animate-stagger');
-                grid.appendChild(card);
-                delay += 0.05;
-            }
-        }
-
-        function createShortcutCard(name, handle) {
-            const div = document.createElement('div');
-            div.className = 'file-item search-item flex flex-col items-center p-6 bg-white border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 shadow-sm hover:shadow-md rounded-2xl cursor-pointer transition-all active:scale-95 group';
-            div.innerHTML = `
-                <div class="relative mb-3 group-hover:-translate-y-1 transition-transform duration-300">
-                    <i class="ph-fill ph-folder text-[56px] text-blue-500 drop-shadow-sm"></i>
-                    <i class="ph-fill ph-push-pin absolute bottom-0 right-0 text-white bg-blue-600 p-1 rounded-full text-xs border-2 border-white shadow-sm"></i>
-                </div>
-                <span class="text-sm font-semibold text-gray-800 truncate w-full text-center item-title">${escapeHtml(name)}</span>
-                <span class="text-[11px] text-gray-400 font-medium mt-1 uppercase">Pinned Folder</span>
-            `;
-            div.onclick = async () => {
-                if (handle) { 
-                    currentPath = []; 
-                    currentDirectoryHandle = handle; 
-                    await renderCurrentDirectory(true); 
+            if (savedFolders.length === 0) {
+                const empty = document.createElement('div'); empty.className = 'col-span-full text-center py-8 text-gray-400 text-sm italic bg-gray-50 rounded-2xl border border-dashed border-gray-200'; empty.innerText = 'No local folders added yet.';
+                grid.appendChild(empty);
+            } else {
+                for (const folder of savedFolders) {
+                    const card = createConnectionCard(folder.id, folder.name, 'local', 'ph-hard-drive text-blue-500', 'Local Directory', folder.handle);
+                    card.style.animationDelay = `${delay}s`; grid.appendChild(card); delay += 0.05;
                 }
-            };
-            return div;
+            }
+
+            // Section 2: Network Servers (FTP)
+            const networkTitle = document.createElement('div'); 
+            networkTitle.className = 'col-span-full flex justify-between items-center mt-8 mb-2'; 
+            networkTitle.innerHTML = `<div class="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2"><i class="ph-fill ph-globe-hemisphere-west text-purple-500"></i> Network & FTP</div> <button onclick="openFtpModal()" class="text-sm bg-purple-50 text-purple-600 px-3 py-1.5 rounded-lg hover:bg-purple-100 transition-colors font-medium flex items-center gap-1"><i class="ph-bold ph-plus"></i> Add Server</button>`;
+            grid.appendChild(networkTitle);
+
+            if (savedFTPs.length === 0) {
+                const empty = document.createElement('div'); empty.className = 'col-span-full text-center py-8 text-gray-400 text-sm italic bg-gray-50 rounded-2xl border border-dashed border-gray-200'; empty.innerText = 'No FTP servers added yet.';
+                grid.appendChild(empty);
+            } else {
+                for (const ftp of savedFTPs) {
+                    const card = createConnectionCard(ftp.id, ftp.name, 'ftp', 'ph-hard-drives text-purple-500', `${ftp.user}@${ftp.host}`, ftp);
+                    card.style.animationDelay = `${delay}s`; grid.appendChild(card); delay += 0.05;
+                }
+            }
+            updateBreadcrumbs();
         }
 
-        function createRecentCard(item) {
+        function createConnectionCard(id, name, type, iconClass, subtitle, contextData) {
             const div = document.createElement('div');
-            div.className = 'file-item search-item flex items-center gap-4 p-4 bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 rounded-2xl cursor-pointer transition-all active:scale-95 group';
-            const icon = item.isFolder ? 'ph-folder text-yellow-500' : 'ph-file-text text-blue-500';
+            div.className = 'file-item animate-stagger flex flex-col items-center p-6 bg-white border border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 shadow-sm hover:shadow-md rounded-2xl cursor-pointer transition-all active:scale-95 group relative';
             div.innerHTML = `
-                <div class="p-2.5 bg-gray-50 rounded-xl group-hover:bg-white transition-colors border border-transparent group-hover:border-gray-100 shadow-sm"><i class="ph-fill ${icon} text-3xl drop-shadow-sm"></i></div>
-                <div class="flex flex-col overflow-hidden">
-                    <span class="text-sm font-semibold text-gray-800 truncate item-title">${escapeHtml(item.name)}</span>
-                    <span class="text-xs text-gray-400 mt-0.5 truncate">${item.isFolder ? 'Folder' : 'File'} • Click to open</span>
+                <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
+                    <button class="p-1.5 bg-white shadow-sm border border-gray-100 hover:bg-gray-100 text-gray-600 rounded-md transition-colors" onclick="renameLocation('${id}', '${type}_location', '${name}', event)" title="Rename Connection"><i class="ph ph-pencil-simple"></i></button>
+                    <button class="p-1.5 bg-white shadow-sm border border-gray-100 hover:bg-red-50 text-red-500 rounded-md transition-colors" onclick="event.stopPropagation(); removeLocation('${id}', '${type}')" title="Remove Connection"><i class="ph ph-trash"></i></button>
                 </div>
+                <div class="relative mb-3 group-hover:-translate-y-1 transition-transform duration-300">
+                    <i class="ph-fill ${iconClass} text-[56px] drop-shadow-sm"></i>
+                    ${type === 'local' ? '<i class="ph-fill ph-push-pin absolute bottom-0 right-0 text-white bg-blue-600 p-1 rounded-full text-xs border-2 border-white shadow-sm"></i>' : '<i class="ph-fill ph-wifi-high absolute bottom-0 right-0 text-white bg-purple-600 p-1 rounded-full text-xs border-2 border-white shadow-sm"></i>'}
+                </div>
+                <span class="text-sm font-semibold text-gray-800 truncate w-full text-center">${escapeHtml(name)}</span>
+                <span class="text-[10px] text-gray-400 font-medium mt-1 uppercase truncate w-full text-center">${escapeHtml(subtitle)}</span>
             `;
             div.onclick = async () => {
-                if (item.parentHandle) {
-                    currentPath = []; currentDirectoryHandle = item.parentHandle;
-                    if (await ensurePermission(item.parentHandle, true)) {
-                        await renderCurrentDirectory(false);
-                        if (!item.isFolder) {
-                            try { const fresh = await item.parentHandle.getFileHandle(item.name); await openFile(fresh); }
-                            catch(e) { showToast('Cannot open'); }
-                        }
-                    } else await renderCurrentDirectory(false);
-                } else showToast('Parent folder missing');
+                if (type === 'local') { currentPath = []; currentDirectoryHandle = contextData; await renderCurrentDirectory(true); }
+                else if (type === 'ftp') { currentPath = []; currentFtpContext = contextData; renderFtpDirectory(); }
             };
             return div;
         }
 
-        async function renderComputers() {
+        async function renderMyFiles() {
             const grid = document.getElementById('items-grid');
-            grid.innerHTML = `
-                <div class="col-span-full flex flex-col items-center justify-center py-24 animate-fade-in">
-                    <div class="relative mb-6">
-                        <i class="ph-duotone ph-desktop text-[100px] text-blue-500"></i>
-                        <div class="absolute -bottom-2 -right-2 bg-white rounded-full p-2 shadow-sm">
-                            <i class="ph-fill ph-hard-drive text-2xl text-gray-700"></i>
-                        </div>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Local Drives</h2>
-                    <p class="text-gray-500 text-center max-w-md mb-8 leading-relaxed">Select any folder or drive on your computer. It will automatically be pinned to your "My Files" dashboard for quick access.</p>
-                    <button onclick="pickComputerFolder()" class="px-8 py-3.5 bg-gray-900 hover:bg-black text-white rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-95 font-medium flex items-center gap-2">
-                        <i class="ph-bold ph-magnifying-glass-plus text-lg"></i> Browse System
-                    </button>
-                </div>
-            `;
+            grid.innerHTML = `<div class="col-span-full py-20 flex flex-col items-center justify-center border-2 border-dashed border-gray-100 rounded-3xl"><i class="ph-fill ph-monitor text-6xl text-gray-200 mb-4"></i><p class="text-gray-500 font-medium text-lg">My Files Dashboard</p><p class="text-sm text-gray-400 mt-2 text-center max-w-sm">Go to "Computers" to connect Local Drives or FTP Servers to start exploring files.</p><button onclick="switchTab('computers')" class="mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-xl font-medium shadow-sm active:scale-95">Go to Computers</button></div>`;
+            updateBreadcrumbs();
         }
 
         async function pickComputerFolder() {
             try {
                 const handle = await window.showDirectoryPicker();
-                
                 const exists = savedFolders.find(f => f.name === handle.name);
                 if (!exists) {
                     const id = 'folder_' + Date.now();
                     const folderObj = { id, name: handle.name, handle };
                     savedFolders.push(folderObj);
-                    
                     const db = await openDB();
-                    const tx = db.transaction('handles', 'readwrite');
-                    tx.objectStore('handles').put(folderObj, id);
+                    const tx = db.transaction('handles', 'readwrite'); tx.objectStore('handles').put(folderObj, id);
                     await new Promise(r => tx.oncomplete = r);
-                    
-                    updateSettingsInputs();
                 }
-
-                currentPath = [];
-                currentDirectoryHandle = handle;
-                await renderCurrentDirectory(false);
-                showToast(`<i class="ph-fill ph-check-circle text-green-400 text-lg"></i> Now managing: ${handle.name}`);
-            } catch(e) { /* Cancelled */ }
-        }
-
-        async function renderRecent() {
-            const grid = document.getElementById('items-grid');
-            if (recentFiles.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center py-24 animate-fade-in">
-                        <i class="ph-duotone ph-clock text-7xl text-gray-300 mb-4"></i>
-                        <p class="text-gray-500 font-medium text-lg">No recent activity</p>
-                    </div>`;
-            } else { 
-                grid.innerHTML = ''; 
-                let delay = 0;
-                for (const item of recentFiles) {
-                    const card = createRecentCard(item);
-                    card.style.animationDelay = `${delay}s`;
-                    card.classList.add('animate-stagger');
-                    grid.appendChild(card);
-                    delay += 0.04;
-                }
-            }
-        }
-
-        async function renderStarred() {
-            const grid = document.getElementById('items-grid');
-            if (starredFiles.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center py-24 animate-fade-in">
-                        <i class="ph-duotone ph-star text-7xl text-yellow-200 mb-4"></i>
-                        <p class="text-gray-500 font-medium text-lg">No starred items</p>
-                        <p class="text-sm text-gray-400 mt-2">Right click any file or folder and select "Star Item"</p>
-                    </div>`;
-            } else { 
-                grid.innerHTML = ''; 
-                let delay = 0;
-                for (const item of starredFiles) {
-                    const card = createRecentCard(item);
-                    card.style.animationDelay = `${delay}s`;
-                    card.classList.add('animate-stagger');
-                    grid.appendChild(card);
-                    delay += 0.04;
-                }
-            }
+                currentPath = []; currentDirectoryHandle = handle; await renderCurrentDirectory(false);
+                showToast(`Opened: ${handle.name}`);
+            } catch(e) {}
         }
 
         // ---------- Global Helpers ----------
         async function ensurePermission(handle, prompt = true) {
             if (!handle) return false;
-            const opts = { mode: 'readwrite' };
-            if ((await handle.queryPermission(opts)) === 'granted') return true;
-            if (prompt) {
-                try { if ((await handle.requestPermission(opts)) === 'granted') return true; } catch (e) {}
-            }
+            if ((await handle.queryPermission({mode: 'readwrite'})) === 'granted') return true;
+            if (prompt) { try { if ((await handle.requestPermission({mode:'readwrite'})) === 'granted') return true; } catch (e) {} }
             return false;
         }
 
         function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerHTML = msg;
-            toast.classList.remove('opacity-0', 'translate-y-4', 'scale-95', 'pointer-events-none');
-            toast.classList.add('opacity-100', 'translate-y-0', 'scale-100');
-            setTimeout(() => { 
-                toast.classList.remove('opacity-100', 'translate-y-0', 'scale-100'); 
-                toast.classList.add('opacity-0', 'translate-y-4', 'scale-95', 'pointer-events-none'); 
-            }, 3000);
+            const toast = document.getElementById('toast'); toast.innerHTML = msg;
+            toast.classList.remove('opacity-0', 'translate-y-4', 'scale-95', 'pointer-events-none'); toast.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+            setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0', 'scale-100'); toast.classList.add('opacity-0', 'translate-y-4', 'scale-95', 'pointer-events-none'); }, 3000);
         }
         function escapeHtml(str) { return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
         function openSettings() { document.getElementById('settings-modal').classList.remove('hidden'); }
         function closeSettings() { document.getElementById('settings-modal').classList.add('hidden'); }
-        function showNewMenu() { showToast('<i class="ph-fill ph-info text-blue-400 text-lg"></i> Use the folder/file buttons above'); }
+        function showNewMenu() { showToast('<i class="ph-fill ph-info text-blue-400"></i> Use the folder/file buttons above'); }
 
         // ---------- LIVE UX: Search Filtering ----------
         document.getElementById('search-input').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
-            const items = document.querySelectorAll('.search-item');
-            items.forEach(item => {
+            document.querySelectorAll('.search-item').forEach(item => {
                 const nameNode = item.querySelector('.item-title');
-                if (nameNode) {
-                    const match = nameNode.innerText.toLowerCase().includes(term);
-                    item.style.display = match ? '' : 'none';
-                }
+                if (nameNode) item.style.display = nameNode.innerText.toLowerCase().includes(term) ? '' : 'none';
             });
         });
 
         // ---------- LIVE UX: Drag & Drop Files ----------
-        const mainEl = document.getElementById('main-content');
-        const dropZone = document.getElementById('drop-zone');
-        
-        mainEl.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (currentDirectoryHandle) {
-                dropZone.classList.remove('hidden');
-                setTimeout(() => dropZone.classList.remove('opacity-0'), 10);
-            }
-        });
-        
-        mainEl.addEventListener('dragleave', (e) => {
-            if (!mainEl.contains(e.relatedTarget)) {
-                dropZone.classList.add('opacity-0');
-                setTimeout(() => dropZone.classList.add('hidden'), 200);
-            }
-        });
-        
+        const mainEl = document.getElementById('main-content'); const dropZone = document.getElementById('drop-zone');
+        mainEl.addEventListener('dragover', (e) => { e.preventDefault(); if (currentDirectoryHandle) { dropZone.classList.remove('hidden'); setTimeout(() => dropZone.classList.remove('opacity-0'), 10); }});
+        mainEl.addEventListener('dragleave', (e) => { if (!mainEl.contains(e.relatedTarget)) { dropZone.classList.add('opacity-0'); setTimeout(() => dropZone.classList.add('hidden'), 200); }});
         mainEl.addEventListener('drop', async (e) => {
-            e.preventDefault();
-            dropZone.classList.add('opacity-0');
-            setTimeout(() => dropZone.classList.add('hidden'), 200);
-
+            e.preventDefault(); dropZone.classList.add('opacity-0'); setTimeout(() => dropZone.classList.add('hidden'), 200);
             if (!currentDirectoryHandle) return;
-            
-            const items = e.dataTransfer.items;
-            let count = 0;
-            
+            const items = e.dataTransfer.items; let count = 0;
             for (let i=0; i<items.length; i++) {
                 if (items[i].kind === 'file') {
                     const file = items[i].getAsFile();
-                    try {
-                        const newHandle = await currentDirectoryHandle.getFileHandle(file.name, {create: true});
-                        const writable = await newHandle.createWritable();
-                        await writable.write(file);
-                        await writable.close();
-                        count++;
-                    } catch(err) {
-                        console.error('File Drop Error:', err);
-                    }
+                    try { const newH = await currentDirectoryHandle.getFileHandle(file.name, {create: true}); const w = await newH.createWritable(); await w.write(file); await w.close(); count++; } catch(err) {}
                 }
             }
-            if (count > 0) {
-                showToast(`<i class="ph-fill ph-check-circle text-green-400 text-lg"></i> Successfully copied ${count} file(s)`);
-                renderCurrentDirectory(false);
-            }
+            if (count > 0) { showToast(`<i class="ph-fill ph-check-circle text-green-400 text-lg"></i> Copied ${count} file(s)`); renderCurrentDirectory(false); }
         });
-
-        // ---------- LIVE UX: Keyboard Navigation & Shortcuts ----------
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closePreview();
-                closeSettings();
-                closeRenameModal();
-                hideContextMenu();
-            }
-        });
-
-        let gestureCooldown = false;
-        window.addEventListener('wheel', (e) => {
-            if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
-                e.preventDefault(); 
-                if (!document.getElementById('settings-modal').classList.contains('hidden')) return;
-                if (!document.getElementById('rename-modal').classList.contains('hidden')) return;
-                if (!document.getElementById('preview-modal').classList.contains('hidden')) return;
-
-                if (!gestureCooldown && Math.abs(e.deltaX) > 50) {
-                    gestureCooldown = true;
-                    setTimeout(() => gestureCooldown = false, 800); 
-
-                    const tabsOrder = ['my-files', 'computers', 'recent', 'starred'];
-                    const currentIndex = tabsOrder.indexOf(currentTab);
-
-                    if (e.deltaX < 0) {
-                        if (currentDirectoryHandle && currentPath.length > 0) navigateToLevel(currentPath.length - 1);
-                        else if (currentIndex > 0) switchTab(tabsOrder[currentIndex - 1]);
-                    } else if (e.deltaX > 0) {
-                        if (currentPath.length === 0 && currentIndex < tabsOrder.length - 1) switchTab(tabsOrder[currentIndex + 1]);
-                    }
-                }
-            }
-        }, { passive: false }); 
 
         // ---------- Start ----------
         window.onload = async () => {
-            document.getElementById('settings-modal').addEventListener('click', function(e) { if (e.target === this) closeSettings(); });
-            document.getElementById('rename-modal').addEventListener('click', function(e) { if (e.target === this) closeRenameModal(); });
-            document.getElementById('preview-modal').addEventListener('click', function(e) { if (e.target === this) closePreview(); });
-
-            await loadHandles();
+            await loadHandlesAndFTPs();
             await loadRecentAndStarred();
             await loadCurrentState();
             await switchTab(currentTab, null);
-            if (currentDirectoryHandle) await renderCurrentDirectory(false);
-            else if (currentTab === 'my-files') await renderMyFiles();
+            if (currentFtpContext) renderFtpDirectory();
+            else if (currentDirectoryHandle) await renderCurrentDirectory(false);
+            else if (currentTab === 'computers') await renderComputers();
         };
     </script>
 </body>
