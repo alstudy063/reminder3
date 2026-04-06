@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
   <title>AL Master Flow | Premium Study Suite</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* Modern Premium Styles - same as before, no changes needed here */
+    /* Modern Premium Styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     :root {
       --bg-primary: #f0f4fd;
@@ -70,12 +70,18 @@
     .add-section-header i.fa-chevron-down { margin-left: auto; transition: transform 0.4s; }
     .add-section-content { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.6s, opacity 0.4s, padding 0.4s; padding: 0 1.5rem; }
     .add-section-content.expanded { max-height: 800px; opacity: 1; padding: 0 1.5rem 1.5rem 1.5rem; }
+    /* Modal styles with close animation */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.3s; }
     .modal { background: var(--bg-secondary); border-radius: 1.8rem; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); border: 1px solid var(--border-color); animation: popIn 0.4s; }
     .modal h3 { margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 1.4rem; }
     .modal .modal-close { cursor: pointer; font-size: 1.2rem; transition: transform 0.2s; }
     .modal .modal-close:hover { transform: rotate(90deg); color: #ef4444; }
+    /* Close animation classes */
+    .modal-overlay.closing { animation: fadeOut 0.2s forwards; pointer-events: none; }
+    .modal-overlay.closing .modal { animation: popOut 0.2s forwards; }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes popOut { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(0.9); opacity: 0; } }
     .sheet-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000; visibility: hidden; opacity: 0; transition: visibility 0.2s, opacity 0.2s; }
     .sheet-overlay.active { visibility: visible; opacity: 1; }
     .bottom-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-radius: 28px 28px 0 0; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.2,0.9,0.4,1.1); z-index: 1001; padding: 1.5rem 1.2rem 2rem; max-height: 80vh; overflow-y: auto; }
@@ -117,9 +123,18 @@
     .mobile-nav-item i { font-size: 1.5rem; }
     .mobile-nav-item.active { color: var(--accent); transform: translateY(-3px); }
     @media (max-width: 768px) { .sidebar { display: none; } .main-content { padding: 1.5rem 1rem 6rem 1rem; } .mobile-bottom-nav { display: flex !important; } }
-    /* Backup/import checkboxes */
     .backup-option { margin: 0.5rem 0; display: flex; align-items: center; gap: 0.5rem; }
     .backup-option label { cursor: pointer; }
+    .history-date-group { margin-bottom: 1.5rem; border: 1px solid var(--border-color); border-radius: 1rem; overflow: hidden; }
+    .history-date-header { background: var(--card-bg); padding: 0.8rem 1.2rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+    .history-date-header i { transition: transform 0.3s; }
+    .history-date-header.collapsed i { transform: rotate(-90deg); }
+    .history-def-list { padding: 0.5rem 1rem; background: var(--bg-secondary); }
+    .history-def-list.collapsed { display: none; }
+    .history-def-item { border-bottom: 1px solid var(--border-color); padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+    .status-pass { color: #10b981; }
+    .status-fail { color: #ef4444; }
+    .status-incomplete { color: #f59e0b; }
   </style>
 </head>
 <body>
@@ -215,9 +230,110 @@
     showToast(`Marked as ${status}`); renderDefinitions();
   }
 
+  // Animated modal close function
+  function closeModalWithAnimation(modalOverlay) {
+    if (!modalOverlay) return;
+    modalOverlay.classList.add('closing');
+    setTimeout(() => {
+      if (modalOverlay.parentNode) modalOverlay.remove();
+    }, 200); // matches animation duration
+  }
+
+  function attachModalCloseOnOverlay(modalOverlay) {
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        closeModalWithAnimation(modalOverlay);
+      }
+    });
+    // also handle close button
+    const closeBtn = modalOverlay.querySelector('.modal-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeModalWithAnimation(modalOverlay);
+      });
+    }
+  }
+
+  // Show definition history modal (with close animation)
+  function showDefinitionHistory() {
+    const history = JSON.parse(localStorage.getItem('suggestionsHistory') || '[]');
+    if (history.length === 0) {
+      showToast("No history yet. Start reviewing definitions!", true);
+      return;
+    }
+    history.sort((a, b) => new Date(b.date) - new Date(a.date));
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal-overlay';
+    modalDiv.innerHTML = `
+      <div class="modal" style="max-width: 700px;">
+        <h3><i class="fas fa-history"></i> Definition Study History <span class="modal-close"><i class="fas fa-times"></i></span></h3>
+        <div id="historyContent"></div>
+      </div>
+    `;
+    document.body.appendChild(modalDiv);
+    attachModalCloseOnOverlay(modalDiv);
+    const contentDiv = modalDiv.querySelector('#historyContent');
+    
+    let html = '';
+    for (let entry of history) {
+      const date = entry.date;
+      const defs = entry.definitions;
+      const total = defs.length;
+      const completed = defs.filter(d => d.sessionStatus !== 'incomplete').length;
+      const passCount = defs.filter(d => d.sessionStatus === 'pass').length;
+      const failCount = defs.filter(d => d.sessionStatus === 'fail').length;
+      html += `
+        <div class="history-date-group">
+          <div class="history-date-header" data-date="${date}">
+            <span><i class="fas fa-calendar-day"></i> ${date} &nbsp; <span style="font-size:0.85rem;">(${completed}/${total} completed, ✅ ${passCount} | ❌ ${failCount})</span></span>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <div class="history-def-list" id="historyList-${date}">
+      `;
+      for (let def of defs) {
+        const term = def.term || "Term missing";
+        const status = def.sessionStatus || 'incomplete';
+        let statusIcon = '';
+        let statusText = '';
+        if (status === 'pass') { statusIcon = '✅'; statusText = 'Pass'; }
+        else if (status === 'fail') { statusIcon = '❌'; statusText = 'Fail'; }
+        else { statusIcon = '⏳'; statusText = 'Incomplete'; }
+        const mainDef = allItems.definitions.find(d => d.id === def.id);
+        const overallPass = mainDef ? (mainDef.passCount || 0) : 0;
+        const overallFail = mainDef ? (mainDef.failCount || 0) : 0;
+        html += `
+          <div class="history-def-item">
+            <div><strong>${escapeHtml(term)}</strong><br><small style="color:var(--text-secondary);">Overall: ✅ ${overallPass} | ❌ ${overallFail}</small></div>
+            <div class="status-${status}"><i class="fas ${status === 'pass' ? 'fa-check-circle' : (status === 'fail' ? 'fa-times-circle' : 'fa-hourglass-half')}"></i> ${statusText}</div>
+          </div>
+        `;
+      }
+      html += `</div></div>`;
+    }
+    contentDiv.innerHTML = html;
+    document.querySelectorAll('.history-date-header').forEach(header => {
+      header.addEventListener('click', () => {
+        const date = header.dataset.date;
+        const listDiv = document.getElementById(`historyList-${date}`);
+        if (listDiv) {
+          listDiv.classList.toggle('collapsed');
+          header.classList.toggle('collapsed');
+          const icon = header.querySelector('i.fa-chevron-down');
+          if (icon) icon.style.transform = listDiv.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+        }
+      });
+    });
+  }
+
   function showAllModal(collection, title, renderFn) {
-    const div = document.createElement('div'); div.className = 'modal-overlay'; div.innerHTML = `<div class="modal" style="max-width:800px;"><h3><i class="fas fa-list"></i> All ${title} <span class="modal-close"><i class="fas fa-times"></i></span></h3><div id="modalListContent"></div></div>`;
-    document.body.appendChild(div); div.querySelector('.modal-close').onclick = () => div.remove(); const content = div.querySelector('#modalListContent'); renderFn(content, allItems[collection]);
+    const div = document.createElement('div'); 
+    div.className = 'modal-overlay'; 
+    div.innerHTML = `<div class="modal" style="max-width:800px;"><h3><i class="fas fa-list"></i> All ${title} <span class="modal-close"><i class="fas fa-times"></i></span></h3><div id="modalListContent"></div></div>`;
+    document.body.appendChild(div); 
+    attachModalCloseOnOverlay(div);
+    const content = div.querySelector('#modalListContent'); 
+    renderFn(content, allItems[collection]);
   }
 
   function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
@@ -226,9 +342,11 @@
     const def = allItems.definitions.find(d => d.id === defId);
     if (!def) return;
     const existingTopics = [...new Set(allItems.definitions.map(d => d.topic).filter(t => t && t.trim() !== ""))];
-    const div = document.createElement('div'); div.className = 'modal-overlay';
+    const div = document.createElement('div'); 
+    div.className = 'modal-overlay';
     div.innerHTML = `<div class="modal"><h3>Edit Definition <span class="modal-close"><i class="fas fa-times"></i></span></h3><input type="text" id="editTerm" value="${escapeHtml(def.term || '')}" placeholder="Term (Required)" style="width:100%; margin-bottom:1rem;"><textarea id="editDefText" rows="4" style="width:100%; margin-bottom:1rem;">${escapeHtml(def.definition)}</textarea><div style="margin-bottom:1rem;"><label>Topic / Unit:</label><select id="editTopicSelect" style="width:100%;"><option value="">-- Select existing topic --</option>${existingTopics.map(t => `<option value="${escapeHtml(t)}" ${def.topic === t ? 'selected' : ''}>${escapeHtml(t)}</option>`).join('')}<option value="__new__">➕ Add new topic</option></select><input type="text" id="editNewTopic" placeholder="New topic name" style="width:100%; margin-top:8px; display:none;"></div><button id="saveEditDef" class="btn-icon" style="width:100%; justify-content:center; background:var(--accent); color:white;">Save Changes</button></div>`;
-    document.body.appendChild(div); div.querySelector('.modal-close').onclick = () => div.remove();
+    document.body.appendChild(div); 
+    attachModalCloseOnOverlay(div);
     const topicSelect = div.querySelector('#editTopicSelect'); const newTopicInput = div.querySelector('#editNewTopic');
     topicSelect.addEventListener('change', () => { if (topicSelect.value === '__new__') newTopicInput.style.display = 'block'; else newTopicInput.style.display = 'none'; });
     if (topicSelect.value === '__new__') newTopicInput.style.display = 'block';
@@ -236,7 +354,7 @@
       const newTerm = div.querySelector('#editTerm').value.trim(); const newDefText = div.querySelector('#editDefText').value.trim();
       if (!newDefText) return showToast('Definition cannot be empty', true); if (!newTerm) return showToast('Term is required', true);
       let finalTopic = topicSelect.value; if (finalTopic === '__new__') { finalTopic = newTopicInput.value.trim(); if (!finalTopic) return showToast('Please enter a topic name', true); } else if (finalTopic === "") finalTopic = undefined;
-      def.term = newTerm; def.definition = newDefText; def.topic = finalTopic; await saveAll(); showToast('Definition updated'); div.remove(); renderDefinitions();
+      def.term = newTerm; def.definition = newDefText; def.topic = finalTopic; await saveAll(); showToast('Definition updated'); closeModalWithAnimation(div); renderDefinitions();
     };
   }
   
@@ -271,7 +389,7 @@
   }
   function attachCollapsible() { document.querySelectorAll('.add-section-header').forEach(h => { h.onclick = () => { const c = document.getElementById(h.dataset.expand); c.classList.toggle('expanded'); h.querySelector('.fa-chevron-down').style.transform = c.classList.contains('expanded') ? 'rotate(180deg)' : ''; }; }); }
 
-  // -------- Backup & Import Functions --------
+  // Backup & Import Functions
   function getBackupData(selectedTabs) {
     const backup = {};
     if (selectedTabs.includes('revision')) backup.revision = allItems.revision;
@@ -308,7 +426,7 @@
             if (imported[tab] && Array.isArray(imported[tab])) {
               if (mode === 'replace') {
                 allItems[tab] = imported[tab];
-              } else { // merge
+              } else {
                 const existingIds = new Set(allItems[tab].map(item => item.id));
                 for (let newItem of imported[tab]) {
                   if (!existingIds.has(newItem.id)) {
@@ -328,7 +446,7 @@
     });
   }
   
-  // ======== SETTINGS TAB with all new features ========
+  // SETTINGS TAB
   async function renderSettings() {
     document.getElementById('headerTitle').innerText = "Settings";
     const s = loadSettings();
@@ -343,16 +461,13 @@
           <label>Accent Color:</label>
           <input type="color" id="accentColorPicker" value="${s.accentColor}" style="width:60px; height:40px; padding:0; cursor:pointer;">
         </div>
-        
         <hr style="margin:1.5rem 0; border-color:var(--border-color);">
         <h3><i class="fas fa-user-circle"></i> Account</h3>
         <div id="accountSection">
           ${currentUser ? `<div style="background:rgba(16,185,129,0.1); padding:12px; border-radius:12px; margin-bottom:1rem;"><i class="fas fa-check-circle" style="color:#10b981;"></i> Logged in as <strong>${currentUser.email}</strong></div><button class="btn-icon" id="logoutBtn" style="border-color:#ef4444; color:#ef4444;"><i class="fas fa-sign-out-alt"></i> Logout</button>` : `<button class="btn-icon" id="loginBtn" style="background:var(--accent); color:white;"><i class="fab fa-google"></i> Sign in with Google to Sync</button>`}
         </div>
-        
         <hr style="margin:1.5rem 0; border-color:var(--border-color);">
         <h3><i class="fas fa-database"></i> Backup & Import</h3>
-        
         <div style="margin-bottom:1.5rem;">
           <h4>Backup (Download)</h4>
           <div class="backup-option"><input type="checkbox" id="backupFullApp" value="full" checked> <label for="backupFullApp">Full App (all data)</label></div>
@@ -365,7 +480,6 @@
           </div>
           <button class="btn-icon" id="downloadBackupBtn" style="margin-top:0.5rem;"><i class="fas fa-download"></i> Download Backup</button>
         </div>
-        
         <div>
           <h4>Import (Restore)</h4>
           <input type="file" id="importFileInput" accept=".json" style="margin-bottom:0.5rem;">
@@ -389,17 +503,11 @@
       </div>
     `;
     document.getElementById('tabContent').innerHTML = html;
-    
-    // Theme buttons
     document.getElementById('themeLightBtn').onclick = () => { saveSettings({ ...loadSettings(), theme:'light' }); renderSettings(); };
     document.getElementById('themeDarkBtn').onclick = () => { saveSettings({ ...loadSettings(), theme:'dark' }); renderSettings(); };
     document.getElementById('accentColorPicker').onchange = (e) => { saveSettings({ ...loadSettings(), accentColor:e.target.value }); renderSettings(); };
-    
-    // Account
     if (currentUser) document.getElementById('logoutBtn')?.addEventListener('click', () => signOut(auth));
     else document.getElementById('loginBtn')?.addEventListener('click', () => signInWithPopup(auth, provider));
-    
-    // Backup toggles
     const backupFull = document.getElementById('backupFullApp');
     const backupSpecificDiv = document.getElementById('backupSpecificOptions');
     backupFull.addEventListener('change', () => { backupSpecificDiv.style.display = backupFull.checked ? 'none' : 'flex'; backupSpecificDiv.style.flexDirection = 'column'; });
@@ -416,8 +524,6 @@
       }
       downloadBackup(selected);
     };
-    
-    // Import toggles
     const importFull = document.getElementById('importFullApp');
     const importSpecificDiv = document.getElementById('importSpecificOptions');
     importFull.addEventListener('change', () => { importSpecificDiv.style.display = importFull.checked ? 'none' : 'flex'; importSpecificDiv.style.flexDirection = 'column'; });
@@ -439,14 +545,13 @@
       try {
         const result = await importBackup(file, selected, mode);
         showToast(`Imported ${result.newItems} new items into ${result.sections} section(s). Refresh page to see changes.`);
-        // Refresh current tab to show new data
         if (currentTab === 'settings') renderSettings();
         else switchTab(currentTab);
       } catch(err) { showToast('Invalid backup file', true); }
     };
   }
   
-  // ======== Other tab renderers (unchanged but needed) ========
+  // Other tab renderers
   async function renderDashboard() { document.getElementById('headerTitle').innerText = "Dashboard"; const today = getTodayStr(); const allSRItems = [...allItems.revision, ...allItems.equations, ...allItems.essays]; const dueTodayCount = allSRItems.filter(i => (i.nextReviewDate || today) === today).length; const overdueCount = allSRItems.filter(i => (i.nextReviewDate || today) < today).length; document.getElementById('tabContent').innerHTML = `<div class="glass-card" style="background: linear-gradient(135deg, var(--accent), #8b5cf6); color: white;"><div style="display:flex; justify-content:space-between;"><div><h2 style="color:white;"><i class="fas fa-sun"></i> Good ${new Date().getHours()<12?'Morning':'Day'}!</h2><p>You have <strong>${overdueCount}</strong> overdue tasks and <strong>${dueTodayCount}</strong> tasks due today.</p></div><button class="btn-icon" style="background:rgba(255,255,255,0.2); border:none; color:white;" onclick="window.switchTab('revision')">Start Review</button></div></div><div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:1.5rem;"><div class="glass-card" style="text-align:center; cursor:pointer;" onclick="window.switchTab('revision')"><i class="fas fa-brain" style="font-size:2rem; color:var(--accent);"></i><h3>Revision</h3><h2>${allItems.revision.length}</h2></div><div class="glass-card" style="text-align:center; cursor:pointer;" onclick="window.switchTab('definitions')"><i class="fas fa-book" style="font-size:2rem; color:var(--accent);"></i><h3>Definitions</h3><h2>${allItems.definitions.length}</h2></div><div class="glass-card" style="text-align:center; cursor:pointer;" onclick="window.switchTab('pomodoro')"><i class="fas fa-clock" style="font-size:2rem; color:var(--accent);"></i><h3>Pomodoro</h3><h2>${allItems.pomodoro.length}</h2></div><div class="glass-card" style="text-align:center; cursor:pointer;" onclick="window.switchTab('papers')"><i class="fas fa-scroll" style="font-size:2rem; color:var(--accent);"></i><h3>Papers</h3><h2>${allItems.papers.length}</h2></div></div>`; }
   async function renderRevision() { document.getElementById('headerTitle').innerText = "Revision"; const today = getTodayStr(); let items = allItems.revision; document.getElementById('tabContent').innerHTML = `<div class="glass-card"><div class="add-section"><div class="add-section-header" data-expand="revAdd"><i class="fas fa-plus-circle"></i> Add Revision Topic <i class="fas fa-chevron-down"></i></div><div class="add-section-content" id="revAdd"><div class="flex-row"><input type="text" id="rTitle" placeholder="Topic Title (Required)" style="flex:2"><input type="text" id="rContent" placeholder="Key points" style="flex:3"><select id="rSubject">${subjects.map(s=>`<option>${s}</option>`).join('')}</select><button id="addRevBtn" class="btn-icon">Save</button></div></div></div><div class="flex-row"><button id="filterDue" class="btn-icon" style="background:var(--accent); color:white;">Due Today / Overdue</button><button id="filterAll" class="btn-icon">All Topics</button><button id="showAllRev" class="btn-icon">Full List View</button></div><div id="revList"></div></div>`; attachCollapsible(); document.getElementById('addRevBtn').onclick = async () => { const title = document.getElementById('rTitle').value; if(!title) return showToast('Title required!', true); allItems.revision.push(ensureSRFields({ id:Date.now(), title, content: document.getElementById('rContent').value, subject: document.getElementById('rSubject').value })); await saveAll(); renderRevision(); }; function renderList(filterDue) { const list = document.getElementById('revList'); const filtered = filterDue ? items.filter(i => ensureSRFields(i).nextReviewDate <= today) : items; if(!filtered.length) { list.innerHTML = '<p style="text-align:center; padding:2rem;">No items</p>'; return; } list.innerHTML = filtered.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.title)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.content ? `<small>${escapeHtml(i.content)}</small><br>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'revision')">Review Done</button><div style="display:flex; gap:5px; margin-top:5px;"><button class="btn-icon" style="padding:4px 8px;" onclick="window.editDate(${i.id}, 'revision')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" style="padding:4px 8px; border-color:#ef4444; color:#ef4444;" onclick="window.deleteItem(${i.id}, 'revision')"><i class="fas fa-trash"></i></button></div></div></div>`).join(''); } document.getElementById('filterDue').onclick = () => { document.getElementById('filterDue').style.background='var(--accent)'; document.getElementById('filterDue').style.color='white'; document.getElementById('filterAll').style.background=''; document.getElementById('filterAll').style.color=''; renderList(true); }; document.getElementById('filterAll').onclick = () => { document.getElementById('filterAll').style.background='var(--accent)'; document.getElementById('filterAll').style.color='white'; document.getElementById('filterDue').style.background=''; document.getElementById('filterDue').style.color=''; renderList(false); }; document.getElementById('showAllRev').onclick = () => showAllModal('revision', 'Revision Topics', (container, data) => { container.innerHTML = data.map(i => `<div style="border-bottom:1px solid var(--border-color); padding:10px; display:flex; justify-content:space-between;"><div><strong>${escapeHtml(i.title)}</strong><br>${getSRStatsHtml(i)}</div><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'revision'); this.parentElement.remove();">Delete</button></div>`).join(''); }); renderList(true); }
   async function renderEquations() { document.getElementById('headerTitle').innerText = "Equations"; document.getElementById('tabContent').innerHTML = `<div class="glass-card"><div class="add-section"><div class="add-section-header" data-expand="eqAdd"><i class="fas fa-plus-circle"></i> Add Equation <i class="fas fa-chevron-down"></i></div><div class="add-section-content" id="eqAdd"><div class="flex-row"><input type="text" id="eName" placeholder="Equation Name" style="flex:1"><input type="text" id="eFormula" placeholder="Formula" style="flex:1"><select id="eSubject">${subjects.map(s=>`<option>${s}</option>`).join('')}</select><button id="addEqBtn" class="btn-icon">Save</button></div></div></div><div id="eqList"></div></div>`; attachCollapsible(); document.getElementById('addEqBtn').onclick = async () => { const name = document.getElementById('eName').value; if(!name) return showToast('Name required', true); allItems.equations.push(ensureSRFields({ id:Date.now(), name, formula: document.getElementById('eFormula').value, subject: document.getElementById('eSubject').value })); await saveAll(); renderEquations(); }; document.getElementById('eqList').innerHTML = allItems.equations.map(i => `<div class="item-card"><div><strong>${escapeHtml(i.name)}</strong> <span class="badge">${escapeHtml(i.subject)}</span><br>${i.formula ? `<div style="font-family:monospace;">${escapeHtml(i.formula)}</div>` : ''}${getSRStatsHtml(i)}</div><div><button class="sr-btn" onclick="window.handleReviewClick(${i.id}, 'equations')">Review</button><div><button class="btn-icon" onclick="window.editDate(${i.id}, 'equations')"><i class="fas fa-calendar-alt"></i></button><button class="btn-icon" onclick="window.deleteItem(${i.id}, 'equations')"><i class="fas fa-trash"></i></button></div></div></div>`).join(''); }
@@ -456,10 +561,16 @@
   async function renderPomodoro() { document.getElementById('headerTitle').innerText = "Focus Timer"; document.getElementById('tabContent').innerHTML = `<div id="pomodoroWrapper" class="pomodoro-fullscreen-wrapper"><div style="position:absolute; top:20px; right:20px;"><button id="pomoFullscreenBtn" class="btn-icon"><i class="fas fa-expand"></i></button></div><div class="flex-row"><button class="btn-icon ${pomoMode==='focus'?'active':''}" onclick="window.setPomoMode('focus')">🎯 Focus</button><button class="btn-icon ${pomoMode==='shortBreak'?'active':''}" onclick="window.setPomoMode('shortBreak')">🍵 Short Break</button><button class="btn-icon ${pomoMode==='longBreak'?'active':''}" onclick="window.setPomoMode('longBreak')">🌿 Long Break</button></div><div id="pomoCircle" class="pomo-timer-circle"><div id="pomoDisplay" class="timer-text-display">25:00</div></div><div class="flex-row"><button id="pomoPlay" class="btn-icon">Start</button><button id="pomoReset" class="btn-icon">Reset</button></div><div class="pomo-keyboard-hints"><span><kbd>Space</kbd> Play/Pause</span><span><kbd>R</kbd> Reset</span><span><kbd>F</kbd> Fullscreen</span><span><kbd>←</kbd> <kbd>→</kbd> Mode</span></div></div>`; const updateDisplay = () => { const d = document.getElementById('pomoDisplay'); if(d) { const m = Math.floor(pomoTimeLeft/60).toString().padStart(2,'0'); const s = (pomoTimeLeft%60).toString().padStart(2,'0'); d.innerText = `${m}:${s}`; } }; updateDisplay(); document.getElementById('pomoPlay').onclick = () => { const circle = document.getElementById('pomoCircle'); const btn = document.getElementById('pomoPlay'); if(pomoInterval) { clearInterval(pomoInterval); pomoInterval=null; circle.classList.remove('active-glow'); btn.innerHTML = '<i class="fas fa-play"></i> Start'; } else { circle.classList.add('active-glow'); btn.innerHTML = '<i class="fas fa-pause"></i> Pause'; pomoInterval = setInterval(() => { pomoTimeLeft--; updateDisplay(); if(pomoTimeLeft <= 0) { clearInterval(pomoInterval); pomoInterval=null; circle.classList.remove('active-glow'); showToast('Session Complete!'); if(pomoMode==='focus') { allItems.pomodoro.push({ id:Date.now(), type:'Focus', durationMinutes:25, date:new Date().toISOString() }); saveAll(); } pomoTimeLeft = pomoDurations[pomoMode]; updateDisplay(); btn.innerHTML = '<i class="fas fa-play"></i> Start'; } }, 1000); } }; document.getElementById('pomoReset').onclick = () => { clearInterval(pomoInterval); pomoInterval=null; pomoTimeLeft = pomoDurations[pomoMode]; updateDisplay(); document.getElementById('pomoCircle').classList.remove('active-glow'); document.getElementById('pomoPlay').innerHTML = '<i class="fas fa-play"></i> Start'; }; document.getElementById('pomoFullscreenBtn').onclick = () => { const wrap = document.getElementById('pomodoroWrapper'); if (!document.fullscreenElement) wrap.requestFullscreen(); else document.exitFullscreen(); }; }
   window.setPomoMode = (mode) => { clearInterval(pomoInterval); pomoInterval=null; pomoMode=mode; pomoTimeLeft=pomoDurations[mode]; if(currentTab==='pomodoro') renderPomodoro(); };
   
+  // Definitions render with History button
   async function renderDefinitions() {
     document.getElementById('headerTitle').innerText = "Definitions & Terms";
     const dailyEntry = generateDailySuggestions();
-    const html = `<div class="flex-row" style="margin-bottom:1.5rem;"><button class="btn-icon" style="background:var(--accent); color:white;" onclick="window.showDefAdd()"><i class="fas fa-plus"></i> Add Term</button><button class="btn-icon" onclick="window.showAllModal('definitions', 'Full Library', window.renderDefLibrary)"><i class="fas fa-book"></i> Full Library</button><button class="btn-icon" onclick="window.resetDailySuggestions()"><i class="fas fa-sync-alt"></i> Reset Today's Suggestions</button></div><h3><i class="fas fa-bolt" style="color:#f59e0b;"></i> Today's Study List</h3><div id="defStudyList" style="margin-top:1rem; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1rem;"></div>`;
+    const html = `<div class="flex-row" style="margin-bottom:1.5rem;">
+      <button class="btn-icon" style="background:var(--accent); color:white;" onclick="window.showDefAdd()"><i class="fas fa-plus"></i> Add Term</button>
+      <button class="btn-icon" onclick="window.showAllModal('definitions', 'Full Library', window.renderDefLibrary)"><i class="fas fa-book"></i> Full Library</button>
+      <button class="btn-icon" onclick="window.resetDailySuggestions()"><i class="fas fa-sync-alt"></i> Reset Today's Suggestions</button>
+      <button class="btn-icon" onclick="window.showDefinitionHistory()"><i class="fas fa-history"></i> History</button>
+    </div><h3><i class="fas fa-bolt" style="color:#f59e0b;"></i> Today's Study List</h3><div id="defStudyList" style="margin-top:1rem; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1rem;"></div>`;
     document.getElementById('tabContent').innerHTML = html;
     const listDiv = document.getElementById('defStudyList');
     const pending = dailyEntry.definitions.filter(d => d.sessionStatus === 'incomplete');
@@ -473,7 +584,8 @@
     const div = document.createElement('div'); div.className = 'modal-overlay';
     const existingTopics = [...new Set(allItems.definitions.map(d => d.topic).filter(t => t && t.trim() !== ""))];
     div.innerHTML = `<div class="modal"><h3>Add Definition <span class="modal-close"><i class="fas fa-times"></i></span></h3><input type="text" id="mDefTerm" placeholder="Term (Required)" style="width:100%; margin-bottom:1rem;"><textarea id="mDefText" rows="4" placeholder="Definition (Required)" style="width:100%; margin-bottom:1rem;"></textarea><div style="margin-bottom:1rem;"><label>Topic / Unit (Optional):</label><select id="topicSelect" style="width:100%;"><option value="">-- Select existing topic --</option>${existingTopics.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('')}<option value="__new__">➕ Add new topic</option></select><input type="text" id="newTopicInput" placeholder="New topic name" style="width:100%; margin-top:8px; display:none;"></div><button id="saveMDef" class="btn-icon" style="width:100%; justify-content:center; background:var(--accent); color:white;">Save Definition</button></div>`;
-    document.body.appendChild(div); div.querySelector('.modal-close').onclick = () => div.remove();
+    document.body.appendChild(div); 
+    attachModalCloseOnOverlay(div);
     const topicSelect = div.querySelector('#topicSelect'); const newTopicInput = div.querySelector('#newTopicInput');
     topicSelect.addEventListener('change', () => { if (topicSelect.value === '__new__') newTopicInput.style.display = 'block'; else newTopicInput.style.display = 'none'; });
     div.querySelector('#saveMDef').onclick = async () => {
@@ -481,7 +593,7 @@
       const term = div.querySelector('#mDefTerm').value.trim(); if (!term) return showToast('Term is required', true);
       let finalTopic = topicSelect.value; if (finalTopic === '__new__') { finalTopic = newTopicInput.value.trim(); if (!finalTopic) return showToast('Please enter a topic name', true); } else if (finalTopic === "") finalTopic = undefined;
       allItems.definitions.push({ id: Date.now(), term, definition: defText, topic: finalTopic, passCount: 0, failCount: 0, count: 0 });
-      await saveAll(); showToast('Added!'); div.remove(); renderDefinitions();
+      await saveAll(); showToast('Added!'); closeModalWithAnimation(div); renderDefinitions();
     };
   };
   
@@ -489,6 +601,7 @@
   window.deleteItem = async (id, col) => { if(confirm('Delete this?')) { allItems[col] = allItems[col].filter(i=>i.id!==id); await saveAll(); if(currentTab===col) switchTab(col); } };
   window.editDate = async (id, col) => { const idx = allItems[col].findIndex(i=>i.id===id); if(idx===-1) return; const newDate = prompt('Enter next review date (YYYY-MM-DD):', allItems[col][idx].nextReviewDate); if(newDate && /^\d{4}-\d{2}-\d{2}$/.test(newDate)) { allItems[col][idx].nextReviewDate = newDate; await saveAll(); switchTab(currentTab); } else if(newDate) showToast('Invalid format', true); };
   window.showAllModal = showAllModal; window.updateDefinitionStatus = updateDefinitionStatus; window.handleReviewClick = handleReviewClick; window.renderDefLibrary = renderDefLibrary; window.editDefinition = editDefinition; window.resetDailySuggestions = resetDailySuggestions;
+  window.showDefinitionHistory = showDefinitionHistory;
   
   async function init() {
     for(let k of Object.keys(allItems)) { allItems[k] = getLocalData(k); if(!allItems[k].length) allItems[k]=[]; }
