@@ -94,6 +94,13 @@
         .prose code { background-color: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; }
         .prose pre { background-color: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
         .prose pre code { background-color: transparent; padding: 0; color: inherit; }
+
+        /* Ensure modals are perfectly centered */
+        .modal-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="h-screen w-full flex">
@@ -140,7 +147,8 @@
         </div>
     </main>
 
-    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/40 backdrop-blur-md hidden items-center justify-center p-6 opacity-0 transition-opacity duration-300">
+    <!-- Editor Modal (centered) -->
+    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/40 backdrop-blur-md hidden modal-center p-6 opacity-0 transition-opacity duration-300">
         <div class="bg-white w-full max-w-7xl h-[90vh] rounded-[30px] shadow-2xl flex flex-col overflow-hidden border border-gray-200 transform scale-95 transition-transform duration-300" id="editor-container">
             <div class="h-16 border-b border-gray-100 flex items-center justify-between px-6 flex-shrink-0" id="modal-header">
                 <div class="flex items-center gap-3">
@@ -165,13 +173,37 @@
         </div>
     </div>
 
+    <!-- View Modal (centered, read-only) -->
+    <div id="view-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden modal-center p-6 opacity-0 transition-all duration-200">
+        <div class="view-modal-content bg-white w-full max-w-4xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100" id="view-modal-header">
+                <div class="flex items-center gap-3">
+                    <div id="view-color-indicator" class="w-4 h-4 rounded-full"></div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
+                </div>
+                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-8">
+                <h1 id="view-title" class="text-4xl font-bold text-gray-900 mb-6"></h1>
+                <div id="view-content" class="prose prose-lg text-gray-800 w-full max-w-none"></div>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+                <button id="edit-from-view-btn" class="px-5 py-2 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                    Edit Note
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
-        // Your Firebase configuration (hardcoded)
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -183,35 +215,28 @@
             measurementId: "G-CWQB2330GF"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
-
-        // App identifier matching Firestore rule path
-        const APP_ID = 'studyflow-pro';  // matches /artifacts/studyflow-pro/users/{userId}/...
+        const APP_ID = 'studyflow-pro';
 
         let currentUser = null;
         let unsubscribeSnapshot = null;
         let notesData = [];
 
-        // Initialize Lucide Icons
         lucide.createIcons();
 
-        // Anonymous sign-in (Firestore rules require auth)
         signInAnonymously(auth).catch(error => {
             console.error("Auth error:", error);
             document.getElementById('loading-state').classList.add('hidden');
-            // Fallback: show empty state
             renderNotes([]);
         });
 
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            if (user) {
-                fetchNotesFromFirestore();
-            } else {
+            if (user) fetchNotesFromFirestore();
+            else {
                 if (unsubscribeSnapshot) unsubscribeSnapshot();
                 document.getElementById('loading-state').classList.add('hidden');
                 renderNotes([]);
@@ -220,15 +245,10 @@
 
         function fetchNotesFromFirestore() {
             if (!currentUser) return;
-
-            // Collection path: artifacts/studyflow-pro/users/{userId}/notes
             const notesCollectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-            
             unsubscribeSnapshot = onSnapshot(notesCollectionRef, (snapshot) => {
                 notesData = [];
-                snapshot.forEach((doc) => {
-                    notesData.push({ id: doc.id, ...doc.data() });
-                });
+                snapshot.forEach((doc) => notesData.push({ id: doc.id, ...doc.data() }));
                 notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                 document.getElementById('loading-state').classList.add('hidden');
                 renderNotes(notesData);
@@ -239,13 +259,9 @@
             });
         }
 
-        // Helper: format snippet preserving LaTeX
         function formatSnippet(content, maxLength = 120) {
             if (!content) return '';
-            let text = content
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
+            let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
             text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
             text = text.replace(/```[\s\S]*?```/g, '[code block]');
@@ -258,23 +274,19 @@
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
         }
 
-        // --- DOM Elements ---
+        // DOM elements
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
         const notesGrid = document.getElementById('notes-grid');
         const searchInput = document.getElementById('search-input');
         const emptyState = document.getElementById('empty-state');
         
-        const modal = document.getElementById('editor-modal');
-        const modalContainer = document.getElementById('editor-container');
+        // Editor modal
+        const editorModal = document.getElementById('editor-modal');
+        const editorContainer = document.getElementById('editor-container');
         const titleInput = document.getElementById('note-title-input');
         const contentInput = document.getElementById('note-content-input');
         const previewTitle = document.getElementById('preview-title');
@@ -284,11 +296,20 @@
         const modalHeader = document.getElementById('modal-header');
         const modalColorIndicator = document.getElementById('modal-color-indicator');
 
+        // View modal
+        const viewModal = document.getElementById('view-modal');
+        const viewTitle = document.getElementById('view-title');
+        const viewContent = document.getElementById('view-content');
+        const viewColorIndicator = document.getElementById('view-color-indicator');
+        const closeViewBtn = document.getElementById('close-view-modal');
+        const editFromViewBtn = document.getElementById('edit-from-view-btn');
+
         let isPaletteOpen = false;
         let activeNoteId = null;
         let activeColor = '#ffffff';
+        let currentViewNote = null;
 
-        // Palette toggle
+        // Palette logic
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             isPaletteOpen = !isPaletteOpen;
@@ -308,26 +329,23 @@
             toggleBtn.style.transform = 'rotate(0deg)';
         }
 
-        // Color selection for new note
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', (e) => {
                 const selectedColor = e.target.getAttribute('data-color');
                 closePalette();
-                openModal(null, selectedColor);
+                openEditorModal(null, selectedColor);
             });
         });
 
-        // Search filtering
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const filtered = notesData.filter(note => 
-                note.title?.toLowerCase().includes(query) || 
-                note.content?.toLowerCase().includes(query)
+                note.title?.toLowerCase().includes(query) || note.content?.toLowerCase().includes(query)
             );
             renderNotes(filtered);
         });
 
-        // Render notes grid
+        // Render notes: card click opens VIEW modal; pencil opens EDITOR
         function renderNotes(notesToRender) {
             notesGrid.innerHTML = '';
             if (notesToRender.length === 0) emptyState.classList.remove('hidden');
@@ -335,7 +353,7 @@
 
             notesToRender.forEach(note => {
                 const div = document.createElement('div');
-                div.className = `group relative rounded-[30px] p-7 flex flex-col justify-between min-h-[240px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl`;
+                div.className = `group relative rounded-[30px] p-7 flex flex-col justify-between min-h-[240px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer`;
                 div.style.backgroundColor = note.color || '#ffffff';
                 
                 let snippet = formatSnippet(note.content, 120);
@@ -355,10 +373,16 @@
                     </div>
                 `;
                 
+                // Card click -> open view modal
+                div.addEventListener('click', (e) => {
+                    if (e.target.closest('.edit-btn')) return;
+                    openViewModal(note);
+                });
+                
                 const editBtn = div.querySelector('.edit-btn');
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    openModal(note);
+                    openEditorModal(note);
                 });
                 
                 notesGrid.appendChild(div);
@@ -366,8 +390,62 @@
             lucide.createIcons();
         }
 
-        // Modal controls
-        function openModal(note = null, color = '#ffffff') {
+        // View Modal: show note content (read-only)
+        function openViewModal(note) {
+            currentViewNote = note;
+            viewTitle.textContent = note.title || 'Untitled Note';
+            viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
+            
+            const rawMarkdown = note.content || '';
+            const parsedHtml = marked.parse(rawMarkdown);
+            viewContent.innerHTML = parsedHtml;
+            
+            try {
+                renderMathInElement(viewContent, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            } catch(e) { console.error("KaTeX error in view:", e); }
+            
+            viewModal.classList.remove('hidden');
+            setTimeout(() => {
+                viewModal.classList.remove('opacity-0');
+                viewModal.querySelector('.view-modal-content').classList.remove('scale-95');
+                viewModal.classList.add('opacity-100');
+                viewModal.querySelector('.view-modal-content').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeViewModal() {
+            viewModal.classList.remove('opacity-100');
+            viewModal.querySelector('.view-modal-content').classList.remove('scale-100');
+            viewModal.classList.add('opacity-0');
+            viewModal.querySelector('.view-modal-content').classList.add('scale-95');
+            setTimeout(() => {
+                viewModal.classList.add('hidden');
+                currentViewNote = null;
+            }, 200);
+        }
+
+        closeViewBtn.addEventListener('click', closeViewModal);
+        viewModal.addEventListener('click', (e) => {
+            if (e.target === viewModal) closeViewModal();
+        });
+        
+        editFromViewBtn.addEventListener('click', () => {
+            if (currentViewNote) {
+                closeViewModal();
+                openEditorModal(currentViewNote);
+            }
+        });
+
+        // Editor Modal functions
+        function openEditorModal(note = null, color = '#ffffff') {
             activeNoteId = note ? note.id : null;
             activeColor = note ? note.color : color;
             titleInput.value = note ? note.title || '' : '';
@@ -375,29 +453,29 @@
             modalHeader.style.backgroundColor = `${activeColor}20`;
             modalColorIndicator.style.backgroundColor = activeColor;
             updatePreview();
-            modal.classList.remove('hidden');
-            void modal.offsetWidth;
-            modal.classList.remove('opacity-0');
-            modal.classList.add('opacity-100');
-            modalContainer.classList.remove('scale-95');
-            modalContainer.classList.add('scale-100');
+            editorModal.classList.remove('hidden');
+            void editorModal.offsetWidth;
+            editorModal.classList.remove('opacity-0');
+            editorModal.classList.add('opacity-100');
+            editorContainer.classList.remove('scale-95');
+            editorContainer.classList.add('scale-100');
             titleInput.focus();
         }
 
-        function closeModal() {
-            modal.classList.remove('opacity-100');
-            modal.classList.add('opacity-0');
-            modalContainer.classList.remove('scale-100');
-            modalContainer.classList.add('scale-95');
+        function closeEditorModal() {
+            editorModal.classList.remove('opacity-100');
+            editorModal.classList.add('opacity-0');
+            editorContainer.classList.remove('scale-100');
+            editorContainer.classList.add('scale-95');
             setTimeout(() => {
-                modal.classList.add('hidden');
+                editorModal.classList.add('hidden');
                 titleInput.value = '';
                 contentInput.value = '';
                 activeNoteId = null;
             }, 300);
         }
 
-        cancelBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeEditorModal);
 
         function updatePreview() {
             previewTitle.textContent = titleInput.value || 'Untitled Note';
@@ -419,40 +497,34 @@
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
 
-        // Save note to Firestore
         saveBtn.addEventListener('click', async () => {
             if (!currentUser) {
                 alert("You must be signed in to save notes.");
                 return;
             }
-
             const title = titleInput.value.trim() || 'Untitled Note';
             const content = contentInput.value.trim();
             if (!content && !titleInput.value.trim()) {
-                closeModal();
+                closeEditorModal();
                 return;
             }
-
             const noteData = {
                 title: title,
                 content: content,
                 color: activeColor,
-                timestamp: Date.now()  // always update to current time on save
+                timestamp: Date.now()
             };
-
             const saveBtnText = saveBtn.innerText;
             saveBtn.innerText = 'Saving...';
             saveBtn.disabled = true;
-
             try {
                 const collectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
                 if (activeNoteId) {
-                    // Update existing note (preserve original timestamp? we use new timestamp)
                     await setDoc(doc(collectionRef, activeNoteId), noteData);
                 } else {
                     await addDoc(collectionRef, noteData);
                 }
-                closeModal();
+                closeEditorModal();
             } catch (error) {
                 console.error("Error saving note:", error);
                 alert("Failed to save note. Please check your connection and permissions.");
