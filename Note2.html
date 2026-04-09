@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Docket Notes</title>
+    <title>pDocket Notes</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,124 +60,103 @@
             scrollbar-width: none;
         }
 
-        /* Palette menu - positioned above bottom bar on mobile */
+        /* Palette menu */
         .palette-menu {
             opacity: 0;
             pointer-events: none;
             transform: translateY(-20px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
         .palette-menu.open {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0);
         }
-
         .color-dot {
             opacity: 0;
             transform: scale(0.5) translateY(-20px);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
         .palette-menu.open .color-dot {
             opacity: 1;
             transform: scale(1) translateY(0);
         }
-
         .color-dot:nth-child(1) { transition-delay: 0.05s; }
         .color-dot:nth-child(2) { transition-delay: 0.10s; }
         .color-dot:nth-child(3) { transition-delay: 0.15s; }
         .color-dot:nth-child(4) { transition-delay: 0.20s; }
         .color-dot:nth-child(5) { transition-delay: 0.25s; }
 
-        /* Professional document typography */
+        /* Professional typography */
         .prose {
             line-height: 1.6;
             color: #1f2937;
         }
-
-        /* Headings */
         .prose h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 800;
-            margin-top: 1.75rem;
-            margin-bottom: 0.75rem;
-            letter-spacing: -0.02em;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
             border-bottom: 2px solid #e5e7eb;
             padding-bottom: 0.5rem;
         }
         .prose h2 {
-            font-size: 1.75rem;
+            font-size: 2rem;
             font-weight: 700;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .prose h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
             margin-top: 1.5rem;
             margin-bottom: 0.5rem;
         }
-        .prose h3 {
-            font-size: 1.35rem;
-            font-weight: 600;
-            margin-top: 1.25rem;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Paragraphs & spacing */
         .prose p {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
             line-height: 1.6;
         }
-
-        /* Bold text – high contrast */
         .prose strong {
             font-weight: 700;
             color: #111827;
         }
-
-        /* Lists – correct indentation */
         .prose ul, .prose ol {
-            margin: 0.75rem 0 0.75rem 1.25rem;
+            margin: 1rem 0 1rem 1.5rem;
             padding-left: 0;
         }
         .prose li {
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.3rem;
             line-height: 1.6;
         }
-        .prose li > ul, 
-        .prose li > ol {
-            margin-top: 0.2rem;
-            margin-bottom: 0.2rem;
+        .prose li > ul, .prose li > ol {
+            margin-top: 0.25rem;
+            margin-bottom: 0.25rem;
         }
         .prose li li {
             font-weight: 400;
             color: #4b5563;
             border-left: 2px solid #e5e7eb;
             padding-left: 0.75rem;
-            margin-top: 0.15rem;
+            margin-top: 0.2rem;
         }
-
-        /* Blockquotes – highlight */
         .prose blockquote {
             background-color: #fef9e3;
             border-left: 4px solid #f5b042;
-            padding: 0.75rem 1rem;
-            margin: 1.25rem 0;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
             border-radius: 0.75rem;
         }
-
-        /* KaTeX display math */
         .katex-display {
-            margin: 1rem 0 !important;
+            margin: 1.5rem 0 !important;
             padding: 0.5rem 0;
             overflow-x: auto;
             overflow-y: hidden;
         }
-
-        /* Mobile adjustments */
         @media (max-width: 768px) {
             .prose h1 { font-size: 1.75rem; }
             .prose h2 { font-size: 1.5rem; }
             .prose h3 { font-size: 1.25rem; }
             .prose { font-size: 0.95rem; }
-            .katex-display { font-size: 0.9rem; }
         }
 
         .modal-center {
@@ -186,66 +165,67 @@
             justify-content: center;
         }
 
-        /* Fullscreen modals on mobile */
         @media (max-width: 768px) {
-            #editor-modal .bg-white, #view-modal .bg-white {
+            #editor-modal .bg-white, #view-modal .bg-white, #settings-modal .bg-white {
                 width: 100%;
                 height: 100%;
                 max-width: 100%;
                 max-height: 100%;
                 border-radius: 0;
             }
-            #editor-modal, #view-modal {
-                padding: 0;
-            }
-            #view-modal-content {
-                max-height: 100%;
-                border-radius: 0;
-            }
-            .edit-btn {
-                opacity: 1 !important;
-                background-color: rgba(0,0,0,0.7) !important;
-            }
+            #editor-modal, #view-modal, #settings-modal { padding: 0; }
+            #view-modal-content { max-height: 100%; border-radius: 0; }
+            .edit-btn { opacity: 1 !important; background-color: rgba(0,0,0,0.7) !important; }
         }
     </style>
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row">
 
-    <!-- Sidebar: becomes bottom bar on mobile -->
-    <aside class="md:w-[100px] w-full h-auto md:h-full bg-white border-t md:border-r border-gray-200 flex md:flex-col flex-row items-center justify-around md:justify-start md:pt-8 md:pb-8 py-2 px-4 z-20 flex-shrink-0 order-1 md:order-1">
-        <h1 class="font-bold text-xl tracking-tight text-gray-900 md:mb-20 hidden md:block">Docket</h1>
+    <!-- Sidebar (desktop: left, vertical; mobile: bottom, horizontal) -->
+    <aside class="md:w-[100px] w-full h-auto md:h-full bg-white border-t md:border-r border-gray-200 flex md:flex-col flex-row items-center justify-around md:justify-start py-2 md:py-8 px-4 z-20 flex-shrink-0 order-1 md:order-1">
+        <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20">Docket</h1>
+        
+        <!-- New Note Button + Palette -->
         <div class="relative flex flex-col items-center">
             <button id="toggle-palette-btn" class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-200">
                 <i data-lucide="plus" class="w-6 h-6"></i>
             </button>
-            
             <div id="palette-menu" class="palette-menu absolute bottom-full md:top-full md:bottom-auto mb-4 md:mb-0 md:mt-4 flex flex-row md:flex-col items-center gap-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg z-10">
-                <button class="w-8 h-8 rounded-full bg-c1 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#ffcc80"></button>
-                <button class="w-8 h-8 rounded-full bg-c2 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#ffab91"></button>
-                <button class="w-8 h-8 rounded-full bg-c3 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#b39ddb"></button>
-                <button class="w-8 h-8 rounded-full bg-c4 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#80deea"></button>
-                <button class="w-8 h-8 rounded-full bg-c5 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#c5e1a5"></button>
+                <button class="w-8 h-8 rounded-full bg-c1 color-dot" data-color="#ffcc80"></button>
+                <button class="w-8 h-8 rounded-full bg-c2 color-dot" data-color="#ffab91"></button>
+                <button class="w-8 h-8 rounded-full bg-c3 color-dot" data-color="#b39ddb"></button>
+                <button class="w-8 h-8 rounded-full bg-c4 color-dot" data-color="#80deea"></button>
+                <button class="w-8 h-8 rounded-full bg-c5 color-dot" data-color="#c5e1a5"></button>
             </div>
+        </div>
+
+        <!-- Settings Icon (Desktop: bottom of sidebar) -->
+        <div class="hidden md:block mt-auto">
+            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
         </div>
     </aside>
 
+    <!-- Main Content Area -->
     <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden order-2">
-        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-end z-10">
-            <div class="flex items-center text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full max-w-sm transition-all focus-within:ring-2 focus-within:ring-black">
+        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10">
+            <!-- Settings Icon (Mobile: top left/right) -->
+            <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+            <div class="flex items-center text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full max-w-sm ml-auto md:ml-0">
                 <i data-lucide="search" class="w-5 h-5 mr-2"></i>
-                <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base placeholder-gray-400 text-gray-800">
+                <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base">
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
             <h2 class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter">Notes</h2>
-            
-            <div id="notes-grid" class="grid grid-cols-1 gap-6 md:gap-8 items-start pb-8"></div>
-            
+            <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
             <div id="loading-state" class="w-full py-12 flex justify-center items-center text-gray-400">
                 <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
             </div>
-            
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50"></i>
                 <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
@@ -258,22 +238,22 @@
         <div class="bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-2xl flex flex-col overflow-hidden border-0 md:border border-gray-200 transform scale-95 transition-transform duration-300" id="editor-container">
             <div class="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0" id="modal-header">
                 <div class="flex items-center gap-2">
-                    <div id="modal-color-indicator" class="w-4 h-4 rounded-full bg-gray-200"></div>
+                    <div id="modal-color-indicator" class="w-4 h-4 rounded-full"></div>
                     <span class="font-medium text-gray-500 text-sm">Editor</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors hidden items-center gap-1">
+                    <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-full hidden items-center gap-1">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                         <span class="hidden md:inline">Delete</span>
                     </button>
-                    <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors">Cancel</button>
-                    <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md">Save</button>
+                    <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full">Cancel</button>
+                    <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md">Save</button>
                 </div>
             </div>
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
                 <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col p-4 md:p-6 bg-white">
-                    <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 placeholder-gray-300 bg-transparent">
-                    <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 placeholder-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                    <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 bg-transparent">
+                    <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
                 </div>
                 <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50">
                     <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200 empty:hidden"></h1>
@@ -291,20 +271,18 @@
                     <div id="view-color-indicator" class="w-4 h-4 rounded-full"></div>
                     <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
                 </div>
-                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-4 md:p-8">
                 <h1 id="view-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4"></h1>
                 <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
             </div>
             <div class="px-4 md:px-6 py-3 md:py-4 border-t border-gray-100 flex justify-end gap-2">
-                <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors flex items-center gap-1">
+                <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1">
                     <i data-lucide="maximize" class="w-4 h-4"></i>
                     <span class="hidden md:inline">Full Screen</span>
                 </button>
-                <button id="edit-from-view-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md flex items-center gap-1">
+                <button id="edit-from-view-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md flex items-center gap-1">
                     <i data-lucide="pencil" class="w-4 h-4"></i>
                     <span>Edit</span>
                 </button>
@@ -312,7 +290,36 @@
         </div>
     </div>
 
-    <!-- Delete confirmation modal -->
+    <!-- Settings Modal (includes sign-in) -->
+    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-all duration-200">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900">Settings</h3>
+                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="settings-auth-container">
+                    <!-- Dynamic content: sign-in button or user profile -->
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="settings-user-info" class="hidden flex flex-col items-center gap-2">
+                            <img id="settings-avatar" class="w-16 h-16 rounded-full object-cover" src="" alt="avatar">
+                            <span id="settings-name" class="text-sm font-medium text-gray-700"></span>
+                            <button id="settings-signout-btn" class="mt-2 text-sm text-red-600 hover:text-red-700">Sign out</button>
+                        </div>
+                        <button id="settings-google-signin-btn" class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+                            Sign in with Google
+                        </button>
+                    </div>
+                </div>
+                <!-- Additional settings can be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
     <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-all duration-200">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
             <div class="p-6">
@@ -324,8 +331,8 @@
                 </div>
                 <p class="text-gray-600 mb-6">Are you sure you want to delete this note? This action cannot be undone.</p>
                 <div class="flex justify-end gap-3">
-                    <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors">Cancel</button>
-                    <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full transition-colors shadow-md">Delete</button>
+                    <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full">Cancel</button>
+                    <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-md">Delete</button>
                 </div>
             </div>
         </div>
@@ -333,14 +340,13 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
-            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
             projectId: "studymaster-919ba",
             storageBucket: "studymaster-919ba.firebasestorage.app",
             messagingSenderId: "426684063256",
@@ -352,6 +358,7 @@
         const analytics = getAnalytics(app);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
         const APP_ID = 'studyflow-pro';
 
         let currentUser = null;
@@ -360,25 +367,84 @@
 
         lucide.createIcons();
 
-        signInAnonymously(auth).catch(error => {
-            console.error("Auth error:", error);
-            document.getElementById('loading-state').classList.add('hidden');
-            renderNotes([]);
-        });
-
+        // Auth state listener
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
-            if (user) fetchNotesFromFirestore();
-            else {
+            updateSettingsUI(user);
+            if (user) {
+                fetchNotesFromFirestore();
+            } else {
                 if (unsubscribeSnapshot) unsubscribeSnapshot();
-                document.getElementById('loading-state').classList.add('hidden');
+                notesData = [];
                 renderNotes([]);
+                document.getElementById('loading-state').classList.add('hidden');
             }
+        });
+
+        // Update settings modal UI based on auth state
+        function updateSettingsUI(user) {
+            const signinBtn = document.getElementById('settings-google-signin-btn');
+            const userInfoDiv = document.getElementById('settings-user-info');
+            const avatarImg = document.getElementById('settings-avatar');
+            const nameSpan = document.getElementById('settings-name');
+            const signOutBtn = document.getElementById('settings-signout-btn');
+
+            if (user) {
+                signinBtn.classList.add('hidden');
+                userInfoDiv.classList.remove('hidden');
+                avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name=' + encodeURIComponent(user.displayName || 'User');
+                nameSpan.textContent = user.displayName || user.email || 'User';
+                signOutBtn.classList.remove('hidden');
+            } else {
+                signinBtn.classList.remove('hidden');
+                userInfoDiv.classList.add('hidden');
+            }
+        }
+
+        // Settings modal handlers
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettings = () => {
+            settingsModal.classList.remove('hidden');
+            setTimeout(() => {
+                settingsModal.classList.remove('opacity-0');
+                settingsModal.querySelector('.bg-white').classList.remove('scale-95');
+                settingsModal.classList.add('opacity-100');
+                settingsModal.querySelector('.bg-white').classList.add('scale-100');
+            }, 10);
+        };
+        const closeSettings = () => {
+            settingsModal.classList.remove('opacity-100');
+            settingsModal.querySelector('.bg-white').classList.remove('scale-100');
+            settingsModal.classList.add('opacity-0');
+            settingsModal.querySelector('.bg-white').classList.add('scale-95');
+            setTimeout(() => settingsModal.classList.add('hidden'), 200);
+        };
+        document.getElementById('settings-btn-desktop').addEventListener('click', openSettings);
+        document.getElementById('settings-btn-mobile').addEventListener('click', openSettings);
+        document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
+        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
+
+        // Sign-in / sign-out inside settings modal
+        document.getElementById('settings-google-signin-btn').addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+                showToast("Signed in! Notes are now synced.");
+                closeSettings();
+            } catch (error) {
+                console.error(error);
+                showToast("Sign in failed.");
+            }
+        });
+        document.getElementById('settings-signout-btn').addEventListener('click', async () => {
+            await signOut(auth);
+            showToast("Signed out.");
+            closeSettings();
         });
 
         function fetchNotesFromFirestore() {
             if (!currentUser) return;
             const notesCollectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
             unsubscribeSnapshot = onSnapshot(notesCollectionRef, (snapshot) => {
                 notesData = [];
                 snapshot.forEach((doc) => notesData.push({ id: doc.id, ...doc.data() }));
@@ -387,7 +453,7 @@
                 renderNotes(notesData);
                 processUrlParam();
             }, (error) => {
-                console.error("Firestore onSnapshot error:", error);
+                console.error(error);
                 document.getElementById('loading-state').classList.add('hidden');
                 renderNotes([]);
             });
@@ -412,8 +478,8 @@
         }
 
         function showToast(message) {
-            const existingToast = document.getElementById('dynamic-toast');
-            if (existingToast) existingToast.remove();
+            const existing = document.getElementById('dynamic-toast');
+            if (existing) existing.remove();
             const toast = document.createElement('div');
             toast.id = 'dynamic-toast';
             toast.innerText = message;
@@ -429,11 +495,10 @@
             toast.style.fontWeight = '500';
             toast.style.zIndex = '9999';
             toast.style.whiteSpace = 'nowrap';
-            toast.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.2s ease';
             document.body.appendChild(toast);
-            setTimeout(() => { toast.style.opacity = '1'; }, 10);
+            setTimeout(() => toast.style.opacity = '1', 10);
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
@@ -443,15 +508,15 @@
         let urlParamProcessed = false;
         function processUrlParam() {
             if (urlParamProcessed) return;
-            const urlParams = new URLSearchParams(window.location.search);
-            const noteId = urlParams.get('note');
+            const params = new URLSearchParams(window.location.search);
+            const noteId = params.get('note');
             if (noteId && notesData.length > 0) {
                 const note = notesData.find(n => n.id === noteId);
                 if (note) {
                     urlParamProcessed = true;
                     openViewModal(note);
                     setTimeout(() => {
-                        if (viewModal.classList.contains('hidden') === false) toggleFullscreen();
+                        if (!viewModal.classList.contains('hidden')) toggleFullscreen();
                     }, 300);
                 } else {
                     showToast("Note not found");
@@ -460,13 +525,12 @@
             }
         }
 
-        // DOM elements
+        // DOM elements (same as before)
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
         const notesGrid = document.getElementById('notes-grid');
         const searchInput = document.getElementById('search-input');
         const emptyState = document.getElementById('empty-state');
-        
         const editorModal = document.getElementById('editor-modal');
         const editorContainer = document.getElementById('editor-container');
         const titleInput = document.getElementById('note-title-input');
@@ -478,7 +542,6 @@
         const deleteBtn = document.getElementById('delete-note-btn');
         const modalHeader = document.getElementById('modal-header');
         const modalColorIndicator = document.getElementById('modal-color-indicator');
-
         const viewModal = document.getElementById('view-modal');
         const viewModalContent = document.getElementById('view-modal-content');
         const viewTitle = document.getElementById('view-title');
@@ -488,7 +551,6 @@
         const editFromViewBtn = document.getElementById('edit-from-view-btn');
         const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
         let fullscreenIcon = null;
-
         const confirmModal = document.getElementById('confirm-modal');
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
@@ -562,11 +624,9 @@
                 const div = document.createElement('div');
                 div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-xl cursor-pointer`;
                 div.style.backgroundColor = note.color || '#ffffff';
-                
                 let snippet = formatSnippet(note.content, 100);
                 if (!snippet) snippet = 'No content';
                 const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date';
-                
                 div.innerHTML = `
                     <div>
                         <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
@@ -579,18 +639,15 @@
                         </div>
                     </div>
                 `;
-                
                 div.addEventListener('click', (e) => {
                     if (e.target.closest('.edit-btn')) return;
                     openViewModal(note);
                 });
-                
                 const editBtn = div.querySelector('.edit-btn');
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditorModal(note);
                 });
-                
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
@@ -602,7 +659,6 @@
                     document.body.removeChild(el);
                     showToast("Link Copied! 🔗");
                 });
-                
                 notesGrid.appendChild(div);
             });
             lucide.createIcons();
@@ -647,7 +703,6 @@
                 if (document.fullscreenElement) document.exitFullscreen();
             }, 200);
         }
-
         closeViewBtn.addEventListener('click', closeViewModal);
         viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
         editFromViewBtn.addEventListener('click', () => {
@@ -753,7 +808,11 @@
         contentInput.addEventListener('input', updatePreview);
 
         saveBtn.addEventListener('click', async () => {
-            if (!currentUser) { alert("Sign in required"); return; }
+            if (!currentUser) { 
+                showToast("Please sign in to save notes.");
+                openSettings();
+                return;
+            }
             const title = titleInput.value.trim() || 'Untitled Note';
             const content = contentInput.value.trim();
             if (!content && !titleInput.value.trim()) { closeEditorModal(); return; }
