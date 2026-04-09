@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pDocket Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Docket Notes</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -43,6 +43,9 @@
     </script>
 
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
         body {
             font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
             background-color: #ffffff;
@@ -57,6 +60,7 @@
             scrollbar-width: none;
         }
 
+        /* Palette menu - positioned above bottom bar on mobile */
         .palette-menu {
             opacity: 0;
             pointer-events: none;
@@ -87,54 +91,156 @@
         .color-dot:nth-child(4) { transition-delay: 0.20s; }
         .color-dot:nth-child(5) { transition-delay: 0.25s; }
 
-        .prose h1 { font-size: 2.25rem; font-weight: 700; margin-bottom: 1rem; margin-top: 1.5rem; }
-        .prose h2 { font-size: 1.875rem; font-weight: 600; margin-bottom: 0.75rem; margin-top: 1.25rem; }
-        .prose p { margin-bottom: 1rem; line-height: 1.6; }
-        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .prose blockquote { border-left: 4px solid #e5e7eb; padding-left: 1rem; color: #4b5563; font-style: italic; }
-        .prose code { background-color: #f3f4f6; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-size: 0.875em; }
-        .prose pre { background-color: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
-        .prose pre code { background-color: transparent; padding: 0; color: inherit; }
+        /* Professional document typography */
+        .prose {
+            line-height: 1.6;
+            color: #1f2937;
+        }
+
+        /* Headings */
+        .prose h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.02em;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+        .prose h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .prose h3 {
+            font-size: 1.35rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Paragraphs & spacing */
+        .prose p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Bold text – high contrast */
+        .prose strong {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Lists – correct indentation */
+        .prose ul, .prose ol {
+            margin: 0.75rem 0 0.75rem 1.25rem;
+            padding-left: 0;
+        }
+        .prose li {
+            margin-bottom: 0.25rem;
+            line-height: 1.6;
+        }
+        .prose li > ul, 
+        .prose li > ol {
+            margin-top: 0.2rem;
+            margin-bottom: 0.2rem;
+        }
+        .prose li li {
+            font-weight: 400;
+            color: #4b5563;
+            border-left: 2px solid #e5e7eb;
+            padding-left: 0.75rem;
+            margin-top: 0.15rem;
+        }
+
+        /* Blockquotes – highlight */
+        .prose blockquote {
+            background-color: #fef9e3;
+            border-left: 4px solid #f5b042;
+            padding: 0.75rem 1rem;
+            margin: 1.25rem 0;
+            border-radius: 0.75rem;
+        }
+
+        /* KaTeX display math */
+        .katex-display {
+            margin: 1rem 0 !important;
+            padding: 0.5rem 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .prose h1 { font-size: 1.75rem; }
+            .prose h2 { font-size: 1.5rem; }
+            .prose h3 { font-size: 1.25rem; }
+            .prose { font-size: 0.95rem; }
+            .katex-display { font-size: 0.9rem; }
+        }
 
         .modal-center {
             display: flex;
             align-items: center;
             justify-content: center;
         }
+
+        /* Fullscreen modals on mobile */
+        @media (max-width: 768px) {
+            #editor-modal .bg-white, #view-modal .bg-white {
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+            #editor-modal, #view-modal {
+                padding: 0;
+            }
+            #view-modal-content {
+                max-height: 100%;
+                border-radius: 0;
+            }
+            .edit-btn {
+                opacity: 1 !important;
+                background-color: rgba(0,0,0,0.7) !important;
+            }
+        }
     </style>
 </head>
-<body class="h-screen w-full flex">
+<body class="h-screen w-full flex flex-col md:flex-row">
 
-    <aside class="w-[100px] h-full bg-white border-r border-gray-200 flex flex-col items-center pt-8 pb-8 z-20 flex-shrink-0">
-        <h1 class="font-bold text-xl tracking-tight text-gray-900 mb-20">Docket</h1>
-
+    <!-- Sidebar: becomes bottom bar on mobile -->
+    <aside class="md:w-[100px] w-full h-auto md:h-full bg-white border-t md:border-r border-gray-200 flex md:flex-col flex-row items-center justify-around md:justify-start md:pt-8 md:pb-8 py-2 px-4 z-20 flex-shrink-0 order-1 md:order-1">
+        <h1 class="font-bold text-xl tracking-tight text-gray-900 md:mb-20 hidden md:block">Docket</h1>
         <div class="relative flex flex-col items-center">
-            <button id="toggle-palette-btn" class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform duration-300 z-20 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-200">
+            <button id="toggle-palette-btn" class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-200">
                 <i data-lucide="plus" class="w-6 h-6"></i>
             </button>
             
-            <div id="palette-menu" class="palette-menu absolute top-16 flex flex-col items-center gap-4 pt-2 z-10 w-full">
-                <button class="w-6 h-6 rounded-full bg-c1 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#ffcc80"></button>
-                <button class="w-6 h-6 rounded-full bg-c2 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#ffab91"></button>
-                <button class="w-6 h-6 rounded-full bg-c3 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#b39ddb"></button>
-                <button class="w-6 h-6 rounded-full bg-c4 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#80deea"></button>
-                <button class="w-6 h-6 rounded-full bg-c5 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#c5e1a5"></button>
+            <div id="palette-menu" class="palette-menu absolute bottom-full md:top-full md:bottom-auto mb-4 md:mb-0 md:mt-4 flex flex-row md:flex-col items-center gap-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg z-10">
+                <button class="w-8 h-8 rounded-full bg-c1 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#ffcc80"></button>
+                <button class="w-8 h-8 rounded-full bg-c2 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#ffab91"></button>
+                <button class="w-8 h-8 rounded-full bg-c3 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#b39ddb"></button>
+                <button class="w-8 h-8 rounded-full bg-c4 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#80deea"></button>
+                <button class="w-8 h-8 rounded-full bg-c5 color-dot shadow-sm cursor-pointer hover:scale-110" data-color="#c5e1a5"></button>
             </div>
         </div>
     </aside>
 
-    <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden">
-        <header class="pt-8 px-10 flex items-center justify-end z-10">
-            <div class="flex items-center text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full max-w-sm transition-all focus-within:ring-2 focus-within:ring-black focus-within:border-black">
+    <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden order-2">
+        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-end z-10">
+            <div class="flex items-center text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full max-w-sm transition-all focus-within:ring-2 focus-within:ring-black">
                 <i data-lucide="search" class="w-5 h-5 mr-2"></i>
                 <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base placeholder-gray-400 text-gray-800">
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto no-scrollbar px-10 pb-16 pt-6">
-            <h2 class="text-8xl font-extrabold text-gray-900 mb-12 tracking-tighter">Notes</h2>
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
+            <h2 class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter">Notes</h2>
             
-            <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 items-start pb-8"></div>
+            <div id="notes-grid" class="grid grid-cols-1 gap-6 md:gap-8 items-start pb-8"></div>
             
             <div id="loading-state" class="w-full py-12 flex justify-center items-center text-gray-400">
                 <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
@@ -142,46 +248,46 @@
             
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50"></i>
-                <p class="text-lg">No notes found. Create your first note from the sidebar!</p>
+                <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
             </div>
         </div>
     </main>
 
-    <!-- Editor Modal (centered) -->
-    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/40 backdrop-blur-md hidden modal-center p-6 opacity-0 transition-opacity duration-300">
-        <div class="bg-white w-full max-w-7xl h-[90vh] rounded-[30px] shadow-2xl flex flex-col overflow-hidden border border-gray-200 transform scale-95 transition-transform duration-300" id="editor-container">
-            <div class="h-16 border-b border-gray-100 flex items-center justify-between px-6 flex-shrink-0" id="modal-header">
-                <div class="flex items-center gap-3">
+    <!-- Editor Modal -->
+    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 md:bg-white/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-300">
+        <div class="bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-2xl flex flex-col overflow-hidden border-0 md:border border-gray-200 transform scale-95 transition-transform duration-300" id="editor-container">
+            <div class="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0" id="modal-header">
+                <div class="flex items-center gap-2">
                     <div id="modal-color-indicator" class="w-4 h-4 rounded-full bg-gray-200"></div>
                     <span class="font-medium text-gray-500 text-sm">Editor</span>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button id="delete-note-btn" class="px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors hidden items-center gap-1">
+                <div class="flex items-center gap-2">
+                    <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors hidden items-center gap-1">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        Delete
+                        <span class="hidden md:inline">Delete</span>
                     </button>
-                    <button id="cancel-note-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors">Cancel</button>
-                    <button id="save-note-btn" class="px-5 py-2 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md">Save Note</button>
+                    <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors">Cancel</button>
+                    <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md">Save</button>
                 </div>
             </div>
-            <div class="flex flex-1 overflow-hidden">
-                <div class="w-1/2 h-full border-r border-gray-100 flex flex-col p-6 bg-white">
-                    <input id="note-title-input" type="text" placeholder="Note Title..." class="text-3xl font-bold text-gray-900 outline-none w-full mb-6 placeholder-gray-300 bg-transparent">
-                    <textarea id="note-content-input" placeholder="Start typing here... Supports Markdown and LaTeX ($$E=mc^2$$)" class="flex-1 w-full resize-none outline-none text-lg text-gray-700 placeholder-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
+            <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col p-4 md:p-6 bg-white">
+                    <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 placeholder-gray-300 bg-transparent">
+                    <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 placeholder-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
                 </div>
-                <div class="w-1/2 h-full overflow-y-auto p-8 bg-gray-50">
-                    <h1 id="preview-title" class="text-4xl font-bold text-gray-900 mb-8 pb-4 border-b border-gray-200 empty:hidden"></h1>
-                    <div id="preview-content" class="prose prose-lg text-gray-800 w-full max-w-none"></div>
+                <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50">
+                    <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200 empty:hidden"></h1>
+                    <div id="preview-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- View Modal (centered, read-only) with fullscreen button -->
-    <div id="view-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden modal-center p-6 opacity-0 transition-all duration-200">
-        <div id="view-modal-content" class="bg-white w-full max-w-4xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100" id="view-modal-header">
-                <div class="flex items-center gap-3">
+    <!-- View Modal -->
+    <div id="view-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-all duration-200">
+        <div id="view-modal-content" class="bg-white w-full h-full md:w-full md:max-w-4xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
+            <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100">
+                <div class="flex items-center gap-2">
                     <div id="view-color-indicator" class="w-4 h-4 rounded-full"></div>
                     <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
                 </div>
@@ -189,24 +295,24 @@
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto p-8">
-                <h1 id="view-title" class="text-4xl font-bold text-gray-900 mb-6"></h1>
-                <div id="view-content" class="prose prose-lg text-gray-800 w-full max-w-none"></div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8">
+                <h1 id="view-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4"></h1>
+                <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
             </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
-                <button id="fullscreen-view-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors flex items-center gap-2">
+            <div class="px-4 md:px-6 py-3 md:py-4 border-t border-gray-100 flex justify-end gap-2">
+                <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors flex items-center gap-1">
                     <i data-lucide="maximize" class="w-4 h-4"></i>
-                    Full Screen
+                    <span class="hidden md:inline">Full Screen</span>
                 </button>
-                <button id="edit-from-view-btn" class="px-5 py-2 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2">
+                <button id="edit-from-view-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md flex items-center gap-1">
                     <i data-lucide="pencil" class="w-4 h-4"></i>
-                    Edit Note
+                    <span>Edit</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Custom Confirmation Popup for Delete (overlays editor) -->
+    <!-- Delete confirmation modal -->
     <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-all duration-200">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
             <div class="p-6">
@@ -279,7 +385,6 @@
                 notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                 document.getElementById('loading-state').classList.add('hidden');
                 renderNotes(notesData);
-                // After first load, check URL parameter for auto-open
                 processUrlParam();
             }, (error) => {
                 console.error("Firestore onSnapshot error:", error);
@@ -288,7 +393,7 @@
             });
         }
 
-        function formatSnippet(content, maxLength = 120) {
+        function formatSnippet(content, maxLength = 100) {
             if (!content) return '';
             let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
@@ -306,17 +411,16 @@
             return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
         }
 
-        // Toast notification for link copy and errors
         function showToast(message) {
             const existingToast = document.getElementById('dynamic-toast');
             if (existingToast) existingToast.remove();
-
             const toast = document.createElement('div');
             toast.id = 'dynamic-toast';
             toast.innerText = message;
             toast.style.position = 'fixed';
-            toast.style.bottom = '24px';
-            toast.style.right = '24px';
+            toast.style.bottom = '70px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
             toast.style.backgroundColor = '#1f2937';
             toast.style.color = 'white';
             toast.style.padding = '10px 20px';
@@ -324,11 +428,11 @@
             toast.style.fontSize = '0.875rem';
             toast.style.fontWeight = '500';
             toast.style.zIndex = '9999';
+            toast.style.whiteSpace = 'nowrap';
             toast.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.2s ease';
             document.body.appendChild(toast);
-            
             setTimeout(() => { toast.style.opacity = '1'; }, 10);
             setTimeout(() => {
                 toast.style.opacity = '0';
@@ -336,9 +440,7 @@
             }, 2000);
         }
 
-        // --- URL Parameter Auto-Open Logic ---
         let urlParamProcessed = false;
-
         function processUrlParam() {
             if (urlParamProcessed) return;
             const urlParams = new URLSearchParams(window.location.search);
@@ -347,16 +449,11 @@
                 const note = notesData.find(n => n.id === noteId);
                 if (note) {
                     urlParamProcessed = true;
-                    // Open the view modal with this note
                     openViewModal(note);
-                    // After modal is opened (with animation delay), trigger fullscreen
                     setTimeout(() => {
-                        if (viewModal.classList.contains('hidden') === false) {
-                            toggleFullscreen();
-                        }
+                        if (viewModal.classList.contains('hidden') === false) toggleFullscreen();
                     }, 300);
                 } else {
-                    console.warn("Note not found for ID:", noteId);
                     showToast("Note not found");
                     urlParamProcessed = true;
                 }
@@ -401,12 +498,9 @@
         let activeColor = '#ffffff';
         let currentViewNote = null;
 
-        // Fullscreen logic
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                viewModalContent.requestFullscreen().catch(err => {
-                    console.error(`Fullscreen error: ${err.message}`);
-                });
+                viewModalContent.requestFullscreen().catch(err => console.error(err));
                 if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
             } else {
                 document.exitFullscreen();
@@ -423,11 +517,9 @@
             }
             lucide.createIcons();
         }
-
         document.addEventListener('fullscreenchange', handleFullscreenChange);
         fullscreenViewBtn.addEventListener('click', toggleFullscreen);
 
-        // Palette logic
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             isPaletteOpen = !isPaletteOpen;
@@ -436,11 +528,9 @@
                 toggleBtn.style.transform = 'rotate(45deg)';
             } else closePalette();
         });
-
         document.addEventListener('click', (e) => {
             if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette();
         });
-
         function closePalette() {
             isPaletteOpen = false;
             paletteMenu.classList.remove('open');
@@ -463,7 +553,6 @@
             renderNotes(filtered);
         });
 
-        // RENDER NOTES (with right-click copy link)
         function renderNotes(notesToRender) {
             notesGrid.innerHTML = '';
             if (notesToRender.length === 0) emptyState.classList.remove('hidden');
@@ -471,40 +560,37 @@
 
             notesToRender.forEach(note => {
                 const div = document.createElement('div');
-                div.className = `group relative rounded-[30px] p-7 flex flex-col justify-between min-h-[240px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer`;
+                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-xl cursor-pointer`;
                 div.style.backgroundColor = note.color || '#ffffff';
                 
-                let snippet = formatSnippet(note.content, 120);
+                let snippet = formatSnippet(note.content, 100);
                 if (!snippet) snippet = 'No content';
                 const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date';
                 
                 div.innerHTML = `
                     <div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
-                        <p class="text-gray-800/80 font-medium text-base leading-relaxed line-clamp-3">${snippet}</p>
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
+                        <p class="text-gray-800/80 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet}</p>
                     </div>
-                    <div class="mt-6 flex items-end justify-between z-10">
-                        <span class="text-sm font-semibold text-gray-900/60">${dateStr}</span>
-                        <div class="w-12 h-12 bg-black rounded-full text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md cursor-pointer edit-btn" data-id="${note.id}">
-                            <i data-lucide="pencil" class="w-5 h-5 pointer-events-none"></i>
+                    <div class="mt-4 flex items-end justify-between z-10">
+                        <span class="text-xs md:text-sm font-semibold text-gray-900/60">${dateStr}</span>
+                        <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn">
+                            <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none"></i>
                         </div>
                     </div>
                 `;
                 
-                // Left-click: open view modal
                 div.addEventListener('click', (e) => {
                     if (e.target.closest('.edit-btn')) return;
                     openViewModal(note);
                 });
                 
-                // Pencil: open editor
                 const editBtn = div.querySelector('.edit-btn');
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditorModal(note);
                 });
                 
-                // RIGHT-CLICK: copy shareable link
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
@@ -522,16 +608,12 @@
             lucide.createIcons();
         }
 
-        // View Modal
         function openViewModal(note) {
             currentViewNote = note;
             viewTitle.textContent = note.title || 'Untitled Note';
             viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
-            
-            const rawMarkdown = note.content || '';
-            const parsedHtml = marked.parse(rawMarkdown);
+            const parsedHtml = marked.parse(note.content || '');
             viewContent.innerHTML = parsedHtml;
-            
             try {
                 renderMathInElement(viewContent, {
                     delimiters: [
@@ -542,8 +624,7 @@
                     ],
                     throwOnError: false
                 });
-            } catch(e) { console.error("KaTeX error in view:", e); }
-            
+            } catch(e) { console.error(e); }
             viewModal.classList.remove('hidden');
             setTimeout(() => {
                 viewModal.classList.remove('opacity-0');
@@ -551,8 +632,6 @@
                 viewModal.classList.add('opacity-100');
                 viewModalContent.classList.add('scale-100');
             }, 10);
-            
-            // Refresh fullscreen icon reference
             fullscreenIcon = fullscreenViewBtn.querySelector('i');
             if (fullscreenIcon) lucide.createIcons();
         }
@@ -565,34 +644,20 @@
             setTimeout(() => {
                 viewModal.classList.add('hidden');
                 currentViewNote = null;
-                if (document.fullscreenElement) {
-                    document.exitFullscreen();
-                }
+                if (document.fullscreenElement) document.exitFullscreen();
             }, 200);
         }
 
         closeViewBtn.addEventListener('click', closeViewModal);
-        viewModal.addEventListener('click', (e) => {
-            if (e.target === viewModal) closeViewModal();
-        });
-        
+        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
         editFromViewBtn.addEventListener('click', () => {
-            if (currentViewNote) {
-                closeViewModal();
-                openEditorModal(currentViewNote);
-            }
+            if (currentViewNote) { closeViewModal(); openEditorModal(currentViewNote); }
         });
-
-        // Press Enter key while view modal is open -> toggle fullscreen
         document.addEventListener('keydown', (e) => {
             if (viewModal.classList.contains('hidden')) return;
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                toggleFullscreen();
-            }
+            if (e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); }
         });
 
-        // Confirm modal helpers
         function showConfirmModal(onConfirm) {
             confirmModal.classList.remove('hidden');
             setTimeout(() => {
@@ -601,20 +666,12 @@
                 confirmModal.classList.add('opacity-100');
                 confirmModal.querySelector('.bg-white').classList.add('scale-100');
             }, 10);
-            
-            const handleConfirm = () => {
-                closeConfirmModal();
-                onConfirm();
-            };
+            const handleConfirm = () => { closeConfirmModal(); onConfirm(); };
             const handleCancel = () => closeConfirmModal();
-            
             confirmDeleteBtn.onclick = handleConfirm;
             confirmCancelBtn.onclick = handleCancel;
-            confirmModal.onclick = (e) => {
-                if (e.target === confirmModal) closeConfirmModal();
-            };
+            confirmModal.onclick = (e) => { if (e.target === confirmModal) closeConfirmModal(); };
         }
-        
         function closeConfirmModal() {
             confirmModal.classList.remove('opacity-100');
             confirmModal.querySelector('.bg-white').classList.remove('scale-100');
@@ -628,7 +685,6 @@
             }, 200);
         }
 
-        // Editor Modal
         function openEditorModal(note = null, color = '#ffffff') {
             activeNoteId = note ? note.id : null;
             activeColor = note ? note.color : color;
@@ -637,7 +693,6 @@
             modalHeader.style.backgroundColor = `${activeColor}20`;
             modalColorIndicator.style.backgroundColor = activeColor;
             updatePreview();
-            
             if (activeNoteId) {
                 deleteBtn.classList.remove('hidden');
                 deleteBtn.classList.add('flex');
@@ -645,7 +700,6 @@
                 deleteBtn.classList.add('hidden');
                 deleteBtn.classList.remove('flex');
             }
-            
             editorModal.classList.remove('hidden');
             void editorModal.offsetWidth;
             editorModal.classList.remove('opacity-0');
@@ -669,26 +723,13 @@
                 deleteBtn.classList.remove('flex');
             }, 300);
         }
-
         cancelBtn.addEventListener('click', closeEditorModal);
-
         deleteBtn.addEventListener('click', () => {
             if (!activeNoteId || !currentUser) return;
             showConfirmModal(async () => {
-                const deleteBtnText = deleteBtn.innerText;
-                deleteBtn.innerText = 'Deleting...';
-                deleteBtn.disabled = true;
-                try {
-                    const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId);
-                    await deleteDoc(noteRef);
-                    closeEditorModal();
-                } catch (error) {
-                    console.error("Error deleting note:", error);
-                    alert("Failed to delete note. Please try again.");
-                } finally {
-                    deleteBtn.innerText = deleteBtnText;
-                    deleteBtn.disabled = false;
-                }
+                const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId);
+                await deleteDoc(noteRef);
+                closeEditorModal();
             });
         });
 
@@ -706,47 +747,21 @@
                     ],
                     throwOnError: false
                 });
-            } catch(e) { console.error("KaTeX error:", e); }
+            } catch(e) { console.error(e); }
         }
-
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
 
         saveBtn.addEventListener('click', async () => {
-            if (!currentUser) {
-                alert("You must be signed in to save notes.");
-                return;
-            }
+            if (!currentUser) { alert("Sign in required"); return; }
             const title = titleInput.value.trim() || 'Untitled Note';
             const content = contentInput.value.trim();
-            if (!content && !titleInput.value.trim()) {
-                closeEditorModal();
-                return;
-            }
-            const noteData = {
-                title: title,
-                content: content,
-                color: activeColor,
-                timestamp: Date.now()
-            };
-            const saveBtnText = saveBtn.innerText;
-            saveBtn.innerText = 'Saving...';
-            saveBtn.disabled = true;
-            try {
-                const collectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-                if (activeNoteId) {
-                    await setDoc(doc(collectionRef, activeNoteId), noteData);
-                } else {
-                    await addDoc(collectionRef, noteData);
-                }
-                closeEditorModal();
-            } catch (error) {
-                console.error("Error saving note:", error);
-                alert("Failed to save note. Please check your connection and permissions.");
-            } finally {
-                saveBtn.innerText = saveBtnText;
-                saveBtn.disabled = false;
-            }
+            if (!content && !titleInput.value.trim()) { closeEditorModal(); return; }
+            const noteData = { title, content, color: activeColor, timestamp: Date.now() };
+            const collectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (activeNoteId) await setDoc(doc(collectionRef, activeNoteId), noteData);
+            else await addDoc(collectionRef, noteData);
+            closeEditorModal();
         });
     </script>
 </body>
