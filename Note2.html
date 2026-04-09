@@ -95,12 +95,10 @@
         .prose pre { background-color: #1f2937; color: #f9fafb; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 1rem; }
         .prose pre code { background-color: transparent; padding: 0; color: inherit; }
 
-        /* Animation for view modal */
-        .view-modal {
-            transition: opacity 0.2s ease, visibility 0.2s;
-        }
-        .view-modal-content {
-            transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        .modal-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -148,8 +146,8 @@
         </div>
     </main>
 
-    <!-- Editor Modal (for editing) -->
-    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/40 backdrop-blur-md hidden items-center justify-center p-6 opacity-0 transition-opacity duration-300">
+    <!-- Editor Modal (centered) -->
+    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/40 backdrop-blur-md hidden modal-center p-6 opacity-0 transition-opacity duration-300">
         <div class="bg-white w-full max-w-7xl h-[90vh] rounded-[30px] shadow-2xl flex flex-col overflow-hidden border border-gray-200 transform scale-95 transition-transform duration-300" id="editor-container">
             <div class="h-16 border-b border-gray-100 flex items-center justify-between px-6 flex-shrink-0" id="modal-header">
                 <div class="flex items-center gap-3">
@@ -157,6 +155,11 @@
                     <span class="font-medium text-gray-500 text-sm">Editor</span>
                 </div>
                 <div class="flex items-center gap-3">
+                    <!-- Delete button (hidden by default, shown when editing existing note) -->
+                    <button id="delete-note-btn" class="px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors hidden items-center gap-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Delete
+                    </button>
                     <button id="cancel-note-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors">Cancel</button>
                     <button id="save-note-btn" class="px-5 py-2 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md">Save Note</button>
                 </div>
@@ -174,8 +177,8 @@
         </div>
     </div>
 
-    <!-- View Modal (read-only popup) -->
-    <div id="view-modal" class="view-modal fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-6 opacity-0 transition-all duration-200">
+    <!-- View Modal (centered, read-only) -->
+    <div id="view-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden modal-center p-6 opacity-0 transition-all duration-200">
         <div class="view-modal-content bg-white w-full max-w-4xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100" id="view-modal-header">
                 <div class="flex items-center gap-3">
@@ -202,7 +205,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
         const firebaseConfig = {
@@ -294,6 +297,7 @@
         const previewContent = document.getElementById('preview-content');
         const cancelBtn = document.getElementById('cancel-note-btn');
         const saveBtn = document.getElementById('save-note-btn');
+        const deleteBtn = document.getElementById('delete-note-btn');
         const modalHeader = document.getElementById('modal-header');
         const modalColorIndicator = document.getElementById('modal-color-indicator');
 
@@ -346,7 +350,6 @@
             renderNotes(filtered);
         });
 
-        // Render notes: card click opens VIEW modal; pencil opens EDITOR
         function renderNotes(notesToRender) {
             notesGrid.innerHTML = '';
             if (notesToRender.length === 0) emptyState.classList.remove('hidden');
@@ -374,9 +377,7 @@
                     </div>
                 `;
                 
-                // Card click -> open view modal
                 div.addEventListener('click', (e) => {
-                    // Don't open if click originated from pencil button
                     if (e.target.closest('.edit-btn')) return;
                     openViewModal(note);
                 });
@@ -392,13 +393,11 @@
             lucide.createIcons();
         }
 
-        // View Modal: show note content (read-only)
         function openViewModal(note) {
             currentViewNote = note;
             viewTitle.textContent = note.title || 'Untitled Note';
             viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
             
-            // Render markdown content
             const rawMarkdown = note.content || '';
             const parsedHtml = marked.parse(rawMarkdown);
             viewContent.innerHTML = parsedHtml;
@@ -436,12 +435,10 @@
         }
 
         closeViewBtn.addEventListener('click', closeViewModal);
-        // Click outside to close (optional)
         viewModal.addEventListener('click', (e) => {
             if (e.target === viewModal) closeViewModal();
         });
         
-        // Edit from view modal: close view and open editor with same note
         editFromViewBtn.addEventListener('click', () => {
             if (currentViewNote) {
                 closeViewModal();
@@ -449,7 +446,7 @@
             }
         });
 
-        // Editor Modal functions (unchanged but renamed)
+        // Editor Modal functions
         function openEditorModal(note = null, color = '#ffffff') {
             activeNoteId = note ? note.id : null;
             activeColor = note ? note.color : color;
@@ -458,6 +455,16 @@
             modalHeader.style.backgroundColor = `${activeColor}20`;
             modalColorIndicator.style.backgroundColor = activeColor;
             updatePreview();
+            
+            // Show delete button only when editing an existing note
+            if (activeNoteId) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.classList.add('flex');
+            } else {
+                deleteBtn.classList.add('hidden');
+                deleteBtn.classList.remove('flex');
+            }
+            
             editorModal.classList.remove('hidden');
             void editorModal.offsetWidth;
             editorModal.classList.remove('opacity-0');
@@ -477,10 +484,35 @@
                 titleInput.value = '';
                 contentInput.value = '';
                 activeNoteId = null;
+                deleteBtn.classList.add('hidden');
+                deleteBtn.classList.remove('flex');
             }, 300);
         }
 
         cancelBtn.addEventListener('click', closeEditorModal);
+
+        // Delete note handler
+        deleteBtn.addEventListener('click', async () => {
+            if (!activeNoteId || !currentUser) return;
+            const confirmed = confirm("Are you sure you want to delete this note? This action cannot be undone.");
+            if (!confirmed) return;
+            
+            const deleteBtnText = deleteBtn.innerText;
+            deleteBtn.innerText = 'Deleting...';
+            deleteBtn.disabled = true;
+            
+            try {
+                const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId);
+                await deleteDoc(noteRef);
+                closeEditorModal();
+            } catch (error) {
+                console.error("Error deleting note:", error);
+                alert("Failed to delete note. Please try again.");
+            } finally {
+                deleteBtn.innerText = deleteBtnText;
+                deleteBtn.disabled = false;
+            }
+        });
 
         function updatePreview() {
             previewTitle.textContent = titleInput.value || 'Untitled Note';
