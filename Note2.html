@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Docket Notes</title>
+    <title>pDocket Notes</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -177,9 +177,9 @@
         </div>
     </div>
 
-    <!-- View Modal (centered, read-only) -->
+    <!-- View Modal (centered, read-only) with fullscreen button -->
     <div id="view-modal" class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden modal-center p-6 opacity-0 transition-all duration-200">
-        <div class="view-modal-content bg-white w-full max-w-4xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
+        <div id="view-modal-content" class="bg-white w-full max-w-4xl max-h-[85vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100" id="view-modal-header">
                 <div class="flex items-center gap-3">
                     <div id="view-color-indicator" class="w-4 h-4 rounded-full"></div>
@@ -193,7 +193,11 @@
                 <h1 id="view-title" class="text-4xl font-bold text-gray-900 mb-6"></h1>
                 <div id="view-content" class="prose prose-lg text-gray-800 w-full max-w-none"></div>
             </div>
-            <div class="px-6 py-4 border-t border-gray-100 flex justify-end">
+            <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3">
+                <button id="fullscreen-view-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-full transition-colors flex items-center gap-2">
+                    <i data-lucide="maximize" class="w-4 h-4"></i>
+                    Full Screen
+                </button>
                 <button id="edit-from-view-btn" class="px-5 py-2 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 transition-colors shadow-md flex items-center gap-2">
                     <i data-lucide="pencil" class="w-4 h-4"></i>
                     Edit Note
@@ -275,6 +279,8 @@
                 notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                 document.getElementById('loading-state').classList.add('hidden');
                 renderNotes(notesData);
+                // After first load, check URL parameter for auto-open
+                processUrlParam();
             }, (error) => {
                 console.error("Firestore onSnapshot error:", error);
                 document.getElementById('loading-state').classList.add('hidden');
@@ -300,7 +306,7 @@
             return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
         }
 
-        // Toast notification for link copy
+        // Toast notification for link copy and errors
         function showToast(message) {
             const existingToast = document.getElementById('dynamic-toast');
             if (existingToast) existingToast.remove();
@@ -330,6 +336,33 @@
             }, 2000);
         }
 
+        // --- URL Parameter Auto-Open Logic ---
+        let urlParamProcessed = false;
+
+        function processUrlParam() {
+            if (urlParamProcessed) return;
+            const urlParams = new URLSearchParams(window.location.search);
+            const noteId = urlParams.get('note');
+            if (noteId && notesData.length > 0) {
+                const note = notesData.find(n => n.id === noteId);
+                if (note) {
+                    urlParamProcessed = true;
+                    // Open the view modal with this note
+                    openViewModal(note);
+                    // After modal is opened (with animation delay), trigger fullscreen
+                    setTimeout(() => {
+                        if (viewModal.classList.contains('hidden') === false) {
+                            toggleFullscreen();
+                        }
+                    }, 300);
+                } else {
+                    console.warn("Note not found for ID:", noteId);
+                    showToast("Note not found");
+                    urlParamProcessed = true;
+                }
+            }
+        }
+
         // DOM elements
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
@@ -350,11 +383,14 @@
         const modalColorIndicator = document.getElementById('modal-color-indicator');
 
         const viewModal = document.getElementById('view-modal');
+        const viewModalContent = document.getElementById('view-modal-content');
         const viewTitle = document.getElementById('view-title');
         const viewContent = document.getElementById('view-content');
         const viewColorIndicator = document.getElementById('view-color-indicator');
         const closeViewBtn = document.getElementById('close-view-modal');
         const editFromViewBtn = document.getElementById('edit-from-view-btn');
+        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
+        let fullscreenIcon = null;
 
         const confirmModal = document.getElementById('confirm-modal');
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
@@ -364,6 +400,32 @@
         let activeNoteId = null;
         let activeColor = '#ffffff';
         let currentViewNote = null;
+
+        // Fullscreen logic
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                viewModalContent.requestFullscreen().catch(err => {
+                    console.error(`Fullscreen error: ${err.message}`);
+                });
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
+            } else {
+                document.exitFullscreen();
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        }
+
+        function handleFullscreenChange() {
+            if (document.fullscreenElement) {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
+            } else {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        }
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        fullscreenViewBtn.addEventListener('click', toggleFullscreen);
 
         // Palette logic
         toggleBtn.addEventListener('click', (e) => {
@@ -446,7 +508,6 @@
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
-                    // Robust copy using textarea
                     const el = document.createElement('textarea');
                     el.value = shareUrl;
                     document.body.appendChild(el);
@@ -486,20 +547,27 @@
             viewModal.classList.remove('hidden');
             setTimeout(() => {
                 viewModal.classList.remove('opacity-0');
-                viewModal.querySelector('.view-modal-content').classList.remove('scale-95');
+                viewModalContent.classList.remove('scale-95');
                 viewModal.classList.add('opacity-100');
-                viewModal.querySelector('.view-modal-content').classList.add('scale-100');
+                viewModalContent.classList.add('scale-100');
             }, 10);
+            
+            // Refresh fullscreen icon reference
+            fullscreenIcon = fullscreenViewBtn.querySelector('i');
+            if (fullscreenIcon) lucide.createIcons();
         }
 
         function closeViewModal() {
             viewModal.classList.remove('opacity-100');
-            viewModal.querySelector('.view-modal-content').classList.remove('scale-100');
+            viewModalContent.classList.remove('scale-100');
             viewModal.classList.add('opacity-0');
-            viewModal.querySelector('.view-modal-content').classList.add('scale-95');
+            viewModalContent.classList.add('scale-95');
             setTimeout(() => {
                 viewModal.classList.add('hidden');
                 currentViewNote = null;
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
             }, 200);
         }
 
@@ -512,6 +580,15 @@
             if (currentViewNote) {
                 closeViewModal();
                 openEditorModal(currentViewNote);
+            }
+        });
+
+        // Press Enter key while view modal is open -> toggle fullscreen
+        document.addEventListener('keydown', (e) => {
+            if (viewModal.classList.contains('hidden')) return;
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                toggleFullscreen();
             }
         });
 
