@@ -202,7 +202,7 @@
         </div>
     </div>
 
-    <!-- Custom Confirmation Popup for Delete -->
+    <!-- Custom Confirmation Popup for Delete (z-60 overlays all) -->
     <div id="confirm-modal" class="fixed inset-0 z-60 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-all duration-200">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
             <div class="p-6">
@@ -471,7 +471,7 @@
             }
         });
 
-        // Custom confirm modal functions
+        // Custom confirm modal (overlays everything with z-60)
         function showConfirmModal(onConfirm) {
             confirmModal.classList.remove('hidden');
             setTimeout(() => {
@@ -490,7 +490,6 @@
             confirmDeleteBtn.onclick = handleConfirm;
             confirmCancelBtn.onclick = handleCancel;
             
-            // Also close if clicking outside
             confirmModal.onclick = (e) => {
                 if (e.target === confirmModal) closeConfirmModal();
             };
@@ -553,7 +552,7 @@
 
         cancelBtn.addEventListener('click', closeEditorModal);
 
-        // Delete button triggers custom confirm popup
+        // Delete button triggers custom confirm popup (overlays all)
         deleteBtn.addEventListener('click', () => {
             if (!activeNoteId || !currentUser) return;
             showConfirmModal(async () => {
