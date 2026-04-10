@@ -60,55 +60,65 @@
             scrollbar-width: none;
         }
 
-        /* Global palette menu */
+        /* Premium Palette menu & Animations */
         .palette-menu {
-            position: fixed;
             opacity: 0;
             pointer-events: none;
-            transform: scale(0.9);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 200;
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(12px);
-            border-radius: 40px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15);
-            padding: 12px;
-            display: flex;
-            gap: 12px;
+            transform: translateY(15px) scale(0.95);
+            transform-origin: bottom center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (min-width: 768px) {
+            .palette-menu {
+                transform: translateY(-15px) scale(0.95);
+                transform-origin: top center;
+            }
         }
         .palette-menu.open {
             opacity: 1;
             pointer-events: auto;
-            transform: scale(1);
+            transform: translateY(0) scale(1);
         }
         .color-dot {
-            width: 40px;
-            height: 40px;
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: transform 0.1s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(15px) scale(0.5);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        .color-dot:active {
-            transform: scale(0.95);
-        }
-
-        /* Mobile: vertical palette */
-        @media (max-width: 768px) {
-            .palette-menu {
-                flex-direction: column;
-                border-radius: 32px;
-                padding: 10px;
-                gap: 10px;
-                background: rgba(255,255,255,0.98);
-            }
+        @media (min-width: 768px) {
             .color-dot {
-                width: 48px;
-                height: 48px;
+                transform: translateY(-15px) scale(0.5);
             }
         }
+        .palette-menu.open .color-dot {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        /* Mobile stagger (bottom up) */
+        .color-dot:nth-child(5) { transition-delay: 0.05s; }
+        .color-dot:nth-child(4) { transition-delay: 0.10s; }
+        .color-dot:nth-child(3) { transition-delay: 0.15s; }
+        .color-dot:nth-child(2) { transition-delay: 0.20s; }
+        .color-dot:nth-child(1) { transition-delay: 0.25s; }
 
-        /* Professional typography (same as before) */
+        /* Desktop stagger (top down) */
+        @media (min-width: 768px) {
+            .color-dot:nth-child(1) { transition-delay: 0.05s; }
+            .color-dot:nth-child(2) { transition-delay: 0.10s; }
+            .color-dot:nth-child(3) { transition-delay: 0.15s; }
+            .color-dot:nth-child(4) { transition-delay: 0.20s; }
+            .color-dot:nth-child(5) { transition-delay: 0.25s; }
+        }
+
+        /* FAB Rotate Animation */
+        #toggle-palette-btn i {
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #toggle-palette-btn.open i {
+            transform: rotate(135deg);
+        }
+
+        /* Professional typography */
         .prose {
             line-height: 1.6;
             color: #1f2937;
@@ -198,25 +208,28 @@
             #view-modal-content { max-height: 100%; border-radius: 0; }
             .edit-btn { opacity: 1 !important; background-color: rgba(0,0,0,0.7) !important; }
         }
-
-        /* Desktop: show sidebar button, hide mobile FAB */
-        .mobile-fab { display: none; }
-        @media (max-width: 768px) {
-            .desktop-add-btn { display: none; }
-            .mobile-fab { display: flex; }
-        }
     </style>
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row">
 
-    <!-- Sidebar (desktop: left, vertical; mobile: bottom, horizontal) -->
-    <aside class="md:w-[100px] w-full h-auto md:h-full bg-white border-t md:border-r border-gray-200 flex md:flex-col flex-row items-center justify-around md:justify-start py-2 md:py-8 px-4 z-20 flex-shrink-0 order-1 md:order-1">
+    <!-- Sidebar (desktop: left, vertical; mobile: hidden/0-width so FAB can float) -->
+    <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white md:border-r border-gray-200 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1">
         <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20">Docket</h1>
         
-        <!-- Add Note Button (desktop version) -->
-        <div class="desktop-add-btn relative flex flex-col items-center">
-            <button id="add-btn-desktop" class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-200">
-                <i data-lucide="plus" class="w-6 h-6"></i>
+        <!-- New Note Button + Palette (FAB on Mobile) -->
+        <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100]">
+            <!-- Palette Menu -->
+            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 z-10">
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#c5e1a5"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#80deea"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#b39ddb"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffab91"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffcc80"></button>
+            </div>
+            
+            <!-- Floating Action Button -->
+            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.2)] md:shadow-lg hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-95 focus:outline-none z-20">
+                <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6"></i>
             </button>
         </div>
 
@@ -231,7 +244,7 @@
     <!-- Main Content Area -->
     <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden order-2">
         <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10">
-            <!-- Settings Icon (Mobile: top left) -->
+            <!-- Settings Icon (Mobile: top left/right) -->
             <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                 <i data-lucide="settings" class="w-5 h-5"></i>
             </button>
@@ -254,21 +267,6 @@
         </div>
     </main>
 
-    <!-- Floating Action Button (Mobile only) -->
-    <button id="mobile-fab-btn" class="mobile-fab fixed bottom-6 right-6 w-14 h-14 bg-black text-white rounded-full shadow-2xl flex items-center justify-center z-30 focus:outline-none active:scale-95 transition-transform">
-        <i data-lucide="plus" class="w-7 h-7"></i>
-    </button>
-
-    <!-- Global Palette Menu (vertical on mobile) -->
-    <div id="palette-menu" class="palette-menu">
-        <button class="color-dot bg-c1" data-color="#ffcc80"></button>
-        <button class="color-dot bg-c2" data-color="#ffab91"></button>
-        <button class="color-dot bg-c3" data-color="#b39ddb"></button>
-        <button class="color-dot bg-c4" data-color="#80deea"></button>
-        <button class="color-dot bg-c5" data-color="#c5e1a5"></button>
-    </div>
-
-    <!-- Editor Modal, View Modal, Settings Modal, Confirm Modal (identical to previous) -->
     <!-- Editor Modal -->
     <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 md:bg-white/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-300">
         <div class="bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-2xl flex flex-col overflow-hidden border-0 md:border border-gray-200 transform scale-95 transition-transform duration-300" id="editor-container">
@@ -326,7 +324,7 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- Settings Modal (includes sign-in) -->
     <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-all duration-200">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
@@ -337,6 +335,7 @@
             </div>
             <div class="p-6">
                 <div id="settings-auth-container">
+                    <!-- Dynamic content: sign-in button or user profile -->
                     <div class="flex flex-col items-center gap-4">
                         <div id="settings-user-info" class="hidden flex flex-col items-center gap-2">
                             <img id="settings-avatar" class="w-16 h-16 rounded-full object-cover" src="" alt="avatar">
@@ -349,6 +348,7 @@
                         </button>
                     </div>
                 </div>
+                <!-- Additional settings can be added here -->
             </div>
         </div>
     </div>
@@ -415,12 +415,14 @@
             }
         });
 
+        // Update settings modal UI based on auth state
         function updateSettingsUI(user) {
             const signinBtn = document.getElementById('settings-google-signin-btn');
             const userInfoDiv = document.getElementById('settings-user-info');
             const avatarImg = document.getElementById('settings-avatar');
             const nameSpan = document.getElementById('settings-name');
             const signOutBtn = document.getElementById('settings-signout-btn');
+
             if (user) {
                 signinBtn.classList.add('hidden');
                 userInfoDiv.classList.remove('hidden');
@@ -456,6 +458,7 @@
         document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
         settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
 
+        // Sign-in / sign-out inside settings modal
         document.getElementById('settings-google-signin-btn').addEventListener('click', async () => {
             try {
                 await signInWithPopup(auth, provider);
@@ -556,7 +559,12 @@
             }
         }
 
-        // DOM elements for modals
+        // DOM elements (same as before)
+        const toggleBtn = document.getElementById('toggle-palette-btn');
+        const paletteMenu = document.getElementById('palette-menu');
+        const notesGrid = document.getElementById('notes-grid');
+        const searchInput = document.getElementById('search-input');
+        const emptyState = document.getElementById('empty-state');
         const editorModal = document.getElementById('editor-modal');
         const editorContainer = document.getElementById('editor-container');
         const titleInput = document.getElementById('note-title-input');
@@ -580,90 +588,59 @@
         const confirmModal = document.getElementById('confirm-modal');
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-        const notesGrid = document.getElementById('notes-grid');
-        const searchInput = document.getElementById('search-input');
-        const emptyState = document.getElementById('empty-state');
 
+        let isPaletteOpen = false;
         let activeNoteId = null;
         let activeColor = '#ffffff';
         let currentViewNote = null;
 
-        // Palette handling
-        const paletteMenu = document.getElementById('palette-menu');
-        let isPaletteOpen = false;
-        let activeButton = null;
-
-        function positionPalette(anchorElement) {
-            const rect = anchorElement.getBoundingClientRect();
-            const paletteRect = paletteMenu.getBoundingClientRect();
-            let top, left;
-            if (window.innerWidth <= 768) {
-                // Mobile: place above the FAB, centered horizontally
-                top = rect.top - paletteRect.height - 12;
-                left = rect.left + (rect.width / 2) - (paletteRect.width / 2);
-                if (top < 10) top = rect.bottom + 12; // fallback below
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                viewModalContent.requestFullscreen().catch(err => console.error(err));
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
             } else {
-                // Desktop: to the right of the button
-                left = rect.right + 12;
-                top = rect.top + (rect.height / 2) - (paletteRect.height / 2);
-                if (left + paletteRect.width > window.innerWidth) {
-                    left = rect.left - paletteRect.width - 12;
-                }
-                if (top < 0) top = 10;
-                if (top + paletteRect.height > window.innerHeight) top = window.innerHeight - paletteRect.height - 10;
+                document.exitFullscreen();
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
             }
-            paletteMenu.style.top = `${top}px`;
-            paletteMenu.style.left = `${left}px`;
+            lucide.createIcons();
         }
 
-        function openPalette(anchorButton) {
+        function handleFullscreenChange() {
+            if (document.fullscreenElement) {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
+            } else {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        }
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        fullscreenViewBtn.addEventListener('click', toggleFullscreen);
+
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isPaletteOpen = !isPaletteOpen;
             if (isPaletteOpen) {
-                closePalette();
-                return;
-            }
-            activeButton = anchorButton;
-            positionPalette(anchorButton);
-            paletteMenu.classList.add('open');
-            isPaletteOpen = true;
-        }
-
+                paletteMenu.classList.add('open');
+                toggleBtn.classList.add('open');
+            } else closePalette();
+        });
+        document.addEventListener('click', (e) => {
+            if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette();
+        });
         function closePalette() {
-            paletteMenu.classList.remove('open');
             isPaletteOpen = false;
-            activeButton = null;
+            paletteMenu.classList.remove('open');
+            toggleBtn.classList.remove('open');
         }
 
-        // Desktop add button
-        const desktopAddBtn = document.getElementById('add-btn-desktop');
-        desktopAddBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openPalette(desktopAddBtn);
-        });
-
-        // Mobile FAB
-        const mobileFab = document.getElementById('mobile-fab-btn');
-        mobileFab.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openPalette(mobileFab);
-        });
-
-        // Color selection
         document.querySelectorAll('.color-dot').forEach(dot => {
             dot.addEventListener('click', (e) => {
-                const selectedColor = dot.getAttribute('data-color');
+                const selectedColor = e.target.getAttribute('data-color');
                 closePalette();
                 openEditorModal(null, selectedColor);
             });
         });
 
-        // Close palette on outside click
-        document.addEventListener('click', (e) => {
-            if (isPaletteOpen && !paletteMenu.contains(e.target) && e.target !== desktopAddBtn && e.target !== mobileFab && !desktopAddBtn.contains(e.target) && !mobileFab.contains(e.target)) {
-                closePalette();
-            }
-        });
-
-        // Search and render notes
         searchInput.addEventListener('input', (e) => {
             const query = e.target.value.toLowerCase();
             const filtered = notesData.filter(note => 
@@ -721,28 +698,6 @@
             lucide.createIcons();
         }
 
-        // Fullscreen and modal functions (unchanged)
-        function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                viewModalContent.requestFullscreen().catch(err => console.error(err));
-                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
-            } else {
-                document.exitFullscreen();
-                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
-            }
-            lucide.createIcons();
-        }
-        function handleFullscreenChange() {
-            if (document.fullscreenElement) {
-                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
-            } else {
-                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
-            }
-            lucide.createIcons();
-        }
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        fullscreenViewBtn.addEventListener('click', toggleFullscreen);
-
         function openViewModal(note) {
             currentViewNote = note;
             viewTitle.textContent = note.title || 'Untitled Note';
@@ -770,6 +725,7 @@
             fullscreenIcon = fullscreenViewBtn.querySelector('i');
             if (fullscreenIcon) lucide.createIcons();
         }
+
         function closeViewModal() {
             viewModal.classList.remove('opacity-100');
             viewModalContent.classList.remove('scale-100');
@@ -841,6 +797,7 @@
             editorContainer.classList.add('scale-100');
             titleInput.focus();
         }
+
         function closeEditorModal() {
             editorModal.classList.remove('opacity-100');
             editorModal.classList.add('opacity-0');
@@ -864,6 +821,7 @@
                 closeEditorModal();
             });
         });
+
         function updatePreview() {
             previewTitle.textContent = titleInput.value || 'Untitled Note';
             const parsedHtml = marked.parse(contentInput.value || '');
@@ -882,6 +840,7 @@
         }
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
+
         saveBtn.addEventListener('click', async () => {
             if (!currentUser) { 
                 showToast("Please sign in to save notes.");
