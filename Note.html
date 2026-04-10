@@ -36,6 +36,7 @@
                         c3: '#b39ddb',
                         c4: '#80deea',
                         c5: '#c5e1a5',
+                        selection: '#111827',
                     }
                 }
             }
@@ -46,6 +47,12 @@
         * {
             -webkit-tap-highlight-color: transparent;
         }
+
+        ::selection {
+            background-color: rgba(17, 24, 39, 0.15); /* Sleek dark highlight */
+            color: inherit;
+        }
+
         body {
             font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
             background-color: #ffffff;
@@ -60,13 +67,86 @@
             scrollbar-width: none;
         }
 
-        /* Premium Palette menu & Animations */
+        /* Premium Animation Curves */
+        :root {
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-in-out: cubic-bezier(0.83, 0, 0.17, 1);
+        }
+
+        /* Staggered Fade In Up for App Elements */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s var(--ease-smooth) forwards;
+            opacity: 0;
+        }
+        
+        /* Note Card Specific Enhancements */
+        .note-card {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.5s var(--ease-spring), box-shadow 0.5s var(--ease-smooth);
+            transform: translateY(40px) scale(0.95); /* Initial state for animation */
+            opacity: 0;
+            animation: fadeInUp 0.7s var(--ease-smooth) forwards;
+        }
+        
+        /* Mouse Glow Effect (Only on devices that support hover) */
+        @media (hover: hover) {
+            .note-card::before {
+                content: "";
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: radial-gradient(600px circle at var(--mouse-x, 0) var(--mouse-y, 0), rgba(255, 255, 255, 0.6), transparent 40%);
+                opacity: 0;
+                transition: opacity 0.5s var(--ease-smooth);
+                pointer-events: none;
+                z-index: 1;
+                mix-blend-mode: overlay;
+            }
+            .note-card:hover::before {
+                opacity: 1;
+            }
+            .note-card:hover {
+                transform: translateY(-8px) scale(1.02) !important;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            }
+        }
+        
+        .note-card-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Premium Modal Animations */
+        .modal-backdrop {
+            transition: opacity 0.5s var(--ease-smooth);
+            opacity: 0;
+        }
+        .modal-backdrop.open {
+            opacity: 1;
+        }
+        
+        .modal-content {
+            transition: transform 0.6s var(--ease-spring), opacity 0.4s var(--ease-smooth);
+            transform: scale(0.9) translateY(20px);
+            opacity: 0;
+        }
+        .modal-backdrop.open .modal-content {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        /* Palette Menu Animations */
         .palette-menu {
             opacity: 0;
             pointer-events: none;
             transform: translateY(15px) scale(0.95);
             transform-origin: bottom center;
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.5s var(--ease-spring);
         }
         @media (min-width: 768px) {
             .palette-menu {
@@ -82,7 +162,7 @@
         .color-dot {
             opacity: 0;
             transform: translateY(15px) scale(0.5);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.5s var(--ease-spring);
         }
         @media (min-width: 768px) {
             .color-dot {
@@ -94,14 +174,13 @@
             transform: translateY(0) scale(1);
         }
         
-        /* Mobile stagger (bottom up) */
+        /* Mobile stagger */
         .color-dot:nth-child(5) { transition-delay: 0.05s; }
         .color-dot:nth-child(4) { transition-delay: 0.10s; }
         .color-dot:nth-child(3) { transition-delay: 0.15s; }
         .color-dot:nth-child(2) { transition-delay: 0.20s; }
         .color-dot:nth-child(1) { transition-delay: 0.25s; }
-
-        /* Desktop stagger (top down) */
+        /* Desktop stagger */
         @media (min-width: 768px) {
             .color-dot:nth-child(1) { transition-delay: 0.05s; }
             .color-dot:nth-child(2) { transition-delay: 0.10s; }
@@ -112,130 +191,86 @@
 
         /* FAB Rotate Animation */
         #toggle-palette-btn i {
-            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.5s var(--ease-spring);
         }
         #toggle-palette-btn.open i {
             transform: rotate(135deg);
         }
 
+        /* Editor Input Focus Animations */
+        input:focus, textarea:focus {
+            transition: background-color 0.3s ease;
+        }
+
         /* Professional typography */
-        .prose {
-            line-height: 1.6;
-            color: #1f2937;
-        }
-        .prose h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 0.5rem;
-        }
-        .prose h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-top: 1.75rem;
-            margin-bottom: 0.75rem;
-        }
-        .prose h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-top: 1.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .prose p {
-            margin-bottom: 1.25rem;
-            line-height: 1.6;
-        }
-        .prose strong {
-            font-weight: 700;
-            color: #111827;
-        }
-        .prose ul, .prose ol {
-            margin: 1rem 0 1rem 1.5rem;
-            padding-left: 0;
-        }
-        .prose li {
-            margin-bottom: 0.3rem;
-            line-height: 1.6;
-        }
-        .prose li > ul, .prose li > ol {
-            margin-top: 0.25rem;
-            margin-bottom: 0.25rem;
-        }
-        .prose li li {
-            font-weight: 400;
-            color: #4b5563;
-            border-left: 2px solid #e5e7eb;
-            padding-left: 0.75rem;
-            margin-top: 0.2rem;
-        }
-        .prose blockquote {
-            background-color: #fef9e3;
-            border-left: 4px solid #f5b042;
-            padding: 1rem 1.5rem;
-            margin: 1.5rem 0;
-            border-radius: 0.75rem;
-        }
-        .katex-display {
-            margin: 1.5rem 0 !important;
-            padding: 0.5rem 0;
-            overflow-x: auto;
-            overflow-y: hidden;
-        }
+        .prose { line-height: 1.6; color: #1f2937; }
+        .prose h1 { font-size: 2.5rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; color: #111827; }
+        .prose h2 { font-size: 2rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; color: #111827; }
+        .prose h3 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1f2937; }
+        .prose p { margin-bottom: 1.25rem; line-height: 1.7; }
+        .prose strong { font-weight: 700; color: #000000; }
+        .prose em { font-style: italic; }
+        .prose del { text-decoration: line-through; color: #6b7280; }
+        .prose code:not(pre code) { background-color: #f3f4f6; color: #ef4444; padding: 0.2rem 0.4rem; border-radius: 0.375rem; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.875em; }
+        .prose pre { background-color: #1f2937; padding: 1.25rem; border-radius: 0.75rem; overflow-x: auto; margin-top: 1.5rem; margin-bottom: 1.5rem; }
+        .prose pre code { color: #e5e7eb; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.875em; background: none; padding: 0; line-height: 1.5; }
+        .prose ul { list-style-type: disc; margin: 1rem 0 1rem 1.5rem; padding-left: 0.5rem; }
+        .prose ol { list-style-type: decimal; margin: 1rem 0 1rem 1.5rem; padding-left: 0.5rem; }
+        .prose ol li::marker { font-weight: 700; color: #111827; }
+        .prose li { margin-bottom: 0.5rem; line-height: 1.6; }
+        .prose li > ul, .prose li > ol { margin-top: 0.5rem; margin-bottom: 0.5rem; border-left: 2px solid #e5e7eb; padding-left: 1.25rem; margin-left: 0.25rem; }
+        .prose li > ul li, .prose li > ol li { color: #4b5563; font-weight: 400; font-size: 0.95em; }
+        .prose blockquote { background-color: #fef9e3; border-left: 4px solid #f5b042; padding: 1rem 1.5rem; margin: 1.5rem 0; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
+        .prose blockquote p:last-child { margin-bottom: 0; }
+        .prose a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; font-weight: 500; transition: color 0.2s; }
+        .prose a:hover { color: #1d4ed8; }
+        .prose img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.5rem auto; display: block; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .prose hr { border: none; border-top: 2px solid #e5e7eb; margin: 2.5rem 0; }
+        .katex { background-color: #f8fafc; padding: 0.1rem 0.2rem; border-radius: 0.25rem; font-size: 1.05em; }
+        .katex-display { background: transparent; padding: 1rem 0 !important; margin: 1.5rem 0 !important; display: flex !important; justify-content: center; overflow-x: auto; }
+        .katex-display .katex { background: transparent; padding: 0; }
+
         @media (max-width: 768px) {
-            .prose h1 { font-size: 1.75rem; }
-            .prose h2 { font-size: 1.5rem; }
+            .prose h1 { font-size: 1.75rem; margin-top: 1.5rem; }
+            .prose h2 { font-size: 1.5rem; margin-top: 1.5rem; }
             .prose h3 { font-size: 1.25rem; }
             .prose { font-size: 0.95rem; }
         }
 
-        .modal-center {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+        .modal-center { display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 768px) {
-            #editor-modal .bg-white, #view-modal .bg-white, #settings-modal .bg-white {
-                width: 100%;
-                height: 100%;
-                max-width: 100%;
-                max-height: 100%;
-                border-radius: 0;
+            #editor-modal .modal-content, #view-modal .modal-content, #settings-modal .modal-content {
+                width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0;
             }
             #editor-modal, #view-modal, #settings-modal { padding: 0; }
-            #view-modal-content { max-height: 100%; border-radius: 0; }
             .edit-btn { opacity: 1 !important; background-color: rgba(0,0,0,0.7) !important; }
         }
     </style>
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row">
 
-    <!-- Sidebar (desktop: left, vertical; mobile: hidden/0-width so FAB can float) -->
+    <!-- Sidebar -->
     <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white md:border-r border-gray-200 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1">
-        <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20">Docket</h1>
+        <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20 animate-fade-in-up" style="animation-delay: 0.1s;">Docket</h1>
         
-        <!-- New Note Button + Palette (FAB on Mobile) -->
-        <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100]">
-            <!-- Palette Menu -->
-            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 z-10">
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#c5e1a5"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#80deea"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#b39ddb"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffab91"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffcc80"></button>
+        <!-- New Note Button + Palette -->
+        <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100] animate-fade-in-up" style="animation-delay: 0.2s;">
+            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/80 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100/50 z-10">
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-90 transition-transform" data-color="#c5e1a5"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-90 transition-transform" data-color="#80deea"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-90 transition-transform" data-color="#b39ddb"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-90 transition-transform" data-color="#ffab91"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-90 transition-transform" data-color="#ffcc80"></button>
             </div>
             
-            <!-- Floating Action Button -->
-            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.2)] md:shadow-lg hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-95 focus:outline-none z-20">
+            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all shadow-[0_8px_30px_rgb(0,0,0,0.2)] md:shadow-lg hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-90 focus:outline-none z-20">
                 <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6"></i>
             </button>
         </div>
 
-        <!-- Settings Icon (Desktop: bottom of sidebar) -->
-        <div class="hidden md:block mt-auto">
-            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+        <div class="hidden md:block mt-auto animate-fade-in-up" style="animation-delay: 0.3s;">
+            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors active:scale-90">
                 <i data-lucide="settings" class="w-5 h-5"></i>
             </button>
         </div>
@@ -243,24 +278,23 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden order-2">
-        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10">
-            <!-- Settings Icon (Mobile: top left/right) -->
-            <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors">
+        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10 animate-fade-in-up" style="animation-delay: 0.1s;">
+            <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors active:scale-90">
                 <i data-lucide="settings" class="w-5 h-5"></i>
             </button>
-            <div class="flex items-center text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full max-w-sm ml-auto md:ml-0">
+            <div class="flex items-center text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full max-w-sm ml-auto md:ml-0 transition-all focus-within:ring-2 focus-within:ring-gray-200 focus-within:bg-white focus-within:shadow-sm">
                 <i data-lucide="search" class="w-5 h-5 mr-2"></i>
-                <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base">
+                <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base text-gray-800">
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
-            <h2 class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter">Notes</h2>
+            <h2 class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up" style="animation-delay: 0.2s;">Notes</h2>
             <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
             <div id="loading-state" class="w-full py-12 flex justify-center items-center text-gray-400">
                 <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
             </div>
-            <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400">
+            <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400 animate-fade-in-up" style="animation-delay: 0.4s;">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50"></i>
                 <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
             </div>
@@ -268,29 +302,29 @@
     </main>
 
     <!-- Editor Modal -->
-    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 md:bg-white/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-300">
-        <div class="bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-2xl flex flex-col overflow-hidden border-0 md:border border-gray-200 transform scale-95 transition-transform duration-300" id="editor-container">
-            <div class="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0" id="modal-header">
-                <div class="flex items-center gap-2">
-                    <div id="modal-color-indicator" class="w-4 h-4 rounded-full"></div>
-                    <span class="font-medium text-gray-500 text-sm">Editor</span>
+    <div id="editor-modal" class="modal-backdrop fixed inset-0 z-50 bg-white/90 md:bg-white/50 backdrop-blur-md hidden modal-center p-0 md:p-6">
+        <div class="modal-content bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden border-0 md:border border-gray-100" id="editor-container">
+            <div class="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0 transition-colors duration-500" id="modal-header">
+                <div class="flex items-center gap-3">
+                    <div id="modal-color-indicator" class="w-4 h-4 rounded-full shadow-inner"></div>
+                    <span class="font-semibold text-gray-500 text-sm tracking-wide uppercase">Editor</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-full hidden items-center gap-1">
+                    <button id="delete-note-btn" class="px-4 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-full hidden items-center gap-1 transition-colors active:scale-95">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                         <span class="hidden md:inline">Delete</span>
                     </button>
-                    <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full">Cancel</button>
-                    <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md">Save</button>
+                    <button id="cancel-note-btn" class="px-4 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full transition-colors active:scale-95">Cancel</button>
+                    <button id="save-note-btn" class="px-5 py-1.5 text-sm font-semibold text-white bg-gray-900 rounded-full hover:bg-black shadow-md transition-all active:scale-95">Save</button>
                 </div>
             </div>
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col p-4 md:p-6 bg-white">
-                    <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 bg-transparent">
-                    <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col p-4 md:p-8 bg-white transition-all">
+                    <input id="note-title-input" type="text" placeholder="Note Title..." class="text-3xl md:text-4xl font-extrabold text-gray-900 outline-none w-full mb-6 bg-transparent placeholder-gray-300">
+                    <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar placeholder-gray-300"></textarea>
                 </div>
-                <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50">
-                    <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200 empty:hidden"></h1>
+                <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50/50">
+                    <h1 id="preview-title" class="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6 pb-4 border-b border-gray-200 empty:hidden tracking-tight"></h1>
                     <div id="preview-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
                 </div>
             </div>
@@ -298,75 +332,75 @@
     </div>
 
     <!-- View Modal -->
-    <div id="view-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-all duration-200">
-        <div id="view-modal-content" class="bg-white w-full h-full md:w-full md:max-w-4xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-transform duration-200">
-            <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100">
-                <div class="flex items-center gap-2">
-                    <div id="view-color-indicator" class="w-4 h-4 rounded-full"></div>
-                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
+    <div id="view-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/40 backdrop-blur-md hidden modal-center p-0 md:p-6">
+        <div id="view-modal-content" class="modal-content bg-white w-full h-full md:w-full md:max-w-4xl md:max-h-[85vh] md:rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between px-4 md:px-8 py-4 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+                <div class="flex items-center gap-3">
+                    <div id="view-color-indicator" class="w-4 h-4 rounded-full shadow-inner"></div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Preview</span>
                 </div>
-                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button id="close-view-modal" class="text-gray-400 hover:text-gray-900 hover:bg-gray-100 p-2 rounded-full transition-all active:scale-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-8">
-                <h1 id="view-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4"></h1>
+            <div class="flex-1 overflow-y-auto p-4 md:p-10 scroll-smooth">
+                <h1 id="view-title" class="text-3xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight"></h1>
                 <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
             </div>
-            <div class="px-4 md:px-6 py-3 md:py-4 border-t border-gray-100 flex justify-end gap-2">
-                <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1">
+            <div class="px-4 md:px-8 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/80 backdrop-blur-md">
+                <button id="fullscreen-view-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 rounded-full flex items-center gap-2 transition-colors active:scale-95">
                     <i data-lucide="maximize" class="w-4 h-4"></i>
                     <span class="hidden md:inline">Full Screen</span>
                 </button>
-                <button id="edit-from-view-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md flex items-center gap-1">
+                <button id="edit-from-view-btn" class="px-6 py-2 text-sm font-semibold text-white bg-gray-900 rounded-full hover:bg-black shadow-lg shadow-black/10 flex items-center gap-2 transition-all active:scale-95">
                     <i data-lucide="pencil" class="w-4 h-4"></i>
-                    <span>Edit</span>
+                    <span>Edit Note</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Settings Modal (includes sign-in) -->
-    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-all duration-200">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-900">Settings</h3>
-                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-600">
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-backdrop fixed inset-0 z-50 bg-black/40 backdrop-blur-md hidden modal-center p-4">
+        <div class="modal-content bg-white w-full max-w-md rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden">
+            <div class="flex items-center justify-between px-8 py-6 border-b border-gray-100 bg-gray-50/50">
+                <h3 class="text-xl font-bold text-gray-900">Settings</h3>
+                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-900 hover:bg-gray-200 p-2 rounded-full transition-all active:scale-90">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
-            <div class="p-6">
+            <div class="p-8">
                 <div id="settings-auth-container">
-                    <!-- Dynamic content: sign-in button or user profile -->
-                    <div class="flex flex-col items-center gap-4">
-                        <div id="settings-user-info" class="hidden flex flex-col items-center gap-2">
-                            <img id="settings-avatar" class="w-16 h-16 rounded-full object-cover" src="" alt="avatar">
-                            <span id="settings-name" class="text-sm font-medium text-gray-700"></span>
-                            <button id="settings-signout-btn" class="mt-2 text-sm text-red-600 hover:text-red-700">Sign out</button>
+                    <div class="flex flex-col items-center gap-5">
+                        <div id="settings-user-info" class="hidden flex flex-col items-center gap-3 w-full">
+                            <img id="settings-avatar" class="w-20 h-20 rounded-full object-cover shadow-md border-2 border-white" src="" alt="avatar">
+                            <span id="settings-name" class="text-lg font-bold text-gray-900"></span>
+                            <button id="settings-signout-btn" class="mt-2 px-6 py-2 w-full text-sm font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-full transition-colors active:scale-95">Sign out</button>
                         </div>
-                        <button id="settings-google-signin-btn" class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
+                        <button id="settings-google-signin-btn" class="flex items-center justify-center gap-3 w-full bg-white border border-gray-200 rounded-full px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:shadow-md transition-all active:scale-95">
                             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
                             Sign in with Google
                         </button>
                     </div>
                 </div>
-                <!-- Additional settings can be added here -->
             </div>
         </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-all duration-200">
-        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-transform duration-200 overflow-hidden">
-            <div class="p-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                        <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
+    <div id="confirm-modal" class="modal-backdrop fixed inset-0 z-[100] bg-black/40 backdrop-blur-md hidden modal-center p-4">
+        <div class="modal-content bg-white w-full max-w-md rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-center gap-4 mb-5">
+                    <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900">Delete Note</h3>
+                    <h3 class="text-2xl font-bold text-gray-900">Delete Note</h3>
                 </div>
-                <p class="text-gray-600 mb-6">Are you sure you want to delete this note? This action cannot be undone.</p>
+                <p class="text-gray-600 mb-8 leading-relaxed text-lg">Are you sure you want to discard this note? This action is permanent and cannot be undone.</p>
                 <div class="flex justify-end gap-3">
-                    <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full">Cancel</button>
-                    <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-md">Delete</button>
+                    <button id="confirm-cancel-btn" class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors active:scale-95">Cancel</button>
+                    <button id="confirm-delete-btn" class="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-lg shadow-red-600/20 transition-all active:scale-95">Delete Permanently</button>
                 </div>
             </div>
         </div>
@@ -401,7 +435,11 @@
 
         lucide.createIcons();
 
-        // Auth state listener
+        marked.setOptions({
+            gfm: true,
+            breaks: true
+        });
+
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             updateSettingsUI(user);
@@ -415,7 +453,6 @@
             }
         });
 
-        // Update settings modal UI based on auth state
         function updateSettingsUI(user) {
             const signinBtn = document.getElementById('settings-google-signin-btn');
             const userInfoDiv = document.getElementById('settings-user-info');
@@ -428,51 +465,48 @@
                 userInfoDiv.classList.remove('hidden');
                 avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name=' + encodeURIComponent(user.displayName || 'User');
                 nameSpan.textContent = user.displayName || user.email || 'User';
-                signOutBtn.classList.remove('hidden');
             } else {
                 signinBtn.classList.remove('hidden');
                 userInfoDiv.classList.add('hidden');
             }
         }
 
-        // Settings modal handlers
-        const settingsModal = document.getElementById('settings-modal');
-        const openSettings = () => {
-            settingsModal.classList.remove('hidden');
-            setTimeout(() => {
-                settingsModal.classList.remove('opacity-0');
-                settingsModal.querySelector('.bg-white').classList.remove('scale-95');
-                settingsModal.classList.add('opacity-100');
-                settingsModal.querySelector('.bg-white').classList.add('scale-100');
-            }, 10);
-        };
-        const closeSettings = () => {
-            settingsModal.classList.remove('opacity-100');
-            settingsModal.querySelector('.bg-white').classList.remove('scale-100');
-            settingsModal.classList.add('opacity-0');
-            settingsModal.querySelector('.bg-white').classList.add('scale-95');
-            setTimeout(() => settingsModal.classList.add('hidden'), 200);
-        };
-        document.getElementById('settings-btn-desktop').addEventListener('click', openSettings);
-        document.getElementById('settings-btn-mobile').addEventListener('click', openSettings);
-        document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
-        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
+        // Modal Logic Wrapper (Premium Animations)
+        function openModal(modalEl) {
+            modalEl.classList.remove('hidden');
+            // Force reflow
+            void modalEl.offsetWidth;
+            modalEl.classList.add('open');
+        }
 
-        // Sign-in / sign-out inside settings modal
+        function closeModal(modalEl, callback) {
+            modalEl.classList.remove('open');
+            setTimeout(() => {
+                modalEl.classList.add('hidden');
+                if(callback) callback();
+            }, 500); // Matches longest CSS transition
+        }
+
+        // Settings
+        const settingsModal = document.getElementById('settings-modal');
+        document.getElementById('settings-btn-desktop').addEventListener('click', () => openModal(settingsModal));
+        document.getElementById('settings-btn-mobile').addEventListener('click', () => openModal(settingsModal));
+        document.getElementById('close-settings-btn').addEventListener('click', () => closeModal(settingsModal));
+        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeModal(settingsModal); });
+
         document.getElementById('settings-google-signin-btn').addEventListener('click', async () => {
             try {
                 await signInWithPopup(auth, provider);
-                showToast("Signed in! Notes are now synced.");
-                closeSettings();
+                showToast("Signed in! Notes synced seamlessly.");
+                closeModal(settingsModal);
             } catch (error) {
-                console.error(error);
                 showToast("Sign in failed.");
             }
         });
         document.getElementById('settings-signout-btn').addEventListener('click', async () => {
             await signOut(auth);
-            showToast("Signed out.");
-            closeSettings();
+            showToast("Signed out safely.");
+            closeModal(settingsModal);
         });
 
         function fetchNotesFromFirestore() {
@@ -486,14 +520,10 @@
                 document.getElementById('loading-state').classList.add('hidden');
                 renderNotes(notesData);
                 processUrlParam();
-            }, (error) => {
-                console.error(error);
-                document.getElementById('loading-state').classList.add('hidden');
-                renderNotes([]);
             });
         }
 
-        function formatSnippet(content, maxLength = 100) {
+        function formatSnippet(content, maxLength = 120) {
             if (!content) return '';
             let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
@@ -517,26 +547,20 @@
             const toast = document.createElement('div');
             toast.id = 'dynamic-toast';
             toast.innerText = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '70px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = '#1f2937';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '9999px';
-            toast.style.fontSize = '0.875rem';
-            toast.style.fontWeight = '500';
-            toast.style.zIndex = '9999';
-            toast.style.whiteSpace = 'nowrap';
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.2s ease';
+            toast.className = "fixed bottom-[80px] left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur-md text-white px-6 py-3 rounded-full text-sm font-semibold z-[9999] shadow-2xl transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] opacity-0 translate-y-4 pointer-events-none border border-white/10";
             document.body.appendChild(toast);
-            setTimeout(() => toast.style.opacity = '1', 10);
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('opacity-0', 'translate-y-4');
+                toast.classList.add('opacity-100', 'translate-y-0');
+            });
+            
             setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.remove(), 500);
+            }, 2500);
         }
 
         let urlParamProcessed = false;
@@ -550,8 +574,8 @@
                     urlParamProcessed = true;
                     openViewModal(note);
                     setTimeout(() => {
-                        if (!viewModal.classList.contains('hidden')) toggleFullscreen();
-                    }, 300);
+                        if (viewModal.classList.contains('open')) toggleFullscreen();
+                    }, 500);
                 } else {
                     showToast("Note not found");
                     urlParamProcessed = true;
@@ -559,14 +583,17 @@
             }
         }
 
-        // DOM elements (same as before)
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
         const notesGrid = document.getElementById('notes-grid');
         const searchInput = document.getElementById('search-input');
         const emptyState = document.getElementById('empty-state');
+        
+        // Modals
         const editorModal = document.getElementById('editor-modal');
-        const editorContainer = document.getElementById('editor-container');
+        const viewModal = document.getElementById('view-modal');
+        const confirmModal = document.getElementById('confirm-modal');
+
         const titleInput = document.getElementById('note-title-input');
         const contentInput = document.getElementById('note-content-input');
         const previewTitle = document.getElementById('preview-title');
@@ -576,8 +603,7 @@
         const deleteBtn = document.getElementById('delete-note-btn');
         const modalHeader = document.getElementById('modal-header');
         const modalColorIndicator = document.getElementById('modal-color-indicator');
-        const viewModal = document.getElementById('view-modal');
-        const viewModalContent = document.getElementById('view-modal-content');
+        
         const viewTitle = document.getElementById('view-title');
         const viewContent = document.getElementById('view-content');
         const viewColorIndicator = document.getElementById('view-color-indicator');
@@ -585,7 +611,7 @@
         const editFromViewBtn = document.getElementById('edit-from-view-btn');
         const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
         let fullscreenIcon = null;
-        const confirmModal = document.getElementById('confirm-modal');
+
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
@@ -596,7 +622,7 @@
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                viewModalContent.requestFullscreen().catch(err => console.error(err));
+                document.getElementById('view-modal-content').requestFullscreen().catch(err => console.error(err));
                 if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
             } else {
                 document.exitFullscreen();
@@ -605,15 +631,14 @@
             lucide.createIcons();
         }
 
-        function handleFullscreenChange() {
+        document.addEventListener('fullscreenchange', () => {
             if (document.fullscreenElement) {
                 if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
             } else {
                 if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
             }
             lucide.createIcons();
-        }
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        });
         fullscreenViewBtn.addEventListener('click', toggleFullscreen);
 
         toggleBtn.addEventListener('click', (e) => {
@@ -654,34 +679,50 @@
             if (notesToRender.length === 0) emptyState.classList.remove('hidden');
             else emptyState.classList.add('hidden');
 
-            notesToRender.forEach(note => {
+            notesToRender.forEach((note, index) => {
                 const div = document.createElement('div');
-                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-300 hover:-translate-y-1 md:hover:-translate-y-2 hover:shadow-xl cursor-pointer`;
+                div.className = `note-card note-card-content group rounded-[28px] p-6 md:p-8 flex flex-col justify-between min-h-[220px] md:min-h-[260px] cursor-pointer shadow-sm border border-black/5`;
                 div.style.backgroundColor = note.color || '#ffffff';
-                let snippet = formatSnippet(note.content, 100);
-                if (!snippet) snippet = 'No content';
+                // Staggered animation delay
+                div.style.animationDelay = `${index * 50}ms`;
+                
+                let snippet = formatSnippet(note.content, 120);
+                if (!snippet) snippet = '<span class="italic opacity-50">Empty note</span>';
                 const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date';
+                
                 div.innerHTML = `
-                    <div>
-                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
-                        <p class="text-gray-800/80 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet}</p>
+                    <div class="note-card-content relative z-10 pointer-events-none">
+                        <h3 class="text-2xl md:text-3xl font-extrabold text-gray-900 mb-3 leading-tight tracking-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled'}</h3>
+                        <p class="text-gray-800/70 font-medium text-base md:text-lg leading-relaxed line-clamp-3">${snippet}</p>
                     </div>
-                    <div class="mt-4 flex items-end justify-between z-10">
-                        <span class="text-xs md:text-sm font-semibold text-gray-900/60">${dateStr}</span>
-                        <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn">
-                            <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none"></i>
-                        </div>
+                    <div class="note-card-content mt-6 flex items-end justify-between relative z-20">
+                        <span class="text-sm font-bold text-gray-900/40 uppercase tracking-wider">${dateStr}</span>
+                        <button class="w-12 h-12 bg-gray-900 text-white rounded-full flex items-center justify-center shadow-lg transform transition-all duration-300 opacity-0 group-hover:opacity-100 hover:bg-black hover:scale-110 active:scale-95 edit-btn focus:outline-none focus:opacity-100">
+                            <i data-lucide="pencil" class="w-5 h-5 pointer-events-none"></i>
+                        </button>
                     </div>
                 `;
+
+                // Add premium mouse glow tracking
+                div.addEventListener('mousemove', (e) => {
+                    const rect = div.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    div.style.setProperty('--mouse-x', `${x}px`);
+                    div.style.setProperty('--mouse-y', `${y}px`);
+                });
+
                 div.addEventListener('click', (e) => {
                     if (e.target.closest('.edit-btn')) return;
                     openViewModal(note);
                 });
+                
                 const editBtn = div.querySelector('.edit-btn');
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditorModal(note);
                 });
+                
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
@@ -702,6 +743,7 @@
             currentViewNote = note;
             viewTitle.textContent = note.title || 'Untitled Note';
             viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
+            
             const parsedHtml = marked.parse(note.content || '');
             viewContent.innerHTML = parsedHtml;
             try {
@@ -715,63 +757,45 @@
                     throwOnError: false
                 });
             } catch(e) { console.error(e); }
-            viewModal.classList.remove('hidden');
-            setTimeout(() => {
-                viewModal.classList.remove('opacity-0');
-                viewModalContent.classList.remove('scale-95');
-                viewModal.classList.add('opacity-100');
-                viewModalContent.classList.add('scale-100');
-            }, 10);
+            
+            openModal(viewModal);
+            
             fullscreenIcon = fullscreenViewBtn.querySelector('i');
             if (fullscreenIcon) lucide.createIcons();
         }
 
-        function closeViewModal() {
-            viewModal.classList.remove('opacity-100');
-            viewModalContent.classList.remove('scale-100');
-            viewModal.classList.add('opacity-0');
-            viewModalContent.classList.add('scale-95');
-            setTimeout(() => {
-                viewModal.classList.add('hidden');
+        closeViewBtn.addEventListener('click', () => {
+            closeModal(viewModal, () => {
                 currentViewNote = null;
                 if (document.fullscreenElement) document.exitFullscreen();
-            }, 200);
-        }
-        closeViewBtn.addEventListener('click', closeViewModal);
-        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
-        editFromViewBtn.addEventListener('click', () => {
-            if (currentViewNote) { closeViewModal(); openEditorModal(currentViewNote); }
+            });
         });
+        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewBtn.click(); });
+        
+        editFromViewBtn.addEventListener('click', () => {
+            if (currentViewNote) {
+                closeModal(viewModal, () => openEditorModal(currentViewNote));
+            }
+        });
+        
         document.addEventListener('keydown', (e) => {
-            if (viewModal.classList.contains('hidden')) return;
+            if (!viewModal.classList.contains('open')) return;
             if (e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); }
+            if (e.key === 'Escape') closeViewBtn.click();
         });
 
         function showConfirmModal(onConfirm) {
-            confirmModal.classList.remove('hidden');
-            setTimeout(() => {
-                confirmModal.classList.remove('opacity-0');
-                confirmModal.querySelector('.bg-white').classList.remove('scale-95');
-                confirmModal.classList.add('opacity-100');
-                confirmModal.querySelector('.bg-white').classList.add('scale-100');
-            }, 10);
-            const handleConfirm = () => { closeConfirmModal(); onConfirm(); };
-            const handleCancel = () => closeConfirmModal();
+            openModal(confirmModal);
+            
+            const handleConfirm = () => { 
+                closeModal(confirmModal); 
+                onConfirm(); 
+            };
+            const handleCancel = () => closeModal(confirmModal);
+            
             confirmDeleteBtn.onclick = handleConfirm;
             confirmCancelBtn.onclick = handleCancel;
-            confirmModal.onclick = (e) => { if (e.target === confirmModal) closeConfirmModal(); };
-        }
-        function closeConfirmModal() {
-            confirmModal.classList.remove('opacity-100');
-            confirmModal.querySelector('.bg-white').classList.remove('scale-100');
-            confirmModal.classList.add('opacity-0');
-            confirmModal.querySelector('.bg-white').classList.add('scale-95');
-            setTimeout(() => {
-                confirmModal.classList.add('hidden');
-                confirmDeleteBtn.onclick = null;
-                confirmCancelBtn.onclick = null;
-                confirmModal.onclick = null;
-            }, 200);
+            confirmModal.onclick = (e) => { if (e.target === confirmModal) handleCancel(); };
         }
 
         function openEditorModal(note = null, color = '#ffffff') {
@@ -779,9 +803,13 @@
             activeColor = note ? note.color : color;
             titleInput.value = note ? note.title || '' : '';
             contentInput.value = note ? note.content || '' : '';
-            modalHeader.style.backgroundColor = `${activeColor}20`;
+            
+            // Soft overlay logic for editor header
+            modalHeader.style.backgroundColor = `${activeColor}40`;
             modalColorIndicator.style.backgroundColor = activeColor;
+            
             updatePreview();
+            
             if (activeNoteId) {
                 deleteBtn.classList.remove('hidden');
                 deleteBtn.classList.add('flex');
@@ -789,36 +817,28 @@
                 deleteBtn.classList.add('hidden');
                 deleteBtn.classList.remove('flex');
             }
-            editorModal.classList.remove('hidden');
-            void editorModal.offsetWidth;
-            editorModal.classList.remove('opacity-0');
-            editorModal.classList.add('opacity-100');
-            editorContainer.classList.remove('scale-95');
-            editorContainer.classList.add('scale-100');
-            titleInput.focus();
+            
+            openModal(editorModal);
+            setTimeout(() => titleInput.focus(), 300); // Focus after transition
         }
 
-        function closeEditorModal() {
-            editorModal.classList.remove('opacity-100');
-            editorModal.classList.add('opacity-0');
-            editorContainer.classList.remove('scale-100');
-            editorContainer.classList.add('scale-95');
-            setTimeout(() => {
-                editorModal.classList.add('hidden');
+        cancelBtn.addEventListener('click', () => {
+            closeModal(editorModal, () => {
                 titleInput.value = '';
                 contentInput.value = '';
                 activeNoteId = null;
-                deleteBtn.classList.add('hidden');
-                deleteBtn.classList.remove('flex');
-            }, 300);
-        }
-        cancelBtn.addEventListener('click', closeEditorModal);
+            });
+        });
+        
         deleteBtn.addEventListener('click', () => {
             if (!activeNoteId || !currentUser) return;
             showConfirmModal(async () => {
                 const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId);
-                await deleteDoc(noteRef);
-                closeEditorModal();
+                // Pre-emptively visually hide to feel faster
+                closeModal(editorModal, async () => {
+                    await deleteDoc(noteRef);
+                    showToast("Note permanently deleted.");
+                });
             });
         });
 
@@ -838,23 +858,87 @@
                 });
             } catch(e) { console.error(e); }
         }
+        
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
+
+        contentInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+                updatePreview();
+            }
+            
+            if (e.key === 'Enter') {
+                const start = this.selectionStart;
+                const textToCursor = this.value.substring(0, start);
+                const lines = textToCursor.split('\n');
+                const currentLine = lines[lines.length - 1];
+                
+                const ulMatch = currentLine.match(/^(\s*)([-*])\s(.*)$/);
+                const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+
+                if (ulMatch || olMatch) {
+                    const isEmpty = ulMatch ? !ulMatch[3].trim() : !olMatch[3].trim();
+                    if (isEmpty) {
+                        e.preventDefault();
+                        const markerLength = ulMatch ? ulMatch[1].length + ulMatch[2].length + 1 : olMatch[1].length + olMatch[2].length + 2;
+                        const newValue = this.value.substring(0, start - markerLength) + '\n' + this.value.substring(this.selectionEnd);
+                        this.value = newValue;
+                        this.selectionStart = this.selectionEnd = start - markerLength + 1;
+                        updatePreview();
+                        return;
+                    }
+                    e.preventDefault();
+                    let insertion = '\n';
+                    if (ulMatch) {
+                        insertion += ulMatch[1] + ulMatch[2] + ' ';
+                    } else if (olMatch) {
+                        const nextNum = parseInt(olMatch[2], 10) + 1;
+                        insertion += olMatch[1] + nextNum + '. ';
+                    }
+                    this.value = this.value.substring(0, start) + insertion + this.value.substring(this.selectionEnd);
+                    this.selectionStart = this.selectionEnd = start + insertion.length;
+                    updatePreview();
+                }
+            }
+        });
 
         saveBtn.addEventListener('click', async () => {
             if (!currentUser) { 
                 showToast("Please sign in to save notes.");
-                openSettings();
+                openModal(settingsModal);
                 return;
             }
             const title = titleInput.value.trim() || 'Untitled Note';
             const content = contentInput.value.trim();
-            if (!content && !titleInput.value.trim()) { closeEditorModal(); return; }
+            if (!content && !titleInput.value.trim()) { 
+                closeModal(editorModal); 
+                return; 
+            }
+            
             const noteData = { title, content, color: activeColor, timestamp: Date.now() };
             const collectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-            if (activeNoteId) await setDoc(doc(collectionRef, activeNoteId), noteData);
-            else await addDoc(collectionRef, noteData);
-            closeEditorModal();
+            
+            // UI optimistic closing
+            const originalText = saveBtn.innerText;
+            saveBtn.innerText = "Saving...";
+            saveBtn.disabled = true;
+
+            try {
+                if (activeNoteId) await setDoc(doc(collectionRef, activeNoteId), noteData);
+                else await addDoc(collectionRef, noteData);
+            } catch(e) {
+                console.error(e);
+                showToast("Failed to save note.");
+            } finally {
+                saveBtn.innerText = originalText;
+                saveBtn.disabled = false;
+                closeModal(editorModal);
+            }
         });
     </script>
 </body>
