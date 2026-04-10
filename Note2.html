@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>pDocket Notes</title>
+    <title>Docket Notes</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -60,32 +60,63 @@
             scrollbar-width: none;
         }
 
-        /* Palette menu */
+        /* Premium Palette menu & Animations */
         .palette-menu {
             opacity: 0;
             pointer-events: none;
-            transform: translateY(-20px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(15px) scale(0.95);
+            transform-origin: bottom center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (min-width: 768px) {
+            .palette-menu {
+                transform: translateY(-15px) scale(0.95);
+                transform-origin: top center;
+            }
         }
         .palette-menu.open {
             opacity: 1;
             pointer-events: auto;
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
         }
         .color-dot {
             opacity: 0;
-            transform: scale(0.5) translateY(-20px);
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: translateY(15px) scale(0.5);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (min-width: 768px) {
+            .color-dot {
+                transform: translateY(-15px) scale(0.5);
+            }
         }
         .palette-menu.open .color-dot {
             opacity: 1;
-            transform: scale(1) translateY(0);
+            transform: translateY(0) scale(1);
         }
-        .color-dot:nth-child(1) { transition-delay: 0.05s; }
-        .color-dot:nth-child(2) { transition-delay: 0.10s; }
+        
+        /* Mobile stagger (bottom up) */
+        .color-dot:nth-child(5) { transition-delay: 0.05s; }
+        .color-dot:nth-child(4) { transition-delay: 0.10s; }
         .color-dot:nth-child(3) { transition-delay: 0.15s; }
-        .color-dot:nth-child(4) { transition-delay: 0.20s; }
-        .color-dot:nth-child(5) { transition-delay: 0.25s; }
+        .color-dot:nth-child(2) { transition-delay: 0.20s; }
+        .color-dot:nth-child(1) { transition-delay: 0.25s; }
+
+        /* Desktop stagger (top down) */
+        @media (min-width: 768px) {
+            .color-dot:nth-child(1) { transition-delay: 0.05s; }
+            .color-dot:nth-child(2) { transition-delay: 0.10s; }
+            .color-dot:nth-child(3) { transition-delay: 0.15s; }
+            .color-dot:nth-child(4) { transition-delay: 0.20s; }
+            .color-dot:nth-child(5) { transition-delay: 0.25s; }
+        }
+
+        /* FAB Rotate Animation */
+        #toggle-palette-btn i {
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #toggle-palette-btn.open i {
+            transform: rotate(135deg);
+        }
 
         /* Professional typography */
         .prose {
@@ -95,66 +126,166 @@
         .prose h1 {
             font-size: 2.5rem;
             font-weight: 800;
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             margin-bottom: 1rem;
             border-bottom: 2px solid #e5e7eb;
             padding-bottom: 0.5rem;
+            color: #111827;
         }
         .prose h2 {
             font-size: 2rem;
             font-weight: 700;
-            margin-top: 1.75rem;
+            margin-top: 2rem;
             margin-bottom: 0.75rem;
+            color: #111827;
         }
         .prose h3 {
             font-size: 1.5rem;
             font-weight: 600;
             margin-top: 1.5rem;
             margin-bottom: 0.5rem;
+            color: #1f2937;
         }
         .prose p {
             margin-bottom: 1.25rem;
-            line-height: 1.6;
+            line-height: 1.7;
         }
         .prose strong {
             font-weight: 700;
+            color: #000000;
+        }
+        .prose em {
+            font-style: italic;
+        }
+        .prose del {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+        
+        /* Inline Code */
+        .prose code:not(pre code) {
+            background-color: #f3f4f6;
+            color: #ef4444;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875em;
+        }
+        
+        /* Code Blocks */
+        .prose pre {
+            background-color: #1f2937;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .prose pre code {
+            color: #e5e7eb;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875em;
+            background: none;
+            padding: 0;
+            line-height: 1.5;
+        }
+        
+        /* Lists */
+        .prose ul {
+            list-style-type: disc;
+            margin: 1rem 0 1rem 1.5rem;
+            padding-left: 0.5rem;
+        }
+        .prose ol {
+            list-style-type: decimal;
+            margin: 1rem 0 1rem 1.5rem;
+            padding-left: 0.5rem;
+        }
+        .prose ol li::marker {
+            font-weight: 700;
             color: #111827;
         }
-        .prose ul, .prose ol {
-            margin: 1rem 0 1rem 1.5rem;
-            padding-left: 0;
-        }
         .prose li {
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.5rem;
             line-height: 1.6;
         }
+        
+        /* Nested Lists - "Kapila Penna" styling */
         .prose li > ul, .prose li > ol {
-            margin-top: 0.25rem;
-            margin-bottom: 0.25rem;
-        }
-        .prose li li {
-            font-weight: 400;
-            color: #4b5563;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
             border-left: 2px solid #e5e7eb;
-            padding-left: 0.75rem;
-            margin-top: 0.2rem;
+            padding-left: 1.25rem;
+            margin-left: 0.25rem;
         }
+        .prose li > ul li, .prose li > ol li {
+            color: #4b5563;
+            font-weight: 400;
+            font-size: 0.95em;
+        }
+        
+        /* Blockquotes - Soft yellow with orange border */
         .prose blockquote {
             background-color: #fef9e3;
             border-left: 4px solid #f5b042;
             padding: 1rem 1.5rem;
             margin: 1.5rem 0;
+            border-radius: 0 0.75rem 0.75rem 0;
+            color: #78350f;
+            font-style: italic;
+        }
+        .prose blockquote p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Links */
+        .prose a {
+            color: #2563eb;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-weight: 500;
+        }
+        
+        /* Images */
+        .prose img {
+            max-width: 100%;
+            height: auto;
             border-radius: 0.75rem;
+            margin: 1.5rem auto;
+            display: block;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        /* Horizontal Rules */
+        .prose hr {
+            border: none;
+            border-top: 2px solid #e5e7eb;
+            margin: 2.5rem 0;
+        }
+        
+        /* KaTeX Math Adjustments */
+        .katex {
+            background-color: #f8fafc;
+            padding: 0.1rem 0.2rem;
+            border-radius: 0.25rem;
+            font-size: 1.05em;
         }
         .katex-display {
+            background: transparent;
+            padding: 1rem 0 !important;
             margin: 1.5rem 0 !important;
-            padding: 0.5rem 0;
+            display: flex !important;
+            justify-content: center;
             overflow-x: auto;
-            overflow-y: hidden;
         }
+        .katex-display .katex {
+            background: transparent;
+            padding: 0;
+        }
+
         @media (max-width: 768px) {
-            .prose h1 { font-size: 1.75rem; }
-            .prose h2 { font-size: 1.5rem; }
+            .prose h1 { font-size: 1.75rem; margin-top: 1.5rem; }
+            .prose h2 { font-size: 1.5rem; margin-top: 1.5rem; }
             .prose h3 { font-size: 1.25rem; }
             .prose { font-size: 0.95rem; }
         }
@@ -181,22 +312,25 @@
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row">
 
-    <!-- Sidebar (desktop: left, vertical; mobile: bottom, horizontal) -->
-    <aside class="md:w-[100px] w-full h-auto md:h-full bg-white border-t md:border-r border-gray-200 flex md:flex-col flex-row items-center justify-around md:justify-start py-2 md:py-8 px-4 z-20 flex-shrink-0 order-1 md:order-1">
+    <!-- Sidebar (desktop: left, vertical; mobile: hidden/0-width so FAB can float) -->
+    <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white md:border-r border-gray-200 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1">
         <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20">Docket</h1>
         
-        <!-- New Note Button + Palette -->
-        <div class="relative flex flex-col items-center">
-            <button id="toggle-palette-btn" class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center transition-transform duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-gray-200">
-                <i data-lucide="plus" class="w-6 h-6"></i>
-            </button>
-            <div id="palette-menu" class="palette-menu absolute bottom-full md:top-full md:bottom-auto mb-4 md:mb-0 md:mt-4 flex flex-row md:flex-col items-center gap-4 p-2 bg-white/90 backdrop-blur-md rounded-full shadow-lg z-10">
-                <button class="w-8 h-8 rounded-full bg-c1 color-dot" data-color="#ffcc80"></button>
-                <button class="w-8 h-8 rounded-full bg-c2 color-dot" data-color="#ffab91"></button>
-                <button class="w-8 h-8 rounded-full bg-c3 color-dot" data-color="#b39ddb"></button>
-                <button class="w-8 h-8 rounded-full bg-c4 color-dot" data-color="#80deea"></button>
-                <button class="w-8 h-8 rounded-full bg-c5 color-dot" data-color="#c5e1a5"></button>
+        <!-- New Note Button + Palette (FAB on Mobile) -->
+        <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100]">
+            <!-- Palette Menu -->
+            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 z-10">
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#c5e1a5"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#80deea"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#b39ddb"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffab91"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffcc80"></button>
             </div>
+            
+            <!-- Floating Action Button -->
+            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.2)] md:shadow-lg hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-95 focus:outline-none z-20">
+                <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6"></i>
+            </button>
         </div>
 
         <!-- Settings Icon (Desktop: bottom of sidebar) -->
@@ -366,6 +500,12 @@
         let notesData = [];
 
         lucide.createIcons();
+
+        // Configure Marked.js for Canvas-like formatting
+        marked.setOptions({
+            gfm: true,     // GitHub Flavored Markdown
+            breaks: true   // Convert \n to <br> to mimic word processors
+        });
 
         // Auth state listener
         onAuthStateChanged(auth, (user) => {
@@ -587,7 +727,7 @@
             isPaletteOpen = !isPaletteOpen;
             if (isPaletteOpen) {
                 paletteMenu.classList.add('open');
-                toggleBtn.style.transform = 'rotate(45deg)';
+                toggleBtn.classList.add('open');
             } else closePalette();
         });
         document.addEventListener('click', (e) => {
@@ -596,7 +736,7 @@
         function closePalette() {
             isPaletteOpen = false;
             paletteMenu.classList.remove('open');
-            toggleBtn.style.transform = 'rotate(0deg)';
+            toggleBtn.classList.remove('open');
         }
 
         document.querySelectorAll('.color-dot').forEach(dot => {
@@ -806,6 +946,60 @@
         }
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
+
+        // Smart Editor Features: Auto-formatting lists & Tab support
+        contentInput.addEventListener('keydown', function(e) {
+            // Tab to insert spaces (prevents jumping out of textarea)
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+                updatePreview();
+            }
+            
+            // Enter key to auto-continue lists
+            if (e.key === 'Enter') {
+                const start = this.selectionStart;
+                const textToCursor = this.value.substring(0, start);
+                const lines = textToCursor.split('\n');
+                const currentLine = lines[lines.length - 1];
+                
+                // Regex matches lines starting with optional space, then - or * or number.
+                const ulMatch = currentLine.match(/^(\s*)([-*])\s(.*)$/);
+                const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+
+                if (ulMatch || olMatch) {
+                    const isEmpty = ulMatch ? !ulMatch[3].trim() : !olMatch[3].trim();
+                    
+                    if (isEmpty) {
+                        // User pressed enter on an empty list item -> break the list by removing the marker
+                        e.preventDefault();
+                        const markerLength = ulMatch ? ulMatch[1].length + ulMatch[2].length + 1 : olMatch[1].length + olMatch[2].length + 2;
+                        const newValue = this.value.substring(0, start - markerLength) + '\n' + this.value.substring(this.selectionEnd);
+                        this.value = newValue;
+                        this.selectionStart = this.selectionEnd = start - markerLength + 1;
+                        updatePreview();
+                        return;
+                    }
+
+                    // Auto-continue the list format
+                    e.preventDefault();
+                    let insertion = '\n';
+                    if (ulMatch) {
+                        insertion += ulMatch[1] + ulMatch[2] + ' ';
+                    } else if (olMatch) {
+                        const nextNum = parseInt(olMatch[2], 10) + 1;
+                        insertion += olMatch[1] + nextNum + '. ';
+                    }
+                    
+                    this.value = this.value.substring(0, start) + insertion + this.value.substring(this.selectionEnd);
+                    this.selectionStart = this.selectionEnd = start + insertion.length;
+                    updatePreview();
+                }
+            }
+        });
 
         saveBtn.addEventListener('click', async () => {
             if (!currentUser) { 
