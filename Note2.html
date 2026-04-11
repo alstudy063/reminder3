@@ -327,6 +327,21 @@
             text-underline-offset: 3px;
             font-weight: 500;
         }
+
+        /* HTML Widget Styles */
+        .html-widget-wrapper {
+            margin: 1.5rem 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background-color: #ffffff;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .html-widget-wrapper .prose-pre-override {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
         
         /* Images */
         .prose img {
@@ -484,6 +499,7 @@
                             <div class="w-px h-4 bg-gray-200 mx-1"></div>
                             <button class="format-btn" data-format="> " title="Quote"><i data-lucide="quote" class="w-4 h-4"></i></button>
                             <button class="format-btn" data-format="```\n" data-suffix="\n```" title="Code Block"><i data-lucide="code" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="```html\n<!-- Paste your HTML/CSS Widget Here -->\n" data-suffix="\n```" title="HTML Live Widget"><i data-lucide="layout-template" class="w-4 h-4 text-indigo-500"></i></button>
                         </div>
 
                         <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
@@ -793,7 +809,11 @@
             let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
             text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
-            text = text.replace(/```[\s\S]*?```/g, '[code block]');
+            
+            // Special handling for HTML widgets vs standard code blocks
+            text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
+            text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
+            
             text = text.replace(/^#{1,6}\s+/gm, '');
             text = text.replace(/^[-*_]{3,}\s*$/gm, '');
             text = text.replace(/\s+/g, ' ').trim();
@@ -1058,6 +1078,9 @@
                     });
                 } catch(e) { console.error(e); }
 
+                // Process HTML Widgets
+                processHtmlWidgets(viewContent);
+
                 // Restart flash animations (forces browser to replay them)
                 const animElements = viewContent.querySelectorAll('strong, mark');
                 animElements.forEach(el => {
@@ -1162,6 +1185,85 @@
             titleInput.focus();
         }
 
+        function processHtmlWidgets(container) {
+            const htmlBlocks = container.querySelectorAll('pre code.language-html');
+            
+            htmlBlocks.forEach((codeBlock, index) => {
+                const pre = codeBlock.parentElement;
+                if (pre.parentElement.classList.contains('widget-source')) return; // Already processed
+
+                const rawHtml = codeBlock.textContent;
+
+                // Create Wrapper
+                const wrapper = document.createElement('div');
+                wrapper.className = 'html-widget-wrapper';
+
+                // Create Header/Toolbar
+                const header = document.createElement('div');
+                header.className = 'bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center';
+                header.innerHTML = `
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="layout-template" class="w-4 h-4"></i> Live Widget
+                    </span>
+                    <div class="flex bg-gray-200/80 p-0.5 rounded-lg border border-gray-300/50">
+                        <button class="widget-tab-btn active px-3 py-1 text-xs font-semibold rounded-md transition-all bg-white text-gray-900 shadow-sm" data-target="preview">Preview</button>
+                        <button class="widget-tab-btn px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-900" data-target="source">Code</button>
+                    </div>
+                `;
+
+                // Create Content Areas
+                const contentContainer = document.createElement('div');
+                contentContainer.className = 'relative w-full';
+
+                const previewArea = document.createElement('div');
+                previewArea.className = 'widget-live p-4 overflow-x-auto w-full';
+                // Render the raw HTML
+                previewArea.innerHTML = rawHtml;
+
+                const sourceArea = document.createElement('div');
+                sourceArea.className = 'widget-source hidden w-full bg-[#1f2937]';
+                
+                // Move original pre into source area
+                pre.parentNode.insertBefore(wrapper, pre);
+                pre.classList.add('prose-pre-override');
+                sourceArea.appendChild(pre);
+
+                // Assemble
+                contentContainer.appendChild(previewArea);
+                contentContainer.appendChild(sourceArea);
+                wrapper.appendChild(header);
+                wrapper.appendChild(contentContainer);
+
+                // Tab Switching Logic
+                const btns = header.querySelectorAll('.widget-tab-btn');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Update active state
+                        btns.forEach(b => {
+                            b.classList.remove('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
+                            b.classList.add('text-gray-500', 'font-medium');
+                        });
+                        btn.classList.add('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
+                        btn.classList.remove('text-gray-500', 'font-medium');
+
+                        // Toggle views
+                        const target = btn.getAttribute('data-target');
+                        if (target === 'preview') {
+                            previewArea.classList.remove('hidden');
+                            sourceArea.classList.add('hidden');
+                        } else {
+                            previewArea.classList.add('hidden');
+                            sourceArea.classList.remove('hidden');
+                        }
+                    });
+                });
+            });
+            lucide.createIcons({ root: container });
+        }
+
         function closeEditorModal() {
             editorModal.classList.remove('opacity-100');
             editorModal.classList.add('opacity-0');
@@ -1205,6 +1307,9 @@
                     throwOnError: false
                 });
             } catch(e) { console.error(e); }
+            
+            // Process HTML Widgets for live preview panel
+            processHtmlWidgets(previewContent);
             
             // Update Word & Character Count
             const text = contentInput.value;
