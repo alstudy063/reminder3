@@ -65,16 +65,27 @@
         }
 
         /* Premium Animations */
-        @keyframes shine {
-            to { background-position: -200% center; }
+        @keyframes textShine {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
         }
-        .text-shine {
-            background: linear-gradient(120deg, #111827 40%, #e5e7eb 50%, #111827 60%);
+        .text-shine-fx {
+            background: linear-gradient(to right, #111827 20%, #d1d5db 40%, #ffffff 50%, #d1d5db 60%, #111827 80%);
             background-size: 200% auto;
             color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
             -webkit-background-clip: text !important;
             background-clip: text !important;
-            animation: shine 2.5s linear infinite;
+            animation: textShine 1.5s ease-in-out forwards;
+        }
+        .text-shine-fx-infinite {
+            background: linear-gradient(to right, #111827 20%, #d1d5db 40%, #ffffff 50%, #d1d5db 60%, #111827 80%);
+            background-size: 200% auto;
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            animation: textShine 1.5s linear infinite;
         }
 
         @keyframes fadeInUp {
@@ -389,7 +400,7 @@
         </header>
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
-            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up" style="animation-delay: 0.2s;">Notes</h2>
+            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none" title="Tap to shine!" style="animation-delay: 0.2s;">Notes</h2>
             <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
             
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400 animate-fade-in-up" style="animation-delay: 0.3s;">
@@ -545,6 +556,7 @@
 
         // Loading UI Handlers
         const mainTitle = document.getElementById('main-title');
+        let randomShineTimeout;
         
         function renderSkeletons() {
             const notesGrid = document.getElementById('notes-grid');
@@ -568,13 +580,44 @@
         }
         
         function showLoading() {
-            mainTitle.classList.add('text-shine');
+            if (randomShineTimeout) clearTimeout(randomShineTimeout);
+            mainTitle.classList.remove('text-shine-fx');
+            mainTitle.classList.add('text-shine-fx-infinite');
             document.getElementById('empty-state').classList.add('hidden');
             renderSkeletons();
         }
 
         function hideLoading() {
-            mainTitle.classList.remove('text-shine');
+            mainTitle.classList.remove('text-shine-fx-infinite');
+            startRandomShine();
+        }
+        
+        // Manual trigger for shining when tapped
+        const triggerShine = () => {
+            if (!mainTitle.classList.contains('text-shine-fx-infinite')) {
+                mainTitle.classList.remove('text-shine-fx');
+                void mainTitle.offsetWidth; // Trigger reflow
+                mainTitle.classList.add('text-shine-fx');
+                
+                setTimeout(() => {
+                    mainTitle.classList.remove('text-shine-fx');
+                }, 1500);
+            }
+        };
+        
+        mainTitle.addEventListener('click', triggerShine);
+
+        function startRandomShine() {
+            if (randomShineTimeout) clearTimeout(randomShineTimeout);
+            
+            const randomTrigger = () => {
+                triggerShine();
+                const nextTime = Math.random() * 8000 + 6000;
+                randomShineTimeout = setTimeout(randomTrigger, nextTime);
+            };
+            
+            const nextTime = Math.random() * 5000 + 3000;
+            randomShineTimeout = setTimeout(randomTrigger, nextTime);
         }
 
         // Trigger loading visually immediately
@@ -858,15 +901,34 @@
                     </div>
                     <div class="mt-4 flex items-end justify-between z-10">
                         <span class="text-xs md:text-sm font-semibold text-gray-900/60 transition-opacity duration-300 group-hover:opacity-100">${dateStr}</span>
-                        <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform transition-all duration-300 ease-spring group-hover:scale-110 active:scale-90">
-                            <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none transition-transform duration-300 group-hover:rotate-12"></i>
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-white border border-gray-200 rounded-full text-gray-600 flex items-center justify-center shadow-sm cursor-pointer copy-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Copy Text">
+                                <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none transition-transform duration-300 group-hover:scale-110"></i>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Edit Note">
+                                <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none transition-transform duration-300 group-hover:rotate-12"></i>
+                            </div>
                         </div>
                     </div>
                 `;
                 div.addEventListener('click', (e) => {
-                    if (e.target.closest('.edit-btn')) return;
+                    if (e.target.closest('.edit-btn') || e.target.closest('.copy-btn')) return;
                     openViewModal(note);
                 });
+                
+                const copyBtn = div.querySelector('.copy-btn');
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const textToCopy = note.content || '';
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = textToCopy;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
+                    showToast("Content Copied! 📋");
+                });
+
                 const editBtn = div.querySelector('.edit-btn');
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
