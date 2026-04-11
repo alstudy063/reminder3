@@ -65,6 +65,18 @@
         }
 
         /* Premium Animations */
+        @keyframes shine {
+            to { background-position: -200% center; }
+        }
+        .text-shine {
+            background: linear-gradient(120deg, #111827 40%, #e5e7eb 50%, #111827 60%);
+            background-size: 200% auto;
+            color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            animation: shine 2.5s linear infinite;
+        }
+
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
@@ -377,11 +389,9 @@
         </header>
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
-            <h2 class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up" style="animation-delay: 0.2s;">Notes</h2>
+            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up" style="animation-delay: 0.2s;">Notes</h2>
             <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
-            <div id="loading-state" class="w-full py-12 flex justify-center items-center text-gray-400 transition-opacity duration-500 ease-smooth">
-                <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
-            </div>
+            
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400 animate-fade-in-up" style="animation-delay: 0.3s;">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
                 <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
@@ -407,9 +417,15 @@
                 </div>
             </div>
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col p-4 md:p-6 bg-white">
-                    <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 bg-transparent">
-                    <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col bg-white">
+                    <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
+                        <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 bg-transparent">
+                        <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                    </div>
+                    <div class="h-10 border-t border-gray-50 flex items-center px-4 md:px-6 flex-shrink-0 bg-gray-50/50 text-xs text-gray-400 justify-between font-medium">
+                        <span id="word-count">0 words</span>
+                        <span id="char-count">0 characters</span>
+                    </div>
                 </div>
                 <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50">
                     <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200 empty:hidden"></h1>
@@ -434,6 +450,10 @@
                 <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
             </div>
             <div class="px-4 md:px-6 py-3 md:py-4 border-t border-gray-100 flex justify-end gap-2">
+                <button id="copy-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors active:scale-95">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Copy Text</span>
+                </button>
                 <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors active:scale-95">
                     <i data-lucide="maximize" class="w-4 h-4"></i>
                     <span class="hidden md:inline">Full Screen</span>
@@ -523,6 +543,43 @@
 
         lucide.createIcons();
 
+        // Loading UI Handlers
+        const mainTitle = document.getElementById('main-title');
+        
+        function renderSkeletons() {
+            const notesGrid = document.getElementById('notes-grid');
+            notesGrid.innerHTML = '';
+            for(let i=0; i<6; i++) {
+                notesGrid.innerHTML += `
+                    <div class="rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] bg-white border border-gray-100 shadow-sm animate-pulse">
+                        <div>
+                            <div class="h-7 bg-gray-200 rounded-lg w-3/4 mb-5"></div>
+                            <div class="h-3.5 bg-gray-100 rounded mb-3 w-full"></div>
+                            <div class="h-3.5 bg-gray-100 rounded mb-3 w-5/6"></div>
+                            <div class="h-3.5 bg-gray-100 rounded w-4/6"></div>
+                        </div>
+                        <div class="mt-4 flex items-end justify-between">
+                            <div class="h-3.5 bg-gray-200 rounded w-24"></div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gray-200 rounded-full"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        function showLoading() {
+            mainTitle.classList.add('text-shine');
+            document.getElementById('empty-state').classList.add('hidden');
+            renderSkeletons();
+        }
+
+        function hideLoading() {
+            mainTitle.classList.remove('text-shine');
+        }
+
+        // Trigger loading visually immediately
+        showLoading();
+
         // Configure Marked.js for Canvas-like formatting
         marked.setOptions({
             gfm: true,     // GitHub Flavored Markdown
@@ -538,8 +595,8 @@
             } else {
                 if (unsubscribeSnapshot) unsubscribeSnapshot();
                 notesData = [];
+                hideLoading();
                 renderNotes([]);
-                document.getElementById('loading-state').classList.add('hidden');
             }
         });
 
@@ -612,12 +669,12 @@
                 notesData = [];
                 snapshot.forEach((doc) => notesData.push({ id: doc.id, ...doc.data() }));
                 notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                document.getElementById('loading-state').classList.add('hidden');
+                hideLoading();
                 renderNotes(notesData);
                 processUrlParam();
             }, (error) => {
                 console.error(error);
-                document.getElementById('loading-state').classList.add('hidden');
+                hideLoading();
                 renderNotes([]);
             });
         }
@@ -875,6 +932,20 @@
         editFromViewBtn.addEventListener('click', () => {
             if (currentViewNote) { closeViewModal(); openEditorModal(currentViewNote); }
         });
+        
+        // Copy Text Button Feature
+        document.getElementById('copy-view-btn').addEventListener('click', () => {
+            if (!currentViewNote) return;
+            const textToCopy = currentViewNote.content || '';
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            showToast("Content Copied! 📋");
+        });
+
         document.addEventListener('keydown', (e) => {
             if (viewModal.classList.contains('hidden')) return;
             if (e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); }
@@ -970,6 +1041,13 @@
                     throwOnError: false
                 });
             } catch(e) { console.error(e); }
+            
+            // Update Word & Character Count
+            const text = contentInput.value;
+            const chars = text.length;
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            document.getElementById('word-count').textContent = `${words} word${words !== 1 ? 's' : ''}`;
+            document.getElementById('char-count').textContent = `${chars} character${chars !== 1 ? 's' : ''}`;
         }
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
