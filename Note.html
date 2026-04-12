@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Docket Notes · Advanced HTML Widgets</title>
+    <title>Docket Notes</title>
 
-    <!-- Tailwind CSS -->
+    <!-- Tailwind CSS (Tailwind CSS balake) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
+    <!-- Lucide Icons (Lucide Icongalu) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- Google Fonts: Inter + Sinhala -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@100..900&display=swap" rel="stylesheet">
     
-    <!-- Markdown Parser -->
+    <!-- Markdown Parser (Markdown Parser) -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
-    <!-- KaTeX for Math Rendering -->
+    <!-- KaTeX for Math Rendering (Ganita render maadalu KaTeX) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -47,6 +47,7 @@
     </script>
 
     <style>
+        /* Samanya shailigalu (General styles) */
         * {
             -webkit-tap-highlight-color: transparent;
         }
@@ -64,7 +65,7 @@
             scrollbar-width: none;
         }
 
-        /* Premium Animations */
+        /* Premium Animations (Premium Animationgalu) */
         @keyframes textShine {
             0% { background-position: 200% center; }
             100% { background-position: -200% center; }
@@ -105,17 +106,26 @@
             opacity: 0;
         }
 
-        /* Palette menu (unchanged) */
+        /* Anti-Copy for Main Menu (Nakal maaduvudannu thadeyalu) */
+        .prevent-copy {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        /* Premium Palette menu & Animations (Banna aayke menu) */
         .palette-menu {
             opacity: 0;
             pointer-events: none;
-            transform: translateY(15px) scale(0.95);
+            transform: translateY(20px) scale(0.9);
             transform-origin: bottom center;
             transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         @media (min-width: 768px) {
             .palette-menu {
-                transform: translateY(-15px) scale(0.95);
+                transform: translateY(-20px) scale(0.9);
                 transform-origin: top center;
             }
         }
@@ -126,23 +136,25 @@
         }
         .color-dot {
             opacity: 0;
-            transform: translateY(15px) scale(0.5);
-            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform: scale(0.3) translateY(30px) rotate(-45deg);
+            transition: all 0.6s cubic-bezier(0.68, -0.6, 0.32, 1.6);
         }
         @media (min-width: 768px) {
             .color-dot {
-                transform: translateY(-15px) scale(0.5);
+                transform: scale(0.3) translateY(-30px) rotate(-45deg);
             }
         }
         .palette-menu.open .color-dot {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            transform: scale(1) translateY(0) rotate(0deg);
         }
+        
         .color-dot:nth-child(5) { transition-delay: 0.05s; }
         .color-dot:nth-child(4) { transition-delay: 0.10s; }
         .color-dot:nth-child(3) { transition-delay: 0.15s; }
         .color-dot:nth-child(2) { transition-delay: 0.20s; }
         .color-dot:nth-child(1) { transition-delay: 0.25s; }
+
         @media (min-width: 768px) {
             .color-dot:nth-child(1) { transition-delay: 0.05s; }
             .color-dot:nth-child(2) { transition-delay: 0.10s; }
@@ -158,7 +170,7 @@
             transform: rotate(135deg);
         }
 
-        /* Format Toolbar Buttons */
+        /* Format Toolbar Buttons (Toolbar buttongalu) */
         .format-btn {
             padding: 0.35rem;
             color: #6b7280;
@@ -174,7 +186,6 @@
             transform: scale(0.95);
         }
 
-        /* Flash Animation for Bold & Highlight */
         @keyframes highlightFlash {
             0% { background-color: rgba(250, 204, 21, 0.9); color: #000; box-shadow: 0 0 12px rgba(250, 204, 21, 0.6); }
             100% { background-color: transparent; box-shadow: 0 0 0 transparent; }
@@ -195,97 +206,201 @@
             animation: highlightFlash 1.5s ease-out forwards;
         }
 
-        /* Professional typography (unchanged) */
-        .prose { line-height: 1.6; color: #1f2937; }
-        .prose h1 { font-size: 2.5rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; color: #111827; }
-        .prose h2 { font-size: 2rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; color: #111827; }
-        .prose h3 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1f2937; }
-        .prose p { margin-bottom: 1.25rem; line-height: 1.7; }
-        .prose strong { font-weight: 700; color: #000000; }
-        .prose em { font-style: italic; }
-        .prose del { text-decoration: line-through; color: #6b7280; }
-        .prose code:not(pre code) { background-color: #f3f4f6; color: #ef4444; padding: 0.2rem 0.4rem; border-radius: 0.375rem; font-family: ui-monospace; font-size: 0.875em; }
-        .prose pre { background-color: #1f2937; padding: 1.25rem; border-radius: 0.75rem; overflow-x: auto; margin: 1.5rem 0; }
-        .prose pre code { color: #e5e7eb; font-family: ui-monospace; font-size: 0.875em; background: none; padding: 0; line-height: 1.5; }
-        .prose ul { list-style-type: disc; margin: 1rem 0 1rem 1.5rem; padding-left: 0.5rem; }
-        .prose ol { list-style-type: decimal; margin: 1rem 0 1rem 1.5rem; padding-left: 0.5rem; }
-        .prose li { margin-bottom: 0.5rem; line-height: 1.6; }
-        .prose li > ul, .prose li > ol { margin-top: 0.5rem; margin-bottom: 0.5rem; border-left: 2px solid #e5e7eb; padding-left: 1.25rem; margin-left: 0.25rem; }
-        .prose blockquote { background-color: #fef9e3; border-left: 4px solid #f5b042; padding: 1rem 1.5rem; margin: 1.5rem 0; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
-        .prose a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
-        .prose img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.5rem auto; display: block; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .prose hr { border: none; border-top: 2px solid #e5e7eb; margin: 2.5rem 0; }
-        .katex { background-color: #f8fafc; padding: 0.1rem 0.2rem; border-radius: 0.25rem; font-size: 1.05em; }
-        .katex-display { background: transparent; padding: 1rem 0 !important; margin: 1.5rem 0 !important; display: flex !important; justify-content: center; overflow-x: auto; }
+        /* HTML Widget Styles (Sajiva HTML Widget Shailigalu) */
+        .html-widget-wrapper {
+            margin: 1.5rem 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background-color: #ffffff;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .html-widget-wrapper .prose-pre-override {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+        .widget-live iframe {
+            transition: height 0.3s ease;
+        }
+
+        /* Professional typography (Akshara shailigalu) */
+        .prose {
+            line-height: 1.6;
+            color: #1f2937;
+        }
+        .prose h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            color: #111827;
+        }
+        .prose h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: #111827;
+        }
+        .prose h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        .prose p {
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+        }
+        .prose strong {
+            font-weight: 700;
+            color: #000000;
+        }
+        .prose em {
+            font-style: italic;
+        }
+        .prose del {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+        
+        .prose code:not(pre code) {
+            background-color: #f3f4f6;
+            color: #ef4444;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875em;
+        }
+        
+        .prose pre {
+            background-color: #1f2937;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .prose pre code {
+            color: #e5e7eb;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875em;
+            background: none;
+            padding: 0;
+            line-height: 1.5;
+        }
+        
+        .prose ul {
+            list-style-type: disc;
+            margin: 1rem 0 1rem 1.5rem;
+            padding-left: 0.5rem;
+        }
+        .prose ol {
+            list-style-type: decimal;
+            margin: 1rem 0 1rem 1.5rem;
+            padding-left: 0.5rem;
+        }
+        .prose ol li::marker {
+            font-weight: 700;
+            color: #111827;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        
+        .prose li > ul, .prose li > ol {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 2px solid #e5e7eb;
+            padding-left: 1.25rem;
+            margin-left: 0.25rem;
+        }
+        .prose li > ul li, .prose li > ol li {
+            color: #4b5563;
+            font-weight: 400;
+            font-size: 0.95em;
+        }
+        
+        .prose blockquote {
+            background-color: #fef9e3;
+            border-left: 4px solid #f5b042;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 0.75rem 0.75rem 0;
+            color: #78350f;
+            font-style: italic;
+        }
+        .prose blockquote p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .prose a {
+            color: #2563eb;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-weight: 500;
+        }
+        
+        .prose img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            margin: 1.5rem auto;
+            display: block;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        .prose hr {
+            border: none;
+            border-top: 2px solid #e5e7eb;
+            margin: 2.5rem 0;
+        }
+        
+        .katex {
+            background-color: #f8fafc;
+            padding: 0.1rem 0.2rem;
+            border-radius: 0.25rem;
+            font-size: 1.05em;
+        }
+        .katex-display {
+            background: transparent;
+            padding: 1rem 0 !important;
+            margin: 1.5rem 0 !important;
+            display: flex !important;
+            justify-content: center;
+            overflow-x: auto;
+        }
+        .katex-display .katex {
+            background: transparent;
+            padding: 0;
+        }
+
         @media (max-width: 768px) {
-            .prose h1 { font-size: 1.75rem; }
-            .prose h2 { font-size: 1.5rem; }
+            .prose h1 { font-size: 1.75rem; margin-top: 1.5rem; }
+            .prose h2 { font-size: 1.5rem; margin-top: 1.5rem; }
             .prose h3 { font-size: 1.25rem; }
             .prose { font-size: 0.95rem; }
         }
 
-        /* ========== NEW: HTML WIDGET STYLES ========== */
-        .html-widget {
-            margin: 1.5rem 0;
-            border: 1px solid #e2e8f0;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            background: #ffffff;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-        }
-        .html-widget-toolbar {
+        .modal-center {
             display: flex;
-            justify-content: flex-end;
-            background: #f8fafc;
-            padding: 0.5rem;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .html-widget-toggle-btn {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 9999px;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.75rem;
-            font-weight: 500;
-            color: #1e293b;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
             align-items: center;
-            gap: 0.25rem;
+            justify-content: center;
         }
-        .html-widget-toggle-btn:hover {
-            background: #f1f5f9;
-            transform: scale(0.98);
-        }
-        .html-widget-source {
-            display: none;
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 1rem;
-            font-family: 'SF Mono', monospace;
-            font-size: 0.875rem;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-break: break-word;
-            margin: 0;
-        }
-        .html-widget-iframe {
-            display: block;
-            width: 100%;
-            border: none;
-            background: #ffffff;
-            min-height: 280px;
-            height: auto;
-            resize: vertical;
-            overflow: auto;
-        }
-        .html-widget.show-source .html-widget-iframe { display: none; }
-        .html-widget.show-source .html-widget-source { display: block; }
 
-        .modal-center { display: flex; align-items: center; justify-content: center; }
         @media (max-width: 768px) {
-            #editor-modal .bg-white, #view-modal .bg-white, #settings-modal .bg-white { width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0; }
+            #editor-modal .bg-white, #view-modal .bg-white, #settings-modal .bg-white {
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
             #editor-modal, #view-modal, #settings-modal { padding: 0; }
             #view-modal-content { max-height: 100%; border-radius: 0; }
             .edit-btn { opacity: 1 !important; background-color: rgba(0,0,0,0.7) !important; }
@@ -294,18 +409,20 @@
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row">
 
-    <!-- Sidebar (unchanged) -->
+    <!-- Sidebar (Sidebar) -->
     <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white md:border-r border-gray-200 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1">
         <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20 animate-fade-in-up">Docket</h1>
         
+        <!-- New Note Button + Palette (Hosa tippani button) -->
         <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100] animate-fade-in-up" style="animation-delay: 0.1s;">
-            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 z-10">
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#c5e1a5"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#80deea"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#b39ddb"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffab91"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffcc80"></button>
+            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-2.5 md:p-3 bg-white/70 backdrop-blur-2xl rounded-[30px] md:rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-white/60 z-10">
+                <button class="w-12 h-12 md:w-10 md:h-10 rounded-full bg-c5 color-dot shadow-md border-[3px] border-white hover:scale-110 active:scale-95 transition-transform" data-color="#c5e1a5"></button>
+                <button class="w-12 h-12 md:w-10 md:h-10 rounded-full bg-c4 color-dot shadow-md border-[3px] border-white hover:scale-110 active:scale-95 transition-transform" data-color="#80deea"></button>
+                <button class="w-12 h-12 md:w-10 md:h-10 rounded-full bg-c3 color-dot shadow-md border-[3px] border-white hover:scale-110 active:scale-95 transition-transform" data-color="#b39ddb"></button>
+                <button class="w-12 h-12 md:w-10 md:h-10 rounded-full bg-c2 color-dot shadow-md border-[3px] border-white hover:scale-110 active:scale-95 transition-transform" data-color="#ffab91"></button>
+                <button class="w-12 h-12 md:w-10 md:h-10 rounded-full bg-c1 color-dot shadow-md border-[3px] border-white hover:scale-110 active:scale-95 transition-transform" data-color="#ffcc80"></button>
             </div>
+            
             <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.2)] md:shadow-lg hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-95 focus:outline-none z-20">
                 <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6"></i>
             </button>
@@ -318,7 +435,7 @@
         </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Main Content Area (Mukhya bhaga) -->
     <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden order-2">
         <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10">
             <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all active:scale-90 animate-fade-in-up">
@@ -330,9 +447,10 @@
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4 prevent-copy">
             <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none" title="Tap to shine!" style="animation-delay: 0.2s;">Notes</h2>
             <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
+            
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400 animate-fade-in-up" style="animation-delay: 0.3s;">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
                 <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
@@ -340,7 +458,7 @@
         </div>
     </main>
 
-    <!-- Editor Modal -->
+    <!-- Editor Modal (Sampaadaka Modal) -->
     <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 md:bg-white/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500 ease-smooth">
         <div class="bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden border-0 md:border border-gray-200 transform scale-95 transition-all duration-500 ease-smooth" id="editor-container">
             <div class="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0 transition-colors duration-500" id="modal-header">
@@ -362,7 +480,7 @@
                     <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
                         <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 bg-transparent">
                         
-                        <!-- Toolbar with hint -->
+                        <!-- Toolbar (Toolbar) -->
                         <div class="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 overflow-x-auto no-scrollbar flex-shrink-0">
                             <button class="format-btn" data-format="**" title="Bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
                             <button class="format-btn" data-format="*" title="Italic"><i data-lucide="italic" class="w-4 h-4"></i></button>
@@ -377,12 +495,12 @@
                             <div class="w-px h-4 bg-gray-200 mx-1"></div>
                             <button class="format-btn" data-format="> " title="Quote"><i data-lucide="quote" class="w-4 h-4"></i></button>
                             <button class="format-btn" data-format="```\n" data-suffix="\n```" title="Code Block"><i data-lucide="code" class="w-4 h-4"></i></button>
+                            
+                            <!-- Hosa HTML Widget Button (New HTML Widget Button) -->
+                            <button class="format-btn" data-format="```html\n<!-- Paste your HTML/CSS Widget Here -->\n" data-suffix="\n```" title="Live HTML Widget"><i data-lucide="layout-template" class="w-4 h-4 text-indigo-500"></i></button>
                         </div>
-                        <div class="text-xs text-gray-400 -mt-2 mb-2 flex justify-between">
-                            <span>✨ Markdown & LaTeX supported</span>
-                            <span class="font-mono">```html ... ``` for interactive widgets</span>
-                        </div>
-                        <textarea id="note-content-input" placeholder="Start typing... Use ```html to embed advanced layouts, SVG, Flexbox, Grid" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
+
+                        <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
                     </div>
                     <div class="h-10 border-t border-gray-50 flex items-center px-4 md:px-6 flex-shrink-0 bg-gray-50/50 text-xs text-gray-400 justify-between font-medium">
                         <span id="word-count">0 words</span>
@@ -397,7 +515,7 @@
         </div>
     </div>
 
-    <!-- View Modal -->
+    <!-- View Modal (Munnota Modal) -->
     <div id="view-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500 ease-smooth">
         <div id="view-modal-content" class="bg-white w-full h-full md:w-full md:max-w-4xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 ease-smooth">
             <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100">
@@ -413,6 +531,9 @@
                     <div class="h-4 bg-gray-100 rounded-md w-full"></div>
                     <div class="h-4 bg-gray-100 rounded-md w-5/6"></div>
                     <div class="h-4 bg-gray-100 rounded-md w-4/6"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-full mt-4"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-11/12"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-3/4"></div>
                 </div>
                 <div id="view-content-wrapper" class="block">
                     <h1 id="view-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4"></h1>
@@ -436,12 +557,14 @@
         </div>
     </div>
 
-    <!-- Settings Modal (unchanged) -->
+    <!-- Settings Modal (Settings Modal) -->
     <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden">
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
                 <h3 class="text-lg font-semibold text-gray-900">Settings</h3>
-                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-600 transition-colors active:scale-90"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-600 transition-colors active:scale-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
             </div>
             <div class="p-6">
                 <div id="settings-auth-container">
@@ -461,7 +584,7 @@
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal (Alisuva Khachitapadisuva Modal) -->
     <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden">
             <div class="p-6">
@@ -475,6 +598,25 @@
                 <div class="flex justify-end gap-3">
                     <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full transition-colors active:scale-95">Cancel</button>
                     <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal (Alisuva Khachitapadisuva Modal) -->
+    <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900">Tippani Alisu</h3>
+                </div>
+                <p class="text-gray-600 mb-6">Neevu khanditavagi ee tippaniyannu alisalu bayasuttira? Idannu hindakke padeyalu aguvudilla.</p>
+                <div class="flex justify-end gap-3">
+                    <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full transition-colors active:scale-95">Raddumaadi</button>
+                    <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95">Alisu</button>
                 </div>
             </div>
         </div>
@@ -509,81 +651,6 @@
 
         lucide.createIcons();
 
-        // ---------- CUSTOM MARKED RENDERER FOR HTML WIDGETS ----------
-        const escapeForSrcdoc = (str) => {
-            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        };
-
-        const renderer = new marked.Renderer();
-        const originalCode = renderer.code.bind(renderer);
-        renderer.code = function(code, language) {
-            if (language === 'html') {
-                const widgetId = 'html-widget-' + Math.random().toString(36).substring(2, 10);
-                const escapedCode = escapeForSrcdoc(code);
-                return `
-                    <div class="html-widget" id="${widgetId}">
-                        <div class="html-widget-toolbar">
-                            <button class="html-widget-toggle-btn" data-widget="${widgetId}">
-                                <i data-lucide="eye" class="w-3 h-3"></i> Toggle Source/Live
-                            </button>
-                        </div>
-                        <iframe class="html-widget-iframe" srcdoc="${escapedCode}" sandbox="allow-scripts allow-popups allow-forms" style="width:100%; min-height:280px; border:none;" loading="lazy"></iframe>
-                        <pre class="html-widget-source"><code>${escapeHtml(code)}</code></pre>
-                    </div>
-                `;
-            }
-            return originalCode(code, language);
-        };
-
-        function customMarkedParse(markdown) {
-            return marked.parse(markdown, { renderer });
-        }
-
-        function initHtmlWidgets() {
-            document.querySelectorAll('.html-widget').forEach(widget => {
-                const btn = widget.querySelector('.html-widget-toggle-btn');
-                if (btn && !btn.hasListener) {
-                    btn.hasListener = true;
-                    btn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        widget.classList.toggle('show-source');
-                        const iframe = widget.querySelector('.html-widget-iframe');
-                        const sourcePre = widget.querySelector('.html-widget-source');
-                        if (widget.classList.contains('show-source')) {
-                            iframe.style.display = 'none';
-                            sourcePre.style.display = 'block';
-                        } else {
-                            iframe.style.display = 'block';
-                            sourcePre.style.display = 'none';
-                        }
-                    });
-                }
-                // Adjust iframe height dynamically (simple)
-                const iframe = widget.querySelector('iframe');
-                if (iframe && iframe.contentWindow) {
-                    iframe.onload = () => {
-                        try {
-                            const body = iframe.contentWindow.document.body;
-                            const height = Math.min(body.scrollHeight, 600);
-                            iframe.style.height = (height + 20) + 'px';
-                        } catch(e) { /* cross-origin, ignore */ }
-                    };
-                }
-            });
-            lucide.createIcons();
-        }
-
-        // Replace all marked.parse calls with customMarkedParse
-        const originalMarkedParse = marked.parse;
-        window.customMarkedParse = customMarkedParse;
-
-        // Helper
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-        }
-
-        // ---------- EXISTING APP LOGIC (adapted) ----------
         const mainTitle = document.getElementById('main-title');
         let randomShineTimeout;
         
@@ -624,31 +691,48 @@
         const triggerShine = () => {
             if (!mainTitle.classList.contains('text-shine-fx-infinite')) {
                 mainTitle.classList.remove('text-shine-fx');
-                void mainTitle.offsetWidth;
+                void mainTitle.offsetWidth; 
                 mainTitle.classList.add('text-shine-fx');
-                setTimeout(() => mainTitle.classList.remove('text-shine-fx'), 1500);
+                
+                setTimeout(() => {
+                    mainTitle.classList.remove('text-shine-fx');
+                }, 1500);
             }
         };
+        
         mainTitle.addEventListener('click', triggerShine);
 
         function startRandomShine() {
             if (randomShineTimeout) clearTimeout(randomShineTimeout);
+            
             const randomTrigger = () => {
                 triggerShine();
-                randomShineTimeout = setTimeout(randomTrigger, Math.random() * 20000 + 15000);
+                const nextTime = Math.random() * 20000 + 15000;
+                randomShineTimeout = setTimeout(randomTrigger, nextTime);
             };
-            randomShineTimeout = setTimeout(randomTrigger, Math.random() * 15000 + 10000);
+            
+            const nextTime = Math.random() * 15000 + 10000;
+            randomShineTimeout = setTimeout(randomTrigger, nextTime);
         }
 
         showLoading();
-        marked.setOptions({ gfm: true, breaks: true });
 
-        // Auth & Firestore (unchanged)
+        marked.setOptions({
+            gfm: true,
+            breaks: true
+        });
+
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             updateSettingsUI(user);
-            if (user) fetchNotesFromFirestore();
-            else { if (unsubscribeSnapshot) unsubscribeSnapshot(); notesData = []; hideLoading(); renderNotes([]); }
+            if (user) {
+                fetchNotesFromFirestore();
+            } else {
+                if (unsubscribeSnapshot) unsubscribeSnapshot();
+                notesData = [];
+                hideLoading();
+                renderNotes([]);
+            }
         });
 
         function updateSettingsUI(user) {
@@ -657,6 +741,7 @@
             const avatarImg = document.getElementById('settings-avatar');
             const nameSpan = document.getElementById('settings-name');
             const signOutBtn = document.getElementById('settings-signout-btn');
+
             if (user) {
                 signinBtn.classList.add('hidden');
                 userInfoDiv.classList.remove('hidden');
@@ -692,10 +777,20 @@
         settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
 
         document.getElementById('settings-google-signin-btn').addEventListener('click', async () => {
-            try { await signInWithPopup(auth, provider); showToast("Signed in! Notes are now synced."); closeSettings(); } 
-            catch (error) { console.error(error); showToast("Sign in failed."); }
+            try {
+                await signInWithPopup(auth, provider);
+                showToast("Signed in! Notes are now synced.");
+                closeSettings();
+            } catch (error) {
+                console.error(error);
+                showToast("Sign in failed.");
+            }
         });
-        document.getElementById('settings-signout-btn').addEventListener('click', async () => { await signOut(auth); showToast("Signed out."); closeSettings(); });
+        document.getElementById('settings-signout-btn').addEventListener('click', async () => {
+            await signOut(auth);
+            showToast("Signed out.");
+            closeSettings();
+        });
 
         function fetchNotesFromFirestore() {
             if (!currentUser) return;
@@ -708,7 +803,116 @@
                 hideLoading();
                 renderNotes(notesData);
                 processUrlParam();
-            }, (error) => { console.error(error); hideLoading(); renderNotes([]); });
+            }, (error) => {
+                console.error(error);
+                hideLoading();
+                renderNotes([]);
+            });
+        }
+
+        // Iframe balasi HTML Widget stabilize maaduvudu (Using iframe to stabilize HTML Widgets)
+        function processHtmlWidgets(container) {
+            const htmlBlocks = container.querySelectorAll('pre code.language-html');
+            
+            htmlBlocks.forEach((codeBlock, index) => {
+                const pre = codeBlock.parentElement;
+                if (pre.parentElement.classList.contains('widget-source')) return; // Already processed
+
+                const rawHtml = codeBlock.textContent;
+
+                // Create Wrapper
+                const wrapper = document.createElement('div');
+                wrapper.className = 'html-widget-wrapper';
+
+                // Create Header/Toolbar
+                const header = document.createElement('div');
+                header.className = 'bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center';
+                header.innerHTML = `
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="layout-template" class="w-4 h-4"></i> Live Widget
+                    </span>
+                    <div class="flex bg-gray-200/80 p-0.5 rounded-lg border border-gray-300/50">
+                        <button class="widget-tab-btn active px-3 py-1 text-xs font-semibold rounded-md transition-all bg-white text-gray-900 shadow-sm" data-target="preview">Preview</button>
+                        <button class="widget-tab-btn px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-900" data-target="source">Code</button>
+                    </div>
+                `;
+
+                // Create Content Areas
+                const contentContainer = document.createElement('div');
+                contentContainer.className = 'relative w-full';
+
+                const previewArea = document.createElement('div');
+                previewArea.className = 'widget-live w-full bg-white';
+                
+                // Mukhya app jote CSS clash aguvudannu thadeyalu iframe balake (Use iframe to prevent CSS clashes)
+                const iframe = document.createElement('iframe');
+                iframe.style.width = '100%';
+                iframe.style.border = 'none';
+                iframe.style.display = 'block';
+                iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin');
+                
+                // Iframe ge agathyavada tag galannu serisuvudu (Wrapping code properly)
+                let finalHtml = rawHtml;
+                if (!rawHtml.includes('<html') && !rawHtml.includes('<body')) {
+                    finalHtml = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://cdn.tailwindcss.com"><\/script></head><body style="margin:0; padding:1rem;">' + rawHtml + '</body></html>';
+                }
+                
+                iframe.srcdoc = finalHtml;
+                
+                // Iframe yetara hondanisuvudu (Auto-resize iframe height)
+                iframe.onload = function() {
+                    try {
+                        const height = iframe.contentWindow.document.body.scrollHeight;
+                        iframe.style.height = (height + 20) + 'px';
+                    } catch(e) {
+                        iframe.style.height = '400px';
+                    }
+                };
+
+                previewArea.appendChild(iframe);
+
+                const sourceArea = document.createElement('div');
+                sourceArea.className = 'widget-source hidden w-full bg-[#1f2937]';
+                
+                // Move original pre into source area
+                pre.parentNode.insertBefore(wrapper, pre);
+                pre.classList.add('prose-pre-override');
+                sourceArea.appendChild(pre);
+
+                // Assemble
+                contentContainer.appendChild(previewArea);
+                contentContainer.appendChild(sourceArea);
+                wrapper.appendChild(header);
+                wrapper.appendChild(contentContainer);
+
+                // Tab Switching Logic
+                const btns = header.querySelectorAll('.widget-tab-btn');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        // Update active state
+                        btns.forEach(b => {
+                            b.classList.remove('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
+                            b.classList.add('text-gray-500', 'font-medium');
+                        });
+                        btn.classList.add('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
+                        btn.classList.remove('text-gray-500', 'font-medium');
+
+                        // Toggle views
+                        const target = btn.getAttribute('data-target');
+                        if (target === 'preview') {
+                            previewArea.classList.remove('hidden');
+                            sourceArea.classList.add('hidden');
+                        } else {
+                            previewArea.classList.add('hidden');
+                            sourceArea.classList.remove('hidden');
+                        }
+                    });
+                });
+            });
+            lucide.createIcons({ root: container });
         }
 
         function formatSnippet(content, maxLength = 100) {
@@ -716,12 +920,21 @@
             let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
             text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
-            text = text.replace(/```[\s\S]*?```/g, '[code block]');
+            
+            // Sajiva HTML block guruthisuvudu (Identify live HTML block)
+            text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
+            text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
+            
             text = text.replace(/^#{1,6}\s+/gm, '');
             text = text.replace(/^[-*_]{3,}\s*$/gm, '');
             text = text.replace(/\s+/g, ' ').trim();
             if (text.length > maxLength) text = text.substring(0, maxLength) + '...';
             return text;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
         }
 
         function showToast(message) {
@@ -746,7 +959,10 @@
             toast.style.transition = 'opacity 0.2s ease';
             document.body.appendChild(toast);
             setTimeout(() => toast.style.opacity = '1', 10);
-            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2000);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
         }
 
         let urlParamProcessed = false;
@@ -756,14 +972,22 @@
             const noteId = params.get('note');
             if (noteId && notesData.length > 0) {
                 const note = notesData.find(n => n.id === noteId);
-                if (note) { urlParamProcessed = true; openViewModal(note); setTimeout(() => { if (!viewModal.classList.contains('hidden')) toggleFullscreen(); }, 300); } 
-                else showToast("Note not found");
+                if (note) {
+                    urlParamProcessed = true;
+                    openViewModal(note);
+                    setTimeout(() => {
+                        if (!viewModal.classList.contains('hidden')) toggleFullscreen();
+                    }, 300);
+                } else {
+                    showToast("Note not found");
+                    urlParamProcessed = true;
+                }
             }
         }
 
-        // DOM elements
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
+        const notesGrid = document.getElementById('notes-grid');
         const searchInput = document.getElementById('search-input');
         const emptyState = document.getElementById('empty-state');
         const editorModal = document.getElementById('editor-modal');
@@ -805,30 +1029,63 @@
             }
             lucide.createIcons();
         }
-        document.addEventListener('fullscreenchange', () => {
-            if (document.fullscreenElement) fullscreenIcon?.setAttribute('data-lucide', 'minimize');
-            else fullscreenIcon?.setAttribute('data-lucide', 'maximize');
+
+        function handleFullscreenChange() {
+            if (document.fullscreenElement) {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
+            } else {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
+            }
             lucide.createIcons();
-        });
+        }
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
         fullscreenViewBtn.addEventListener('click', toggleFullscreen);
 
-        toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); isPaletteOpen = !isPaletteOpen; if (isPaletteOpen) { paletteMenu.classList.add('open'); toggleBtn.classList.add('open'); } else closePalette(); });
-        document.addEventListener('click', (e) => { if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette(); });
-        function closePalette() { isPaletteOpen = false; paletteMenu.classList.remove('open'); toggleBtn.classList.remove('open'); }
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isPaletteOpen = !isPaletteOpen;
+            if (isPaletteOpen) {
+                paletteMenu.classList.add('open');
+                toggleBtn.classList.add('open');
+            } else closePalette();
+        });
+        document.addEventListener('click', (e) => {
+            if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette();
+        });
+        function closePalette() {
+            isPaletteOpen = false;
+            paletteMenu.classList.remove('open');
+            toggleBtn.classList.remove('open');
+        }
 
-        document.querySelectorAll('.color-dot').forEach(dot => { dot.addEventListener('click', (e) => { const selectedColor = e.target.getAttribute('data-color'); closePalette(); openEditorModal(null, selectedColor); }); });
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                const selectedColor = e.target.getAttribute('data-color');
+                closePalette();
+                openEditorModal(null, selectedColor);
+            });
+        });
 
-        searchInput.addEventListener('input', (e) => { const query = e.target.value.toLowerCase(); const filtered = notesData.filter(note => note.title?.toLowerCase().includes(query) || note.content?.toLowerCase().includes(query)); renderNotes(filtered); });
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = notesData.filter(note => 
+                note.title?.toLowerCase().includes(query) || note.content?.toLowerCase().includes(query)
+            );
+            renderNotes(filtered);
+        });
 
         function renderNotes(notesToRender) {
             notesGrid.innerHTML = '';
             if (notesToRender.length === 0) emptyState.classList.remove('hidden');
             else emptyState.classList.add('hidden');
+
             notesToRender.forEach((note, index) => {
                 const div = document.createElement('div');
                 div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in`;
+                
                 div.style.animationDelay = `${index * 0.05}s`;
                 div.style.backgroundColor = note.color || '#ffffff';
+                
                 let snippet = formatSnippet(note.content, 100);
                 if (!snippet) snippet = 'No content';
                 const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date';
@@ -841,18 +1098,48 @@
                         <span class="text-xs md:text-sm font-semibold text-gray-900/60 transition-opacity duration-300 group-hover:opacity-100">${dateStr}</span>
                         <div class="flex items-center gap-2">
                             <div class="w-10 h-10 md:w-12 md:h-12 bg-white border border-gray-200 rounded-full text-gray-600 flex items-center justify-center shadow-sm cursor-pointer copy-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Copy Text">
-                                <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none"></i>
+                                <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none transition-transform duration-300 group-hover:scale-110"></i>
                             </div>
-                            <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Edit Note">
-                                <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none"></i>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Edit">
+                                <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none transition-transform duration-300 group-hover:rotate-12"></i>
                             </div>
                         </div>
                     </div>
                 `;
-                div.addEventListener('click', (e) => { if (e.target.closest('.edit-btn') || e.target.closest('.copy-btn')) return; openViewModal(note); });
-                div.querySelector('.copy-btn').addEventListener('click', (e) => { e.stopPropagation(); const textToCopy = note.content || ''; const temp = document.createElement('textarea'); temp.value = textToCopy; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp); showToast("Content Copied! 📋"); });
-                div.querySelector('.edit-btn').addEventListener('click', (e) => { e.stopPropagation(); openEditorModal(note); });
-                div.addEventListener('contextmenu', (e) => { e.preventDefault(); const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id; const el = document.createElement('textarea'); el.value = shareUrl; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); showToast("Link Copied! 🔗"); });
+                div.addEventListener('click', (e) => {
+                    if (e.target.closest('.edit-btn') || e.target.closest('.copy-btn')) return;
+                    openViewModal(note);
+                });
+                
+                const copyBtn = div.querySelector('.copy-btn');
+                copyBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const textToCopy = note.content || '';
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = textToCopy;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
+                    showToast("Content Copied! 📋");
+                });
+
+                const editBtn = div.querySelector('.edit-btn');
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditorModal(note);
+                });
+                div.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
+                    const el = document.createElement('textarea');
+                    el.value = shareUrl;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    showToast("Link Copied! 🔗");
+                });
                 notesGrid.appendChild(div);
             });
             lucide.createIcons();
@@ -860,46 +1147,113 @@
 
         function openViewModal(note) {
             currentViewNote = note;
+            
             const viewLoading = document.getElementById('view-loading');
             const viewContentWrapper = document.getElementById('view-content-wrapper');
-            viewLoading.classList.remove('hidden'); viewLoading.classList.add('flex'); viewContentWrapper.classList.add('hidden');
+            
+            viewLoading.classList.remove('hidden');
+            viewLoading.classList.add('flex');
+            viewContentWrapper.classList.add('hidden');
+            
             viewModal.classList.remove('hidden');
-            setTimeout(() => { viewModal.classList.remove('opacity-0'); viewModalContent.classList.remove('scale-95'); viewModal.classList.add('opacity-100'); viewModalContent.classList.add('scale-100'); }, 20);
             setTimeout(() => {
                 viewTitle.textContent = note.title || 'Untitled Note';
                 viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
+                
                 const processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
-                const parsedHtml = customMarkedParse(processedContent);
+                const parsedHtml = marked.parse(processedContent);
+                
                 viewContent.innerHTML = parsedHtml;
-                try { renderMathInElement(viewContent, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false }); } catch(e) {}
-                viewContent.querySelectorAll('strong, mark').forEach(el => { el.style.animation = 'none'; el.offsetHeight; el.style.animation = null; });
-                initHtmlWidgets(); // initialize toggles inside view modal
-                viewLoading.classList.add('hidden'); viewLoading.classList.remove('flex'); viewContentWrapper.classList.remove('hidden');
-                fullscreenIcon = fullscreenViewBtn.querySelector('i'); if (fullscreenIcon) lucide.createIcons();
+                try {
+                    renderMathInElement(viewContent, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false},
+                            {left: '\\(', right: '\\)', display: false},
+                            {left: '\\[', right: '\\]', display: true}
+                        ],
+                        throwOnError: false
+                    });
+                } catch(e) { console.error(e); }
+
+                // HTML widget galannu munnuta modal nalli process maaduvudu
+                processHtmlWidgets(viewContent);
+
+                const animElements = viewContent.querySelectorAll('strong, mark');
+                animElements.forEach(el => {
+                    el.style.animation = 'none';
+                    el.offsetHeight;
+                    el.style.animation = null; 
+                });
+
+                viewLoading.classList.add('hidden');
+                viewLoading.classList.remove('flex');
+                viewContentWrapper.classList.remove('hidden');
+
+                fullscreenIcon = fullscreenViewBtn.querySelector('i');
+                if (fullscreenIcon) lucide.createIcons();
             }, 400);
         }
 
         function closeViewModal() {
-            viewModal.classList.remove('opacity-100'); viewModalContent.classList.remove('scale-100'); viewModal.classList.add('opacity-0'); viewModalContent.classList.add('scale-95');
-            setTimeout(() => { viewModal.classList.add('hidden'); currentViewNote = null; if (document.fullscreenElement) document.exitFullscreen(); }, 500);
+            viewModal.classList.remove('opacity-100');
+            viewModalContent.classList.remove('scale-100');
+            viewModal.classList.add('opacity-0');
+            viewModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                viewModal.classList.add('hidden');
+                currentViewNote = null;
+                if (document.fullscreenElement) document.exitFullscreen();
+            }, 500);
         }
         closeViewBtn.addEventListener('click', closeViewModal);
         viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
-        editFromViewBtn.addEventListener('click', () => { if (currentViewNote) { closeViewModal(); openEditorModal(currentViewNote); } });
-        document.getElementById('copy-view-btn').addEventListener('click', () => { if (!currentViewNote) return; const textToCopy = currentViewNote.content || ''; const temp = document.createElement('textarea'); temp.value = textToCopy; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp); showToast("Content Copied! 📋"); });
-        document.addEventListener('keydown', (e) => { if (!viewModal.classList.contains('hidden') && e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); } });
+        editFromViewBtn.addEventListener('click', () => {
+            if (currentViewNote) { closeViewModal(); openEditorModal(currentViewNote); }
+        });
+        
+        document.getElementById('copy-view-btn').addEventListener('click', () => {
+            if (!currentViewNote) return;
+            const textToCopy = currentViewNote.content || '';
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            showToast("Content Copied! 📋");
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (viewModal.classList.contains('hidden')) return;
+            if (e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); }
+        });
 
         function showConfirmModal(onConfirm) {
             confirmModal.classList.remove('hidden');
-            setTimeout(() => { confirmModal.classList.remove('opacity-0'); confirmModal.querySelector('.bg-white').classList.remove('scale-95'); confirmModal.classList.add('opacity-100'); confirmModal.querySelector('.bg-white').classList.add('scale-100'); }, 20);
+            setTimeout(() => {
+                confirmModal.classList.remove('opacity-0');
+                confirmModal.querySelector('.bg-white').classList.remove('scale-95');
+                confirmModal.classList.add('opacity-100');
+                confirmModal.querySelector('.bg-white').classList.add('scale-100');
+            }, 20);
             const handleConfirm = () => { closeConfirmModal(); onConfirm(); };
             const handleCancel = () => closeConfirmModal();
-            confirmDeleteBtn.onclick = handleConfirm; confirmCancelBtn.onclick = handleCancel;
+            confirmDeleteBtn.onclick = handleConfirm;
+            confirmCancelBtn.onclick = handleCancel;
             confirmModal.onclick = (e) => { if (e.target === confirmModal) closeConfirmModal(); };
         }
         function closeConfirmModal() {
-            confirmModal.classList.remove('opacity-100'); confirmModal.querySelector('.bg-white').classList.remove('scale-100'); confirmModal.classList.add('opacity-0'); confirmModal.querySelector('.bg-white').classList.add('scale-95');
-            setTimeout(() => { confirmModal.classList.add('hidden'); confirmDeleteBtn.onclick = null; confirmCancelBtn.onclick = null; confirmModal.onclick = null; }, 500);
+            confirmModal.classList.remove('opacity-100');
+            confirmModal.querySelector('.bg-white').classList.remove('scale-100');
+            confirmModal.classList.add('opacity-0');
+            confirmModal.querySelector('.bg-white').classList.add('scale-95');
+            setTimeout(() => {
+                confirmModal.classList.add('hidden');
+                confirmDeleteBtn.onclick = null;
+                confirmCancelBtn.onclick = null;
+                confirmModal.onclick = null;
+            }, 500);
         }
 
         function openEditorModal(note = null, color = '#ffffff') {
@@ -910,66 +1264,132 @@
             modalHeader.style.backgroundColor = `${activeColor}20`;
             modalColorIndicator.style.backgroundColor = activeColor;
             updatePreview();
-            if (activeNoteId) { deleteBtn.classList.remove('hidden'); deleteBtn.classList.add('flex'); } else { deleteBtn.classList.add('hidden'); deleteBtn.classList.remove('flex'); }
+            if (activeNoteId) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.classList.add('flex');
+            } else {
+                deleteBtn.classList.add('hidden');
+                deleteBtn.classList.remove('flex');
+            }
             editorModal.classList.remove('hidden');
             void editorModal.offsetWidth;
-            editorModal.classList.remove('opacity-0'); editorModal.classList.add('opacity-100');
-            editorContainer.classList.remove('scale-95'); editorContainer.classList.add('scale-100');
+            editorModal.classList.remove('opacity-0');
+            editorModal.classList.add('opacity-100');
+            editorContainer.classList.remove('scale-95');
+            editorContainer.classList.add('scale-100');
             titleInput.focus();
         }
 
         function closeEditorModal() {
-            editorModal.classList.remove('opacity-100'); editorModal.classList.add('opacity-0');
-            editorContainer.classList.remove('scale-100'); editorContainer.classList.add('scale-95');
-            setTimeout(() => { editorModal.classList.add('hidden'); titleInput.value = ''; contentInput.value = ''; activeNoteId = null; deleteBtn.classList.add('hidden'); deleteBtn.classList.remove('flex'); }, 500);
+            editorModal.classList.remove('opacity-100');
+            editorModal.classList.add('opacity-0');
+            editorContainer.classList.remove('scale-100');
+            editorContainer.classList.add('scale-95');
+            setTimeout(() => {
+                editorModal.classList.add('hidden');
+                titleInput.value = '';
+                contentInput.value = '';
+                activeNoteId = null;
+                deleteBtn.classList.add('hidden');
+                deleteBtn.classList.remove('flex');
+            }, 500);
         }
         cancelBtn.addEventListener('click', closeEditorModal);
-        deleteBtn.addEventListener('click', () => { if (!activeNoteId || !currentUser) return; showConfirmModal(async () => { const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId); await deleteDoc(noteRef); closeEditorModal(); }); });
+        deleteBtn.addEventListener('click', () => {
+            if (!activeNoteId || !currentUser) return;
+            showConfirmModal(async () => {
+                const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId);
+                await deleteDoc(noteRef);
+                closeEditorModal();
+            });
+        });
 
         function updatePreview() {
             previewTitle.textContent = titleInput.value || 'Untitled Note';
+            
             const processedContent = (contentInput.value || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
-            const parsedHtml = customMarkedParse(processedContent);
+            const parsedHtml = marked.parse(processedContent);
+            
             previewContent.innerHTML = parsedHtml;
-            try { renderMathInElement(previewContent, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false }); } catch(e) {}
-            initHtmlWidgets(); // enable toggle in live preview
+            try {
+                renderMathInElement(previewContent, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            } catch(e) { console.error(e); }
+            
+            // Sampaadaka dalli HTML widgets process maaduvudu
+            processHtmlWidgets(previewContent);
+
             const text = contentInput.value;
             const chars = text.length;
             const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
-            document.getElementById('word-count').textContent = `${words} word${words !== 1 ? 's' : ''}`;
-            document.getElementById('char-count').textContent = `${chars} character${chars !== 1 ? 's' : ''}`;
+            document.getElementById('word-count').textContent = `${words} words`;
+            document.getElementById('char-count').textContent = `${chars} characters`;
         }
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
 
-        // Format toolbar (unchanged)
         document.querySelectorAll('.format-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const format = btn.getAttribute('data-format');
                 const suffix = btn.getAttribute('data-suffix') || format;
-                const start = contentInput.selectionStart, end = contentInput.selectionEnd, text = contentInput.value, selectedText = text.substring(start, end);
-                let newText, newCursorPos;
+                const start = contentInput.selectionStart;
+                const end = contentInput.selectionEnd;
+                const text = contentInput.value;
+                const selectedText = text.substring(start, end);
+                
+                let newText = '';
+                let newCursorPos = start;
+
                 const isBlockFormat = ['# ', '## ', '- ', '1. ', '> '].includes(format);
-                if (isBlockFormat) { newText = text.substring(0, start) + format + selectedText + text.substring(end); newCursorPos = end + format.length; }
-                else if (format === '```\n') { newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end); newCursorPos = start + format.length; }
-                else { newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end); newCursorPos = selectedText.length > 0 ? end + format.length * 2 : start + format.length; }
-                contentInput.value = newText; contentInput.focus(); contentInput.selectionStart = contentInput.selectionEnd = newCursorPos; updatePreview();
+
+                if (isBlockFormat) {
+                    newText = text.substring(0, start) + format + selectedText + text.substring(end);
+                    newCursorPos = end + format.length;
+                } else if (format === '```\n' || format.startsWith('```html')) {
+                    newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end);
+                    newCursorPos = start + format.length;
+                } else {
+                    newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end);
+                    newCursorPos = selectedText.length > 0 ? end + format.length * 2 : start + format.length;
+                }
+                
+                contentInput.value = newText;
+                contentInput.focus();
+                contentInput.selectionStart = contentInput.selectionEnd = newCursorPos;
+                updatePreview();
             });
         });
 
-        // Smart list & tab handling
         contentInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Tab') { e.preventDefault(); const start = this.selectionStart, end = this.selectionEnd; this.value = this.value.substring(0, start) + "  " + this.value.substring(end); this.selectionStart = this.selectionEnd = start + 2; updatePreview(); }
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+                updatePreview();
+            }
+            
             if (e.key === 'Enter') {
                 const start = this.selectionStart;
                 const textToCursor = this.value.substring(0, start);
                 const lines = textToCursor.split('\n');
                 const currentLine = lines[lines.length - 1];
+                
                 const ulMatch = currentLine.match(/^(\s*)([-*])\s(.*)$/);
                 const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+
                 if (ulMatch || olMatch) {
                     const isEmpty = ulMatch ? !ulMatch[3].trim() : !olMatch[3].trim();
+                    
                     if (isEmpty) {
                         e.preventDefault();
                         const markerLength = ulMatch ? ulMatch[1].length + ulMatch[2].length + 1 : olMatch[1].length + olMatch[2].length + 2;
@@ -979,10 +1399,16 @@
                         updatePreview();
                         return;
                     }
+
                     e.preventDefault();
                     let insertion = '\n';
-                    if (ulMatch) insertion += ulMatch[1] + ulMatch[2] + ' ';
-                    else if (olMatch) { const nextNum = parseInt(olMatch[2], 10) + 1; insertion += olMatch[1] + nextNum + '. '; }
+                    if (ulMatch) {
+                        insertion += ulMatch[1] + ulMatch[2] + ' ';
+                    } else if (olMatch) {
+                        const nextNum = parseInt(olMatch[2], 10) + 1;
+                        insertion += olMatch[1] + nextNum + '. ';
+                    }
+                    
                     this.value = this.value.substring(0, start) + insertion + this.value.substring(this.selectionEnd);
                     this.selectionStart = this.selectionEnd = start + insertion.length;
                     updatePreview();
@@ -991,7 +1417,11 @@
         });
 
         saveBtn.addEventListener('click', async () => {
-            if (!currentUser) { showToast("Please sign in to save notes."); openSettings(); return; }
+            if (!currentUser) { 
+                showToast("Please sign in to save notes.");
+                openSettings();
+                return;
+            }
             const title = titleInput.value.trim() || 'Untitled Note';
             const content = contentInput.value.trim();
             if (!content && !titleInput.value.trim()) { closeEditorModal(); return; }
