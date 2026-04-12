@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ChemMaster | Ultra Builder</title>
+    <title>ChemMaster | Ultra Builder Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- LZ-String for Data Compression -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
     <!-- Google Fonts: Plus Jakarta Sans + Noto Sans Sinhala -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Firebase SDKs (modular) -->
@@ -36,17 +38,8 @@
         window.firebaseDb = fDb;
 
         window.FirebaseModules = {
-            signInAnonymously,
-            onAuthStateChanged,
-            GoogleAuthProvider,
-            signInWithPopup,
-            signOut,
-            collection,
-            doc,
-            setDoc,
-            deleteDoc,
-            onSnapshot,
-            writeBatch
+            signInAnonymously, onAuthStateChanged, GoogleAuthProvider,
+            signInWithPopup, signOut, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch
         };
     </script>
     <style>
@@ -59,8 +52,6 @@
             --bg-primary: #0f172a;
             --text-primary: #f8fafc;
             --text-secondary: rgba(255,255,255,0.5);
-            --sidebar-width: 5rem;
-            --sidebar-expanded: 16rem;
         }
 
         /* Light theme overrides */
@@ -83,19 +74,13 @@
             height: 100vh;
             user-select: none;
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
         }
 
-        html.light body {
-            background: radial-gradient(circle at top right, #e2e8f0, #cbd5e1, #94a3b8);
-        }
+        html.light body { background: radial-gradient(circle at top right, #e2e8f0, #cbd5e1, #94a3b8); }
 
         input, textarea, [contenteditable="true"], select {
             user-select: text !important;
             -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            -ms-user-select: text !important;
         }
 
         /* Glassmorphism Classes */
@@ -114,10 +99,7 @@
             transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        html.light .glass-card {
-            background: rgba(0, 0, 0, 0.02);
-            border: 1px solid rgba(0, 0, 0, 0.05);
-        }
+        html.light .glass-card { background: rgba(0, 0, 0, 0.02); border: 1px solid rgba(0, 0, 0, 0.05); }
 
         .glass-card:hover {
             background: rgba(255, 255, 255, 0.07);
@@ -126,9 +108,7 @@
             box-shadow: 0 10px 40px -10px var(--accent-glow);
         }
 
-        html.light .glass-card:hover {
-            background: rgba(0, 0, 0, 0.05);
-        }
+        html.light .glass-card:hover { background: rgba(0, 0, 0, 0.05); }
 
         /* Animations */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -142,7 +122,7 @@
         .float-animation { animation: float 6s ease-in-out infinite; }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
@@ -164,17 +144,17 @@
             z-index: 1;
         }
 
-        /* Command Palette */
         #command-palette {
             transform: translate(-50%, -120%);
             transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
         }
         #command-palette.open { transform: translate(-50%, 20px); }
 
-        input:focus, select:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--accent-glow);
-        }
+        /* Modals */
+        #shortcuts-modal { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        #shortcuts-modal.open { display: flex; opacity: 1; }
+
+        input:focus, select:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-glow); }
 
         /* Light mode text adjustments */
         html.light .text-white { color: #0f172a !important; }
@@ -182,87 +162,26 @@
         html.light .text-white\/70 { color: rgba(15, 23, 42, 0.7) !important; }
         html.light .bg-white\/5 { background: rgba(0, 0, 0, 0.03) !important; }
         html.light .border-white\/5 { border-color: rgba(0, 0, 0, 0.05) !important; }
-        html.light .border-white\/10 { border-color: rgba(0, 0, 0, 0.1) !important; }
 
         /* RESPONSIVE: Mobile Bottom Bar */
         @media (max-width: 768px) {
-            body {
-                padding-bottom: 80px;
-            }
+            body { padding-bottom: 80px; }
             #sidebar {
-                position: fixed !important;
-                bottom: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                top: auto !important;
-                width: 100% !important;
-                height: 80px !important;
-                flex-direction: row !important;
-                justify-content: space-around !important;
-                align-items: center !important;
-                padding: 0.5rem !important;
-                border-right: none !important;
-                border-top: 1px solid var(--border-glass) !important;
-                z-index: 120 !important;
-                backdrop-filter: blur(20px) !important;
-                background: var(--bg-glass) !important;
+                position: fixed !important; bottom: 0 !important; left: 0 !important; right: 0 !important;
+                top: auto !important; width: 100% !important; height: 80px !important;
+                flex-direction: row !important; justify-content: space-around !important; align-items: center !important;
+                padding: 0.5rem !important; border-right: none !important; border-top: 1px solid var(--border-glass) !important;
+                z-index: 120 !important; backdrop-filter: blur(20px) !important; background: var(--bg-glass) !important;
             }
-            #sidebar > div:first-child {
-                display: none !important;
-            }
-            #sidebar .flex-1 {
-                flex-direction: row !important;
-                width: 100% !important;
-                justify-content: space-around !important;
-                gap: 0 !important;
-            }
-            #sidebar .nav-item {
-                flex-direction: column !important;
-                gap: 4px !important;
-                padding: 8px !important;
-                width: auto !important;
-                justify-content: center !important;
-                border-radius: 16px !important;
-            }
-            #sidebar .nav-item span {
-                display: block !important;
-                font-size: 10px !important;
-            }
-            #sidebar .mt-auto {
-                display: none !important;
-            }
-            main {
-                padding-bottom: 0 !important;
-            }
-            #view-dashboard header {
-                flex-direction: column !important;
-                align-items: flex-start !important;
-                gap: 16px !important;
-            }
-            .view-section {
-                padding-bottom: 20px !important;
-            }
-            #category-filters {
-                flex-wrap: wrap !important;
-                max-width: 100% !important;
-                overflow-x: auto !important;
-                padding-bottom: 4px;
-            }
+            #sidebar > div:first-child { display: none !important; }
+            #sidebar .flex-1 { flex-direction: row !important; width: 100% !important; justify-content: space-around !important; gap: 0 !important; }
+            #sidebar .nav-item { flex-direction: column !important; gap: 4px !important; padding: 8px !important; width: auto !important; justify-content: center !important; border-radius: 16px !important; }
+            #sidebar .nav-item span { display: block !important; font-size: 10px !important; }
+            #sidebar .mt-auto { display: none !important; }
+            main { padding-bottom: 0 !important; }
         }
-
-        @media (max-width: 480px) {
-            #dashboard-grid {
-                grid-template-columns: 1fr !important;
-            }
-            .lg\:col-span-5, .lg\:col-span-7 {
-                grid-column: span 12 / span 12 !important;
-            }
-        }
-
-        /* Viewer touch-action */
-        #viewer-container {
-            touch-action: none;
-        }
+        #viewer-container { touch-action: none; }
+        .chem-formula sub { font-size: 0.6em; vertical-align: sub; line-height: 0; }
     </style>
 </head>
 <body class="flex h-screen w-screen overflow-hidden">
@@ -277,18 +196,34 @@
     <div id="command-palette" class="fixed top-0 left-1/2 z-[100] w-full max-w-lg px-4">
         <div class="glass-panel rounded-2xl p-2 flex items-center gap-3 border border-white/20">
             <i data-lucide="search" class="w-5 h-5 text-cyan-400 ml-2"></i>
-            <input type="text" id="cmd-input" placeholder="Type to search or 'add reaction'..." class="w-full bg-transparent border-none py-2 text-sm text-white placeholder:text-white/40">
+            <input type="text" id="cmd-input" placeholder="Type to search library..." class="w-full bg-transparent border-none py-2 text-sm text-white placeholder:text-white/40">
             <kbd class="hidden md:block bg-white/10 px-2 py-1 rounded text-[10px] text-white/50 border border-white/10">ESC</kbd>
+        </div>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div id="shortcuts-modal" class="fixed inset-0 z-[150] bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+        <div class="glass-panel rounded-3xl p-6 md:p-8 max-w-md w-full border border-white/20 animate-fade relative">
+            <button onclick="app.toggleShortcuts()" class="absolute top-4 right-4 text-white/50 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            <h2 class="text-xl font-black text-white mb-6 flex items-center gap-2"><i data-lucide="keyboard" class="w-5 h-5 text-cyan-400"></i> Keyboard Shortcuts</h2>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center"><span class="text-sm text-white/70">Search / Command Palette</span><kbd class="bg-white/10 px-2 py-1 rounded text-xs text-white font-mono">Ctrl + K</kbd></div>
+                <div class="flex justify-between items-center"><span class="text-sm text-white/70">Show Shortcuts</span><kbd class="bg-white/10 px-2 py-1 rounded text-xs text-white font-mono">Ctrl + /</kbd></div>
+                <div class="flex justify-between items-center"><span class="text-sm text-white/70">New Compound</span><kbd class="bg-white/10 px-2 py-1 rounded text-xs text-white font-mono">Alt + N</kbd></div>
+                <div class="flex justify-between items-center"><span class="text-sm text-white/70">Undo (In Builder)</span><kbd class="bg-white/10 px-2 py-1 rounded text-xs text-white font-mono">Ctrl + Z</kbd></div>
+                <div class="flex justify-between items-center"><span class="text-sm text-white/70">Save (In Builder)</span><kbd class="bg-white/10 px-2 py-1 rounded text-xs text-white font-mono">Ctrl + S</kbd></div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-white/10 text-xs text-white/40 text-center">Mobile: Double-tap in viewer to reset zoom.</div>
         </div>
     </div>
 
     <!-- Toast UI -->
     <div id="toast-container" class="fixed top-6 right-6 z-[110] flex flex-col gap-3"></div>
 
-    <!-- Navigation Sidebar (becomes bottom bar on mobile) -->
+    <!-- Navigation Sidebar -->
     <nav id="sidebar" class="w-20 md:w-64 glass-panel border-r border-white/5 flex flex-col items-center py-8 z-50 transition-all duration-300">
         <div class="flex items-center gap-3 mb-12 px-4 group cursor-pointer" onclick="app.switchView('dashboard')">
-            <div class="p-2.5 bg-cyan-500 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.5)] group-hover:scale-110 transition-transform">
+            <div class="p-2.5 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.5)] group-hover:scale-110 transition-transform">
                 <i data-lucide="atom" class="text-white w-6 h-6"></i>
             </div>
             <span class="hidden md:block font-extrabold text-xl tracking-tighter text-white">Chem<span class="text-cyan-400 font-light">Pro</span></span>
@@ -306,6 +241,10 @@
             <button onclick="app.switchView('settings')" id="nav-settings" class="nav-item flex items-center gap-4 p-3.5 rounded-2xl w-full transition-all text-white/50 hover:bg-white/5">
                 <i data-lucide="settings-2" class="w-6 h-6"></i>
                 <span class="hidden md:block font-semibold text-sm">Config</span>
+            </button>
+            <button onclick="app.toggleShortcuts()" class="nav-item flex items-center gap-4 p-3.5 rounded-2xl w-full transition-all text-white/50 hover:bg-white/5 mt-auto mb-2 hidden md:flex">
+                <i data-lucide="keyboard" class="w-5 h-5"></i>
+                <span class="hidden md:block font-semibold text-sm">Shortcuts</span>
             </button>
         </div>
 
@@ -332,13 +271,35 @@
                 </div>
                 <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
                     <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 overflow-x-auto hide-scrollbar" id="category-filters">
-                        <!-- Dynamic category filter buttons -->
+                        <!-- Filters -->
                     </div>
                     <button onclick="app.createNewChart()" class="bg-cyan-500 hover:bg-cyan-400 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all shadow-xl shadow-cyan-500/20 flex items-center gap-2 whitespace-nowrap">
                         <i data-lucide="plus" class="w-4 h-4"></i> New Compound
                     </button>
                 </div>
             </header>
+
+            <div id="dashboard-empty-state" class="hidden flex-col items-center justify-center py-20 animate-fade">
+                <div class="w-32 h-32 mb-6 text-white/10 flex items-center justify-center">
+                    <i data-lucide="test-tubes" class="w-full h-full"></i>
+                </div>
+                <h2 class="text-2xl font-black text-white mb-2">No Compounds Found</h2>
+                <p class="text-white/50 mb-8 max-w-md text-center">Your archive is empty. Create a new compound from scratch or start with one of our quick templates.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-2xl">
+                    <button onclick="app.loadTemplate('water')" class="glass-card p-4 rounded-2xl text-left hover:border-cyan-500 transition-colors">
+                        <span class="text-cyan-400 font-black text-lg block mb-1">H₂O</span>
+                        <span class="text-xs text-white/50">Water</span>
+                    </button>
+                    <button onclick="app.loadTemplate('salt')" class="glass-card p-4 rounded-2xl text-left hover:border-purple-500 transition-colors">
+                        <span class="text-purple-400 font-black text-lg block mb-1">NaCl</span>
+                        <span class="text-xs text-white/50">Table Salt</span>
+                    </button>
+                    <button onclick="app.loadTemplate('glucose')" class="glass-card p-4 rounded-2xl text-left hover:border-green-500 transition-colors">
+                        <span class="text-green-400 font-black text-lg block mb-1">C₆H₁₂O₆</span>
+                        <span class="text-xs text-white/50">Glucose</span>
+                    </button>
+                </div>
+            </div>
 
             <div id="dashboard-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 animate-fade">
                 <!-- Data cards inject here -->
@@ -347,28 +308,33 @@
 
         <!-- LAB STUDIO (BUILDER) -->
         <section id="view-builder" class="view-section h-full flex-col overflow-hidden">
-            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-6 border-b border-white/5 bg-white/2 backdrop-blur-xl shrink-0 gap-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-6 border-b border-white/5 bg-white/2 backdrop-blur-xl shrink-0 gap-4 relative z-20">
                 <div class="flex items-center gap-4 w-full sm:w-auto">
                     <button onclick="app.switchView('dashboard')" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-cyan-500 transition-all shrink-0">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                     </button>
-                    <div class="flex-1">
-                        <input type="text" id="build-title" placeholder="Compound Formula (e.g. H2O)" class="bg-transparent border-none text-xl md:text-2xl font-black text-white placeholder:text-white/20 p-0 focus:ring-0 w-full">
-                        <input type="text" id="build-subtext" placeholder="Common Name (e.g. Water)" class="bg-transparent border-none text-xs font-bold text-cyan-400/60 placeholder:text-cyan-400/20 p-0 focus:ring-0 block uppercase tracking-widest mt-1 w-full">
-                        <select id="build-category" class="mt-2 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:ring-0 w-full sm:w-auto">
-                            <!-- Categories options -->
+                    <div class="flex-1 min-w-[200px]">
+                        <div class="flex items-center gap-3">
+                            <input type="text" id="build-title" oninput="app.saveStateForUndo(); app.updateMolWeight()" placeholder="Formula (e.g. H2O)" class="bg-transparent border-none text-xl md:text-2xl font-black text-white placeholder:text-white/20 p-0 focus:ring-0 w-full chem-formula">
+                            <div id="build-mol-weight" class="hidden sm:flex items-center px-2 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-mono text-cyan-400 whitespace-nowrap">-- g/mol</div>
+                        </div>
+                        <input type="text" id="build-subtext" oninput="app.saveStateForUndo()" placeholder="Common Name (e.g. Water)" class="bg-transparent border-none text-xs font-bold text-cyan-400/60 placeholder:text-cyan-400/20 p-0 focus:ring-0 block uppercase tracking-widest mt-1 w-full">
+                        <select id="build-category" onchange="app.saveStateForUndo()" class="mt-2 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:ring-0 w-full sm:w-auto">
                         </select>
                     </div>
                 </div>
-                <div class="flex gap-3 self-end sm:self-auto">
-                    <button onclick="app.switchView('dashboard')" class="px-4 md:px-5 py-2 md:py-2.5 rounded-xl border border-white/10 text-white/70 font-bold text-xs hover:bg-white/5">Discard</button>
-                    <button onclick="app.saveCurrentChart()" class="px-4 md:px-6 py-2 md:py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-xs shadow-xl shadow-cyan-500/20 flex items-center gap-2">
+                <div class="flex gap-2 sm:gap-3 self-end sm:self-auto items-center">
+                    <button onclick="app.undo()" id="btn-undo" class="w-8 h-8 md:w-10 md:h-10 rounded-xl border border-white/10 text-white/30 hover:text-white hover:bg-white/5 flex items-center justify-center transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Undo (Ctrl+Z)">
+                        <i data-lucide="undo-2" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="app.switchView('dashboard')" class="px-3 md:px-5 py-2 md:py-2.5 rounded-xl border border-white/10 text-white/70 font-bold text-xs hover:bg-white/5 transition-colors">Discard</button>
+                    <button onclick="app.saveCurrentChart()" class="px-4 md:px-6 py-2 md:py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-xs shadow-xl shadow-cyan-500/20 flex items-center gap-2 transition-transform hover:scale-105 active:scale-95">
                         <i data-lucide="save" class="w-4 h-4"></i> Save
                     </button>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10">
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10 pb-32 md:pb-10">
                 <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
                     <div class="lg:col-span-5 space-y-6">
                         <div class="flex items-center justify-between">
@@ -397,12 +363,12 @@
         </section>
 
         <!-- VIEWER -->
-        <section id="view-viewer" class="view-section h-full flex-col overflow-hidden relative">
+        <section id="view-viewer" class="view-section h-full flex-col overflow-hidden relative bg-[#050B14]">
             <div class="absolute top-4 left-4 z-20 flex gap-2">
-                 <button onclick="app.switchView('dashboard')" class="glass-panel p-2 md:p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2">
+                 <button onclick="app.switchView('dashboard')" class="glass-panel p-2 md:p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2 transition-transform hover:scale-105 active:scale-95">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> <span class="text-xs font-bold uppercase hidden sm:inline">Archive</span>
                  </button>
-                 <button onclick="app.switchView('builder')" class="glass-panel p-2 md:p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2">
+                 <button onclick="app.switchView('builder')" class="glass-panel p-2 md:p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2 transition-transform hover:scale-105 active:scale-95">
                     <i data-lucide="pencil" class="w-4 h-4"></i> <span class="text-xs font-bold uppercase hidden sm:inline">Studio</span>
                  </button>
             </div>
@@ -412,9 +378,14 @@
                 <div class="px-4 flex items-center text-[10px] font-black text-white/40 uppercase tracking-widest border-x border-white/5" id="zoom-level">100%</div>
                 <button onclick="app.changeZoom(0.1)" class="p-2 md:p-3 text-white/50 hover:text-white transition-colors"><i data-lucide="zoom-in" class="w-4 md:w-5 h-4 md:h-5"></i></button>
             </div>
+            
+            <!-- Mobile helper text -->
+            <div class="absolute bottom-32 md:bottom-24 left-1/2 -translate-x-1/2 z-20 text-[10px] text-white/30 tracking-widest uppercase pointer-events-none opacity-50 sm:hidden">
+                Double-Tap to Center
+            </div>
 
             <div class="flex-1 overflow-hidden cursor-grab active:cursor-grabbing" id="viewer-container">
-                <div id="viewer-wrapper" class="w-full h-full relative transition-transform duration-500 ease-out flex items-center justify-center origin-center">
+                <div id="viewer-wrapper" class="w-full h-full relative transition-transform duration-200 ease-out flex items-center justify-center origin-center">
                     <svg id="viewer-svg" class="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0"></svg>
                     <div id="viewer-content" class="flex items-center gap-16 md:gap-32 p-8 md:p-40 relative z-10 scale-90 md:scale-100">
                         <!-- Chart generated here -->
@@ -426,7 +397,7 @@
         <!-- SETTINGS -->
         <section id="view-settings" class="view-section h-full flex-col p-4 md:p-6 lg:p-10 overflow-y-auto">
             <h1 class="text-2xl md:text-3xl font-black text-white mb-6 md:mb-10">Config Station</h1>
-            <div class="max-w-2xl space-y-6 md:space-y-8">
+            <div class="max-w-2xl space-y-6 md:space-y-8 pb-20">
                 <div class="glass-card p-4 md:p-6 rounded-3xl border border-white/10">
                     <h2 class="text-sm font-black uppercase text-cyan-400 mb-4 md:mb-6 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4"></i> Appearance</h2>
                     <div class="flex items-center justify-between">
@@ -451,7 +422,7 @@
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/5">
                         <div>
                             <p class="font-bold text-white mb-1" id="set-user-name">Guest Scientist</p>
-                            <p class="text-xs text-white/40" id="set-sync-status">Data stored locally on this machine.</p>
+                            <p class="text-xs text-white/40" id="set-sync-status">Data compressed and stored locally.</p>
                         </div>
                         <button onclick="app.signIn()" id="signin-btn" class="bg-cyan-500 hover:bg-cyan-400 text-white px-5 py-2.5 rounded-xl font-bold text-xs w-full sm:w-auto">Authorize Google</button>
                     </div>
@@ -479,32 +450,19 @@
 
     <!-- App Logic Module -->
     <script type="module">
-        // Prevent copy on non-input
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
-                const activeEl = document.activeElement;
-                const isInput = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable || activeEl.tagName === 'SELECT';
-                if (!isInput) {
-                    e.preventDefault();
-                    return false;
-                }
-            }
-        });
-        document.addEventListener('contextmenu', (e) => {
-            const activeEl = document.activeElement;
-            const isInput = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable || activeEl.tagName === 'SELECT';
-            if (!isInput) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
         const { 
             signInAnonymously, onAuthStateChanged, GoogleAuthProvider, 
             signInWithPopup, signOut, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch 
         } = window.FirebaseModules;
         const fAuth = window.firebaseAuth;
         const fDb = window.firebaseDb;
+
+        // Scientific Dictionary for Molecular Weight
+        const atomicWeights = {
+            H:1.008, He:4.003, Li:6.94, Be:9.012, B:10.81, C:12.011, N:14.007, O:15.999, F:18.998, Ne:20.180, 
+            Na:22.990, Mg:24.305, Al:26.982, Si:28.085, P:30.974, S:32.06, Cl:35.45, K:39.098, Ca:40.078, 
+            Fe:55.845, Cu:63.546, Zn:65.38, Br:79.904, Ag:107.87, I:126.90, Au:196.97
+        };
 
         window.app = {
             state: {
@@ -520,17 +478,19 @@
                 offset: { x: 0, y: 0 },
                 firestoreUnsubscribe: null,
                 isOnline: true,
-                // Touch state
                 initialPinchDistance: 0,
                 initialZoom: 1,
+                lastTap: 0, // for double tap
+                undoStack: [] // Array of serialized chart states
             },
-            firebase: { auth: fAuth, db: fDb },
 
             async init() {
                 this.setupKeyboard();
                 this.setupDrag();
-                this.setupTouchZoom(); // New touch handling
+                this.setupTouchZoom(); 
+                this.setupSearch();
                 
+                // Categories
                 const storedCats = localStorage.getItem('chem_categories');
                 if (storedCats) {
                     this.state.categories = JSON.parse(storedCats);
@@ -542,13 +502,8 @@
                     localStorage.setItem('chem_categories', JSON.stringify(this.state.categories));
                 }
                 
-                const local = localStorage.getItem('chem_ultra_v1');
-                if(!local) {
-                    this.state.charts = [this.getDemoChart()];
-                    localStorage.setItem('chem_ultra_v1', JSON.stringify(this.state.charts));
-                } else {
-                    this.state.charts = JSON.parse(local);
-                }
+                // Load Charts (using LZString compression for larger capacity)
+                this.loadLocalData();
 
                 this.renderDashboard();
                 this.renderCategoryFilters();
@@ -568,16 +523,13 @@
                         const chartsRef = collection(fDb, 'artifacts', 'studyflow-pro', 'users', user.uid, 'charts');
                         this.state.firestoreUnsubscribe = onSnapshot(chartsRef, (snapshot) => {
                             const firestoreCharts = [];
-                            snapshot.forEach(doc => {
-                                firestoreCharts.push({ id: doc.id, ...doc.data() });
-                            });
+                            snapshot.forEach(doc => firestoreCharts.push({ id: doc.id, ...doc.data() }));
+                            
                             if (firestoreCharts.length > 0 || snapshot.metadata.hasPendingWrites) {
                                 this.state.charts = firestoreCharts;
-                                localStorage.setItem('chem_ultra_v1', JSON.stringify(firestoreCharts));
+                                this.saveLocalData();
                                 this.renderDashboard();
                                 this.renderCategoryFilters();
-                                this.renderCategorySelect();
-                                lucide.createIcons();
                             } else {
                                 this.syncLocalToFirestore(user.uid);
                             }
@@ -601,7 +553,153 @@
                 }
             },
 
+            // Utils
+            vibrate(ms = 50) { if (navigator.vibrate) navigator.vibrate(ms); },
+            
+            formatFormula(text) {
+                if(!text) return '';
+                // Format digits following letters/brackets to subscripts
+                const subs = {'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+                return text.replace(/([A-Za-z\)])(\d+)/g, (match, p1, p2) => p1 + p2.split('').map(d => subs[d] || d).join(''));
+            },
+
+            calcMolecularWeight(formula) {
+                if(!formula) return 0;
+                let weight = 0;
+                const regex = /([A-Z][a-z]*)(\d*)/g;
+                let match;
+                while ((match = regex.exec(formula)) !== null) {
+                    const el = match[1];
+                    const count = match[2] ? parseInt(match[2]) : 1;
+                    if (atomicWeights[el]) weight += atomicWeights[el] * count;
+                }
+                return weight;
+            },
+
+            formatDate(timestamp) {
+                if(!timestamp) return 'Just now';
+                const d = new Date(timestamp);
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: d.getFullYear()!==new Date().getFullYear()?'numeric':undefined });
+            },
+
+            // Data Management
+            loadLocalData() {
+                const local = localStorage.getItem('chem_ultra_v2_compressed');
+                if (local && window.LZString) {
+                    try {
+                        this.state.charts = JSON.parse(LZString.decompressFromUTF16(local));
+                    } catch(e) { this.state.charts = []; }
+                } else {
+                    // Fallback to v1 uncompressed
+                    const oldLocal = localStorage.getItem('chem_ultra_v1');
+                    if(oldLocal) {
+                        this.state.charts = JSON.parse(oldLocal);
+                        this.saveLocalData(); // Save in new compressed format
+                    } else {
+                        this.state.charts = [];
+                    }
+                }
+            },
+
+            saveLocalData() {
+                if(window.LZString) {
+                    const compressed = LZString.compressToUTF16(JSON.stringify(this.state.charts));
+                    localStorage.setItem('chem_ultra_v2_compressed', compressed);
+                } else {
+                    localStorage.setItem('chem_ultra_v1', JSON.stringify(this.state.charts));
+                }
+            },
+
+            loadTemplate(type) {
+                this.vibrate();
+                const id = 'chart_' + Date.now();
+                let tmpl;
+                if(type === 'water') {
+                    tmpl = { id, title: 'H2O', subtext: 'Water', categoryId: 'cat_inorganic', pinned: false, updatedAt: Date.now(), preparations: [ {id:1, topText:'Combustion', mainText:'2H2 + O2'}, {id:2, topText:'Neutralization', mainText:'HCl + NaOH'} ], reactions: [ {id:1, reagent:'Na', product:'NaOH + H2', subText:'Violent', observations:[{id:1, mainText:'Heat evolved'}]} ] };
+                } else if(type === 'salt') {
+                    tmpl = { id, title: 'NaCl', subtext: 'Table Salt', categoryId: 'cat_inorganic', pinned: false, updatedAt: Date.now(), preparations: [ {id:1, topText:'Direct combo', mainText:'2Na + Cl2'}, {id:2, topText:'Evaporation', mainText:'Seawater'} ], reactions: [ {id:1, reagent:'AgNO3', product:'AgCl', subText:'Precipitation', observations:[{id:1, mainText:'White ppt'}]} ] };
+                } else {
+                    tmpl = { id, title: 'C6H12O6', subtext: 'Glucose', categoryId: 'cat_organic', pinned: false, updatedAt: Date.now(), preparations: [ {id:1, topText:'Photosynthesis', mainText:'6CO2 + 6H2O'} ], reactions: [ {id:1, reagent:'Yeast', product:'C2H5OH + CO2', subText:'Fermentation', observations:[{id:1, mainText:'Bubbles'}]} ] };
+                }
+                this.state.currentChart = tmpl;
+                this.switchView('builder');
+            },
+
+            // Builder Undo/Redo
+            saveStateForUndo() {
+                if(!this.state.currentChart) return;
+                // Keep last 15 states
+                if(this.state.undoStack.length > 15) this.state.undoStack.shift();
+                
+                // Read from UI to get accurate current state before pushing
+                const c = JSON.parse(JSON.stringify(this.state.currentChart));
+                c.title = document.getElementById('build-title').value;
+                c.subtext = document.getElementById('build-subtext').value;
+                c.categoryId = document.getElementById('build-category').value;
+                
+                this.state.undoStack.push(JSON.stringify(c));
+                document.getElementById('btn-undo').disabled = false;
+            },
+
+            undo() {
+                if(this.state.undoStack.length === 0) return;
+                this.vibrate();
+                const prevStateStr = this.state.undoStack.pop();
+                if(this.state.undoStack.length === 0) document.getElementById('btn-undo').disabled = true;
+                
+                this.state.currentChart = JSON.parse(prevStateStr);
+                this.renderBuilderItems(false); // Don't wipe undo stack
+                
+                // Restore inputs
+                document.getElementById('build-title').value = this.state.currentChart.title || '';
+                document.getElementById('build-subtext').value = this.state.currentChart.subtext || '';
+                document.getElementById('build-category').value = this.state.currentChart.categoryId || '';
+                this.updateMolWeight();
+                this.showToast('Undo successful', 'success');
+            },
+
+            // Ordering
+            moveItem(type, idx, dir) {
+                this.vibrate(30);
+                this.saveStateForUndo();
+                const arr = this.state.currentChart[type];
+                if (dir === 'up' && idx > 0) {
+                    [arr[idx-1], arr[idx]] = [arr[idx], arr[idx-1]];
+                } else if (dir === 'down' && idx < arr.length - 1) {
+                    [arr[idx+1], arr[idx]] = [arr[idx], arr[idx+1]];
+                }
+                this.renderBuilderItems(false);
+            },
+
+            togglePin(id) {
+                this.vibrate(30);
+                const chart = this.state.charts.find(c => c.id === id);
+                if(chart) {
+                    chart.pinned = !chart.pinned;
+                    this.saveLocalData();
+                    if(this.state.user && this.state.isOnline) {
+                        setDoc(doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', id), chart);
+                    }
+                    this.renderDashboard();
+                }
+            },
+
+            updateMolWeight() {
+                const input = document.getElementById('build-title').value;
+                const mwSpan = document.getElementById('build-mol-weight');
+                if(!mwSpan) return;
+                const mw = this.calcMolecularWeight(input);
+                if(mw > 0) {
+                    mwSpan.textContent = mw.toFixed(2) + ' g/mol';
+                    mwSpan.classList.remove('hidden');
+                } else {
+                    mwSpan.classList.add('hidden');
+                }
+            },
+
+            // Core UI Functions
             toggleTheme() {
+                this.vibrate();
                 const html = document.documentElement;
                 const btn = document.getElementById('theme-toggle-btn');
                 if (html.classList.contains('light')) {
@@ -612,6 +710,19 @@
                     html.classList.add('light');
                     btn.textContent = 'Switch to Dark';
                     localStorage.setItem('theme', 'light');
+                }
+            },
+
+            toggleShortcuts() {
+                const modal = document.getElementById('shortcuts-modal');
+                if(modal.classList.contains('open')) {
+                    modal.classList.remove('open');
+                    setTimeout(() => modal.style.display='none', 300);
+                } else {
+                    modal.style.display = 'flex';
+                    // trigger reflow
+                    modal.offsetHeight;
+                    modal.classList.add('open');
                 }
             },
 
@@ -665,12 +776,12 @@
                 const container = document.getElementById('category-filters');
                 if (!container) return;
                 const allButton = `
-                    <button onclick="app.filterByCategory('all')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === 'all' ? 'bg-cyan-500 text-white' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all whitespace-nowrap">
+                    <button onclick="app.filterByCategory('all')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === 'all' ? 'bg-cyan-500 text-white shadow-lg' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all whitespace-nowrap">
                         All
                     </button>
                 `;
                 const catButtons = this.state.categories.map(cat => `
-                    <button onclick="app.filterByCategory('${cat.id}')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === cat.id ? 'bg-cyan-500 text-white' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all whitespace-nowrap">
+                    <button onclick="app.filterByCategory('${cat.id}')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === cat.id ? 'bg-cyan-500 text-white shadow-lg' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all whitespace-nowrap">
                         ${cat.name}
                     </button>
                 `).join('');
@@ -678,6 +789,7 @@
             },
 
             filterByCategory(catId) {
+                this.vibrate(20);
                 this.state.selectedCategoryId = catId;
                 this.renderCategoryFilters();
                 this.renderDashboard();
@@ -696,7 +808,7 @@
             },
 
             async syncLocalToFirestore(uid) {
-                if (!uid) return;
+                if (!uid || !this.state.isOnline) return;
                 const batch = writeBatch(fDb);
                 const chartsRef = collection(fDb, 'artifacts', 'studyflow-pro', 'users', uid, 'charts');
                 this.state.charts.forEach(chart => {
@@ -714,7 +826,7 @@
                 if (this.state.user) {
                     const isAnon = this.state.user.isAnonymous;
                     const name = isAnon ? "Guest Scientist" : (this.state.user.displayName || "Research Scientist");
-                    const initials = name.split(" ").map(n => n[0]).join("").substring(0, 2);
+                    const initials = name.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase();
                     if (nameEl) nameEl.textContent = name;
                     if (initialsEl) initialsEl.textContent = initials;
                     if (setUserNameEl) setUserNameEl.textContent = name;
@@ -728,10 +840,11 @@
                 const setSyncEl = document.getElementById('set-sync-status');
                 const status = this.state.user && !this.state.user.isAnonymous && this.state.isOnline ? "☁️ Cloud Synced" : "💾 Local Session";
                 if (syncEl) syncEl.textContent = status;
-                if (setSyncEl) setSyncEl.textContent = this.state.user && !this.state.user.isAnonymous ? "Data stored in Firestore (real-time sync)." : "Data stored locally on this machine.";
+                if (setSyncEl) setSyncEl.textContent = this.state.user && !this.state.user.isAnonymous ? "Data stored in Firestore (real-time sync)." : "Data compressed and stored locally.";
             },
 
             async signIn() {
+                this.vibrate();
                 if (!fAuth) return;
                 if (this.state.user && !this.state.user.isAnonymous) {
                     await signOut(fAuth);
@@ -742,6 +855,7 @@
             },
 
             switchView(view) {
+                this.vibrate(20);
                 this.state.view = view;
                 document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(n => n.className = 'nav-item flex items-center gap-4 p-3.5 rounded-2xl w-full transition-all text-white/50 hover:bg-white/5');
@@ -749,6 +863,7 @@
                 if (activeSec) activeSec.classList.add('active');
                 const activeNav = document.getElementById(`nav-${view}`);
                 if(activeNav) activeNav.className = 'nav-item flex items-center gap-4 p-3.5 rounded-2xl w-full transition-all text-cyan-400 bg-cyan-500/10';
+                
                 if(view === 'dashboard') { this.renderDashboard(); this.renderCategoryFilters(); }
                 if(view === 'builder') { this.renderBuilder(); this.renderCategorySelect(); }
                 if(view === 'viewer') this.renderViewer();
@@ -756,34 +871,67 @@
                 lucide.createIcons();
             },
 
-            renderDashboard() {
+            renderDashboard(searchTerm = '') {
                 const grid = document.getElementById('dashboard-grid');
-                if (!grid) return;
+                const emptyState = document.getElementById('dashboard-empty-state');
+                if (!grid || !emptyState) return;
+                
                 let filteredCharts = this.state.charts;
-                if (this.state.selectedCategoryId !== 'all') filteredCharts = filteredCharts.filter(c => c.categoryId === this.state.selectedCategoryId);
-                grid.innerHTML = filteredCharts.map(chart => {
-                    const category = this.state.categories.find(c => c.id === chart.categoryId);
-                    const catName = category ? category.name : 'Uncategorized';
-                    return `
-                    <div class="glass-card p-4 md:p-6 rounded-3xl group cursor-pointer relative" onclick="app.viewChart('${chart.id}')">
-                        <div class="flex justify-between items-start mb-4 md:mb-6">
-                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all">
+                
+                // Filters
+                if (this.state.selectedCategoryId !== 'all') {
+                    filteredCharts = filteredCharts.filter(c => c.categoryId === this.state.selectedCategoryId);
+                }
+                if (searchTerm) {
+                    const term = searchTerm.toLowerCase();
+                    filteredCharts = filteredCharts.filter(c => (c.title||'').toLowerCase().includes(term) || (c.subtext||'').toLowerCase().includes(term));
+                }
+
+                // Sort: Pinned first, then recent
+                filteredCharts.sort((a, b) => {
+                    if (a.pinned === b.pinned) return (b.updatedAt || 0) - (a.updatedAt || 0);
+                    return a.pinned ? -1 : 1;
+                });
+
+                if (filteredCharts.length === 0) {
+                    grid.style.display = 'none';
+                    emptyState.style.display = 'flex';
+                } else {
+                    grid.style.display = 'grid';
+                    emptyState.style.display = 'none';
+                    grid.innerHTML = filteredCharts.map(chart => {
+                        const category = this.state.categories.find(c => c.id === chart.categoryId);
+                        const catName = category ? category.name : 'Uncategorized';
+                        const pinClass = chart.pinned ? 'text-yellow-400 opacity-100' : 'text-white/20 hover:text-yellow-400 opacity-0 group-hover:opacity-100';
+                        const titleDisplay = this.formatFormula(chart.title || 'Untitled');
+                        
+                        return `
+                        <div class="glass-card p-4 md:p-6 rounded-3xl group cursor-pointer relative" onclick="app.viewChart('${chart.id}')">
+                            <div class="absolute top-4 right-4 flex gap-2">
+                                <button onclick="event.stopPropagation(); app.togglePin('${chart.id}')" class="p-2 transition-all ${pinClass}">
+                                    <i data-lucide="pin" class="w-4 h-4 ${chart.pinned?'fill-current':''}"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); app.deleteChart('${chart.id}')" class="p-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 mb-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all">
                                 <i data-lucide="beaker" class="w-5 h-5 md:w-6 md:h-6"></i>
                             </div>
-                            <button onclick="event.stopPropagation(); app.deleteChart('${chart.id}')" class="p-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <h3 class="text-lg md:text-xl font-black text-white mb-1 tracking-tight chem-formula">${titleDisplay}</h3>
+                            <p class="text-xs font-bold text-cyan-400/60 uppercase tracking-widest truncate">${chart.subtext || 'Unknown Compound'}</p>
+                            <div class="mt-3 flex justify-between items-center">
+                                <span class="inline-block px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] text-white/60 font-bold tracking-wider">${catName}</span>
+                                <span class="text-[9px] text-white/30">${this.formatDate(chart.updatedAt)}</span>
+                            </div>
+                            <div class="mt-4 flex gap-4 border-t border-white/5 pt-4">
+                                <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40"><i data-lucide="git-branch" class="w-3 h-3"></i> ${chart.preparations?.length || 0} PREPS</div>
+                                <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40"><i data-lucide="zap" class="w-3 h-3"></i> ${chart.reactions?.length || 0} RXNS</div>
+                            </div>
                         </div>
-                        <h3 class="text-lg md:text-xl font-black text-white mb-1">${chart.title || 'Untitled'}</h3>
-                        <p class="text-xs font-bold text-cyan-400/60 uppercase tracking-widest">${chart.subtext || 'Unknown Compound'}</p>
-                        <div class="mt-2"><span class="inline-block px-2 py-0.5 bg-white/10 rounded text-[10px] text-white/60">${catName}</span></div>
-                        <div class="mt-4 flex gap-4 border-t border-white/5 pt-4">
-                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40"><i data-lucide="git-branch" class="w-3 h-3"></i> ${chart.preparations?.length || 0} PREPS</div>
-                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40"><i data-lucide="zap" class="w-3 h-3"></i> ${chart.reactions?.length || 0} RXNS</div>
-                        </div>
-                    </div>
-                `}).join('');
-                lucide.createIcons({root: grid});
+                    `}).join('');
+                    lucide.createIcons({root: grid});
+                }
             },
 
             renderBuilder() {
@@ -793,51 +941,71 @@
                 document.getElementById('build-subtext').value = c.subtext || '';
                 const select = document.getElementById('build-category');
                 if (select) select.value = c.categoryId || this.state.categories[0]?.id || '';
-                this.renderBuilderItems();
+                
+                this.state.undoStack = []; // Reset undo stack on load
+                document.getElementById('btn-undo').disabled = true;
+                this.updateMolWeight();
+                this.renderBuilderItems(true);
             },
 
-            renderBuilderItems() {
+            renderBuilderItems(initial = false) {
+                if(initial) this.saveStateForUndo();
+
                 const prepsBox = document.getElementById('builder-preps');
-                if (!prepsBox) return;
-                prepsBox.innerHTML = this.state.currentChart.preparations.map((p, idx) => `
-                    <div class="glass-card p-4 rounded-2xl border border-white/5 space-y-3 relative group animate-fade">
-                        <button onclick="app.removeItem('preparations', ${idx})" class="absolute top-2 right-2 p-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100"><i data-lucide="x" class="w-4 h-4"></i></button>
-                        <input type="text" oninput="app.updateItem('preparations', ${idx}, 'topText', this.value)" value="${p.topText || ''}" placeholder="Process" class="bg-transparent border-none text-[10px] font-black uppercase tracking-tighter text-white/30 focus:ring-0 p-0 w-full">
-                        <input type="text" oninput="app.updateItem('preparations', ${idx}, 'mainText', this.value)" value="${p.mainText || ''}" placeholder="Precursor" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full">
-                    </div>
-                `).join('');
+                if (prepsBox) {
+                    prepsBox.innerHTML = this.state.currentChart.preparations.map((p, idx) => `
+                        <div class="glass-card p-4 rounded-2xl border border-white/5 space-y-3 relative group animate-fade flex gap-2 items-center">
+                            <div class="flex flex-col gap-1 text-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="app.moveItem('preparations', ${idx}, 'up')" class="hover:text-white" ${idx===0?'invisible':''}><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
+                                <button onclick="app.moveItem('preparations', ${idx}, 'down')" class="hover:text-white" ${idx===this.state.currentChart.preparations.length-1?'invisible':''}><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
+                            </div>
+                            <div class="flex-1 space-y-2">
+                                <input type="text" oninput="app.updateItem('preparations', ${idx}, 'topText', this.value)" value="${p.topText || ''}" placeholder="Process Name" class="bg-transparent border-none text-[10px] font-black uppercase tracking-tighter text-white/30 focus:ring-0 p-0 w-full">
+                                <input type="text" oninput="app.updateItem('preparations', ${idx}, 'mainText', this.value)" value="${p.mainText || ''}" placeholder="Precursor / Equation" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full chem-formula">
+                            </div>
+                            <button onclick="app.removeItem('preparations', ${idx})" class="p-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+                        </div>
+                    `).join('');
+                }
 
                 const rxnsBox = document.getElementById('builder-reactions');
-                if (!rxnsBox) return;
-                rxnsBox.innerHTML = this.state.currentChart.reactions.map((r, idx) => `
-                    <div class="glass-card p-4 md:p-5 rounded-3xl border border-white/5 space-y-4 group animate-fade">
-                        <div class="flex justify-between items-center">
-                            <input type="text" oninput="app.updateItem('reactions', ${idx}, 'reagent', this.value)" value="${r.reagent || ''}" placeholder="Reagents" class="bg-transparent border-none text-xs font-black uppercase text-cyan-400 focus:ring-0 p-0 w-3/4">
-                            <button onclick="app.removeItem('reactions', ${idx})" class="text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100"><i data-lucide="x" class="w-4 h-4"></i></button>
-                        </div>
-                        <div class="flex items-center gap-4 bg-white/5 p-3 rounded-2xl">
-                             <div class="text-white/20"><i data-lucide="arrow-right-circle" class="w-5 h-5"></i></div>
-                             <div class="flex-1">
-                                <input type="text" oninput="app.updateItem('reactions', ${idx}, 'product', this.value)" value="${r.product || ''}" placeholder="Product" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full">
-                                <input type="text" oninput="app.updateItem('reactions', ${idx}, 'subText', this.value)" value="${r.subText || ''}" placeholder="Detail" class="bg-transparent border-none text-[10px] text-white/40 focus:ring-0 p-0 w-full">
-                             </div>
-                        </div>
-                        <div class="pt-2 border-t border-white/5">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Tests</span>
-                                <button onclick="app.addObservation(${idx})" class="text-[9px] font-black text-cyan-400 hover:text-white uppercase">+ Add</button>
+                if (rxnsBox) {
+                    rxnsBox.innerHTML = this.state.currentChart.reactions.map((r, idx) => `
+                        <div class="glass-card p-4 md:p-5 rounded-3xl border border-white/5 group animate-fade relative flex gap-3">
+                            <div class="flex flex-col gap-1 text-white/20 opacity-0 group-hover:opacity-100 transition-opacity mt-2">
+                                <button onclick="app.moveItem('reactions', ${idx}, 'up')" class="hover:text-white" ${idx===0?'invisible':''}><i data-lucide="chevron-up" class="w-4 h-4"></i></button>
+                                <button onclick="app.moveItem('reactions', ${idx}, 'down')" class="hover:text-white" ${idx===this.state.currentChart.reactions.length-1?'invisible':''}><i data-lucide="chevron-down" class="w-4 h-4"></i></button>
                             </div>
-                            <div class="space-y-2">
-                                ${(r.observations || []).map((o, oIdx) => `
-                                    <div class="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/5">
-                                        <input type="text" oninput="app.updateObs(${idx}, ${oIdx}, 'mainText', this.value)" value="${o.mainText || ''}" placeholder="Observation" class="bg-transparent border-none text-[10px] font-bold text-white/70 focus:ring-0 p-0 flex-1">
-                                        <button onclick="app.removeObs(${idx}, ${oIdx})" class="text-white/20 hover:text-red-500"><i data-lucide="x" class="w-3 h-3"></i></button>
+                            <div class="flex-1 space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <input type="text" oninput="app.updateItem('reactions', ${idx}, 'reagent', this.value)" value="${r.reagent || ''}" placeholder="Reagents added" class="bg-transparent border-none text-xs font-black uppercase text-cyan-400 focus:ring-0 p-0 w-3/4">
+                                    <button onclick="app.removeItem('reactions', ${idx})" class="text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+                                </div>
+                                <div class="flex items-center gap-4 bg-white/5 p-3 rounded-2xl">
+                                     <div class="text-white/20"><i data-lucide="arrow-right-circle" class="w-5 h-5"></i></div>
+                                     <div class="flex-1">
+                                        <input type="text" oninput="app.updateItem('reactions', ${idx}, 'product', this.value)" value="${r.product || ''}" placeholder="Product Formed" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full chem-formula">
+                                        <input type="text" oninput="app.updateItem('reactions', ${idx}, 'subText', this.value)" value="${r.subText || ''}" placeholder="Reaction type or condition" class="bg-transparent border-none text-[10px] text-white/40 focus:ring-0 p-0 w-full">
+                                     </div>
+                                </div>
+                                <div class="pt-2 border-t border-white/5">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Observations</span>
+                                        <button onclick="app.addObservation(${idx})" class="text-[9px] font-black text-cyan-400 hover:text-white uppercase">+ Add Note</button>
                                     </div>
-                                `).join('')}
+                                    <div class="space-y-2">
+                                        ${(r.observations || []).map((o, oIdx) => `
+                                            <div class="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/5 group/obs">
+                                                <input type="text" oninput="app.updateObs(${idx}, ${oIdx}, 'mainText', this.value)" value="${o.mainText || ''}" placeholder="e.g. White precipitate" class="bg-transparent border-none text-[10px] font-bold text-white/70 focus:ring-0 p-0 flex-1">
+                                                <button onclick="app.removeObs(${idx}, ${oIdx})" class="text-white/20 hover:text-red-500 opacity-0 group-hover/obs:opacity-100"><i data-lucide="x" class="w-3 h-3"></i></button>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `).join('');
+                    `).join('');
+                }
                 lucide.createIcons({root: rxnsBox}); lucide.createIcons({root: prepsBox});
             },
 
@@ -847,34 +1015,43 @@
                 const container = document.getElementById('viewer-content');
                 const svg = document.getElementById('viewer-svg');
                 if (!container || !svg) return;
+                
+                // Reset zoom/pan
+                this.state.zoom = 1;
+                this.state.offset = {x:0, y:0};
+                document.getElementById('zoom-level').textContent = '100%';
+                document.getElementById('viewer-wrapper').style.transform = `translate(0px, 0px) scale(1)`;
+
                 svg.innerHTML = '';
+                const titleDisplay = this.formatFormula(chart.title || 'N/A');
+
                 let html = `
                     <div class="flex flex-col gap-8 md:gap-12 items-end">
                         ${chart.preparations.map(p => `
                             <div id="v-prep-${p.id}" class="glass-card p-4 md:p-6 rounded-3xl min-w-[140px] md:min-w-[180px] text-right border-l-4 border-l-purple-500 animate-fade shadow-2xl">
-                                <p class="text-[10px] font-black uppercase text-white/40 mb-1">${p.topText || 'Step'}</p>
-                                <p class="font-bold text-white text-sm md:text-base">${p.mainText || '---'}</p>
+                                <p class="text-[10px] font-black uppercase text-white/40 mb-1 tracking-widest">${p.topText || 'Step'}</p>
+                                <p class="font-bold text-white text-sm md:text-base chem-formula">${this.formatFormula(p.mainText) || '---'}</p>
                             </div>
                         `).join('')}
                     </div>
                     <div class="relative flex items-center justify-center">
                         <div class="molecule-core w-32 h-32 md:w-48 md:h-48 rounded-full flex flex-col items-center justify-center z-10 glow-pulse float-animation shadow-[0_0_80px_rgba(6,182,212,0.2)]">
-                            <span class="text-2xl md:text-4xl font-black text-white z-20 drop-shadow-lg">${chart.title || 'N/A'}</span>
-                            <span class="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-cyan-400 z-20 mt-1 md:mt-2">${chart.subtext || ''}</span>
+                            <span class="text-2xl md:text-4xl font-black text-white z-20 drop-shadow-lg text-center px-4 chem-formula">${titleDisplay}</span>
+                            <span class="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-cyan-400 z-20 mt-1 md:mt-2 text-center px-4">${chart.subtext || ''}</span>
                         </div>
                     </div>
                     <div class="flex flex-col gap-12 md:gap-16 items-start">
                         ${chart.reactions.map(r => `
                             <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-12">
                                 <div id="v-rxn-${r.id}" class="glass-card p-4 md:p-6 rounded-3xl min-w-[220px] md:min-w-[280px] border-l-4 border-l-cyan-500 animate-fade shadow-2xl relative">
-                                    <p class="text-[10px] font-black uppercase text-cyan-400 mb-2">${r.reagent || 'Reaction'}</p>
-                                    <p class="text-base md:text-lg font-bold text-white">${r.product || '---'}</p>
-                                    <p class="text-[10px] md:text-[11px] font-bold text-white/40 mt-1 uppercase">${r.subText || ''}</p>
+                                    <p class="text-[10px] font-black uppercase text-cyan-400 mb-2 tracking-widest">${r.reagent || 'Reaction'}</p>
+                                    <p class="text-base md:text-lg font-bold text-white chem-formula">${this.formatFormula(r.product) || '---'}</p>
+                                    <p class="text-[10px] md:text-[11px] font-bold text-white/40 mt-1 uppercase tracking-wide">${r.subText || ''}</p>
                                 </div>
                                 <div class="flex flex-row md:flex-col gap-2 md:gap-4 flex-wrap">
                                     ${(r.observations || []).map(obs => `
-                                        <div id="v-obs-${obs.id}" class="glass-card py-2 px-3 md:py-3 md:px-5 rounded-2xl border border-orange-500/20 bg-orange-500/5 animate-fade">
-                                            <p class="text-[10px] font-black text-orange-400 uppercase">${obs.mainText || 'Observation'}</p>
+                                        <div id="v-obs-${obs.id}" class="glass-card py-2 px-3 md:py-3 md:px-5 rounded-2xl border border-orange-500/20 bg-orange-500/5 animate-fade shadow-lg">
+                                            <p class="text-[10px] font-black text-orange-400 uppercase tracking-wide">${obs.mainText || 'Observation'}</p>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -884,7 +1061,7 @@
                 `;
                 container.innerHTML = html;
                 lucide.createIcons({root: container});
-                setTimeout(() => this.drawPaths(), 100);
+                setTimeout(() => this.drawPaths(), 150); // slight delay for layout
             },
 
             drawPaths() {
@@ -913,51 +1090,96 @@
             createCurve(p1, p2, color) { const midX = (p1.x + p2.x) / 2; return `<path d="M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}" stroke="${color}" stroke-width="2" fill="none" class="path-animate" opacity="0.4" />`; },
 
             createNewChart(goBuilder = true) {
+                this.vibrate();
                 const id = 'chart_' + Date.now();
                 const defaultCat = this.state.categories[0]?.id || '';
-                this.state.currentChart = { id, title: '', subtext: '', categoryId: defaultCat, preparations: [], reactions: [] };
+                this.state.currentChart = { id, title: '', subtext: '', categoryId: defaultCat, pinned: false, updatedAt: Date.now(), preparations: [], reactions: [] };
                 if(goBuilder) this.switchView('builder');
             },
 
             viewChart(id) { this.state.currentChart = this.state.charts.find(c => c.id === id); this.switchView('viewer'); },
 
             async saveCurrentChart() {
+                this.vibrate(100);
                 const c = this.state.currentChart;
                 c.title = document.getElementById('build-title').value;
                 c.subtext = document.getElementById('build-subtext').value;
                 const catSelect = document.getElementById('build-category');
                 c.categoryId = catSelect ? catSelect.value : this.state.categories[0]?.id || '';
+                c.updatedAt = Date.now();
+                
                 const idx = this.state.charts.findIndex(item => item.id === c.id);
                 if(idx > -1) this.state.charts[idx] = JSON.parse(JSON.stringify(c));
                 else this.state.charts.push(JSON.parse(JSON.stringify(c)));
-                localStorage.setItem('chem_ultra_v1', JSON.stringify(this.state.charts));
-                if (this.state.user && !this.state.user.isAnonymous) {
+                
+                this.saveLocalData();
+                
+                if (this.state.user && !this.state.user.isAnonymous && this.state.isOnline) {
                     try { await setDoc(doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', c.id), c); this.showToast("Saved to Cloud", "success"); } catch (e) { this.showToast("Cloud save failed", "error"); }
                 } else { this.showToast("Saved Locally", "success"); }
                 this.switchView('dashboard');
             },
 
             async deleteChart(id) {
-                if(confirm("Permanently delete?")) {
+                this.vibrate([50, 50]);
+                if(confirm("Permanently delete this compound?")) {
                     this.state.charts = this.state.charts.filter(c => c.id !== id);
-                    localStorage.setItem('chem_ultra_v1', JSON.stringify(this.state.charts));
-                    if (this.state.user && !this.state.user.isAnonymous) { try { await deleteDoc(doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', id)); } catch(e) {} }
+                    this.saveLocalData();
+                    if (this.state.user && !this.state.user.isAnonymous && this.state.isOnline) { try { await deleteDoc(doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', id)); } catch(e) {} }
                     this.renderDashboard(); this.renderCategoryFilters(); this.showToast("Compound Purged", "error");
                 }
             },
 
-            addPrep() { this.state.currentChart.preparations.push({id: Date.now(), topText: '', mainText: ''}); this.renderBuilderItems(); },
-            addReaction() { this.state.currentChart.reactions.push({id: Date.now(), reagent: '', product: '', subText: '', observations: []}); this.renderBuilderItems(); },
-            addObservation(idx) { this.state.currentChart.reactions[idx].observations.push({id: Date.now(), mainText: ''}); this.renderBuilderItems(); },
-            updateItem(type, idx, key, val) { this.state.currentChart[type][idx][key] = val; },
-            removeItem(type, idx) { this.state.currentChart[type].splice(idx, 1); this.renderBuilderItems(); },
-            updateObs(rIdx, oIdx, key, val) { this.state.currentChart.reactions[rIdx].observations[oIdx][key] = val; },
-            removeObs(rIdx, oIdx) { this.state.currentChart.reactions[rIdx].observations.splice(oIdx, 1); this.renderBuilderItems(); },
+            addPrep() { this.saveStateForUndo(); this.vibrate(30); this.state.currentChart.preparations.push({id: Date.now(), topText: '', mainText: ''}); this.renderBuilderItems(); },
+            addReaction() { this.saveStateForUndo(); this.vibrate(30); this.state.currentChart.reactions.push({id: Date.now(), reagent: '', product: '', subText: '', observations: []}); this.renderBuilderItems(); },
+            addObservation(idx) { this.saveStateForUndo(); this.vibrate(30); this.state.currentChart.reactions[idx].observations.push({id: Date.now(), mainText: ''}); this.renderBuilderItems(); },
+            updateItem(type, idx, key, val) { this.saveStateForUndo(); this.state.currentChart[type][idx][key] = val; },
+            removeItem(type, idx) { this.saveStateForUndo(); this.vibrate(30); this.state.currentChart[type].splice(idx, 1); this.renderBuilderItems(); },
+            updateObs(rIdx, oIdx, key, val) { this.saveStateForUndo(); this.state.currentChart.reactions[rIdx].observations[oIdx][key] = val; },
+            removeObs(rIdx, oIdx) { this.saveStateForUndo(); this.vibrate(30); this.state.currentChart.reactions[rIdx].observations.splice(oIdx, 1); this.renderBuilderItems(); },
+
+            setupSearch() {
+                const input = document.getElementById('cmd-input');
+                if(!input) return;
+                input.addEventListener('input', (e) => {
+                    if(this.state.view !== 'dashboard') this.switchView('dashboard');
+                    this.renderDashboard(e.target.value);
+                });
+            },
 
             setupKeyboard() {
                 window.addEventListener('keydown', e => {
-                    if(e.ctrlKey && e.key === 'k') { e.preventDefault(); document.getElementById('command-palette').classList.toggle('open'); document.getElementById('cmd-input').focus(); }
-                    if(e.key === 'Escape') document.getElementById('command-palette').classList.remove('open');
+                    // Command Palette (Ctrl+K)
+                    if((e.ctrlKey || e.metaKey) && e.key === 'k') { 
+                        e.preventDefault(); 
+                        const p = document.getElementById('command-palette');
+                        p.classList.toggle('open'); 
+                        if(p.classList.contains('open')) document.getElementById('cmd-input').focus(); 
+                    }
+                    // Shortcuts Modal (Ctrl+/)
+                    if((e.ctrlKey || e.metaKey) && e.key === '/') {
+                        e.preventDefault();
+                        this.toggleShortcuts();
+                    }
+                    // Save (Ctrl+S)
+                    if((e.ctrlKey || e.metaKey) && e.key === 's') {
+                        if(this.state.view === 'builder') { e.preventDefault(); this.saveCurrentChart(); }
+                    }
+                    // New (Alt+N)
+                    if(e.altKey && e.key === 'n') {
+                        e.preventDefault(); this.createNewChart();
+                    }
+                    // Undo (Ctrl+Z)
+                    if((e.ctrlKey || e.metaKey) && e.key === 'z' && this.state.view === 'builder') {
+                        // Let inputs handle their own undo if focused, else custom undo
+                        if(document.activeElement.tagName !== 'INPUT') { e.preventDefault(); this.undo(); }
+                    }
+                    // Escape
+                    if(e.key === 'Escape') {
+                        document.getElementById('command-palette').classList.remove('open');
+                        const modal = document.getElementById('shortcuts-modal');
+                        if(modal.classList.contains('open')) this.toggleShortcuts();
+                    }
                 });
             },
 
@@ -988,37 +1210,42 @@
                 let initialDistance = 0;
                 let initialZoom = 1;
                 let initialPan = { x: 0, y: 0 };
-                let lastTouchMidpoint = { x: 0, y: 0 };
                 let isPanning = false;
                 let isPinching = false;
 
                 container.addEventListener('touchstart', (e) => {
                     if (this.state.view !== 'viewer') return;
                     
+                    const now = Date.now();
+                    const DOUBLE_TAP_DELAY = 300;
+                    if(e.touches.length === 1 && (now - this.state.lastTap) < DOUBLE_TAP_DELAY) {
+                        // Double tap: Reset Zoom and Pan
+                        e.preventDefault();
+                        this.vibrate(40);
+                        this.state.zoom = 1;
+                        this.state.offset = {x:0, y:0};
+                        document.getElementById('zoom-level').textContent = '100%';
+                        wrapper.style.transform = `translate(0px, 0px) scale(1)`;
+                        return;
+                    }
+                    this.state.lastTap = now;
+
                     const touches = e.touches;
                     if (touches.length === 1) {
                         isPanning = true;
                         isPinching = false;
                         const touch = touches[0];
-                        this.state.dragStart = {
-                            x: touch.clientX - this.state.offset.x,
-                            y: touch.clientY - this.state.offset.y
-                        };
+                        this.state.dragStart = { x: touch.clientX - this.state.offset.x, y: touch.clientY - this.state.offset.y };
                         this.state.isDragging = true;
                         e.preventDefault();
                     } else if (touches.length === 2) {
                         isPanning = false;
                         isPinching = true;
                         this.state.isDragging = false;
-                        
                         const touch1 = touches[0];
                         const touch2 = touches[1];
                         initialDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
                         initialZoom = this.state.zoom;
-                        lastTouchMidpoint = {
-                            x: (touch1.clientX + touch2.clientX) / 2,
-                            y: (touch1.clientY + touch2.clientY) / 2
-                        };
                         initialPan = { ...this.state.offset };
                         e.preventDefault();
                     }
@@ -1026,9 +1253,7 @@
 
                 container.addEventListener('touchmove', (e) => {
                     if (this.state.view !== 'viewer') return;
-                    
                     const touches = e.touches;
-                    
                     if (touches.length === 1 && isPanning) {
                         const touch = touches[0];
                         this.state.offset.x = touch.clientX - this.state.dragStart.x;
@@ -1041,11 +1266,8 @@
                         const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
                         if (initialDistance > 0) {
                             const scale = currentDistance / initialDistance;
-                            const newZoom = Math.max(0.3, Math.min(2, initialZoom * scale));
-                            const currentMidpoint = {
-                                x: (touch1.clientX + touch2.clientX) / 2,
-                                y: (touch1.clientY + touch2.clientY) / 2
-                            };
+                            const newZoom = Math.max(0.3, Math.min(2.5, initialZoom * scale));
+                            const currentMidpoint = { x: (touch1.clientX + touch2.clientX)/2, y: (touch1.clientY + touch2.clientY)/2 };
                             const zoomRatio = newZoom / this.state.zoom;
                             this.state.offset.x = currentMidpoint.x - (currentMidpoint.x - this.state.offset.x) * zoomRatio;
                             this.state.offset.y = currentMidpoint.y - (currentMidpoint.y - this.state.offset.y) * zoomRatio;
@@ -1065,26 +1287,13 @@
                         isPanning = false;
                         isPinching = false;
                         initialDistance = 0;
-                    } else if (e.touches.length === 1 && isPinching) {
-                        isPinching = false;
-                        isPanning = true;
-                        const touch = e.touches[0];
-                        this.state.dragStart = {
-                            x: touch.clientX - this.state.offset.x,
-                            y: touch.clientY - this.state.offset.y
-                        };
-                        this.state.isDragging = true;
                     }
-                    e.preventDefault();
-                });
-
-                container.addEventListener('contextmenu', (e) => {
-                    if (this.state.view === 'viewer') e.preventDefault();
                 });
             },
 
             changeZoom(delta) {
-                this.state.zoom = Math.max(0.3, Math.min(2, this.state.zoom + delta));
+                this.vibrate(20);
+                this.state.zoom = Math.max(0.3, Math.min(2.5, this.state.zoom + delta));
                 const zoomEl = document.getElementById('zoom-level');
                 const wrapperEl = document.getElementById('viewer-wrapper');
                 if (zoomEl) zoomEl.textContent = Math.round(this.state.zoom * 100) + '%';
@@ -1093,19 +1302,35 @@
 
             showToast(msg, type) {
                 const id = 't' + Date.now();
-                const html = `<div id="${id}" class="glass-panel px-4 md:px-6 py-3 md:py-4 rounded-2xl flex items-center gap-3 md:gap-4 animate-fade border-l-4 ${type==='success'?'border-l-cyan-500':'border-l-red-500'}"><i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-4 h-4 md:w-5 md:h-5 ${type==='success'?'text-cyan-400':'text-red-400'}"></i><span class="text-xs font-black uppercase text-white">${msg}</span></div>`;
+                const html = `<div id="${id}" class="glass-panel px-4 md:px-6 py-3 md:py-4 rounded-2xl flex items-center gap-3 md:gap-4 animate-fade border-l-4 ${type==='success'?'border-l-cyan-500':'border-l-red-500'} shadow-2xl"><i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-4 h-4 md:w-5 md:h-5 ${type==='success'?'text-cyan-400':'text-red-400'}"></i><span class="text-xs font-black uppercase text-white tracking-wider">${msg}</span></div>`;
                 const container = document.getElementById('toast-container'); if(container) { container.insertAdjacentHTML('beforeend', html); lucide.createIcons({root: document.getElementById(id)}); setTimeout(() => document.getElementById(id)?.remove(), 3000); }
             },
 
-            export() { const blob = new Blob([JSON.stringify(this.state.charts)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `chem_pro_backup_${Date.now()}.json`; a.click(); },
-            import(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (re) => { try { const data = JSON.parse(re.target.result); this.state.charts = data; localStorage.setItem('chem_ultra_v1', JSON.stringify(data)); if(this.state.user) this.syncLocalToFirestore(this.state.user.uid); this.renderDashboard(); this.renderCategoryFilters(); this.showToast("Data Imported", "success"); } catch(e) { this.showToast("Invalid File", "error"); } }; reader.readAsText(file); },
-
-            getDemoChart() {
-                return {
-                    id: 'demo_1', title: 'H2SO4', subtext: 'Sulfuric Acid', categoryId: 'cat_inorganic',
-                    preparations: [ {id: 1, topText: 'Contact Process', mainText: 'SO3 + H2O'}, {id: 2, topText: 'Lead Chamber', mainText: 'SO2 + NO2 + H2O'} ],
-                    reactions: [ {id: 1, reagent: 'Sugar', product: 'Carbon (C)', subText: 'Dehydration', observations: [{id:1, mainText:'Steam'}]}, {id:2, reagent: 'BaCl2', product: 'BaSO4', subText:'White ppt', observations:[{id:2, mainText:'Insoluble'}]} ]
-                };
+            export() { 
+                this.vibrate();
+                const blob = new Blob([JSON.stringify(this.state.charts)], {type: 'application/json'}); 
+                const a = document.createElement('a'); 
+                a.href = URL.createObjectURL(blob); 
+                a.download = `chem_pro_backup_${Date.now()}.json`; 
+                a.click(); 
+            },
+            
+            import(e) { 
+                const file = e.target.files[0]; 
+                if(!file) return; 
+                const reader = new FileReader(); 
+                reader.onload = (re) => { 
+                    try { 
+                        const data = JSON.parse(re.target.result); 
+                        this.state.charts = data; 
+                        this.saveLocalData(); 
+                        if(this.state.user) this.syncLocalToFirestore(this.state.user.uid); 
+                        this.renderDashboard(); 
+                        this.renderCategoryFilters(); 
+                        this.showToast("Data Imported", "success"); 
+                    } catch(e) { this.showToast("Invalid File", "error"); } 
+                }; 
+                reader.readAsText(file); 
             }
         };
 
