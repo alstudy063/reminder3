@@ -2,10 +2,12 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ChemMaster | Ultra Builder</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts: Plus Jakarta Sans + Noto Sans Sinhala -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Firebase SDKs (modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -48,17 +50,17 @@
         };
     </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
         :root {
             --accent: #06b6d4;
             --accent-glow: rgba(6, 182, 212, 0.4);
             --bg-glass: rgba(15, 23, 42, 0.7);
             --border-glass: rgba(255, 255, 255, 0.08);
-            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --font-main: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
             --bg-primary: #0f172a;
             --text-primary: #f8fafc;
             --text-secondary: rgba(255,255,255,0.5);
+            --sidebar-width: 5rem;
+            --sidebar-expanded: 16rem;
         }
 
         /* Light theme overrides */
@@ -79,10 +81,21 @@
             color: var(--text-primary);
             overflow: hidden;
             height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         html.light body {
             background: radial-gradient(circle at top right, #e2e8f0, #cbd5e1, #94a3b8);
+        }
+
+        input, textarea, [contenteditable="true"], select {
+            user-select: text !important;
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
         }
 
         /* Glassmorphism Classes */
@@ -117,7 +130,7 @@
             background: rgba(0, 0, 0, 0.05);
         }
 
-        /* Smooth Animations */
+        /* Animations */
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes drawLine { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
         @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 20px var(--accent-glow); } 50% { box-shadow: 0 0 40px var(--accent); } }
@@ -151,7 +164,7 @@
             z-index: 1;
         }
 
-        /* Command Palette Style */
+        /* Command Palette */
         #command-palette {
             transform: translate(-50%, -120%);
             transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
@@ -170,8 +183,86 @@
         html.light .bg-white\/5 { background: rgba(0, 0, 0, 0.03) !important; }
         html.light .border-white\/5 { border-color: rgba(0, 0, 0, 0.05) !important; }
         html.light .border-white\/10 { border-color: rgba(0, 0, 0, 0.1) !important; }
-        html.light .placeholder\:text-white\/20::placeholder { color: rgba(15, 23, 42, 0.2) !important; }
-        html.light .placeholder\:text-white\/40::placeholder { color: rgba(15, 23, 42, 0.4) !important; }
+
+        /* RESPONSIVE: Mobile Bottom Bar */
+        @media (max-width: 768px) {
+            body {
+                padding-bottom: 80px;
+            }
+            #sidebar {
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                top: auto !important;
+                width: 100% !important;
+                height: 80px !important;
+                flex-direction: row !important;
+                justify-content: space-around !important;
+                align-items: center !important;
+                padding: 0.5rem !important;
+                border-right: none !important;
+                border-top: 1px solid var(--border-glass) !important;
+                z-index: 120 !important;
+                backdrop-filter: blur(20px) !important;
+                background: var(--bg-glass) !important;
+            }
+            #sidebar > div:first-child {
+                display: none !important;
+            }
+            #sidebar .flex-1 {
+                flex-direction: row !important;
+                width: 100% !important;
+                justify-content: space-around !important;
+                gap: 0 !important;
+            }
+            #sidebar .nav-item {
+                flex-direction: column !important;
+                gap: 4px !important;
+                padding: 8px !important;
+                width: auto !important;
+                justify-content: center !important;
+                border-radius: 16px !important;
+            }
+            #sidebar .nav-item span {
+                display: block !important;
+                font-size: 10px !important;
+            }
+            #sidebar .mt-auto {
+                display: none !important;
+            }
+            main {
+                padding-bottom: 0 !important;
+            }
+            #view-dashboard header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 16px !important;
+            }
+            .view-section {
+                padding-bottom: 20px !important;
+            }
+            #category-filters {
+                flex-wrap: wrap !important;
+                max-width: 100% !important;
+                overflow-x: auto !important;
+                padding-bottom: 4px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #dashboard-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .lg\:col-span-5, .lg\:col-span-7 {
+                grid-column: span 12 / span 12 !important;
+            }
+        }
+
+        /* Viewer touch-action */
+        #viewer-container {
+            touch-action: none;
+        }
     </style>
 </head>
 <body class="flex h-screen w-screen overflow-hidden">
@@ -182,7 +273,7 @@
         <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/20 blur-[120px] rounded-full"></div>
     </div>
 
-    <!-- Command Palette (Quick Search/Add) -->
+    <!-- Command Palette -->
     <div id="command-palette" class="fixed top-0 left-1/2 z-[100] w-full max-w-lg px-4">
         <div class="glass-panel rounded-2xl p-2 flex items-center gap-3 border border-white/20">
             <i data-lucide="search" class="w-5 h-5 text-cyan-400 ml-2"></i>
@@ -194,8 +285,8 @@
     <!-- Toast UI -->
     <div id="toast-container" class="fixed top-6 right-6 z-[110] flex flex-col gap-3"></div>
 
-    <!-- Navigation Sidebar -->
-    <nav id="sidebar" class="w-20 md:w-64 glass-panel border-r border-white/5 flex flex-col items-center py-8 z-50">
+    <!-- Navigation Sidebar (becomes bottom bar on mobile) -->
+    <nav id="sidebar" class="w-20 md:w-64 glass-panel border-r border-white/5 flex flex-col items-center py-8 z-50 transition-all duration-300">
         <div class="flex items-center gap-3 mb-12 px-4 group cursor-pointer" onclick="app.switchView('dashboard')">
             <div class="p-2.5 bg-cyan-500 rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.5)] group-hover:scale-110 transition-transform">
                 <i data-lucide="atom" class="text-white w-6 h-6"></i>
@@ -218,7 +309,7 @@
             </button>
         </div>
 
-        <div class="mt-auto px-4 w-full">
+        <div class="mt-auto px-4 w-full hidden md:block">
             <div id="user-profile" class="glass-card p-3 rounded-2xl flex items-center gap-3 border border-white/10">
                 <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 to-purple-500 flex items-center justify-center font-bold text-xs uppercase" id="user-initials">G</div>
                 <div class="hidden md:block overflow-hidden">
@@ -233,58 +324,56 @@
     <main class="flex-1 flex flex-col relative overflow-hidden">
         
         <!-- DASHBOARD VIEW -->
-        <section id="view-dashboard" class="view-section active h-full flex-col p-6 md:p-10 overflow-y-auto">
-            <header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
+        <section id="view-dashboard" class="view-section active h-full flex-col p-4 md:p-6 lg:p-10 overflow-y-auto">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 md:gap-6 mb-6 md:mb-10">
                 <div>
-                    <h1 class="text-4xl font-extrabold text-white mb-2">Molecular Archive</h1>
-                    <p class="text-white/50 font-medium">Synthesize and manage your reactive flowcharts.</p>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-white mb-1 md:mb-2">Molecular Archive</h1>
+                    <p class="text-white/50 font-medium text-sm md:text-base">Synthesize and manage your reactive flowcharts.</p>
                 </div>
-                <div class="flex gap-3">
-                    <div class="flex bg-white/5 p-1 rounded-xl border border-white/10" id="category-filters">
-                        <!-- Dynamic category filter buttons injected here -->
+                <div class="flex flex-wrap gap-3 items-center w-full md:w-auto">
+                    <div class="flex bg-white/5 p-1 rounded-xl border border-white/10 overflow-x-auto hide-scrollbar" id="category-filters">
+                        <!-- Dynamic category filter buttons -->
                     </div>
-                    <button onclick="app.createNewChart()" class="bg-cyan-500 hover:bg-cyan-400 text-white px-6 py-3 rounded-xl font-bold text-sm transition-all shadow-xl shadow-cyan-500/20 flex items-center gap-2">
+                    <button onclick="app.createNewChart()" class="bg-cyan-500 hover:bg-cyan-400 text-white px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold text-xs md:text-sm transition-all shadow-xl shadow-cyan-500/20 flex items-center gap-2 whitespace-nowrap">
                         <i data-lucide="plus" class="w-4 h-4"></i> New Compound
                     </button>
                 </div>
             </header>
 
-            <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade">
+            <div id="dashboard-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 animate-fade">
                 <!-- Data cards inject here -->
             </div>
         </section>
 
         <!-- LAB STUDIO (BUILDER) -->
         <section id="view-builder" class="view-section h-full flex-col overflow-hidden">
-            <div class="flex items-center justify-between p-6 border-b border-white/5 bg-white/2 backdrop-blur-xl shrink-0">
-                <div class="flex items-center gap-6">
-                    <button onclick="app.switchView('dashboard')" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-cyan-500 transition-all">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 md:p-6 border-b border-white/5 bg-white/2 backdrop-blur-xl shrink-0 gap-4">
+                <div class="flex items-center gap-4 w-full sm:w-auto">
+                    <button onclick="app.switchView('dashboard')" class="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-white/50 hover:text-white hover:border-cyan-500 transition-all shrink-0">
                         <i data-lucide="chevron-left" class="w-5 h-5"></i>
                     </button>
-                    <div>
-                        <input type="text" id="build-title" placeholder="Compound Formula (e.g. H2O)" class="bg-transparent border-none text-2xl font-black text-white placeholder:text-white/20 p-0 focus:ring-0">
-                        <input type="text" id="build-subtext" placeholder="Common Name (e.g. Water)" class="bg-transparent border-none text-xs font-bold text-cyan-400/60 placeholder:text-cyan-400/20 p-0 focus:ring-0 block uppercase tracking-widest mt-1">
-                        <!-- Category Selector in Builder -->
-                        <select id="build-category" class="mt-2 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:ring-0">
-                            <!-- Categories options injected -->
+                    <div class="flex-1">
+                        <input type="text" id="build-title" placeholder="Compound Formula (e.g. H2O)" class="bg-transparent border-none text-xl md:text-2xl font-black text-white placeholder:text-white/20 p-0 focus:ring-0 w-full">
+                        <input type="text" id="build-subtext" placeholder="Common Name (e.g. Water)" class="bg-transparent border-none text-xs font-bold text-cyan-400/60 placeholder:text-cyan-400/20 p-0 focus:ring-0 block uppercase tracking-widest mt-1 w-full">
+                        <select id="build-category" class="mt-2 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:ring-0 w-full sm:w-auto">
+                            <!-- Categories options -->
                         </select>
                     </div>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="app.switchView('dashboard')" class="px-5 py-2.5 rounded-xl border border-white/10 text-white/70 font-bold text-xs hover:bg-white/5">Discard</button>
-                    <button onclick="app.saveCurrentChart()" class="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-xs shadow-xl shadow-cyan-500/20 flex items-center gap-2">
-                        <i data-lucide="save" class="w-4 h-4"></i> Save Synthesis
+                <div class="flex gap-3 self-end sm:self-auto">
+                    <button onclick="app.switchView('dashboard')" class="px-4 md:px-5 py-2 md:py-2.5 rounded-xl border border-white/10 text-white/70 font-bold text-xs hover:bg-white/5">Discard</button>
+                    <button onclick="app.saveCurrentChart()" class="px-4 md:px-6 py-2 md:py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-white font-bold text-xs shadow-xl shadow-cyan-500/20 flex items-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i> Save
                     </button>
                 </div>
             </div>
 
-            <div class="flex-1 overflow-y-auto p-6 md:p-10">
-                <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    <!-- Left: Preps -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-10">
+                <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10">
                     <div class="lg:col-span-5 space-y-6">
                         <div class="flex items-center justify-between">
                             <h3 class="text-xs font-black uppercase tracking-[0.2em] text-purple-400 flex items-center gap-2">
-                                <i data-lucide="milestone" class="w-4 h-4"></i> Preparation Steps
+                                <i data-lucide="milestone" class="w-4 h-4"></i> Prep Steps
                             </h3>
                             <button onclick="app.addPrep()" class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500 hover:text-white flex items-center justify-center transition-all">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
@@ -292,12 +381,10 @@
                         </div>
                         <div id="builder-preps" class="space-y-4"></div>
                     </div>
-
-                    <!-- Right: Reactions -->
                     <div class="lg:col-span-7 space-y-6">
                         <div class="flex items-center justify-between">
                             <h3 class="text-xs font-black uppercase tracking-[0.2em] text-cyan-400 flex items-center gap-2">
-                                <i data-lucide="zap" class="w-4 h-4"></i> Chemical Reactions
+                                <i data-lucide="zap" class="w-4 h-4"></i> Reactions
                             </h3>
                             <button onclick="app.addReaction()" class="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 hover:bg-cyan-500 hover:text-white flex items-center justify-center transition-all">
                                 <i data-lucide="plus" class="w-4 h-4"></i>
@@ -309,28 +396,27 @@
             </div>
         </section>
 
-        <!-- VIEW DECK (VIEWER) -->
+        <!-- VIEWER -->
         <section id="view-viewer" class="view-section h-full flex-col overflow-hidden relative">
-            <!-- Floating Controls -->
-            <div class="absolute top-6 left-6 z-20 flex gap-2">
-                 <button onclick="app.switchView('dashboard')" class="glass-panel p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i> <span class="text-xs font-bold uppercase">Archive</span>
+            <div class="absolute top-4 left-4 z-20 flex gap-2">
+                 <button onclick="app.switchView('dashboard')" class="glass-panel p-2 md:p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> <span class="text-xs font-bold uppercase hidden sm:inline">Archive</span>
                  </button>
-                 <button onclick="app.switchView('builder')" class="glass-panel p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2">
-                    <i data-lucide="pencil" class="w-4 h-4"></i> <span class="text-xs font-bold uppercase">Studio</span>
+                 <button onclick="app.switchView('builder')" class="glass-panel p-2 md:p-3 rounded-2xl text-white/70 hover:text-white flex items-center gap-2">
+                    <i data-lucide="pencil" class="w-4 h-4"></i> <span class="text-xs font-bold uppercase hidden sm:inline">Studio</span>
                  </button>
             </div>
 
-            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 glass-panel p-2 rounded-full flex gap-1 shadow-2xl border border-white/20">
-                <button onclick="app.changeZoom(-0.1)" class="p-3 text-white/50 hover:text-white transition-colors"><i data-lucide="zoom-out" class="w-5 h-5"></i></button>
+            <div class="absolute bottom-20 md:bottom-10 left-1/2 -translate-x-1/2 z-20 glass-panel p-2 rounded-full flex gap-1 shadow-2xl border border-white/20">
+                <button onclick="app.changeZoom(-0.1)" class="p-2 md:p-3 text-white/50 hover:text-white transition-colors"><i data-lucide="zoom-out" class="w-4 md:w-5 h-4 md:h-5"></i></button>
                 <div class="px-4 flex items-center text-[10px] font-black text-white/40 uppercase tracking-widest border-x border-white/5" id="zoom-level">100%</div>
-                <button onclick="app.changeZoom(0.1)" class="p-3 text-white/50 hover:text-white transition-colors"><i data-lucide="zoom-in" class="w-5 h-5"></i></button>
+                <button onclick="app.changeZoom(0.1)" class="p-2 md:p-3 text-white/50 hover:text-white transition-colors"><i data-lucide="zoom-in" class="w-4 md:w-5 h-4 md:h-5"></i></button>
             </div>
 
             <div class="flex-1 overflow-hidden cursor-grab active:cursor-grabbing" id="viewer-container">
                 <div id="viewer-wrapper" class="w-full h-full relative transition-transform duration-500 ease-out flex items-center justify-center origin-center">
                     <svg id="viewer-svg" class="absolute inset-0 w-full h-full pointer-events-none overflow-visible z-0"></svg>
-                    <div id="viewer-content" class="flex items-center gap-32 p-40 relative z-10">
+                    <div id="viewer-content" class="flex items-center gap-16 md:gap-32 p-8 md:p-40 relative z-10 scale-90 md:scale-100">
                         <!-- Chart generated here -->
                     </div>
                 </div>
@@ -338,46 +424,42 @@
         </section>
 
         <!-- SETTINGS -->
-        <section id="view-settings" class="view-section h-full flex-col p-6 md:p-10 overflow-y-auto">
-            <h1 class="text-3xl font-black text-white mb-10">Config Station</h1>
-            <div class="max-w-2xl space-y-8">
-                <!-- Theme Toggle -->
-                <div class="glass-card p-6 rounded-3xl border border-white/10">
-                    <h2 class="text-sm font-black uppercase text-cyan-400 mb-6 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4"></i> Appearance</h2>
+        <section id="view-settings" class="view-section h-full flex-col p-4 md:p-6 lg:p-10 overflow-y-auto">
+            <h1 class="text-2xl md:text-3xl font-black text-white mb-6 md:mb-10">Config Station</h1>
+            <div class="max-w-2xl space-y-6 md:space-y-8">
+                <div class="glass-card p-4 md:p-6 rounded-3xl border border-white/10">
+                    <h2 class="text-sm font-black uppercase text-cyan-400 mb-4 md:mb-6 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4"></i> Appearance</h2>
                     <div class="flex items-center justify-between">
                         <span class="text-white">Theme Mode</span>
-                        <button onclick="app.toggleTheme()" id="theme-toggle-btn" class="bg-cyan-500 hover:bg-cyan-400 text-white px-5 py-2.5 rounded-xl font-bold text-xs">
+                        <button onclick="app.toggleTheme()" id="theme-toggle-btn" class="bg-cyan-500 hover:bg-cyan-400 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-xl font-bold text-xs">
                             Switch to Light
                         </button>
                     </div>
                 </div>
 
-                <!-- Category Management -->
-                <div class="glass-card p-6 rounded-3xl border border-white/10">
-                    <h2 class="text-sm font-black uppercase text-purple-400 mb-6 flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4"></i> Categories</h2>
-                    <div class="space-y-3 mb-4" id="category-list">
-                        <!-- Categories list with delete buttons -->
-                    </div>
-                    <div class="flex gap-2">
+                <div class="glass-card p-4 md:p-6 rounded-3xl border border-white/10">
+                    <h2 class="text-sm font-black uppercase text-purple-400 mb-4 md:mb-6 flex items-center gap-2"><i data-lucide="tags" class="w-4 h-4"></i> Categories</h2>
+                    <div class="space-y-3 mb-4" id="category-list"></div>
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input type="text" id="new-category-input" placeholder="New category name" class="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-white/40">
                         <button onclick="app.addCategory()" class="bg-cyan-500 hover:bg-cyan-400 text-white px-4 py-2 rounded-lg text-xs font-bold">Add</button>
                     </div>
                 </div>
 
-                <div class="glass-card p-6 rounded-3xl border border-white/10">
-                    <h2 class="text-sm font-black uppercase text-cyan-400 mb-6 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Identity & Sync</h2>
-                    <div class="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white/5">
+                <div class="glass-card p-4 md:p-6 rounded-3xl border border-white/10">
+                    <h2 class="text-sm font-black uppercase text-cyan-400 mb-4 md:mb-6 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Identity & Sync</h2>
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-white/5">
                         <div>
                             <p class="font-bold text-white mb-1" id="set-user-name">Guest Scientist</p>
                             <p class="text-xs text-white/40" id="set-sync-status">Data stored locally on this machine.</p>
                         </div>
-                        <button onclick="app.signIn()" id="signin-btn" class="bg-cyan-500 hover:bg-cyan-400 text-white px-5 py-2.5 rounded-xl font-bold text-xs">Authorize Google</button>
+                        <button onclick="app.signIn()" id="signin-btn" class="bg-cyan-500 hover:bg-cyan-400 text-white px-5 py-2.5 rounded-xl font-bold text-xs w-full sm:w-auto">Authorize Google</button>
                     </div>
                 </div>
 
-                <div class="glass-card p-6 rounded-3xl border border-white/10">
-                    <h2 class="text-sm font-black uppercase text-purple-400 mb-6 flex items-center gap-2"><i data-lucide="database" class="w-4 h-4"></i> Data Handling</h2>
-                    <div class="grid grid-cols-2 gap-4">
+                <div class="glass-card p-4 md:p-6 rounded-3xl border border-white/10">
+                    <h2 class="text-sm font-black uppercase text-purple-400 mb-4 md:mb-6 flex items-center gap-2"><i data-lucide="database" class="w-4 h-4"></i> Data Handling</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <button onclick="app.export()" class="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-left group">
                             <i data-lucide="download" class="w-6 h-6 text-white/40 group-hover:text-cyan-400 mb-3 transition-colors"></i>
                             <p class="text-xs font-bold text-white uppercase">Export JSON</p>
@@ -397,6 +479,26 @@
 
     <!-- App Logic Module -->
     <script type="module">
+        // Prevent copy on non-input
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) {
+                const activeEl = document.activeElement;
+                const isInput = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable || activeEl.tagName === 'SELECT';
+                if (!isInput) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        });
+        document.addEventListener('contextmenu', (e) => {
+            const activeEl = document.activeElement;
+            const isInput = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable || activeEl.tagName === 'SELECT';
+            if (!isInput) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
         const { 
             signInAnonymously, onAuthStateChanged, GoogleAuthProvider, 
             signInWithPopup, signOut, collection, doc, setDoc, deleteDoc, onSnapshot, writeBatch 
@@ -409,36 +511,37 @@
                 view: 'dashboard',
                 user: null,
                 charts: [],
-                categories: [], // array of { id, name }
-                selectedCategoryId: 'all', // 'all' or category id
+                categories: [],
+                selectedCategoryId: 'all',
                 currentChart: null,
                 zoom: 1,
                 isDragging: false,
                 dragStart: { x: 0, y: 0 },
                 offset: { x: 0, y: 0 },
                 firestoreUnsubscribe: null,
-                isOnline: true
+                isOnline: true,
+                // Touch state
+                initialPinchDistance: 0,
+                initialZoom: 1,
             },
             firebase: { auth: fAuth, db: fDb },
 
             async init() {
                 this.setupKeyboard();
                 this.setupDrag();
+                this.setupTouchZoom(); // New touch handling
                 
-                // Load categories from localStorage or init defaults
                 const storedCats = localStorage.getItem('chem_categories');
                 if (storedCats) {
                     this.state.categories = JSON.parse(storedCats);
                 } else {
                     this.state.categories = [
-                        { id: 'cat_all', name: 'All' }, // special, but we'll handle in filters
                         { id: 'cat_organic', name: 'Organic' },
                         { id: 'cat_inorganic', name: 'Inorganic' }
                     ];
                     localStorage.setItem('chem_categories', JSON.stringify(this.state.categories));
                 }
                 
-                // Load charts
                 const local = localStorage.getItem('chem_ultra_v1');
                 if(!local) {
                     this.state.charts = [this.getDemoChart()];
@@ -452,7 +555,6 @@
                 this.renderCategorySelect();
                 lucide.createIcons();
                 
-                // Set up auth state listener
                 onAuthStateChanged(fAuth, async (user) => {
                     this.state.user = user;
                     this.updateUserUI();
@@ -490,13 +592,8 @@
                     }
                 });
 
-                try {
-                    await signInAnonymously(fAuth);
-                } catch (e) {
-                    console.warn("Anon sign-in skipped:", e);
-                }
+                try { await signInAnonymously(fAuth); } catch (e) {}
 
-                // Initialize theme from localStorage
                 const savedTheme = localStorage.getItem('theme') || 'dark';
                 if (savedTheme === 'light') {
                     document.documentElement.classList.add('light');
@@ -504,7 +601,6 @@
                 }
             },
 
-            // Theme toggle
             toggleTheme() {
                 const html = document.documentElement;
                 const btn = document.getElementById('theme-toggle-btn');
@@ -519,12 +615,10 @@
                 }
             },
 
-            // Category management
             addCategory() {
                 const input = document.getElementById('new-category-input');
                 const name = input.value.trim();
                 if (!name) return;
-                // Prevent duplicate names (case insensitive)
                 if (this.state.categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
                     this.showToast('Category already exists', 'error');
                     return;
@@ -540,7 +634,6 @@
             },
 
             deleteCategory(id) {
-                // Prevent deletion if any chart uses this category
                 const used = this.state.charts.some(c => c.categoryId === id);
                 if (used) {
                     this.showToast('Cannot delete category in use', 'error');
@@ -572,12 +665,12 @@
                 const container = document.getElementById('category-filters');
                 if (!container) return;
                 const allButton = `
-                    <button onclick="app.filterByCategory('all')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === 'all' ? 'bg-cyan-500 text-white' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all">
+                    <button onclick="app.filterByCategory('all')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === 'all' ? 'bg-cyan-500 text-white' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all whitespace-nowrap">
                         All
                     </button>
                 `;
                 const catButtons = this.state.categories.map(cat => `
-                    <button onclick="app.filterByCategory('${cat.id}')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === cat.id ? 'bg-cyan-500 text-white' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all">
+                    <button onclick="app.filterByCategory('${cat.id}')" class="px-4 py-2 rounded-lg ${this.state.selectedCategoryId === cat.id ? 'bg-cyan-500 text-white' : 'text-white/50 hover:text-white'} text-xs font-bold transition-all whitespace-nowrap">
                         ${cat.name}
                     </button>
                 `).join('');
@@ -610,12 +703,7 @@
                     const chartDoc = doc(chartsRef, chart.id);
                     batch.set(chartDoc, chart);
                 });
-                try {
-                    await batch.commit();
-                    this.showToast("Local data uploaded", "success");
-                } catch (e) {
-                    console.error("Sync failed:", e);
-                }
+                try { await batch.commit(); this.showToast("Local data uploaded", "success"); } catch (e) {}
             },
 
             updateUserUI() {
@@ -623,19 +711,14 @@
                 const initialsEl = document.getElementById('user-initials');
                 const setUserNameEl = document.getElementById('set-user-name');
                 const signinBtn = document.getElementById('signin-btn');
-                const syncStatusEl = document.getElementById('sync-status');
-                const setSyncStatusEl = document.getElementById('set-sync-status');
-
                 if (this.state.user) {
                     const isAnon = this.state.user.isAnonymous;
                     const name = isAnon ? "Guest Scientist" : (this.state.user.displayName || "Research Scientist");
                     const initials = name.split(" ").map(n => n[0]).join("").substring(0, 2);
-
                     if (nameEl) nameEl.textContent = name;
                     if (initialsEl) initialsEl.textContent = initials;
                     if (setUserNameEl) setUserNameEl.textContent = name;
                     if (signinBtn) signinBtn.textContent = isAnon ? "Authorize Google" : "Sign Out";
-                    
                     this.updateSyncStatus();
                 }
             },
@@ -643,11 +726,9 @@
             updateSyncStatus() {
                 const syncEl = document.getElementById('sync-status');
                 const setSyncEl = document.getElementById('set-sync-status');
-                const status = this.state.user && !this.state.user.isAnonymous && this.state.isOnline ? 
-                    "☁️ Cloud Synced" : "💾 Local Session";
+                const status = this.state.user && !this.state.user.isAnonymous && this.state.isOnline ? "☁️ Cloud Synced" : "💾 Local Session";
                 if (syncEl) syncEl.textContent = status;
-                if (setSyncEl) setSyncEl.textContent = this.state.user && !this.state.user.isAnonymous ? 
-                    "Data stored in Firestore (real-time sync)." : "Data stored locally on this machine.";
+                if (setSyncEl) setSyncEl.textContent = this.state.user && !this.state.user.isAnonymous ? "Data stored in Firestore (real-time sync)." : "Data stored locally on this machine.";
             },
 
             async signIn() {
@@ -656,92 +737,62 @@
                     await signOut(fAuth);
                 } else {
                     const provider = new GoogleAuthProvider();
-                    try {
-                        await signInWithPopup(fAuth, provider);
-                        this.showToast("Cloud Sync Enabled", "success");
-                    } catch (e) {
-                        this.showToast("Auth Failed", "error");
-                    }
+                    try { await signInWithPopup(fAuth, provider); this.showToast("Cloud Sync Enabled", "success"); } catch (e) { this.showToast("Auth Failed", "error"); }
                 }
             },
 
-            // --- NAVIGATION ---
             switchView(view) {
                 this.state.view = view;
                 document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
                 document.querySelectorAll('.nav-item').forEach(n => n.className = 'nav-item flex items-center gap-4 p-3.5 rounded-2xl w-full transition-all text-white/50 hover:bg-white/5');
-                
                 const activeSec = document.getElementById(`view-${view}`);
                 if (activeSec) activeSec.classList.add('active');
-                
                 const activeNav = document.getElementById(`nav-${view}`);
                 if(activeNav) activeNav.className = 'nav-item flex items-center gap-4 p-3.5 rounded-2xl w-full transition-all text-cyan-400 bg-cyan-500/10';
-
-                if(view === 'dashboard') {
-                    this.renderDashboard();
-                    this.renderCategoryFilters();
-                }
-                if(view === 'builder') {
-                    this.renderBuilder();
-                    this.renderCategorySelect();
-                }
+                if(view === 'dashboard') { this.renderDashboard(); this.renderCategoryFilters(); }
+                if(view === 'builder') { this.renderBuilder(); this.renderCategorySelect(); }
                 if(view === 'viewer') this.renderViewer();
                 if(view === 'settings') this.renderCategoryList();
-                
                 lucide.createIcons();
             },
 
-            // --- DASHBOARD ---
             renderDashboard() {
                 const grid = document.getElementById('dashboard-grid');
                 if (!grid) return;
-                
                 let filteredCharts = this.state.charts;
-                if (this.state.selectedCategoryId !== 'all') {
-                    filteredCharts = filteredCharts.filter(c => c.categoryId === this.state.selectedCategoryId);
-                }
-                
+                if (this.state.selectedCategoryId !== 'all') filteredCharts = filteredCharts.filter(c => c.categoryId === this.state.selectedCategoryId);
                 grid.innerHTML = filteredCharts.map(chart => {
                     const category = this.state.categories.find(c => c.id === chart.categoryId);
                     const catName = category ? category.name : 'Uncategorized';
                     return `
-                    <div class="glass-card p-6 rounded-3xl group cursor-pointer relative" onclick="app.viewChart('${chart.id}')">
-                        <div class="flex justify-between items-start mb-6">
-                            <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all">
-                                <i data-lucide="beaker" class="w-6 h-6"></i>
+                    <div class="glass-card p-4 md:p-6 rounded-3xl group cursor-pointer relative" onclick="app.viewChart('${chart.id}')">
+                        <div class="flex justify-between items-start mb-4 md:mb-6">
+                            <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all">
+                                <i data-lucide="beaker" class="w-5 h-5 md:w-6 md:h-6"></i>
                             </div>
                             <button onclick="event.stopPropagation(); app.deleteChart('${chart.id}')" class="p-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
-                        <h3 class="text-xl font-black text-white mb-1">${chart.title || 'Untitled'}</h3>
+                        <h3 class="text-lg md:text-xl font-black text-white mb-1">${chart.title || 'Untitled'}</h3>
                         <p class="text-xs font-bold text-cyan-400/60 uppercase tracking-widest">${chart.subtext || 'Unknown Compound'}</p>
-                        <div class="mt-2">
-                            <span class="inline-block px-2 py-0.5 bg-white/10 rounded text-[10px] text-white/60">${catName}</span>
-                        </div>
+                        <div class="mt-2"><span class="inline-block px-2 py-0.5 bg-white/10 rounded text-[10px] text-white/60">${catName}</span></div>
                         <div class="mt-4 flex gap-4 border-t border-white/5 pt-4">
-                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40">
-                                <i data-lucide="git-branch" class="w-3 h-3"></i> ${chart.preparations?.length || 0} PREPS
-                            </div>
-                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40">
-                                <i data-lucide="zap" class="w-3 h-3"></i> ${chart.reactions?.length || 0} RXNS
-                            </div>
+                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40"><i data-lucide="git-branch" class="w-3 h-3"></i> ${chart.preparations?.length || 0} PREPS</div>
+                            <div class="flex items-center gap-1.5 text-[10px] font-bold text-white/40"><i data-lucide="zap" class="w-3 h-3"></i> ${chart.reactions?.length || 0} RXNS</div>
                         </div>
                     </div>
                 `}).join('');
                 lucide.createIcons({root: grid});
             },
 
-            // --- BUILDER ---
             renderBuilder() {
                 if(!this.state.currentChart) this.createNewChart(false);
                 const c = this.state.currentChart;
                 document.getElementById('build-title').value = c.title || '';
                 document.getElementById('build-subtext').value = c.subtext || '';
                 const select = document.getElementById('build-category');
-                if (select) {
-                    select.value = c.categoryId || this.state.categories[0]?.id || '';
-                }
+                if (select) select.value = c.categoryId || this.state.categories[0]?.id || '';
                 this.renderBuilderItems();
             },
 
@@ -751,35 +802,35 @@
                 prepsBox.innerHTML = this.state.currentChart.preparations.map((p, idx) => `
                     <div class="glass-card p-4 rounded-2xl border border-white/5 space-y-3 relative group animate-fade">
                         <button onclick="app.removeItem('preparations', ${idx})" class="absolute top-2 right-2 p-2 text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100"><i data-lucide="x" class="w-4 h-4"></i></button>
-                        <input type="text" oninput="app.updateItem('preparations', ${idx}, 'topText', this.value)" value="${p.topText || ''}" placeholder="Process (e.g. Oxidation)" class="bg-transparent border-none text-[10px] font-black uppercase tracking-tighter text-white/30 focus:ring-0 p-0 w-full">
-                        <input type="text" oninput="app.updateItem('preparations', ${idx}, 'mainText', this.value)" value="${p.mainText || ''}" placeholder="Precursor Molecule" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full">
+                        <input type="text" oninput="app.updateItem('preparations', ${idx}, 'topText', this.value)" value="${p.topText || ''}" placeholder="Process" class="bg-transparent border-none text-[10px] font-black uppercase tracking-tighter text-white/30 focus:ring-0 p-0 w-full">
+                        <input type="text" oninput="app.updateItem('preparations', ${idx}, 'mainText', this.value)" value="${p.mainText || ''}" placeholder="Precursor" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full">
                     </div>
                 `).join('');
 
                 const rxnsBox = document.getElementById('builder-reactions');
                 if (!rxnsBox) return;
                 rxnsBox.innerHTML = this.state.currentChart.reactions.map((r, idx) => `
-                    <div class="glass-card p-5 rounded-3xl border border-white/5 space-y-4 group animate-fade">
+                    <div class="glass-card p-4 md:p-5 rounded-3xl border border-white/5 space-y-4 group animate-fade">
                         <div class="flex justify-between items-center">
-                            <input type="text" oninput="app.updateItem('reactions', ${idx}, 'reagent', this.value)" value="${r.reagent || ''}" placeholder="Reagents + Conditions" class="bg-transparent border-none text-xs font-black uppercase text-cyan-400 focus:ring-0 p-0 w-3/4">
+                            <input type="text" oninput="app.updateItem('reactions', ${idx}, 'reagent', this.value)" value="${r.reagent || ''}" placeholder="Reagents" class="bg-transparent border-none text-xs font-black uppercase text-cyan-400 focus:ring-0 p-0 w-3/4">
                             <button onclick="app.removeItem('reactions', ${idx})" class="text-white/20 hover:text-red-400 opacity-0 group-hover:opacity-100"><i data-lucide="x" class="w-4 h-4"></i></button>
                         </div>
                         <div class="flex items-center gap-4 bg-white/5 p-3 rounded-2xl">
                              <div class="text-white/20"><i data-lucide="arrow-right-circle" class="w-5 h-5"></i></div>
                              <div class="flex-1">
-                                <input type="text" oninput="app.updateItem('reactions', ${idx}, 'product', this.value)" value="${r.product || ''}" placeholder="Yield Product" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full">
-                                <input type="text" oninput="app.updateItem('reactions', ${idx}, 'subText', this.value)" value="${r.subText || ''}" placeholder="Yield Detail (color, state)" class="bg-transparent border-none text-[10px] text-white/40 focus:ring-0 p-0 w-full">
+                                <input type="text" oninput="app.updateItem('reactions', ${idx}, 'product', this.value)" value="${r.product || ''}" placeholder="Product" class="bg-transparent border-none text-sm font-bold text-white focus:ring-0 p-0 w-full">
+                                <input type="text" oninput="app.updateItem('reactions', ${idx}, 'subText', this.value)" value="${r.subText || ''}" placeholder="Detail" class="bg-transparent border-none text-[10px] text-white/40 focus:ring-0 p-0 w-full">
                              </div>
                         </div>
                         <div class="pt-2 border-t border-white/5">
                             <div class="flex items-center justify-between mb-2">
-                                <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Secondary Tests</span>
-                                <button onclick="app.addObservation(${idx})" class="text-[9px] font-black text-cyan-400 hover:text-white uppercase">+ Add Observation</button>
+                                <span class="text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Tests</span>
+                                <button onclick="app.addObservation(${idx})" class="text-[9px] font-black text-cyan-400 hover:text-white uppercase">+ Add</button>
                             </div>
                             <div class="space-y-2">
                                 ${(r.observations || []).map((o, oIdx) => `
                                     <div class="flex items-center gap-3 bg-white/5 p-2 rounded-xl border border-white/5">
-                                        <input type="text" oninput="app.updateObs(${idx}, ${oIdx}, 'mainText', this.value)" value="${o.mainText || ''}" placeholder="Observation..." class="bg-transparent border-none text-[10px] font-bold text-white/70 focus:ring-0 p-0 flex-1">
+                                        <input type="text" oninput="app.updateObs(${idx}, ${oIdx}, 'mainText', this.value)" value="${o.mainText || ''}" placeholder="Observation" class="bg-transparent border-none text-[10px] font-bold text-white/70 focus:ring-0 p-0 flex-1">
                                         <button onclick="app.removeObs(${idx}, ${oIdx})" class="text-white/20 hover:text-red-500"><i data-lucide="x" class="w-3 h-3"></i></button>
                                     </div>
                                 `).join('')}
@@ -787,49 +838,42 @@
                         </div>
                     </div>
                 `).join('');
-                lucide.createIcons({root: rxnsBox});
-                lucide.createIcons({root: prepsBox});
+                lucide.createIcons({root: rxnsBox}); lucide.createIcons({root: prepsBox});
             },
 
-            // --- VIEWER RENDER ---
             renderViewer() {
                 const chart = this.state.currentChart;
                 if(!chart) return;
-                
                 const container = document.getElementById('viewer-content');
                 const svg = document.getElementById('viewer-svg');
                 if (!container || !svg) return;
                 svg.innerHTML = '';
-                
                 let html = `
-                    <div class="flex flex-col gap-12 items-end">
+                    <div class="flex flex-col gap-8 md:gap-12 items-end">
                         ${chart.preparations.map(p => `
-                            <div id="v-prep-${p.id}" class="glass-card p-6 rounded-3xl min-w-[180px] text-right border-l-4 border-l-purple-500 animate-fade shadow-2xl">
+                            <div id="v-prep-${p.id}" class="glass-card p-4 md:p-6 rounded-3xl min-w-[140px] md:min-w-[180px] text-right border-l-4 border-l-purple-500 animate-fade shadow-2xl">
                                 <p class="text-[10px] font-black uppercase text-white/40 mb-1">${p.topText || 'Step'}</p>
-                                <p class="font-bold text-white">${p.mainText || '---'}</p>
+                                <p class="font-bold text-white text-sm md:text-base">${p.mainText || '---'}</p>
                             </div>
                         `).join('')}
                     </div>
                     <div class="relative flex items-center justify-center">
-                        <div class="molecule-core w-48 h-48 rounded-full flex flex-col items-center justify-center z-10 glow-pulse float-animation shadow-[0_0_80px_rgba(6,182,212,0.2)]">
-                            <span class="text-4xl font-black text-white z-20 drop-shadow-lg">${chart.title || 'N/A'}</span>
-                            <span class="text-[10px] font-black uppercase tracking-widest text-cyan-400 z-20 mt-2">${chart.subtext || ''}</span>
+                        <div class="molecule-core w-32 h-32 md:w-48 md:h-48 rounded-full flex flex-col items-center justify-center z-10 glow-pulse float-animation shadow-[0_0_80px_rgba(6,182,212,0.2)]">
+                            <span class="text-2xl md:text-4xl font-black text-white z-20 drop-shadow-lg">${chart.title || 'N/A'}</span>
+                            <span class="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-cyan-400 z-20 mt-1 md:mt-2">${chart.subtext || ''}</span>
                         </div>
-                        <div class="absolute inset-[-40px] border border-white/5 rounded-full animate-[spin_20s_linear_infinite]"></div>
-                        <div class="absolute inset-[-80px] border border-white/5 rounded-full animate-[spin_35s_linear_infinite_reverse]"></div>
                     </div>
-                    <div class="flex flex-col gap-16 items-start">
+                    <div class="flex flex-col gap-12 md:gap-16 items-start">
                         ${chart.reactions.map(r => `
-                            <div class="flex items-center gap-12">
-                                <div id="v-rxn-${r.id}" class="glass-card p-6 rounded-3xl min-w-[280px] border-l-4 border-l-cyan-500 animate-fade shadow-2xl relative">
-                                    <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-cyan-500 rounded-full flex items-center justify-center border-4 border-[#0f172a]"><i data-lucide="chevron-right" class="w-3 h-3 text-white"></i></div>
+                            <div class="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-12">
+                                <div id="v-rxn-${r.id}" class="glass-card p-4 md:p-6 rounded-3xl min-w-[220px] md:min-w-[280px] border-l-4 border-l-cyan-500 animate-fade shadow-2xl relative">
                                     <p class="text-[10px] font-black uppercase text-cyan-400 mb-2">${r.reagent || 'Reaction'}</p>
-                                    <p class="text-lg font-bold text-white">${r.product || '---'}</p>
-                                    <p class="text-[11px] font-bold text-white/40 mt-1 uppercase">${r.subText || ''}</p>
+                                    <p class="text-base md:text-lg font-bold text-white">${r.product || '---'}</p>
+                                    <p class="text-[10px] md:text-[11px] font-bold text-white/40 mt-1 uppercase">${r.subText || ''}</p>
                                 </div>
-                                <div class="flex flex-col gap-4">
+                                <div class="flex flex-row md:flex-col gap-2 md:gap-4 flex-wrap">
                                     ${(r.observations || []).map(obs => `
-                                        <div id="v-obs-${obs.id}" class="glass-card py-3 px-5 rounded-2xl border border-orange-500/20 bg-orange-500/5 animate-fade">
+                                        <div id="v-obs-${obs.id}" class="glass-card py-2 px-3 md:py-3 md:px-5 rounded-2xl border border-orange-500/20 bg-orange-500/5 animate-fade">
                                             <p class="text-[10px] font-black text-orange-400 uppercase">${obs.mainText || 'Observation'}</p>
                                         </div>
                                     `).join('')}
@@ -840,7 +884,6 @@
                 `;
                 container.innerHTML = html;
                 lucide.createIcons({root: container});
-                
                 setTimeout(() => this.drawPaths(), 100);
             },
 
@@ -848,66 +891,35 @@
                 const svg = document.getElementById('viewer-svg');
                 const core = document.querySelector('.molecule-core');
                 if(!core || !svg) return;
-                
                 const cRect = core.getBoundingClientRect();
                 const svgRect = svg.getBoundingClientRect();
-                
                 const getCoords = (el, side) => {
                     const r = el.getBoundingClientRect();
-                    return {
-                        x: side === 'left' ? r.left - svgRect.left : r.right - svgRect.left,
-                        y: r.top - svgRect.top + r.height/2
-                    };
+                    return { x: side === 'left' ? r.left - svgRect.left : r.right - svgRect.left, y: r.top - svgRect.top + r.height/2 };
                 };
-
                 const coreL = { x: cRect.left - svgRect.left + 10, y: cRect.top - svgRect.top + cRect.height/2 };
                 const coreR = { x: cRect.right - svgRect.left - 10, y: cRect.top - svgRect.top + cRect.height/2 };
-
                 let paths = '';
-                this.state.currentChart.preparations.forEach(p => {
-                    const el = document.getElementById(`v-prep-${p.id}`);
-                    if(!el) return;
-                    const end = getCoords(el, 'right');
-                    paths += this.createCurve(end, coreL, '#8b5cf6');
-                });
-
+                this.state.currentChart.preparations.forEach(p => { const el = document.getElementById(`v-prep-${p.id}`); if(!el) return; paths += this.createCurve(getCoords(el, 'right'), coreL, '#8b5cf6'); });
                 this.state.currentChart.reactions.forEach(r => {
-                    const el = document.getElementById(`v-rxn-${r.id}`);
-                    if(!el) return;
-                    const start = getCoords(el, 'left');
-                    paths += this.createCurve(coreR, start, '#06b6d4');
-                    
+                    const el = document.getElementById(`v-rxn-${r.id}`); if(!el) return;
+                    paths += this.createCurve(coreR, getCoords(el, 'left'), '#06b6d4');
                     const rxnEnd = getCoords(el, 'right');
-                    (r.observations || []).forEach(obs => {
-                        const obsEl = document.getElementById(`v-obs-${obs.id}`);
-                        if(obsEl) {
-                            paths += this.createCurve(rxnEnd, getCoords(obsEl, 'left'), '#f97316');
-                        }
-                    });
+                    (r.observations || []).forEach(obs => { const obsEl = document.getElementById(`v-obs-${obs.id}`); if(obsEl) paths += this.createCurve(rxnEnd, getCoords(obsEl, 'left'), '#f97316'); });
                 });
-
                 svg.innerHTML = paths;
             },
 
-            createCurve(p1, p2, color) {
-                const midX = (p1.x + p2.x) / 2;
-                return `<path d="M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}" stroke="${color}" stroke-width="2" fill="none" class="path-animate" opacity="0.4" />`;
-            },
+            createCurve(p1, p2, color) { const midX = (p1.x + p2.x) / 2; return `<path d="M ${p1.x} ${p1.y} C ${midX} ${p1.y}, ${midX} ${p2.y}, ${p2.x} ${p2.y}" stroke="${color}" stroke-width="2" fill="none" class="path-animate" opacity="0.4" />`; },
 
-            // --- STATE ACTIONS ---
             createNewChart(goBuilder = true) {
                 const id = 'chart_' + Date.now();
                 const defaultCat = this.state.categories[0]?.id || '';
-                this.state.currentChart = {
-                    id, title: '', subtext: '', categoryId: defaultCat, preparations: [], reactions: []
-                };
+                this.state.currentChart = { id, title: '', subtext: '', categoryId: defaultCat, preparations: [], reactions: [] };
                 if(goBuilder) this.switchView('builder');
             },
 
-            viewChart(id) {
-                this.state.currentChart = this.state.charts.find(c => c.id === id);
-                this.switchView('viewer');
-            },
+            viewChart(id) { this.state.currentChart = this.state.charts.find(c => c.id === id); this.switchView('viewer'); },
 
             async saveCurrentChart() {
                 const c = this.state.currentChart;
@@ -915,49 +927,25 @@
                 c.subtext = document.getElementById('build-subtext').value;
                 const catSelect = document.getElementById('build-category');
                 c.categoryId = catSelect ? catSelect.value : this.state.categories[0]?.id || '';
-                
                 const idx = this.state.charts.findIndex(item => item.id === c.id);
                 if(idx > -1) this.state.charts[idx] = JSON.parse(JSON.stringify(c));
                 else this.state.charts.push(JSON.parse(JSON.stringify(c)));
-                
                 localStorage.setItem('chem_ultra_v1', JSON.stringify(this.state.charts));
-                
                 if (this.state.user && !this.state.user.isAnonymous) {
-                    try {
-                        const chartRef = doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', c.id);
-                        await setDoc(chartRef, c);
-                        this.showToast("Saved to Cloud", "success");
-                    } catch (e) {
-                        this.showToast("Cloud save failed", "error");
-                    }
-                } else {
-                    this.showToast("Saved Locally", "success");
-                }
-                
+                    try { await setDoc(doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', c.id), c); this.showToast("Saved to Cloud", "success"); } catch (e) { this.showToast("Cloud save failed", "error"); }
+                } else { this.showToast("Saved Locally", "success"); }
                 this.switchView('dashboard');
             },
 
             async deleteChart(id) {
-                if(confirm("Permanently delete this compound from the archive?")) {
+                if(confirm("Permanently delete?")) {
                     this.state.charts = this.state.charts.filter(c => c.id !== id);
                     localStorage.setItem('chem_ultra_v1', JSON.stringify(this.state.charts));
-                    
-                    if (this.state.user && !this.state.user.isAnonymous) {
-                        try {
-                            const chartRef = doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', id);
-                            await deleteDoc(chartRef);
-                        } catch (e) {
-                            console.warn("Delete from cloud failed:", e);
-                        }
-                    }
-                    
-                    this.renderDashboard();
-                    this.renderCategoryFilters();
-                    this.showToast("Compound Purged", "error");
+                    if (this.state.user && !this.state.user.isAnonymous) { try { await deleteDoc(doc(fDb, 'artifacts', 'studyflow-pro', 'users', this.state.user.uid, 'charts', id)); } catch(e) {} }
+                    this.renderDashboard(); this.renderCategoryFilters(); this.showToast("Compound Purged", "error");
                 }
             },
 
-            // --- ITEM HELPERS ---
             addPrep() { this.state.currentChart.preparations.push({id: Date.now(), topText: '', mainText: ''}); this.renderBuilderItems(); },
             addReaction() { this.state.currentChart.reactions.push({id: Date.now(), reagent: '', product: '', subText: '', observations: []}); this.renderBuilderItems(); },
             addObservation(idx) { this.state.currentChart.reactions[idx].observations.push({id: Date.now(), mainText: ''}); this.renderBuilderItems(); },
@@ -966,14 +954,9 @@
             updateObs(rIdx, oIdx, key, val) { this.state.currentChart.reactions[rIdx].observations[oIdx][key] = val; },
             removeObs(rIdx, oIdx) { this.state.currentChart.reactions[rIdx].observations.splice(oIdx, 1); this.renderBuilderItems(); },
 
-            // --- INTERACTION ---
             setupKeyboard() {
                 window.addEventListener('keydown', e => {
-                    if(e.ctrlKey && e.key === 'k') {
-                        e.preventDefault();
-                        document.getElementById('command-palette').classList.toggle('open');
-                        document.getElementById('cmd-input').focus();
-                    }
+                    if(e.ctrlKey && e.key === 'k') { e.preventDefault(); document.getElementById('command-palette').classList.toggle('open'); document.getElementById('cmd-input').focus(); }
                     if(e.key === 'Escape') document.getElementById('command-palette').classList.remove('open');
                 });
             },
@@ -984,6 +967,7 @@
                 if (!container || !wrapper) return;
                 
                 container.addEventListener('mousedown', e => {
+                    if (this.state.view !== 'viewer') return;
                     this.state.isDragging = true;
                     this.state.dragStart = { x: e.clientX - this.state.offset.x, y: e.clientY - this.state.offset.y };
                 });
@@ -996,6 +980,109 @@
                 window.addEventListener('mouseup', () => this.state.isDragging = false);
             },
 
+            setupTouchZoom() {
+                const container = document.getElementById('viewer-container');
+                const wrapper = document.getElementById('viewer-wrapper');
+                if (!container || !wrapper) return;
+
+                let initialDistance = 0;
+                let initialZoom = 1;
+                let initialPan = { x: 0, y: 0 };
+                let lastTouchMidpoint = { x: 0, y: 0 };
+                let isPanning = false;
+                let isPinching = false;
+
+                container.addEventListener('touchstart', (e) => {
+                    if (this.state.view !== 'viewer') return;
+                    
+                    const touches = e.touches;
+                    if (touches.length === 1) {
+                        isPanning = true;
+                        isPinching = false;
+                        const touch = touches[0];
+                        this.state.dragStart = {
+                            x: touch.clientX - this.state.offset.x,
+                            y: touch.clientY - this.state.offset.y
+                        };
+                        this.state.isDragging = true;
+                        e.preventDefault();
+                    } else if (touches.length === 2) {
+                        isPanning = false;
+                        isPinching = true;
+                        this.state.isDragging = false;
+                        
+                        const touch1 = touches[0];
+                        const touch2 = touches[1];
+                        initialDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                        initialZoom = this.state.zoom;
+                        lastTouchMidpoint = {
+                            x: (touch1.clientX + touch2.clientX) / 2,
+                            y: (touch1.clientY + touch2.clientY) / 2
+                        };
+                        initialPan = { ...this.state.offset };
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                container.addEventListener('touchmove', (e) => {
+                    if (this.state.view !== 'viewer') return;
+                    
+                    const touches = e.touches;
+                    
+                    if (touches.length === 1 && isPanning) {
+                        const touch = touches[0];
+                        this.state.offset.x = touch.clientX - this.state.dragStart.x;
+                        this.state.offset.y = touch.clientY - this.state.dragStart.y;
+                        wrapper.style.transform = `translate(${this.state.offset.x}px, ${this.state.offset.y}px) scale(${this.state.zoom})`;
+                        e.preventDefault();
+                    } else if (touches.length === 2 && isPinching) {
+                        const touch1 = touches[0];
+                        const touch2 = touches[1];
+                        const currentDistance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                        if (initialDistance > 0) {
+                            const scale = currentDistance / initialDistance;
+                            const newZoom = Math.max(0.3, Math.min(2, initialZoom * scale));
+                            const currentMidpoint = {
+                                x: (touch1.clientX + touch2.clientX) / 2,
+                                y: (touch1.clientY + touch2.clientY) / 2
+                            };
+                            const zoomRatio = newZoom / this.state.zoom;
+                            this.state.offset.x = currentMidpoint.x - (currentMidpoint.x - this.state.offset.x) * zoomRatio;
+                            this.state.offset.y = currentMidpoint.y - (currentMidpoint.y - this.state.offset.y) * zoomRatio;
+                            this.state.zoom = newZoom;
+                            wrapper.style.transform = `translate(${this.state.offset.x}px, ${this.state.offset.y}px) scale(${this.state.zoom})`;
+                            const zoomEl = document.getElementById('zoom-level');
+                            if (zoomEl) zoomEl.textContent = Math.round(this.state.zoom * 100) + '%';
+                        }
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+
+                container.addEventListener('touchend', (e) => {
+                    if (this.state.view !== 'viewer') return;
+                    if (e.touches.length === 0) {
+                        this.state.isDragging = false;
+                        isPanning = false;
+                        isPinching = false;
+                        initialDistance = 0;
+                    } else if (e.touches.length === 1 && isPinching) {
+                        isPinching = false;
+                        isPanning = true;
+                        const touch = e.touches[0];
+                        this.state.dragStart = {
+                            x: touch.clientX - this.state.offset.x,
+                            y: touch.clientY - this.state.offset.y
+                        };
+                        this.state.isDragging = true;
+                    }
+                    e.preventDefault();
+                });
+
+                container.addEventListener('contextmenu', (e) => {
+                    if (this.state.view === 'viewer') e.preventDefault();
+                });
+            },
+
             changeZoom(delta) {
                 this.state.zoom = Math.max(0.3, Math.min(2, this.state.zoom + delta));
                 const zoomEl = document.getElementById('zoom-level');
@@ -1006,64 +1093,18 @@
 
             showToast(msg, type) {
                 const id = 't' + Date.now();
-                const html = `
-                    <div id="${id}" class="glass-panel px-6 py-4 rounded-2xl flex items-center gap-4 animate-fade border-l-4 ${type === 'success' ? 'border-l-cyan-500' : 'border-l-red-500'}">
-                        <i data-lucide="${type === 'success' ? 'check-circle' : 'alert-circle'}" class="w-5 h-5 ${type === 'success' ? 'text-cyan-400' : 'text-red-400'}"></i>
-                        <span class="text-xs font-black uppercase text-white">${msg}</span>
-                    </div>
-                `;
-                const container = document.getElementById('toast-container');
-                if (container) {
-                    container.insertAdjacentHTML('beforeend', html);
-                    lucide.createIcons({root: document.getElementById(id)});
-                    setTimeout(() => document.getElementById(id)?.remove(), 3000);
-                }
+                const html = `<div id="${id}" class="glass-panel px-4 md:px-6 py-3 md:py-4 rounded-2xl flex items-center gap-3 md:gap-4 animate-fade border-l-4 ${type==='success'?'border-l-cyan-500':'border-l-red-500'}"><i data-lucide="${type==='success'?'check-circle':'alert-circle'}" class="w-4 h-4 md:w-5 md:h-5 ${type==='success'?'text-cyan-400':'text-red-400'}"></i><span class="text-xs font-black uppercase text-white">${msg}</span></div>`;
+                const container = document.getElementById('toast-container'); if(container) { container.insertAdjacentHTML('beforeend', html); lucide.createIcons({root: document.getElementById(id)}); setTimeout(() => document.getElementById(id)?.remove(), 3000); }
             },
 
-            export() {
-                const blob = new Blob([JSON.stringify(this.state.charts)], {type: 'application/json'});
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `chem_pro_backup_${Date.now()}.json`;
-                a.click();
-            },
-
-            import(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (re) => {
-                    try {
-                        const data = JSON.parse(re.target.result);
-                        this.state.charts = data;
-                        localStorage.setItem('chem_ultra_v1', JSON.stringify(data));
-                        
-                        if (this.state.user && !this.state.user.isAnonymous) {
-                            this.syncLocalToFirestore(this.state.user.uid);
-                        }
-                        
-                        this.renderDashboard();
-                        this.renderCategoryFilters();
-                        this.showToast("Data Imported", "success");
-                    } catch(e) {
-                        this.showToast("Invalid File Format", "error");
-                    }
-                };
-                reader.readAsText(file);
-            },
+            export() { const blob = new Blob([JSON.stringify(this.state.charts)], {type: 'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `chem_pro_backup_${Date.now()}.json`; a.click(); },
+            import(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onload = (re) => { try { const data = JSON.parse(re.target.result); this.state.charts = data; localStorage.setItem('chem_ultra_v1', JSON.stringify(data)); if(this.state.user) this.syncLocalToFirestore(this.state.user.uid); this.renderDashboard(); this.renderCategoryFilters(); this.showToast("Data Imported", "success"); } catch(e) { this.showToast("Invalid File", "error"); } }; reader.readAsText(file); },
 
             getDemoChart() {
                 return {
                     id: 'demo_1', title: 'H2SO4', subtext: 'Sulfuric Acid', categoryId: 'cat_inorganic',
-                    preparations: [
-                        {id: 1, topText: 'Contact Process', mainText: 'SO3 + H2O'},
-                        {id: 2, topText: 'Lead Chamber', mainText: 'SO2 + NO2 + H2O'}
-                    ],
-                    reactions: [
-                        {id: 1, reagent: 'Sugar (C12H22O11)', product: 'Carbon (C)', subText: 'Dehydration (Black Mass)', observations: [{id: 1, mainText: 'Steam Evolved'}]},
-                        {id: 2, reagent: 'BaCl2', product: 'BaSO4', subText: 'White Precipitate', observations: [{id: 2, mainText: 'Insoluble in HCl'}]}
-                    ]
+                    preparations: [ {id: 1, topText: 'Contact Process', mainText: 'SO3 + H2O'}, {id: 2, topText: 'Lead Chamber', mainText: 'SO2 + NO2 + H2O'} ],
+                    reactions: [ {id: 1, reagent: 'Sugar', product: 'Carbon (C)', subText: 'Dehydration', observations: [{id:1, mainText:'Steam'}]}, {id:2, reagent: 'BaCl2', product: 'BaSO4', subText:'White ppt', observations:[{id:2, mainText:'Insoluble'}]} ]
                 };
             }
         };
