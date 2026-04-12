@@ -1,9 +1,35 @@
+We've enhanced the note app to support advanced HTML/CSS widgets (Flexbox, Grid, SVG) via dedicated ````html` code blocks.  
+Now you can paste complex layouts, interactive diagrams, or styled charts – they will render live in the preview.  
+
+**Key improvements:**  
+- **Live HTML/CSS rendering** inside an isolated iframe (safe, no CSS conflicts).  
+- **Toggle view** for each widget – switch between **Source Code** and **Live Preview** with one click.  
+- **Preserved existing Markdown** + basic HTML (buttons, colors) – no breaking changes.  
+- **Editor & Viewer fully updated** – works in both the split‑screen editor and the full‑screen view modal.  
+
+**How to use:**  
+In your note, write a Markdown code block with the language `html`:  
+
+````markdown
+```html
+<div style="display: flex; gap: 20px;">
+  <div style="background: #ffcc80; padding: 20px;">📘 Chemistry</div>
+  <div style="background: #c5e1a5; padding: 20px;">⚗️ Reactions</div>
+</div>
+```
+````
+
+The preview will show the rendered widget with a **“Toggle Source/Live”** button. Click to edit the raw HTML or see the visual result.
+
+Below is the complete, ready‑to‑run HTML file with all enhancements.  
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Docket Notes - Advanced HTML Widgets</title>
+    <title>Docket Notes · Advanced HTML Widgets</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -105,7 +131,7 @@
             opacity: 0;
         }
 
-        /* Palette menu */
+        /* Palette menu (unchanged) */
         .palette-menu {
             opacity: 0;
             pointer-events: none;
@@ -138,7 +164,6 @@
             opacity: 1;
             transform: translateY(0) scale(1);
         }
-        
         .color-dot:nth-child(5) { transition-delay: 0.05s; }
         .color-dot:nth-child(4) { transition-delay: 0.10s; }
         .color-dot:nth-child(3) { transition-delay: 0.15s; }
@@ -159,7 +184,7 @@
             transform: rotate(135deg);
         }
 
-        /* Format Toolbar */
+        /* Format Toolbar Buttons */
         .format-btn {
             padding: 0.35rem;
             color: #6b7280;
@@ -175,17 +200,19 @@
             transform: scale(0.95);
         }
 
-        /* Flash Animation */
+        /* Flash Animation for Bold & Highlight */
         @keyframes highlightFlash {
             0% { background-color: rgba(250, 204, 21, 0.9); color: #000; box-shadow: 0 0 12px rgba(250, 204, 21, 0.6); }
             100% { background-color: transparent; box-shadow: 0 0 0 transparent; }
         }
+        
         .prose strong {
             font-weight: 700;
             color: #000000;
             border-radius: 0.2rem;
             animation: highlightFlash 1.5s ease-out forwards;
         }
+
         .prose mark {
             background-color: #fef08a;
             color: #111827;
@@ -194,49 +221,97 @@
             animation: highlightFlash 1.5s ease-out forwards;
         }
 
-        /* HTML Widget iframe container */
-        .html-widget-container {
-            margin: 1.5rem 0;
-            border-radius: 0.75rem;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid #e5e7eb;
-            background: white;
-        }
-        .html-widget-container iframe {
-            width: 100%;
-            border: none;
-            display: block;
-        }
-
-        /* Prose typography */
-        .prose {
-            line-height: 1.6;
-            color: #1f2937;
-        }
+        /* Professional typography (unchanged) */
+        .prose { line-height: 1.6; color: #1f2937; }
         .prose h1 { font-size: 2.5rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; color: #111827; }
         .prose h2 { font-size: 2rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; color: #111827; }
         .prose h3 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1f2937; }
         .prose p { margin-bottom: 1.25rem; line-height: 1.7; }
-        .prose code:not(pre code) { background-color: #f3f4f6; color: #ef4444; padding: 0.2rem 0.4rem; border-radius: 0.375rem; font-size: 0.875em; }
+        .prose strong { font-weight: 700; color: #000000; }
+        .prose em { font-style: italic; }
+        .prose del { text-decoration: line-through; color: #6b7280; }
+        .prose code:not(pre code) { background-color: #f3f4f6; color: #ef4444; padding: 0.2rem 0.4rem; border-radius: 0.375rem; font-family: ui-monospace; font-size: 0.875em; }
         .prose pre { background-color: #1f2937; padding: 1.25rem; border-radius: 0.75rem; overflow-x: auto; margin: 1.5rem 0; }
-        .prose pre code { color: #e5e7eb; background: none; padding: 0; }
-        .prose ul { list-style-type: disc; margin: 1rem 0 1rem 1.5rem; }
-        .prose ol { list-style-type: decimal; margin: 1rem 0 1rem 1.5rem; }
-        .prose li { margin-bottom: 0.5rem; }
+        .prose pre code { color: #e5e7eb; font-family: ui-monospace; font-size: 0.875em; background: none; padding: 0; line-height: 1.5; }
+        .prose ul { list-style-type: disc; margin: 1rem 0 1rem 1.5rem; padding-left: 0.5rem; }
+        .prose ol { list-style-type: decimal; margin: 1rem 0 1rem 1.5rem; padding-left: 0.5rem; }
+        .prose li { margin-bottom: 0.5rem; line-height: 1.6; }
+        .prose li > ul, .prose li > ol { margin-top: 0.5rem; margin-bottom: 0.5rem; border-left: 2px solid #e5e7eb; padding-left: 1.25rem; margin-left: 0.25rem; }
         .prose blockquote { background-color: #fef9e3; border-left: 4px solid #f5b042; padding: 1rem 1.5rem; margin: 1.5rem 0; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
-        .prose a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; }
-        .prose img { max-width: 100%; border-radius: 0.75rem; margin: 1.5rem auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
-        .katex-display { overflow-x: auto; }
+        .prose a { color: #2563eb; text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+        .prose img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1.5rem auto; display: block; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .prose hr { border: none; border-top: 2px solid #e5e7eb; margin: 2.5rem 0; }
+        .katex { background-color: #f8fafc; padding: 0.1rem 0.2rem; border-radius: 0.25rem; font-size: 1.05em; }
+        .katex-display { background: transparent; padding: 1rem 0 !important; margin: 1.5rem 0 !important; display: flex !important; justify-content: center; overflow-x: auto; }
         @media (max-width: 768px) {
             .prose h1 { font-size: 1.75rem; }
             .prose h2 { font-size: 1.5rem; }
+            .prose h3 { font-size: 1.25rem; }
             .prose { font-size: 0.95rem; }
         }
 
+        /* ========== NEW: HTML WIDGET STYLES ========== */
+        .html-widget {
+            margin: 1.5rem 0;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .html-widget-toolbar {
+            display: flex;
+            justify-content: flex-end;
+            background: #f8fafc;
+            padding: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .html-widget-toggle-btn {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #1e293b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .html-widget-toggle-btn:hover {
+            background: #f1f5f9;
+            transform: scale(0.98);
+        }
+        .html-widget-source {
+            display: none;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem;
+            font-family: 'SF Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin: 0;
+        }
+        .html-widget-iframe {
+            display: block;
+            width: 100%;
+            border: none;
+            background: #ffffff;
+            min-height: 280px;
+            height: auto;
+            resize: vertical;
+            overflow: auto;
+        }
+        .html-widget.show-source .html-widget-iframe { display: none; }
+        .html-widget.show-source .html-widget-source { display: block; }
+
         .modal-center { display: flex; align-items: center; justify-content: center; }
         @media (max-width: 768px) {
-            #editor-modal .bg-white, #view-modal .bg-white, #settings-modal .bg-white { width: 100%; height: 100%; border-radius: 0; }
+            #editor-modal .bg-white, #view-modal .bg-white, #settings-modal .bg-white { width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0; }
             #editor-modal, #view-modal, #settings-modal { padding: 0; }
             #view-modal-content { max-height: 100%; border-radius: 0; }
             .edit-btn { opacity: 1 !important; background-color: rgba(0,0,0,0.7) !important; }
@@ -245,21 +320,23 @@
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row">
 
-    <!-- Sidebar (same as original) -->
+    <!-- Sidebar (unchanged) -->
     <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white md:border-r border-gray-200 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1">
         <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20 animate-fade-in-up">Docket</h1>
+        
         <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100] animate-fade-in-up" style="animation-delay: 0.1s;">
             <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 z-10">
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm" data-color="#c5e1a5"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm" data-color="#80deea"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm" data-color="#b39ddb"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm" data-color="#ffab91"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm" data-color="#ffcc80"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#c5e1a5"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#80deea"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#b39ddb"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffab91"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffcc80"></button>
             </div>
-            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-95 focus:outline-none z-20">
+            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.2)] md:shadow-lg hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-95 focus:outline-none z-20">
                 <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6"></i>
             </button>
         </div>
+
         <div class="hidden md:block mt-auto animate-fade-in-up" style="animation-delay: 0.2s;">
             <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all duration-300 active:scale-90">
                 <i data-lucide="settings" class="w-5 h-5 transition-transform duration-500 hover:rotate-90"></i>
@@ -267,7 +344,7 @@
         </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main Content Area -->
     <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden order-2">
         <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10">
             <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all active:scale-90 animate-fade-in-up">
@@ -280,16 +357,16 @@
         </header>
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
-            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none" style="animation-delay: 0.2s;">Notes</h2>
+            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none" title="Tap to shine!" style="animation-delay: 0.2s;">Notes</h2>
             <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400 animate-fade-in-up" style="animation-delay: 0.3s;">
-                <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50"></i>
+                <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
                 <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
             </div>
         </div>
     </main>
 
-    <!-- Editor Modal (updated toolbar with HTML Widget button) -->
+    <!-- Editor Modal -->
     <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 md:bg-white/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500 ease-smooth">
         <div class="bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden border-0 md:border border-gray-200 transform scale-95 transition-all duration-500 ease-smooth" id="editor-container">
             <div class="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0 transition-colors duration-500" id="modal-header">
@@ -299,7 +376,8 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-full hidden items-center gap-1 transition-colors active:scale-95">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i><span class="hidden md:inline">Delete</span>
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span class="hidden md:inline">Delete</span>
                     </button>
                     <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full transition-colors active:scale-95">Cancel</button>
                     <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md hover:shadow-lg transition-all active:scale-95">Save</button>
@@ -309,7 +387,8 @@
                 <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col bg-white">
                     <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
                         <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 bg-transparent">
-                        <!-- Toolbar with new HTML Widget button -->
+                        
+                        <!-- Toolbar with hint -->
                         <div class="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 overflow-x-auto no-scrollbar flex-shrink-0">
                             <button class="format-btn" data-format="**" title="Bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
                             <button class="format-btn" data-format="*" title="Italic"><i data-lucide="italic" class="w-4 h-4"></i></button>
@@ -324,10 +403,12 @@
                             <div class="w-px h-4 bg-gray-200 mx-1"></div>
                             <button class="format-btn" data-format="> " title="Quote"><i data-lucide="quote" class="w-4 h-4"></i></button>
                             <button class="format-btn" data-format="```\n" data-suffix="\n```" title="Code Block"><i data-lucide="code" class="w-4 h-4"></i></button>
-                            <!-- NEW: HTML Widget button inserts ```html code block -->
-                            <button id="html-widget-btn" class="format-btn" title="Insert HTML Widget (Flex/Grid/SVG)"><i data-lucide="layout" class="w-4 h-4"></i></button>
                         </div>
-                        <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported. Use ```html ... ``` for interactive HTML widgets." class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                        <div class="text-xs text-gray-400 -mt-2 mb-2 flex justify-between">
+                            <span>✨ Markdown & LaTeX supported</span>
+                            <span class="font-mono">```html ... ``` for interactive widgets</span>
+                        </div>
+                        <textarea id="note-content-input" placeholder="Start typing... Use ```html to embed advanced layouts, SVG, Flexbox, Grid" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
                     </div>
                     <div class="h-10 border-t border-gray-50 flex items-center px-4 md:px-6 flex-shrink-0 bg-gray-50/50 text-xs text-gray-400 justify-between font-medium">
                         <span id="word-count">0 words</span>
@@ -342,21 +423,41 @@
         </div>
     </div>
 
-    <!-- View Modal (same enhanced rendering) -->
+    <!-- View Modal -->
     <div id="view-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500 ease-smooth">
         <div id="view-modal-content" class="bg-white w-full h-full md:w-full md:max-w-4xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 ease-smooth">
             <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100">
-                <div class="flex items-center gap-2"><div id="view-color-indicator" class="w-4 h-4 rounded-full"></div><span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span></div>
-                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <div class="flex items-center gap-2">
+                    <div id="view-color-indicator" class="w-4 h-4 rounded-full transition-colors duration-500"></div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
+                </div>
+                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600 transition-colors active:scale-90"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="flex-1 overflow-y-auto p-4 md:p-8">
-                <div id="view-loading" class="hidden flex-col gap-4 animate-pulse"><div class="h-8 bg-gray-200 rounded-md w-3/4"></div><div class="h-4 bg-gray-100 rounded-md w-full"></div><div class="h-4 bg-gray-100 rounded-md w-5/6"></div></div>
-                <div id="view-content-wrapper" class="block"><h1 id="view-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4"></h1><div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div></div>
+                <div id="view-loading" class="hidden flex-col gap-4 w-full max-w-none animate-pulse mt-2">
+                    <div class="h-8 bg-gray-200 rounded-md w-3/4 mb-4"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-full"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-5/6"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-4/6"></div>
+                </div>
+                <div id="view-content-wrapper" class="block">
+                    <h1 id="view-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4"></h1>
+                    <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
+                </div>
             </div>
             <div class="px-4 md:px-6 py-3 md:py-4 border-t border-gray-100 flex justify-end gap-2">
-                <button id="copy-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1"><i data-lucide="copy" class="w-4 h-4"></i><span class="hidden md:inline">Copy Text</span></button>
-                <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1"><i data-lucide="maximize" class="w-4 h-4"></i><span class="hidden md:inline">Full Screen</span></button>
-                <button id="edit-from-view-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md flex items-center gap-1"><i data-lucide="pencil" class="w-4 h-4"></i><span>Edit</span></button>
+                <button id="copy-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors active:scale-95">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Copy Text</span>
+                </button>
+                <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors active:scale-95">
+                    <i data-lucide="maximize" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Full Screen</span>
+                </button>
+                <button id="edit-from-view-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-1">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                    <span>Edit</span>
+                </button>
             </div>
         </div>
     </div>
@@ -364,13 +465,46 @@
     <!-- Settings Modal (unchanged) -->
     <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth">
         <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100"><h3 class="text-lg font-semibold text-gray-900">Settings</h3><button id="close-settings-btn" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button></div>
-            <div class="p-6"><div id="settings-auth-container"><div class="flex flex-col items-center gap-4"><div id="settings-user-info" class="hidden flex-col items-center gap-2"><img id="settings-avatar" class="w-16 h-16 rounded-full object-cover"><span id="settings-name" class="text-sm font-medium text-gray-700"></span><button id="settings-signout-btn" class="mt-2 text-sm text-red-600">Sign out</button></div><button id="settings-google-signin-btn" class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5">Sign in with Google</button></div></div></div>
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900">Settings</h3>
+                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-600 transition-colors active:scale-90"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="p-6">
+                <div id="settings-auth-container">
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="settings-user-info" class="hidden flex flex-col items-center gap-2">
+                            <img id="settings-avatar" class="w-16 h-16 rounded-full object-cover" src="" alt="avatar">
+                            <span id="settings-name" class="text-sm font-medium text-gray-700"></span>
+                            <button id="settings-signout-btn" class="mt-2 text-sm text-red-600 hover:text-red-700">Sign out</button>
+                        </div>
+                        <button id="settings-google-signin-btn" class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all active:scale-95 shadow-sm hover:shadow">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+                            Sign in with Google
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth"><div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden"><div class="p-6"><div class="flex items-center gap-3 mb-4"><div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center"><i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i></div><h3 class="text-xl font-semibold text-gray-900">Delete Note</h3></div><p class="text-gray-600 mb-6">Are you sure you want to delete this note? This action cannot be undone.</p><div class="flex justify-end gap-3"><button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full">Cancel</button><button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full">Delete</button></div></div></div></div>
+    <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900">Delete Note</h3>
+                </div>
+                <p class="text-gray-600 mb-6">Are you sure you want to delete this note? This action cannot be undone.</p>
+                <div class="flex justify-end gap-3">
+                    <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full transition-colors active:scale-95">Cancel</button>
+                    <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -378,114 +512,522 @@
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
-        const firebaseConfig = { apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU", authDomain: "studymaster-919ba.firebaseapp.com", projectId: "studymaster-919ba", storageBucket: "studymaster-919ba.firebasestorage.app", messagingSenderId: "426684063256", appId: "1:426684063256:web:52c17625a9450ea9662d6d", measurementId: "G-CWQB2330GF" };
-        const app = initializeApp(firebaseConfig); const analytics = getAnalytics(app); const auth = getAuth(app); const db = getFirestore(app); const provider = new GoogleAuthProvider(); const APP_ID = 'studyflow-pro';
-        let currentUser = null, unsubscribeSnapshot = null, notesData = [];
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+            measurementId: "G-CWQB2330GF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        const APP_ID = 'studyflow-pro';
+
+        let currentUser = null;
+        let unsubscribeSnapshot = null;
+        let notesData = [];
+
         lucide.createIcons();
 
-        // Custom Markdown renderer for HTML widgets (```html blocks)
-        function renderMarkdownWithWidgets(markdownText) {
-            if (!markdownText) return '';
-            // Use marked with custom renderer for code blocks
-            const renderer = new marked.Renderer();
-            const originalCode = renderer.code.bind(renderer);
-            renderer.code = function(code, language, escaped) {
-                if (language && (language.toLowerCase() === 'html' || language.toLowerCase() === 'widget')) {
-                    // Create an iframe with srcdoc containing the HTML/CSS/JS
-                    const iframeId = 'widget-' + Math.random().toString(36).substr(2, 8);
-                    // Ensure the HTML content is properly escaped for srcdoc
-                    const escapedCode = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    // We'll use srcdoc with a base style to make iframe responsive
-                    const srcdocContent = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><style>body { margin: 0; padding: 12px; background: white; }</style></head>
-                        <body>${code}</body>
-                        </html>
-                    `;
-                    return `<div class="html-widget-container"><iframe srcdoc="${srcdocContent.replace(/"/g, '&quot;')}" style="min-height: 200px; height: auto;" onload="this.style.height=this.contentWindow.document.body.scrollHeight+'px'"></iframe></div>`;
-                }
-                return originalCode(code, language, escaped);
-            };
-            marked.setOptions({ renderer: renderer, gfm: true, breaks: true });
-            return marked.parse(markdownText);
+        // ---------- CUSTOM MARKED RENDERER FOR HTML WIDGETS ----------
+        const escapeForSrcdoc = (str) => {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        };
+
+        const renderer = new marked.Renderer();
+        const originalCode = renderer.code.bind(renderer);
+        renderer.code = function(code, language) {
+            if (language === 'html') {
+                const widgetId = 'html-widget-' + Math.random().toString(36).substring(2, 10);
+                const escapedCode = escapeForSrcdoc(code);
+                return `
+                    <div class="html-widget" id="${widgetId}">
+                        <div class="html-widget-toolbar">
+                            <button class="html-widget-toggle-btn" data-widget="${widgetId}">
+                                <i data-lucide="eye" class="w-3 h-3"></i> Toggle Source/Live
+                            </button>
+                        </div>
+                        <iframe class="html-widget-iframe" srcdoc="${escapedCode}" sandbox="allow-scripts allow-popups allow-forms" style="width:100%; min-height:280px; border:none;" loading="lazy"></iframe>
+                        <pre class="html-widget-source"><code>${escapeHtml(code)}</code></pre>
+                    </div>
+                `;
+            }
+            return originalCode(code, language);
+        };
+
+        function customMarkedParse(markdown) {
+            return marked.parse(markdown, { renderer });
         }
 
-        // Update preview function using enhanced renderer
-        function updatePreviewWithWidgets(content, previewElement) {
-            const processed = content.replace(/==([^=]+)==/g, '<mark>$1</mark>');
-            const html = renderMarkdownWithWidgets(processed);
-            previewElement.innerHTML = html;
-            // Re-run KaTeX
-            if (window.renderMathInElement) {
-                try { renderMathInElement(previewElement, { delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false},{left: '\\(', right: '\\)', display: false},{left: '\\[', right: '\\]', display: true}], throwOnError: false }); } catch(e) {}
-            }
-            // Adjust iframe heights after load (delegated)
-            document.querySelectorAll('.html-widget-container iframe').forEach(iframe => {
-                iframe.addEventListener('load', function() { this.style.height = this.contentWindow.document.body.scrollHeight + 'px'; });
-                if (iframe.contentWindow && iframe.contentWindow.document) {
-                    iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+        function initHtmlWidgets() {
+            document.querySelectorAll('.html-widget').forEach(widget => {
+                const btn = widget.querySelector('.html-widget-toggle-btn');
+                if (btn && !btn.hasListener) {
+                    btn.hasListener = true;
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        widget.classList.toggle('show-source');
+                        const iframe = widget.querySelector('.html-widget-iframe');
+                        const sourcePre = widget.querySelector('.html-widget-source');
+                        if (widget.classList.contains('show-source')) {
+                            iframe.style.display = 'none';
+                            sourcePre.style.display = 'block';
+                        } else {
+                            iframe.style.display = 'block';
+                            sourcePre.style.display = 'none';
+                        }
+                    });
+                }
+                // Adjust iframe height dynamically (simple)
+                const iframe = widget.querySelector('iframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.onload = () => {
+                        try {
+                            const body = iframe.contentWindow.document.body;
+                            const height = Math.min(body.scrollHeight, 600);
+                            iframe.style.height = (height + 20) + 'px';
+                        } catch(e) { /* cross-origin, ignore */ }
+                    };
                 }
             });
+            lucide.createIcons();
         }
 
-        // DOM references
+        // Replace all marked.parse calls with customMarkedParse
+        const originalMarkedParse = marked.parse;
+        window.customMarkedParse = customMarkedParse;
+
+        // Helper
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        // ---------- EXISTING APP LOGIC (adapted) ----------
         const mainTitle = document.getElementById('main-title');
         let randomShineTimeout;
-        function renderSkeletons() { /* same as before */ const grid = document.getElementById('notes-grid'); grid.innerHTML = ''; for(let i=0;i<6;i++) grid.innerHTML += `<div class="rounded-2xl p-5 bg-white border animate-pulse"><div class="h-7 bg-gray-200 rounded w-3/4 mb-5"></div><div class="h-3.5 bg-gray-100 rounded mb-3 w-full"></div><div class="h-3.5 bg-gray-100 rounded w-5/6"></div></div>`; }
-        function showLoading() { if(randomShineTimeout) clearTimeout(randomShineTimeout); mainTitle.classList.remove('text-shine-fx'); mainTitle.classList.add('text-shine-fx-infinite'); document.getElementById('empty-state').classList.add('hidden'); renderSkeletons(); }
-        function hideLoading() { mainTitle.classList.remove('text-shine-fx-infinite'); startRandomShine(); }
-        const triggerShine = () => { if(!mainTitle.classList.contains('text-shine-fx-infinite')) { mainTitle.classList.remove('text-shine-fx'); void mainTitle.offsetWidth; mainTitle.classList.add('text-shine-fx'); setTimeout(()=> mainTitle.classList.remove('text-shine-fx'),1500); } };
-        mainTitle.addEventListener('click', triggerShine);
-        function startRandomShine() { if(randomShineTimeout) clearTimeout(randomShineTimeout); const randomTrigger = () => { triggerShine(); randomShineTimeout = setTimeout(randomTrigger, Math.random()*20000+15000); }; randomShineTimeout = setTimeout(randomTrigger, Math.random()*15000+10000); }
-        showLoading();
-
-        // Auth & Firestore (same as original)
-        onAuthStateChanged(auth, (user) => { currentUser = user; updateSettingsUI(user); if(user) fetchNotesFromFirestore(); else { if(unsubscribeSnapshot) unsubscribeSnapshot(); notesData = []; hideLoading(); renderNotes([]); } });
-        function updateSettingsUI(user) { const signinBtn = document.getElementById('settings-google-signin-btn'), userInfoDiv = document.getElementById('settings-user-info'), avatarImg = document.getElementById('settings-avatar'), nameSpan = document.getElementById('settings-name'), signOutBtn = document.getElementById('settings-signout-btn'); if(user) { signinBtn.classList.add('hidden'); userInfoDiv.classList.remove('hidden'); avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name='+encodeURIComponent(user.displayName||'User'); nameSpan.textContent = user.displayName||user.email||'User'; signOutBtn.classList.remove('hidden'); } else { signinBtn.classList.remove('hidden'); userInfoDiv.classList.add('hidden'); } }
-        const settingsModal = document.getElementById('settings-modal'), openSettings = () => { settingsModal.classList.remove('hidden'); setTimeout(()=>{ settingsModal.classList.remove('opacity-0'); settingsModal.querySelector('.bg-white').classList.remove('scale-95'); settingsModal.classList.add('opacity-100'); settingsModal.querySelector('.bg-white').classList.add('scale-100'); },20); };
-        const closeSettings = () => { settingsModal.classList.remove('opacity-100'); settingsModal.querySelector('.bg-white').classList.remove('scale-100'); settingsModal.classList.add('opacity-0'); settingsModal.querySelector('.bg-white').classList.add('scale-95'); setTimeout(()=>settingsModal.classList.add('hidden'),500); };
-        document.getElementById('settings-btn-desktop').addEventListener('click', openSettings); document.getElementById('settings-btn-mobile').addEventListener('click', openSettings); document.getElementById('close-settings-btn').addEventListener('click', closeSettings); settingsModal.addEventListener('click', (e) => { if(e.target===settingsModal) closeSettings(); });
-        document.getElementById('settings-google-signin-btn').addEventListener('click', async () => { try { await signInWithPopup(auth, provider); showToast("Signed in!"); closeSettings(); } catch(e){ showToast("Sign in failed."); } });
-        document.getElementById('settings-signout-btn').addEventListener('click', async () => { await signOut(auth); showToast("Signed out."); closeSettings(); });
-        function fetchNotesFromFirestore() { if(!currentUser) return; const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes'); if(unsubscribeSnapshot) unsubscribeSnapshot(); unsubscribeSnapshot = onSnapshot(ref, (snapshot) => { notesData = []; snapshot.forEach(doc => notesData.push({ id: doc.id, ...doc.data() })); notesData.sort((a,b)=> (b.timestamp||0)-(a.timestamp||0)); hideLoading(); renderNotes(notesData); processUrlParam(); }, (err)=>{ hideLoading(); renderNotes([]); }); }
-        function formatSnippet(content, maxLength=100) { if(!content) return ''; let text = content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\[([^\]]+)\]\([^\)]+\)/g,'$1').replace(/!\[[^\]]*\]\([^\)]+\)/g,'').replace(/```[\s\S]*?```/g,'[code block]').replace(/^#{1,6}\s+/gm,'').replace(/\s+/g,' ').trim(); if(text.length>maxLength) text=text.substring(0,maxLength)+'...'; return text; }
-        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[m])); }
-        function showToast(message) { const existing = document.getElementById('dynamic-toast'); if(existing) existing.remove(); const toast = document.createElement('div'); toast.id='dynamic-toast'; toast.innerText=message; Object.assign(toast.style,{position:'fixed',bottom:'70px',left:'50%',transform:'translateX(-50%)',backgroundColor:'#1f2937',color:'white',padding:'10px 20px',borderRadius:'9999px',fontSize:'0.875rem',zIndex:'9999',whiteSpace:'nowrap',opacity:'0',transition:'opacity 0.2s ease'}); document.body.appendChild(toast); setTimeout(()=>toast.style.opacity='1',10); setTimeout(()=>{ toast.style.opacity='0'; setTimeout(()=>toast.remove(),300); },2000); }
-        let urlParamProcessed=false; function processUrlParam() { if(urlParamProcessed) return; const noteId = new URLSearchParams(window.location.search).get('note'); if(noteId && notesData.length){ const note = notesData.find(n=>n.id===noteId); if(note){ urlParamProcessed=true; openViewModal(note); setTimeout(()=>{ if(!viewModal.classList.contains('hidden')) toggleFullscreen(); },300); } else showToast("Note not found"); } }
-
-        // Editor and View logic
-        const toggleBtn = document.getElementById('toggle-palette-btn'), paletteMenu = document.getElementById('palette-menu'), notesGrid = document.getElementById('notes-grid'), searchInput = document.getElementById('search-input'), emptyState = document.getElementById('empty-state'), editorModal = document.getElementById('editor-modal'), editorContainer = document.getElementById('editor-container'), titleInput = document.getElementById('note-title-input'), contentInput = document.getElementById('note-content-input'), previewTitle = document.getElementById('preview-title'), previewContent = document.getElementById('preview-content'), cancelBtn = document.getElementById('cancel-note-btn'), saveBtn = document.getElementById('save-note-btn'), deleteBtn = document.getElementById('delete-note-btn'), modalHeader = document.getElementById('modal-header'), modalColorIndicator = document.getElementById('modal-color-indicator'), viewModal = document.getElementById('view-modal'), viewModalContent = document.getElementById('view-modal-content'), viewTitle = document.getElementById('view-title'), viewContent = document.getElementById('view-content'), viewColorIndicator = document.getElementById('view-color-indicator'), closeViewBtn = document.getElementById('close-view-modal'), editFromViewBtn = document.getElementById('edit-from-view-btn'), fullscreenViewBtn = document.getElementById('fullscreen-view-btn'); let fullscreenIcon=null, isPaletteOpen=false, activeNoteId=null, activeColor='#ffffff', currentViewNote=null;
-        function toggleFullscreen() { if(!document.fullscreenElement) { viewModalContent.requestFullscreen().catch(e=>console.error(e)); if(fullscreenIcon) fullscreenIcon.setAttribute('data-lucide','minimize'); } else { document.exitFullscreen(); if(fullscreenIcon) fullscreenIcon.setAttribute('data-lucide','maximize'); } lucide.createIcons(); }
-        document.addEventListener('fullscreenchange', ()=> { if(document.fullscreenElement) { if(fullscreenIcon) fullscreenIcon.setAttribute('data-lucide','minimize'); } else { if(fullscreenIcon) fullscreenIcon.setAttribute('data-lucide','maximize'); } lucide.createIcons(); });
-        fullscreenViewBtn.addEventListener('click', toggleFullscreen);
-        toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); isPaletteOpen=!isPaletteOpen; if(isPaletteOpen){ paletteMenu.classList.add('open'); toggleBtn.classList.add('open'); } else closePalette(); });
-        document.addEventListener('click', (e) => { if(isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette(); });
-        function closePalette() { isPaletteOpen=false; paletteMenu.classList.remove('open'); toggleBtn.classList.remove('open'); }
-        document.querySelectorAll('.color-dot').forEach(dot => dot.addEventListener('click', (e) => { const selectedColor = e.target.getAttribute('data-color'); closePalette(); openEditorModal(null, selectedColor); }));
-        searchInput.addEventListener('input', (e) => { const q=e.target.value.toLowerCase(); renderNotes(notesData.filter(n=> n.title?.toLowerCase().includes(q) || n.content?.toLowerCase().includes(q))); });
-
-        function renderNotes(notesToRender) {
-            notesGrid.innerHTML=''; if(notesToRender.length===0) emptyState.classList.remove('hidden'); else emptyState.classList.add('hidden');
-            notesToRender.forEach((note,idx)=>{ const div=document.createElement('div'); div.className=`group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl cursor-pointer animate-pop-in`; div.style.animationDelay=`${idx*0.05}s`; div.style.backgroundColor=note.color||'#ffffff'; let snippet=formatSnippet(note.content,100); if(!snippet) snippet='No content'; const dateStr=note.timestamp?new Date(note.timestamp).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'No date'; div.innerHTML=`<div class="transition-transform group-hover:translate-x-1"><h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 line-clamp-2">${escapeHtml(note.title)||'Untitled Note'}</h3><p class="text-gray-800/80 font-medium text-sm md:text-base line-clamp-3">${snippet}</p></div><div class="mt-4 flex items-end justify-between"><span class="text-xs font-semibold text-gray-900/60">${dateStr}</span><div class="flex gap-2"><div class="w-10 h-10 bg-white border border-gray-200 rounded-full flex items-center justify-center cursor-pointer copy-btn"><i data-lucide="copy" class="w-4 h-4"></i></div><div class="w-10 h-10 bg-black rounded-full flex items-center justify-center cursor-pointer edit-btn"><i data-lucide="pencil" class="w-4 h-4 text-white"></i></div></div></div>`; div.addEventListener('click',(e)=>{ if(e.target.closest('.edit-btn')||e.target.closest('.copy-btn')) return; openViewModal(note); }); div.querySelector('.copy-btn').addEventListener('click',(e)=>{ e.stopPropagation(); const textarea=document.createElement('textarea'); textarea.value=note.content||''; document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea); showToast("Copied!"); }); div.querySelector('.edit-btn').addEventListener('click',(e)=>{ e.stopPropagation(); openEditorModal(note); }); div.addEventListener('contextmenu',(e)=>{ e.preventDefault(); const url=window.location.origin+window.location.pathname+"?note="+note.id; const el=document.createElement('textarea'); el.value=url; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); showToast("Link copied!"); }); notesGrid.appendChild(div); }); lucide.createIcons();
+        
+        function renderSkeletons() {
+            const notesGrid = document.getElementById('notes-grid');
+            notesGrid.innerHTML = '';
+            for(let i=0; i<6; i++) {
+                notesGrid.innerHTML += `
+                    <div class="rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] bg-white border border-gray-100 shadow-sm animate-pulse">
+                        <div>
+                            <div class="h-7 bg-gray-200 rounded-lg w-3/4 mb-5"></div>
+                            <div class="h-3.5 bg-gray-100 rounded mb-3 w-full"></div>
+                            <div class="h-3.5 bg-gray-100 rounded mb-3 w-5/6"></div>
+                            <div class="h-3.5 bg-gray-100 rounded w-4/6"></div>
+                        </div>
+                        <div class="mt-4 flex items-end justify-between">
+                            <div class="h-3.5 bg-gray-200 rounded w-24"></div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-gray-200 rounded-full"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+        
+        function showLoading() {
+            if (randomShineTimeout) clearTimeout(randomShineTimeout);
+            mainTitle.classList.remove('text-shine-fx');
+            mainTitle.classList.add('text-shine-fx-infinite');
+            document.getElementById('empty-state').classList.add('hidden');
+            renderSkeletons();
         }
 
-        function openViewModal(note) { currentViewNote=note; const viewLoading=document.getElementById('view-loading'), viewWrapper=document.getElementById('view-content-wrapper'); viewLoading.classList.remove('hidden'); viewLoading.classList.add('flex'); viewWrapper.classList.add('hidden'); viewModal.classList.remove('hidden'); setTimeout(()=>{ viewModal.classList.remove('opacity-0'); viewModalContent.classList.remove('scale-95'); viewModal.classList.add('opacity-100'); viewModalContent.classList.add('scale-100'); },20); setTimeout(()=>{ viewTitle.textContent=note.title||'Untitled Note'; viewColorIndicator.style.backgroundColor=note.color||'#cccccc'; const processed=(note.content||'').replace(/==([^=]+)==/g,'<mark>$1</mark>'); const html=renderMarkdownWithWidgets(processed); viewContent.innerHTML=html; try{ renderMathInElement(viewContent,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],throwOnError:false}); }catch(e){} viewLoading.classList.add('hidden'); viewLoading.classList.remove('flex'); viewWrapper.classList.remove('hidden'); fullscreenIcon=fullscreenViewBtn.querySelector('i'); if(fullscreenIcon) lucide.createIcons(); },400); }
-        function closeViewModal() { viewModal.classList.remove('opacity-100'); viewModalContent.classList.remove('scale-100'); viewModal.classList.add('opacity-0'); viewModalContent.classList.add('scale-95'); setTimeout(()=>{ viewModal.classList.add('hidden'); currentViewNote=null; if(document.fullscreenElement) document.exitFullscreen(); },500); }
-        closeViewBtn.addEventListener('click', closeViewModal); viewModal.addEventListener('click',(e)=>{if(e.target===viewModal) closeViewModal();}); editFromViewBtn.addEventListener('click',()=>{if(currentViewNote){closeViewModal(); openEditorModal(currentViewNote);}}); document.getElementById('copy-view-btn').addEventListener('click',()=>{ if(!currentViewNote) return; const ta=document.createElement('textarea'); ta.value=currentViewNote.content||''; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast("Copied!"); });
-        document.addEventListener('keydown',(e)=>{if(!viewModal.classList.contains('hidden') && e.key==='Enter'){e.preventDefault(); toggleFullscreen();}});
+        function hideLoading() {
+            mainTitle.classList.remove('text-shine-fx-infinite');
+            startRandomShine();
+        }
+        
+        const triggerShine = () => {
+            if (!mainTitle.classList.contains('text-shine-fx-infinite')) {
+                mainTitle.classList.remove('text-shine-fx');
+                void mainTitle.offsetWidth;
+                mainTitle.classList.add('text-shine-fx');
+                setTimeout(() => mainTitle.classList.remove('text-shine-fx'), 1500);
+            }
+        };
+        mainTitle.addEventListener('click', triggerShine);
 
-        function openEditorModal(note=null,color='#ffffff'){ activeNoteId=note?note.id:null; activeColor=note?note.color:color; titleInput.value=note?note.title||'':''; contentInput.value=note?note.content||'':''; modalHeader.style.backgroundColor=`${activeColor}20`; modalColorIndicator.style.backgroundColor=activeColor; updatePreview(); if(activeNoteId) deleteBtn.classList.remove('hidden'); else deleteBtn.classList.add('hidden'); editorModal.classList.remove('hidden'); void editorModal.offsetWidth; editorModal.classList.remove('opacity-0'); editorModal.classList.add('opacity-100'); editorContainer.classList.remove('scale-95'); editorContainer.classList.add('scale-100'); titleInput.focus(); }
-        function closeEditorModal(){ editorModal.classList.remove('opacity-100'); editorModal.classList.add('opacity-0'); editorContainer.classList.remove('scale-100'); editorContainer.classList.add('scale-95'); setTimeout(()=>{ editorModal.classList.add('hidden'); titleInput.value=''; contentInput.value=''; activeNoteId=null; deleteBtn.classList.add('hidden'); },500); }
-        cancelBtn.addEventListener('click',closeEditorModal);
-        deleteBtn.addEventListener('click',()=>{ if(!activeNoteId||!currentUser) return; const confirmModal=document.getElementById('confirm-modal'); const showConfirm=(onConfirm)=>{ confirmModal.classList.remove('hidden'); setTimeout(()=>{ confirmModal.classList.remove('opacity-0'); confirmModal.querySelector('.bg-white').classList.remove('scale-95'); confirmModal.classList.add('opacity-100'); confirmModal.querySelector('.bg-white').classList.add('scale-100'); },20); const handleConfirm=()=>{ closeConfirmModal(); onConfirm(); }; const closeConfirmModal=()=>{ confirmModal.classList.remove('opacity-100'); confirmModal.querySelector('.bg-white').classList.remove('scale-100'); confirmModal.classList.add('opacity-0'); confirmModal.querySelector('.bg-white').classList.add('scale-95'); setTimeout(()=>confirmModal.classList.add('hidden'),500); }; document.getElementById('confirm-delete-btn').onclick=handleConfirm; document.getElementById('confirm-cancel-btn').onclick=closeConfirmModal; confirmModal.onclick=(e)=>{if(e.target===confirmModal) closeConfirmModal();}; }; showConfirm(async()=>{ const noteRef=doc(db,'artifacts',APP_ID,'users',currentUser.uid,'notes',activeNoteId); await deleteDoc(noteRef); closeEditorModal(); }); });
-        function updatePreview(){ previewTitle.textContent=titleInput.value||'Untitled Note'; updatePreviewWithWidgets(contentInput.value, previewContent); const text=contentInput.value; const chars=text.length; const words=text.trim()===''?0:text.trim().split(/\s+/).length; document.getElementById('word-count').textContent=`${words} word${words!==1?'s':''}`; document.getElementById('char-count').textContent=`${chars} character${chars!==1?'s':''}`; }
-        titleInput.addEventListener('input',updatePreview); contentInput.addEventListener('input',updatePreview);
-        document.querySelectorAll('.format-btn:not(#html-widget-btn)').forEach(btn=>{ btn.addEventListener('click',(e)=>{ e.preventDefault(); const format=btn.getAttribute('data-format'), suffix=btn.getAttribute('data-suffix')||format, start=contentInput.selectionStart, end=contentInput.selectionEnd, text=contentInput.value, selected=text.substring(start,end); let newText='', newPos=start; if(['# ','## ','- ','1. ','> '].includes(format)){ newText=text.substring(0,start)+format+selected+text.substring(end); newPos=end+format.length; } else if(format==='```\n'){ newText=text.substring(0,start)+format+selected+suffix+text.substring(end); newPos=start+format.length; } else{ newText=text.substring(0,start)+format+selected+suffix+text.substring(end); newPos=selected.length>0?end+format.length*2:start+format.length; } contentInput.value=newText; contentInput.focus(); contentInput.selectionStart=contentInput.selectionEnd=newPos; updatePreview(); }); });
-        // HTML Widget button: inserts ```html\n\n``` block
-        document.getElementById('html-widget-btn').addEventListener('click',()=>{ const start=contentInput.selectionStart; const end=contentInput.selectionEnd; const text=contentInput.value; const widgetCode='```html\n<div style="display:flex; gap:1rem; background:#f0f9ff; padding:1rem; border-radius:1rem;">\n  <div style="flex:1; background:#e0f2fe; padding:1rem;">Left</div>\n  <div style="flex:1; background:#cffafe; padding:1rem;">Right</div>\n</div>\n```'; const newText=text.substring(0,start)+widgetCode+text.substring(end); contentInput.value=newText; contentInput.selectionStart=contentInput.selectionEnd=start+widgetCode.length; updatePreview(); });
-        contentInput.addEventListener('keydown', function(e){ if(e.key==='Tab'){ e.preventDefault(); const s=this.selectionStart; this.value=this.value.substring(0,s)+"  "+this.value.substring(this.selectionEnd); this.selectionStart=this.selectionEnd=s+2; updatePreview(); } if(e.key==='Enter'){ const s=this.selectionStart, textToCursor=this.value.substring(0,s), lines=textToCursor.split('\n'), cur=lines[lines.length-1]; const ulMatch=cur.match(/^(\s*)([-*])\s(.*)$/), olMatch=cur.match(/^(\s*)(\d+)\.\s(.*)$/); if(ulMatch||olMatch){ const isEmpty=ulMatch?!ulMatch[3].trim():!olMatch[3].trim(); if(isEmpty){ e.preventDefault(); const markerLen=ulMatch?ulMatch[1].length+ulMatch[2].length+1:olMatch[1].length+olMatch[2].length+2; this.value=this.value.substring(0,s-markerLen)+'\n'+this.value.substring(this.selectionEnd); this.selectionStart=this.selectionEnd=s-markerLen+1; updatePreview(); return; } e.preventDefault(); let insertion='\n'; if(ulMatch) insertion+=ulMatch[1]+ulMatch[2]+' '; else if(olMatch){ const next=parseInt(olMatch[2],10)+1; insertion+=olMatch[1]+next+'. '; } this.value=this.value.substring(0,s)+insertion+this.value.substring(this.selectionEnd); this.selectionStart=this.selectionEnd=s+insertion.length; updatePreview(); } } });
-        saveBtn.addEventListener('click', async()=>{ if(!currentUser){ showToast("Please sign in"); openSettings(); return; } const title=titleInput.value.trim()||'Untitled Note'; const content=contentInput.value.trim(); if(!content && !titleInput.value.trim()){ closeEditorModal(); return; } const noteData={title,content,color:activeColor,timestamp:Date.now()}; const ref=collection(db,'artifacts',APP_ID,'users',currentUser.uid,'notes'); if(activeNoteId) await setDoc(doc(ref,activeNoteId),noteData); else await addDoc(ref,noteData); closeEditorModal(); });
+        function startRandomShine() {
+            if (randomShineTimeout) clearTimeout(randomShineTimeout);
+            const randomTrigger = () => {
+                triggerShine();
+                randomShineTimeout = setTimeout(randomTrigger, Math.random() * 20000 + 15000);
+            };
+            randomShineTimeout = setTimeout(randomTrigger, Math.random() * 15000 + 10000);
+        }
+
+        showLoading();
+        marked.setOptions({ gfm: true, breaks: true });
+
+        // Auth & Firestore (unchanged)
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            updateSettingsUI(user);
+            if (user) fetchNotesFromFirestore();
+            else { if (unsubscribeSnapshot) unsubscribeSnapshot(); notesData = []; hideLoading(); renderNotes([]); }
+        });
+
+        function updateSettingsUI(user) {
+            const signinBtn = document.getElementById('settings-google-signin-btn');
+            const userInfoDiv = document.getElementById('settings-user-info');
+            const avatarImg = document.getElementById('settings-avatar');
+            const nameSpan = document.getElementById('settings-name');
+            const signOutBtn = document.getElementById('settings-signout-btn');
+            if (user) {
+                signinBtn.classList.add('hidden');
+                userInfoDiv.classList.remove('hidden');
+                avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name=' + encodeURIComponent(user.displayName || 'User');
+                nameSpan.textContent = user.displayName || user.email || 'User';
+                signOutBtn.classList.remove('hidden');
+            } else {
+                signinBtn.classList.remove('hidden');
+                userInfoDiv.classList.add('hidden');
+            }
+        }
+
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettings = () => {
+            settingsModal.classList.remove('hidden');
+            setTimeout(() => {
+                settingsModal.classList.remove('opacity-0');
+                settingsModal.querySelector('.bg-white').classList.remove('scale-95');
+                settingsModal.classList.add('opacity-100');
+                settingsModal.querySelector('.bg-white').classList.add('scale-100');
+            }, 20);
+        };
+        const closeSettings = () => {
+            settingsModal.classList.remove('opacity-100');
+            settingsModal.querySelector('.bg-white').classList.remove('scale-100');
+            settingsModal.classList.add('opacity-0');
+            settingsModal.querySelector('.bg-white').classList.add('scale-95');
+            setTimeout(() => settingsModal.classList.add('hidden'), 500);
+        };
+        document.getElementById('settings-btn-desktop').addEventListener('click', openSettings);
+        document.getElementById('settings-btn-mobile').addEventListener('click', openSettings);
+        document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
+        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
+
+        document.getElementById('settings-google-signin-btn').addEventListener('click', async () => {
+            try { await signInWithPopup(auth, provider); showToast("Signed in! Notes are now synced."); closeSettings(); } 
+            catch (error) { console.error(error); showToast("Sign in failed."); }
+        });
+        document.getElementById('settings-signout-btn').addEventListener('click', async () => { await signOut(auth); showToast("Signed out."); closeSettings(); });
+
+        function fetchNotesFromFirestore() {
+            if (!currentUser) return;
+            const notesCollectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            unsubscribeSnapshot = onSnapshot(notesCollectionRef, (snapshot) => {
+                notesData = [];
+                snapshot.forEach((doc) => notesData.push({ id: doc.id, ...doc.data() }));
+                notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                hideLoading();
+                renderNotes(notesData);
+                processUrlParam();
+            }, (error) => { console.error(error); hideLoading(); renderNotes([]); });
+        }
+
+        function formatSnippet(content, maxLength = 100) {
+            if (!content) return '';
+            let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+            text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
+            text = text.replace(/```[\s\S]*?```/g, '[code block]');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^[-*_]{3,}\s*$/gm, '');
+            text = text.replace(/\s+/g, ' ').trim();
+            if (text.length > maxLength) text = text.substring(0, maxLength) + '...';
+            return text;
+        }
+
+        function showToast(message) {
+            const existing = document.getElementById('dynamic-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'dynamic-toast';
+            toast.innerText = message;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '70px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.backgroundColor = '#1f2937';
+            toast.style.color = 'white';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '9999px';
+            toast.style.fontSize = '0.875rem';
+            toast.style.fontWeight = '500';
+            toast.style.zIndex = '9999';
+            toast.style.whiteSpace = 'nowrap';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.2s ease';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.style.opacity = '1', 10);
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2000);
+        }
+
+        let urlParamProcessed = false;
+        function processUrlParam() {
+            if (urlParamProcessed) return;
+            const params = new URLSearchParams(window.location.search);
+            const noteId = params.get('note');
+            if (noteId && notesData.length > 0) {
+                const note = notesData.find(n => n.id === noteId);
+                if (note) { urlParamProcessed = true; openViewModal(note); setTimeout(() => { if (!viewModal.classList.contains('hidden')) toggleFullscreen(); }, 300); } 
+                else showToast("Note not found");
+            }
+        }
+
+        // DOM elements
+        const toggleBtn = document.getElementById('toggle-palette-btn');
+        const paletteMenu = document.getElementById('palette-menu');
+        const searchInput = document.getElementById('search-input');
+        const emptyState = document.getElementById('empty-state');
+        const editorModal = document.getElementById('editor-modal');
+        const editorContainer = document.getElementById('editor-container');
+        const titleInput = document.getElementById('note-title-input');
+        const contentInput = document.getElementById('note-content-input');
+        const previewTitle = document.getElementById('preview-title');
+        const previewContent = document.getElementById('preview-content');
+        const cancelBtn = document.getElementById('cancel-note-btn');
+        const saveBtn = document.getElementById('save-note-btn');
+        const deleteBtn = document.getElementById('delete-note-btn');
+        const modalHeader = document.getElementById('modal-header');
+        const modalColorIndicator = document.getElementById('modal-color-indicator');
+        const viewModal = document.getElementById('view-modal');
+        const viewModalContent = document.getElementById('view-modal-content');
+        const viewTitle = document.getElementById('view-title');
+        const viewContent = document.getElementById('view-content');
+        const viewColorIndicator = document.getElementById('view-color-indicator');
+        const closeViewBtn = document.getElementById('close-view-modal');
+        const editFromViewBtn = document.getElementById('edit-from-view-btn');
+        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
+        let fullscreenIcon = null;
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+        let isPaletteOpen = false;
+        let activeNoteId = null;
+        let activeColor = '#ffffff';
+        let currentViewNote = null;
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                viewModalContent.requestFullscreen().catch(err => console.error(err));
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
+            } else {
+                document.exitFullscreen();
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        }
+        document.addEventListener('fullscreenchange', () => {
+            if (document.fullscreenElement) fullscreenIcon?.setAttribute('data-lucide', 'minimize');
+            else fullscreenIcon?.setAttribute('data-lucide', 'maximize');
+            lucide.createIcons();
+        });
+        fullscreenViewBtn.addEventListener('click', toggleFullscreen);
+
+        toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); isPaletteOpen = !isPaletteOpen; if (isPaletteOpen) { paletteMenu.classList.add('open'); toggleBtn.classList.add('open'); } else closePalette(); });
+        document.addEventListener('click', (e) => { if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette(); });
+        function closePalette() { isPaletteOpen = false; paletteMenu.classList.remove('open'); toggleBtn.classList.remove('open'); }
+
+        document.querySelectorAll('.color-dot').forEach(dot => { dot.addEventListener('click', (e) => { const selectedColor = e.target.getAttribute('data-color'); closePalette(); openEditorModal(null, selectedColor); }); });
+
+        searchInput.addEventListener('input', (e) => { const query = e.target.value.toLowerCase(); const filtered = notesData.filter(note => note.title?.toLowerCase().includes(query) || note.content?.toLowerCase().includes(query)); renderNotes(filtered); });
+
+        function renderNotes(notesToRender) {
+            notesGrid.innerHTML = '';
+            if (notesToRender.length === 0) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+            notesToRender.forEach((note, index) => {
+                const div = document.createElement('div');
+                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in`;
+                div.style.animationDelay = `${index * 0.05}s`;
+                div.style.backgroundColor = note.color || '#ffffff';
+                let snippet = formatSnippet(note.content, 100);
+                if (!snippet) snippet = 'No content';
+                const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date';
+                div.innerHTML = `
+                    <div class="transition-transform duration-500 ease-smooth group-hover:translate-x-1">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
+                        <p class="text-gray-800/80 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet}</p>
+                    </div>
+                    <div class="mt-4 flex items-end justify-between z-10">
+                        <span class="text-xs md:text-sm font-semibold text-gray-900/60 transition-opacity duration-300 group-hover:opacity-100">${dateStr}</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-white border border-gray-200 rounded-full text-gray-600 flex items-center justify-center shadow-sm cursor-pointer copy-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Copy Text">
+                                <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none"></i>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Edit Note">
+                                <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                div.addEventListener('click', (e) => { if (e.target.closest('.edit-btn') || e.target.closest('.copy-btn')) return; openViewModal(note); });
+                div.querySelector('.copy-btn').addEventListener('click', (e) => { e.stopPropagation(); const textToCopy = note.content || ''; const temp = document.createElement('textarea'); temp.value = textToCopy; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp); showToast("Content Copied! 📋"); });
+                div.querySelector('.edit-btn').addEventListener('click', (e) => { e.stopPropagation(); openEditorModal(note); });
+                div.addEventListener('contextmenu', (e) => { e.preventDefault(); const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id; const el = document.createElement('textarea'); el.value = shareUrl; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); showToast("Link Copied! 🔗"); });
+                notesGrid.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function openViewModal(note) {
+            currentViewNote = note;
+            const viewLoading = document.getElementById('view-loading');
+            const viewContentWrapper = document.getElementById('view-content-wrapper');
+            viewLoading.classList.remove('hidden'); viewLoading.classList.add('flex'); viewContentWrapper.classList.add('hidden');
+            viewModal.classList.remove('hidden');
+            setTimeout(() => { viewModal.classList.remove('opacity-0'); viewModalContent.classList.remove('scale-95'); viewModal.classList.add('opacity-100'); viewModalContent.classList.add('scale-100'); }, 20);
+            setTimeout(() => {
+                viewTitle.textContent = note.title || 'Untitled Note';
+                viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
+                const processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
+                const parsedHtml = customMarkedParse(processedContent);
+                viewContent.innerHTML = parsedHtml;
+                try { renderMathInElement(viewContent, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false }); } catch(e) {}
+                viewContent.querySelectorAll('strong, mark').forEach(el => { el.style.animation = 'none'; el.offsetHeight; el.style.animation = null; });
+                initHtmlWidgets(); // initialize toggles inside view modal
+                viewLoading.classList.add('hidden'); viewLoading.classList.remove('flex'); viewContentWrapper.classList.remove('hidden');
+                fullscreenIcon = fullscreenViewBtn.querySelector('i'); if (fullscreenIcon) lucide.createIcons();
+            }, 400);
+        }
+
+        function closeViewModal() {
+            viewModal.classList.remove('opacity-100'); viewModalContent.classList.remove('scale-100'); viewModal.classList.add('opacity-0'); viewModalContent.classList.add('scale-95');
+            setTimeout(() => { viewModal.classList.add('hidden'); currentViewNote = null; if (document.fullscreenElement) document.exitFullscreen(); }, 500);
+        }
+        closeViewBtn.addEventListener('click', closeViewModal);
+        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
+        editFromViewBtn.addEventListener('click', () => { if (currentViewNote) { closeViewModal(); openEditorModal(currentViewNote); } });
+        document.getElementById('copy-view-btn').addEventListener('click', () => { if (!currentViewNote) return; const textToCopy = currentViewNote.content || ''; const temp = document.createElement('textarea'); temp.value = textToCopy; document.body.appendChild(temp); temp.select(); document.execCommand('copy'); document.body.removeChild(temp); showToast("Content Copied! 📋"); });
+        document.addEventListener('keydown', (e) => { if (!viewModal.classList.contains('hidden') && e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); } });
+
+        function showConfirmModal(onConfirm) {
+            confirmModal.classList.remove('hidden');
+            setTimeout(() => { confirmModal.classList.remove('opacity-0'); confirmModal.querySelector('.bg-white').classList.remove('scale-95'); confirmModal.classList.add('opacity-100'); confirmModal.querySelector('.bg-white').classList.add('scale-100'); }, 20);
+            const handleConfirm = () => { closeConfirmModal(); onConfirm(); };
+            const handleCancel = () => closeConfirmModal();
+            confirmDeleteBtn.onclick = handleConfirm; confirmCancelBtn.onclick = handleCancel;
+            confirmModal.onclick = (e) => { if (e.target === confirmModal) closeConfirmModal(); };
+        }
+        function closeConfirmModal() {
+            confirmModal.classList.remove('opacity-100'); confirmModal.querySelector('.bg-white').classList.remove('scale-100'); confirmModal.classList.add('opacity-0'); confirmModal.querySelector('.bg-white').classList.add('scale-95');
+            setTimeout(() => { confirmModal.classList.add('hidden'); confirmDeleteBtn.onclick = null; confirmCancelBtn.onclick = null; confirmModal.onclick = null; }, 500);
+        }
+
+        function openEditorModal(note = null, color = '#ffffff') {
+            activeNoteId = note ? note.id : null;
+            activeColor = note ? note.color : color;
+            titleInput.value = note ? note.title || '' : '';
+            contentInput.value = note ? note.content || '' : '';
+            modalHeader.style.backgroundColor = `${activeColor}20`;
+            modalColorIndicator.style.backgroundColor = activeColor;
+            updatePreview();
+            if (activeNoteId) { deleteBtn.classList.remove('hidden'); deleteBtn.classList.add('flex'); } else { deleteBtn.classList.add('hidden'); deleteBtn.classList.remove('flex'); }
+            editorModal.classList.remove('hidden');
+            void editorModal.offsetWidth;
+            editorModal.classList.remove('opacity-0'); editorModal.classList.add('opacity-100');
+            editorContainer.classList.remove('scale-95'); editorContainer.classList.add('scale-100');
+            titleInput.focus();
+        }
+
+        function closeEditorModal() {
+            editorModal.classList.remove('opacity-100'); editorModal.classList.add('opacity-0');
+            editorContainer.classList.remove('scale-100'); editorContainer.classList.add('scale-95');
+            setTimeout(() => { editorModal.classList.add('hidden'); titleInput.value = ''; contentInput.value = ''; activeNoteId = null; deleteBtn.classList.add('hidden'); deleteBtn.classList.remove('flex'); }, 500);
+        }
+        cancelBtn.addEventListener('click', closeEditorModal);
+        deleteBtn.addEventListener('click', () => { if (!activeNoteId || !currentUser) return; showConfirmModal(async () => { const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId); await deleteDoc(noteRef); closeEditorModal(); }); });
+
+        function updatePreview() {
+            previewTitle.textContent = titleInput.value || 'Untitled Note';
+            const processedContent = (contentInput.value || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
+            const parsedHtml = customMarkedParse(processedContent);
+            previewContent.innerHTML = parsedHtml;
+            try { renderMathInElement(previewContent, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}], throwOnError: false }); } catch(e) {}
+            initHtmlWidgets(); // enable toggle in live preview
+            const text = contentInput.value;
+            const chars = text.length;
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            document.getElementById('word-count').textContent = `${words} word${words !== 1 ? 's' : ''}`;
+            document.getElementById('char-count').textContent = `${chars} character${chars !== 1 ? 's' : ''}`;
+        }
+        titleInput.addEventListener('input', updatePreview);
+        contentInput.addEventListener('input', updatePreview);
+
+        // Format toolbar (unchanged)
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const format = btn.getAttribute('data-format');
+                const suffix = btn.getAttribute('data-suffix') || format;
+                const start = contentInput.selectionStart, end = contentInput.selectionEnd, text = contentInput.value, selectedText = text.substring(start, end);
+                let newText, newCursorPos;
+                const isBlockFormat = ['# ', '## ', '- ', '1. ', '> '].includes(format);
+                if (isBlockFormat) { newText = text.substring(0, start) + format + selectedText + text.substring(end); newCursorPos = end + format.length; }
+                else if (format === '```\n') { newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end); newCursorPos = start + format.length; }
+                else { newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end); newCursorPos = selectedText.length > 0 ? end + format.length * 2 : start + format.length; }
+                contentInput.value = newText; contentInput.focus(); contentInput.selectionStart = contentInput.selectionEnd = newCursorPos; updatePreview();
+            });
+        });
+
+        // Smart list & tab handling
+        contentInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') { e.preventDefault(); const start = this.selectionStart, end = this.selectionEnd; this.value = this.value.substring(0, start) + "  " + this.value.substring(end); this.selectionStart = this.selectionEnd = start + 2; updatePreview(); }
+            if (e.key === 'Enter') {
+                const start = this.selectionStart;
+                const textToCursor = this.value.substring(0, start);
+                const lines = textToCursor.split('\n');
+                const currentLine = lines[lines.length - 1];
+                const ulMatch = currentLine.match(/^(\s*)([-*])\s(.*)$/);
+                const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+                if (ulMatch || olMatch) {
+                    const isEmpty = ulMatch ? !ulMatch[3].trim() : !olMatch[3].trim();
+                    if (isEmpty) {
+                        e.preventDefault();
+                        const markerLength = ulMatch ? ulMatch[1].length + ulMatch[2].length + 1 : olMatch[1].length + olMatch[2].length + 2;
+                        const newValue = this.value.substring(0, start - markerLength) + '\n' + this.value.substring(this.selectionEnd);
+                        this.value = newValue;
+                        this.selectionStart = this.selectionEnd = start - markerLength + 1;
+                        updatePreview();
+                        return;
+                    }
+                    e.preventDefault();
+                    let insertion = '\n';
+                    if (ulMatch) insertion += ulMatch[1] + ulMatch[2] + ' ';
+                    else if (olMatch) { const nextNum = parseInt(olMatch[2], 10) + 1; insertion += olMatch[1] + nextNum + '. '; }
+                    this.value = this.value.substring(0, start) + insertion + this.value.substring(this.selectionEnd);
+                    this.selectionStart = this.selectionEnd = start + insertion.length;
+                    updatePreview();
+                }
+            }
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            if (!currentUser) { showToast("Please sign in to save notes."); openSettings(); return; }
+            const title = titleInput.value.trim() || 'Untitled Note';
+            const content = contentInput.value.trim();
+            if (!content && !titleInput.value.trim()) { closeEditorModal(); return; }
+            const noteData = { title, content, color: activeColor, timestamp: Date.now() };
+            const collectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (activeNoteId) await setDoc(doc(collectionRef, activeNoteId), noteData);
+            else await addDoc(collectionRef, noteData);
+            closeEditorModal();
+        });
     </script>
 </body>
 </html>
+```
