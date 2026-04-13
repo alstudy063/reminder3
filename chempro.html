@@ -707,6 +707,11 @@
                 this.setupTouchZoom(); 
                 this.setupSearch();
                 
+                // Keep SVG paths glued to elements if the browser window is resized
+                window.addEventListener('resize', () => {
+                    if (this.state.view === 'viewer') this.drawPaths();
+                });
+                
                 const storedCats = localStorage.getItem('chem_categories');
                 if (storedCats) {
                     this.state.categories = JSON.parse(storedCats);
@@ -1345,15 +1350,28 @@
                 if(!coreCont || !svg) return;
                 
                 const cRect = coreCont.getBoundingClientRect();
-                const svgRect = svg.getBoundingClientRect();
+                
+                // Get the inverse transformation matrix for the SVG to accurately map screen pixels to SVG internal coordinates
+                const ctm = svg.getScreenCTM();
+                if (!ctm) return;
+                const invMatrix = ctm.inverse();
+                
                 const getCoords = (el, side) => {
                     const r = el.getBoundingClientRect();
-                    return { x: side === 'left' ? r.left - svgRect.left : r.right - svgRect.left, y: r.top - svgRect.top + r.height/2 };
+                    const pt = svg.createSVGPoint();
+                    pt.x = side === 'left' ? r.left : r.right;
+                    pt.y = r.top + r.height / 2;
+                    return pt.matrixTransform(invMatrix);
                 };
                 
                 // Attach points to the edge of the circular core
-                const coreL = { x: cRect.left - svgRect.left, y: cRect.top - svgRect.top + cRect.height/2 };
-                const coreR = { x: cRect.right - svgRect.left, y: cRect.top - svgRect.top + cRect.height/2 };
+                const ptL = svg.createSVGPoint();
+                ptL.x = cRect.left; ptL.y = cRect.top + cRect.height/2;
+                const coreL = ptL.matrixTransform(invMatrix);
+                
+                const ptR = svg.createSVGPoint();
+                ptR.x = cRect.right; ptR.y = cRect.top + cRect.height/2;
+                const coreR = ptR.matrixTransform(invMatrix);
                 
                 let paths = '';
                 this.state.currentChart.preparations.forEach(p => { 
