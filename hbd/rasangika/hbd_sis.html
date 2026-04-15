@@ -66,7 +66,6 @@
             animation: twinkle var(--duration) infinite ease-in-out;
         }
 
-        /* Responsive Card Container */
         .app-container {
             position: relative;
             width: 92vw;
@@ -104,7 +103,6 @@
             text-align: center;
         }
 
-        /* Name Loop Animation */
         @keyframes namePulse {
             0%, 100% { transform: scale(1) translateY(0); }
             50% { transform: scale(1.05) translateY(-5px); }
@@ -127,7 +125,6 @@
             100% { transform: scale(1); letter-spacing: 0; opacity: 1; filter: blur(0); }
         }
 
-        /* Amazing Text Loop Animation */
         @keyframes amazingWiggle {
             0%, 100% { transform: rotate(-1deg); }
             50% { transform: rotate(1deg); }
@@ -196,7 +193,6 @@
         .eye-blink { animation: blink 4s infinite; transform-origin: center; }
         @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
 
-        /* Amagambo ya animasiyo */
         .wink-eye { animation: helloWink 0.4s forwards !important; transform-origin: center; }
         @keyframes helloWink {
             0%, 100% { transform: scaleY(1); }
@@ -231,7 +227,6 @@
 
         #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 99; }
         
-        /* Hiding text during main animation */
         .hide-text { opacity: 0 !important; pointer-events: none; }
         .focus-face { transform: scale(1.4) translateY(-20px); }
     </style>
@@ -307,15 +302,69 @@
         </div>
 
         <div class="action-bar">
-            <button class="btn btn-main" onclick="triggerHelloAnimation()">Let's go sis 🤗</button>
+            <button class="btn btn-main" id="mainButton">Let's go sis 🤗</button>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioCtx();
+        }
+
+        function playPopSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function playPartyHorn() {
+            initAudio();
+            const duration = 2.0;
+            const t = audioCtx.currentTime;
+            
+            // Adjusted frequencies to match the YouTube HD Party Horn (Buzzy and Bright)
+            const harmonics = [185, 370, 555, 740, 925, 1110];
+            
+            harmonics.forEach((f, index) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                // Use sawtooth for that characteristic buzzy horn sound
+                osc.type = index === 0 ? 'sawtooth' : 'square'; 
+                osc.frequency.setValueAtTime(f, t);
+                
+                // Slight pitch slide for realism
+                osc.frequency.exponentialRampToValueAtTime(f * 1.02, t + 0.1);
+                osc.frequency.exponentialRampToValueAtTime(f * 0.98, t + duration);
+                
+                // Volume envelope
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(index === 0 ? 0.2 : 0.05, t + 0.05);
+                gain.gain.linearRampToValueAtTime(index === 0 ? 0.15 : 0.04, t + duration * 0.8);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(t);
+                osc.stop(t + duration);
+            });
+        }
+
         document.addEventListener('keydown', e => { if (e.ctrlKey && ['c','v','u','s'].includes(e.key)) e.preventDefault(); });
 
-        // Setup Stars
         const starField = document.getElementById('starField');
         for (let i = 0; i < 50; i++) {
             const star = document.createElement('div');
@@ -338,6 +387,7 @@
         const mouth = document.getElementById('mouth');
         const mainTitle = document.getElementById('main-title');
         const subTitle = document.getElementById('sub-title');
+        const mainButton = document.getElementById('mainButton');
 
         window.onload = () => { 
             handleMove(window.innerWidth / 2, window.innerHeight / 2);
@@ -360,48 +410,36 @@
             });
         };
 
+        mainButton.addEventListener('click', () => {
+            playPartyHorn();
+            triggerHelloAnimation();
+        });
+
         function triggerHelloAnimation() {
-            // Hide text to focus on face
             mainTitle.classList.add('hide-text');
             subTitle.classList.add('hide-text');
             smileContainer.classList.add('focus-face');
 
-            // Trigger eyes
             leftEyeGroup.classList.remove('eye-blink');
             rightEyeGroup.classList.remove('eye-blink');
             
-            // Ijisho ry'iburyo gusa niryo rihumbiza
             setTimeout(() => {
                 rightEyeGroup.classList.add('wink-eye');
                 mouth.classList.add('big-smile');
             }, 300);
 
-            // Trigger Confetti
             setTimeout(() => {
                 popConfetti(200);
-            }, 800);
+            }, 500);
 
-            // Redirect immediately after the wink animation (wink duration is 0.4s)
-            // The wink starts at 300ms, so we redirect at 300ms + 400ms = 700ms
             setTimeout(() => {
                 window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu";
-            }, 700);
-
-            // Reset after animation (but redirect will happen before this)
-            setTimeout(() => {
-                mainTitle.classList.remove('hide-text');
-                subTitle.classList.remove('hide-text');
-                smileContainer.classList.remove('focus-face');
-                rightEyeGroup.classList.remove('wink-eye');
-                mouth.classList.remove('big-smile');
-                leftEyeGroup.classList.add('eye-blink');
-                rightEyeGroup.classList.add('eye-blink');
-            }, 3500);
+            }, 2500); // Extended time to enjoy the party horn!
         }
 
-        // Tap interactions for items
         elements.forEach(el => {
             el.addEventListener('click', (e) => {
+                playPopSound();
                 const rect = el.getBoundingClientRect();
                 const cx = (rect.left + rect.width / 2) / window.innerWidth;
                 const cy = (rect.top + rect.height / 2) / window.innerHeight;
@@ -425,6 +463,8 @@
         });
 
         document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+        document.addEventListener('touchstart', initAudio, { once: true }); 
+        document.addEventListener('click', initAudio, { once: true });
         document.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
 
         function popConfetti(count = 100) {
