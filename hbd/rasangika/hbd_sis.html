@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday Rasangika!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #fff5e6;
+            --card-white: #ffffff;
+            --ink: #4a322d;
+            --pastel-pink: #ffccd5;
+            --pastel-purple: #e2cfea;
+            --pastel-yellow: #fdf0d5;
+            --pastel-blue: #c1d3fe;
+        }
+
+        * {
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            outline: none;
+        }
+
+        body {
+            background: linear-gradient(-45deg, #fff5e6, #ffccd5, #e2cfea, #fdf0d5);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Quicksand', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .star-field {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        .star-sparkle {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        /* Responsive Card Container */
+        .app-container {
+            position: relative;
+            width: 92vw;
+            max-width: 850px;
+            height: 75vh;
+            max-height: 600px;
+            background: var(--card-white);
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(74, 50, 45, 0.15);
+            border: 8px solid #fff;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 10;
+            transition: transform 0.3s ease-out, box-shadow 0.3s ease-out;
+        }
+
+        @media (max-width: 640px) {
+            .app-container {
+                height: 85vh;
+                max-height: none; 
+                border-radius: 30px;
+                border: 6px solid #fff;
+            }
+        }
+
+        .canvas-area {
+            flex: 1;
+            position: relative;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Name Loop Animation */
+        @keyframes namePulse {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.05) translateY(-5px); }
+        }
+
+        h1 {
+            font-size: clamp(2.2rem, 7vw, 4rem);
+            font-family: 'Patrick Hand', cursive;
+            color: var(--ink);
+            line-height: 1.1;
+            z-index: 20;
+            animation: intro-text 2.5s cubic-bezier(0.19, 1, 0.22, 1) forwards, namePulse 4s ease-in-out infinite 2.5s;
+            transform-origin: center center;
+            text-transform: uppercase;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes intro-text {
+            0% { transform: scale(3); letter-spacing: 15px; opacity: 0; filter: blur(10px); }
+            100% { transform: scale(1); letter-spacing: 0; opacity: 1; filter: blur(0); }
+        }
+
+        /* Amazing Text Loop Animation */
+        @keyframes amazingWiggle {
+            0%, 100% { transform: rotate(-1deg); }
+            50% { transform: rotate(1deg); }
+        }
+
+        .wish-text {
+            font-weight: 700;
+            color: #8d7069;
+            letter-spacing: 3px;
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            z-index: 20;
+            opacity: 0;
+            display: inline-block;
+            animation: fadeIn 0.8s 2.3s forwards, amazingWiggle 3s ease-in-out infinite 2.3s;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        @keyframes floatAnim {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .element { 
+            position: absolute; 
+            z-index: 30; 
+            opacity: 0; 
+            animation: fadeIn 1s 2s forwards; 
+            cursor: pointer; 
+            pointer-events: auto; 
+        }
+        .float-wrap {
+            width: 100%;
+            height: 100%;
+            animation: floatAnim 4s ease-in-out infinite;
+        }
+        .element svg { 
+            width: 100%; 
+            height: 100%; 
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .element:hover svg { 
+            transform: scale(1.2) rotate(8deg); 
+            filter: drop-shadow(0 10px 10px rgba(74, 50, 45, 0.15)); 
+        }
+
+        .rainbow { width: 120px; bottom: 12%; right: 10%; opacity: 0.6; }
+        .flower { width: 80px; top: 15%; left: 8%; }
+        .heart { width: 45px; top: 15%; right: 20%; fill: var(--pastel-pink); }
+        .wave { width: 100px; top: 55%; left: 10%; opacity: 0.8; }
+        .cherries-1 { width: 75px; bottom: 22%; left: 20%; }
+        .cherries-2 { width: 60px; top: 38%; right: 12%; }
+
+        .smile-container {
+            width: 180px;
+            margin-top: 25px;
+            position: relative;
+            z-index: 20;
+            opacity: 0;
+            animation: fadeIn 0.8s 2.2s forwards;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .eye-blink { animation: blink 4s infinite; transform-origin: center; }
+        @keyframes blink { 0%, 90%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+
+        /* Amagambo ya animasiyo */
+        .wink-eye { animation: helloWink 0.4s forwards !important; transform-origin: center; }
+        @keyframes helloWink {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.1); }
+        }
+
+        .big-smile { d: path("M15 25 Q50 65 85 25") !important; stroke: #ff4d6d !important; transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
+        .action-bar {
+            padding: 1.5rem;
+            background: #fafafa;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            opacity: 0;
+            animation: fadeIn 0.8s 2.5s forwards;
+        }
+
+        .btn {
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .btn-main { background: var(--ink); color: white; }
+        .btn-main:active { transform: scale(0.95); }
+
+        #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 99; }
+        
+        /* Hiding text during main animation */
+        .hide-text { opacity: 0 !important; pointer-events: none; }
+        .focus-face { transform: scale(1.4) translateY(-20px); }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <div class="star-field" id="starField"></div>
+    <canvas id="confetti"></canvas>
+
+    <div class="app-container" id="app">
+        <div class="canvas-area">
+            <!-- Decorative Elements -->
+            <div class="element rainbow" data-speed="0.8" style="--base-rot: 0deg;">
+                <div class="float-wrap" style="animation-duration: 4s; animation-delay: 0s;">
+                    <svg viewBox="0 0 100 60"><path d="M10 50 Q50 0 90 50" stroke="var(--pastel-purple)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M22 50 Q50 15 78 50" stroke="#ffb3c1" stroke-width="8" fill="none" stroke-linecap="round"/></svg>
+                </div>
+            </div>
+            <div class="element flower" data-speed="-1.2" style="--base-rot: -15deg;">
+                <div class="float-wrap" style="animation-duration: 3.5s; animation-delay: 0.5s;">
+                    <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="15" fill="var(--pastel-yellow)"/><circle cx="50" cy="25" r="12" fill="var(--pastel-purple)"/><circle cx="75" cy="50" r="12" fill="var(--pastel-purple)"/><circle cx="50" cy="75" r="12" fill="var(--pastel-purple)"/><circle cx="25" cy="50" r="12" fill="var(--pastel-purple)"/></svg>
+                </div>
+            </div>
+            <div class="element heart" data-speed="1.5" style="--base-rot: 10deg;">
+                <div class="float-wrap" style="animation-duration: 4.2s; animation-delay: 1s;">
+                    <svg viewBox="0 0 32 32"><path d="M16 28.5L14.1 26.8C7.1 20.4 2.5 16.2 2.5 11C2.5 6.8 5.8 3.5 10 3.5C12.4 3.5 14.7 4.6 16 6.4C17.3 4.6 19.6 3.5 22 3.5C26.2 3.5 29.5 6.8 29.5 11C29.5 16.2 24.9 20.4 17.9 26.8L16 28.5Z"/></svg>
+                </div>
+            </div>
+            <div class="element wave" data-speed="-0.9" style="--base-rot: -5deg;">
+                <div class="float-wrap" style="animation-duration: 3.8s; animation-delay: 0.2s;">
+                    <svg viewBox="0 0 100 40"><path d="M5 20 Q 25 5, 50 20 T 95 20" stroke="var(--pastel-purple)" stroke-width="8" fill="none" stroke-linecap="round" /></svg>
+                </div>
+            </div>
+            <div class="element cherries-1" data-speed="1.1" style="--base-rot: 5deg;">
+                <div class="float-wrap" style="animation-duration: 4.5s; animation-delay: 0.8s;">
+                    <svg viewBox="0 0 100 100">
+                        <path d="M30 60 Q40 20 50 15 Q60 20 70 60" stroke="#5c4033" stroke-width="4" fill="none" stroke-linecap="round" />
+                        <circle cx="28" cy="60" r="16" fill="#ff8fa3" />
+                        <circle cx="72" cy="60" r="16" fill="#ff8fa3" />
+                        <circle cx="23" cy="55" r="4" fill="#ffffff" opacity="0.7"/>
+                        <circle cx="67" cy="55" r="4" fill="#ffffff" opacity="0.7"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="element cherries-2" data-speed="0.9" style="--base-rot: -10deg;">
+                <div class="float-wrap" style="animation-duration: 3.6s; animation-delay: 1.2s;">
+                    <svg viewBox="0 0 100 100">
+                        <path d="M30 60 Q40 20 50 15 Q60 20 70 60" stroke="#5c4033" stroke-width="4" fill="none" stroke-linecap="round" />
+                        <circle cx="28" cy="60" r="16" fill="#ff8fa3" />
+                        <circle cx="72" cy="60" r="16" fill="#ff8fa3" />
+                        <circle cx="23" cy="55" r="4" fill="#ffffff" opacity="0.7"/>
+                        <circle cx="67" cy="55" r="4" fill="#ffffff" opacity="0.7"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h1 id="main-title" class="font-bold">HAPPY BIRTHDAY<br>RASANGIKA!</h1>
+            
+            <div class="smile-container" id="smile">
+                <svg viewBox="0 0 100 50">
+                    <g id="left-eye-group" class="eye-blink">
+                        <circle cx="35" cy="15" r="5" fill="var(--ink)"/>
+                        <circle id="left-pupil" cx="35" cy="15" r="2" fill="white"/>
+                    </g>
+                    <g id="right-eye-group" class="eye-blink">
+                        <circle cx="65" cy="15" r="5" fill="var(--ink)"/>
+                        <circle id="right-pupil" cx="65" cy="15" r="2" fill="white"/>
+                    </g>
+                    <path id="mouth" d="M20 30 Q50 55 80 30" stroke="#ff8fa3" stroke-width="6" fill="none" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <p id="sub-title" class="wish-text">YOU ARE AMAZING!</p>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn btn-main" onclick="triggerHelloAnimation()">Let's go sis 🤗</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script>
+        document.addEventListener('keydown', e => { if (e.ctrlKey && ['c','v','u','s'].includes(e.key)) e.preventDefault(); });
+
+        // Setup Stars
+        const starField = document.getElementById('starField');
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement('div');
+            star.className = 'star-sparkle';
+            const size = Math.random() * 3 + 1;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.top = `${Math.random() * 100}%`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+            starField.appendChild(star);
+        }
+
+        const leftPupil = document.getElementById('left-pupil');
+        const rightPupil = document.getElementById('right-pupil');
+        const elements = document.querySelectorAll('.element');
+        const smileContainer = document.getElementById('smile');
+        const leftEyeGroup = document.getElementById('left-eye-group');
+        const rightEyeGroup = document.getElementById('right-eye-group');
+        const mouth = document.getElementById('mouth');
+        const mainTitle = document.getElementById('main-title');
+        const subTitle = document.getElementById('sub-title');
+
+        window.onload = () => { 
+            handleMove(window.innerWidth / 2, window.innerHeight / 2);
+            setTimeout(() => popConfetti(), 2300); 
+        };
+
+        const handleMove = (clientX, clientY) => {
+            const x = (clientX / window.innerWidth) - 0.5;
+            const y = (clientY / window.innerHeight) - 0.5;
+            
+            leftPupil.setAttribute('cx', 35 + (x * 5));
+            leftPupil.setAttribute('cy', 15 + (y * 5));
+            rightPupil.setAttribute('cx', 65 + (x * 5));
+            rightPupil.setAttribute('cy', 15 + (y * 5));
+
+            elements.forEach(el => {
+                const speed = parseFloat(el.getAttribute('data-speed'));
+                const rot = el.style.getPropertyValue('--base-rot') || '0deg';
+                el.style.transform = `translate(${x * speed * 40}px, ${y * speed * 40}px) rotate(${rot})`;
+            });
+        };
+
+        function triggerHelloAnimation() {
+            // Hide text to focus on face
+            mainTitle.classList.add('hide-text');
+            subTitle.classList.add('hide-text');
+            smileContainer.classList.add('focus-face');
+
+            // Trigger eyes
+            leftEyeGroup.classList.remove('eye-blink');
+            rightEyeGroup.classList.remove('eye-blink');
+            
+            // Ijisho ry'iburyo gusa niryo rihumbiza
+            setTimeout(() => {
+                rightEyeGroup.classList.add('wink-eye');
+                mouth.classList.add('big-smile');
+            }, 300);
+
+            // Trigger Confetti
+            setTimeout(() => {
+                popConfetti(200);
+            }, 800);
+
+            // Redirect immediately after the wink animation (wink duration is 0.4s)
+            // The wink starts at 300ms, so we redirect at 300ms + 400ms = 700ms
+            setTimeout(() => {
+                window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu";
+            }, 700);
+
+            // Reset after animation (but redirect will happen before this)
+            setTimeout(() => {
+                mainTitle.classList.remove('hide-text');
+                subTitle.classList.remove('hide-text');
+                smileContainer.classList.remove('focus-face');
+                rightEyeGroup.classList.remove('wink-eye');
+                mouth.classList.remove('big-smile');
+                leftEyeGroup.classList.add('eye-blink');
+                rightEyeGroup.classList.add('eye-blink');
+            }, 3500);
+        }
+
+        // Tap interactions for items
+        elements.forEach(el => {
+            el.addEventListener('click', (e) => {
+                const rect = el.getBoundingClientRect();
+                const cx = (rect.left + rect.width / 2) / window.innerWidth;
+                const cy = (rect.top + rect.height / 2) / window.innerHeight;
+                
+                confetti({
+                    particleCount: 25,
+                    spread: 40,
+                    origin: { x: cx, y: cy },
+                    colors: ['#ffccd5', '#e2cfea', '#fdf0d5', '#c1d3fe'],
+                    ticks: 100,
+                    gravity: 0.8
+                });
+
+                const svg = el.querySelector('svg');
+                svg.style.transform = 'scale(0.7) rotate(-15deg)';
+                setTimeout(() => {
+                    svg.style.transform = 'scale(1.25) rotate(10deg)';
+                    setTimeout(() => svg.style.transform = '', 200);
+                }, 100);
+            });
+        });
+
+        document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
+        document.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
+
+        function popConfetti(count = 100) {
+            confetti({ 
+                particleCount: count, 
+                spread: 70, 
+                origin: { y: 0.6 }, 
+                colors: ['#ffccd5', '#e2cfea', '#fdf0d5', '#ff4d6d'] 
+            });
+        }
+    </script>
+</body>
+</html>
