@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modern Birthday Card</title>
+  <title>yo sis</title>
   
   <!-- Modern Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,8 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@1,300&display=swap" rel="stylesheet">
   
-  <!-- Canvas Confetti Library -->
+  <!-- External Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 
   <style>
     :root {
@@ -22,12 +24,34 @@
       --accent: #d4a373;
       --bg-cream: #fdf6e9;
       --navy-dark: #1a233a;
+      --glass-bg: rgba(253, 246, 233, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Dark Mode Support */
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-cream: #121212;
+        --primary: #f0e6d2; 
+        --accent: #e5b88f;
+        --navy-dark: #0a0a0a;
+        --glass-bg: rgba(30, 30, 30, 0.5);
+        --glass-border: rgba(255, 255, 255, 0.1);
+      }
+      body {
+        background: linear-gradient(45deg, #1a1a2e, #16213e, #0f3460, #1a1a2e) !important;
+        background-size: 400% 400% !important;
+      }
+      .hi-claudia, .happy-birthday-main { color: var(--primary); text-shadow: 0 2px 10px rgba(255,255,255,0.1); }
+      .photo-frame { background: #1a1a1a !important; box-shadow: 0 15px 35px rgba(0,0,0,0.5) !important; }
+      .it-is-birthday { color: var(--accent); }
     }
 
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      cursor: none; /* Hide default cursor for custom cursor */
     }
 
     body {
@@ -41,6 +65,94 @@
       animation: gradientBG 15s ease infinite;
       overflow: hidden;
     }
+
+    /* Custom Cursor */
+    #custom-cursor {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.8), rgba(255,255,255,0));
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.2s, height 0.2s;
+      mix-blend-mode: overlay;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Interactive classes for cursor */
+    body.hovering #custom-cursor {
+        transform: translate(-50%, -50%) scale(2);
+        background: radial-gradient(circle, rgba(212, 163, 115, 0.8), rgba(255,255,255,0));
+    }
+
+    /* Envelope Intro Screen */
+    #envelope-screen {
+      position: fixed;
+      inset: 0;
+      background: inherit;
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(20px);
+    }
+
+    .envelope-wrapper {
+      position: relative;
+      width: 300px;
+      height: 200px;
+      background: var(--primary);
+      border-radius: 8px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+      transition: transform 0.3s;
+    }
+
+    .envelope-wrapper:hover {
+        transform: translateY(-5px);
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 0;
+      border-left: 150px solid transparent;
+      border-right: 150px solid transparent;
+      border-top: 120px solid var(--accent);
+      transform-origin: top;
+      z-index: 3;
+    }
+
+    .envelope-front {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,0,0,0.1), rgba(0,0,0,0));
+      z-index: 2;
+      pointer-events: none;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .envelope-text {
+      color: white;
+      text-align: center;
+      z-index: 4;
+      pointer-events: none;
+      font-family: 'Playfair Display', serif;
+    }
+    .envelope-text h3 { font-size: 1.5rem; margin-bottom: 5px; }
+    .envelope-text p { font-size: 0.8rem; opacity: 0.8; font-family: 'Poppins', sans-serif; letter-spacing: 2px;}
 
     @keyframes gradientBG {
       0% { background-position: 0% 50%; }
@@ -56,6 +168,8 @@
     .scene {
       perspective: 2000px;
       animation: float 6s ease-in-out infinite;
+      visibility: hidden; /* Hidden until envelope opens */
+      opacity: 0;
     }
 
     .card {
@@ -63,8 +177,7 @@
       height: var(--card-height);
       position: relative;
       transform-style: preserve-3d;
-      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
+      transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* Hover "Peek" effect before opening */
@@ -85,7 +198,6 @@
       box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2);
     }
 
-    /* Inner shadow for the center fold */
     .card-face::after {
       content: '';
       position: absolute;
@@ -105,7 +217,7 @@
       inset: 0;
       transform-origin: left;
       transform-style: preserve-3d;
-      transition: transform 1.2s cubic-bezier(0.645, 0.045, 0.355, 1), box-shadow 0.4s ease;
+      transition: transform 1.4s cubic-bezier(0.645, 0.045, 0.355, 1), box-shadow 0.4s ease;
       z-index: 2;
     }
 
@@ -142,13 +254,12 @@
       background: rgba(255,255,255,0.1);
       padding: 8px 16px;
       border-radius: 20px;
+      backdrop-filter: blur(5px);
     }
     
-    .card:not(.is-open):hover .tap-text {
-      opacity: 1;
-    }
+    .card:not(.is-open):hover .tap-text { opacity: 1; }
 
-    /* LEFT PAGE (Back of Cover) - Animated SVG Cake */
+    /* LEFT PAGE (Back of Cover) */
     .cover-back {
       background: var(--navy-dark);
       transform: rotateY(180deg);
@@ -161,7 +272,6 @@
       overflow: hidden;
     }
 
-    /* Adjust fold shadow for right side */
     .inside-right::after {
       left: 0;
       background: linear-gradient(to right, rgba(0,0,0,0.08) 0%, transparent 100%);
@@ -175,41 +285,26 @@
       margin-top: -60px;
     }
 
-    #cake {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
+    #cake { display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 
     .velas {
       background: #ffffff;
       border-radius: 10px;
       position: absolute;
-      top: 380px;        /* Fixed to sit on top of the cake icing after all animations */
+      top: 380px;        
       left: 50%;
       margin-left: -2.4px;
       width: 5px;
       height: 35px;
-      transform: translateY(-300px);  /* Start high up, ready to drop */
+      transform: translateY(-300px);
       backface-visibility: hidden;
     }
     
     .card.has-opened .velas {
-      /* Wait for cake to fully build (total anim ~4.6s) then drop */
       animation: candle-in 600ms 4.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; 
     }
     
-    .velas:after,
-    .velas:before {
-      background: rgba(255, 0, 0, 0.4);
-      content: "";
-      position: absolute;
-      width: 100%;
-      height: 2.22px;
-    }
+    .velas:after, .velas:before { background: rgba(255, 0, 0, 0.4); content: ""; position: absolute; width: 100%; height: 2.22px; }
     .velas:after { top: 25%; left: 0; }
     .velas:before { top: 45%; left: 0; }
 
@@ -222,31 +317,29 @@
       width: 6.66px;
       height: 18px;
       opacity: 0;
+      transition: opacity 0.5s ease, transform 0.5s ease;
     }
     
-    /* Flames appear shortly after candle lands */
-    .card.has-opened .fuego:nth-child(1) { animation: fuego 2s 5.2s infinite; opacity: 1; }
-    .card.has-opened .fuego:nth-child(2) { animation: fuego 1.5s 5.2s infinite; opacity: 1; }
-    .card.has-opened .fuego:nth-child(3) { animation: fuego 1s 5.2s infinite; opacity: 1; }
-    .card.has-opened .fuego:nth-child(4) { animation: fuego 0.5s 5.2s infinite; opacity: 1; }
-    .card.has-opened .fuego:nth-child(5) { animation: fuego 0.2s 5.2s infinite; opacity: 1; }
+    /* Flames state */
+    .card.has-opened .fuego.active:nth-child(1) { animation: fuego 2s 5.2s infinite; opacity: 1; }
+    .card.has-opened .fuego.active:nth-child(2) { animation: fuego 1.5s 5.2s infinite; opacity: 1; }
+    .card.has-opened .fuego.active:nth-child(3) { animation: fuego 1s 5.2s infinite; opacity: 1; }
+    .card.has-opened .fuego.active:nth-child(4) { animation: fuego 0.5s 5.2s infinite; opacity: 1; }
+    .card.has-opened .fuego.active:nth-child(5) { animation: fuego 0.2s 5.2s infinite; opacity: 1; }
+
+    /* Class added when mic detects blow */
+    .fuego.blown-out {
+        animation: none !important;
+        opacity: 0 !important;
+        transform: translateY(-30px) scale(0) !important;
+    }
 
     @keyframes fuego {
-      0%, 100% {
-        background: rgba(254, 248, 97, 0.5);
-        box-shadow: 0 0 40px 10px rgba(248, 233, 209, 0.2);
-        transform: translateY(0) scale(1);
-      }
-      50% {
-        background: rgba(255, 50, 0, 0.1);
-        box-shadow: 0 0 40px 20px rgba(248, 233, 209, 0.2);
-        transform: translateY(-20px) scale(0);
-      }
+      0%, 100% { background: rgba(254, 248, 97, 0.5); box-shadow: 0 0 40px 10px rgba(248, 233, 209, 0.2); transform: translateY(0) scale(1); }
+      50% { background: rgba(255, 50, 0, 0.1); box-shadow: 0 0 40px 20px rgba(248, 233, 209, 0.2); transform: translateY(-20px) scale(0); }
     }
 
-    @keyframes candle-in {
-      to { transform: translateY(0); }
-    }
+    @keyframes candle-in { to { transform: translateY(0); } }
 
     .cake-text {
       color: #e5b88f;
@@ -254,27 +347,44 @@
       font-weight: 300;
       font-style: italic;
       text-align: center;
-      margin-top: -100px;
+      margin-top: -110px;
       z-index: 10;
       padding: 0 25px;
       opacity: 0;
       transform: translateY(10px);
-      transition: all 1s ease 5.5s; /* Fades in after flames */
+      transition: all 1s ease 5.5s; 
     }
     
-    .card.has-opened .cake-text {
-      opacity: 1;
-      transform: translateY(0);
+    .card.has-opened .cake-text { opacity: 1; transform: translateY(0); }
+    .cake-text p { font-size: 0.90rem; line-height: 1.5; margin-bottom: 15px;}
+
+    /* Microphone Button */
+    #mic-btn {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.2);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-family: 'Poppins';
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+    #mic-btn:hover { background: rgba(255,255,255,0.2); transform: scale(1.05); }
+    #mic-btn.listening { background: rgba(255, 50, 50, 0.3); animation: pulse 1.5s infinite; }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(255, 50, 50, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(255, 50, 50, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(255, 50, 50, 0); }
     }
 
-    .cake-text p {
-      font-size: 0.95rem;
-      line-height: 1.6;
-    }
-
-    /* RIGHT PAGE - Claudia Photo Frame Design */
+    /* RIGHT PAGE - Glassmorphism Design */
     .inside-right {
-      background: var(--bg-cream);
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px);
+      border-right: 1px solid var(--glass-border);
       z-index: 1;
       padding: 40px 25px;
       display: flex;
@@ -284,58 +394,38 @@
       border-radius: 8px;
     }
 
+    /* Glassmorphism Blobs */
     .blob {
       position: absolute;
       border-radius: 50%;
-      filter: blur(25px);
+      filter: blur(35px);
       z-index: 0;
-      opacity: 0.6;
+      opacity: 0.7;
+      animation: floatBlobs 8s infinite alternate ease-in-out;
+    }
+    
+    @keyframes floatBlobs {
+        0% { transform: translate(0, 0) scale(1); }
+        100% { transform: translate(20px, -20px) scale(1.1); }
     }
 
-    .content-area {
-      text-align: right;
-      width: 100%;
-      z-index: 1;
-    }
+    .content-area { text-align: right; width: 100%; z-index: 1; }
 
-    /* Modern Text Animations */
-    .content-area > * {
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
+    .content-area > * { opacity: 0; transform: translateY(20px); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     .card.is-open .hi-claudia { transition-delay: 0.5s; opacity: 1; transform: translateY(0); }
     .card.is-open .quote { transition-delay: 0.7s; opacity: 1; transform: translateY(0); }
     .card.is-open .happy-birthday-main { transition-delay: 0.9s; opacity: 1; transform: translateY(0); }
 
-    .hi-claudia {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.2rem;
-      color: var(--primary);
-    }
-
-    .quote {
-      font-size: 0.8rem;
-      color: var(--accent);
-      margin-bottom: 10px;
-      max-width: 250px;
-      margin-left: auto;
-      line-height: 1.5;
-    }
-
-    .happy-birthday-main {
-      font-family: 'Playfair Display', serif;
-      font-size: 2.8rem;
-      color: var(--primary);
-      margin-bottom: 20px;
-    }
+    .hi-claudia { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--primary); }
+    .quote { font-size: 0.8rem; color: var(--accent); margin-bottom: 5px; max-width: 250px; margin-left: auto; line-height: 1.5; font-weight: 500;}
+    .happy-birthday-main { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: var(--primary); margin-bottom: 10px; }
 
     /* Photo Frame Animation */
     .photo-frame-wrapper {
       opacity: 0;
       transform: scale(0.8) rotate(-5deg);
       transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-style: preserve-3d;
     }
 
     .card.is-open .photo-frame-wrapper {
@@ -345,12 +435,14 @@
     }
 
     .photo-frame {
-      width: 260px;
+      width: 240px;
       background: white;
-      padding: 12px 12px 35px 12px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      padding: 10px 10px 30px 10px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.15);
       position: relative;
       z-index: 2;
+      border-radius: 4px;
+      /* Tilt properties applied via JS */
     }
 
     .photo-frame::before {
@@ -362,9 +454,9 @@
       width: 90px;
       height: 25px;
       background: rgba(212, 163, 115, 0.6);
-      backdrop-filter: blur(2px);
-      transform: rotate(-2deg);
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      backdrop-filter: blur(4px);
+      transform: rotate(-2deg) translateZ(20px); /* 3D depth for tape */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
     .photo-img {
@@ -374,6 +466,7 @@
       overflow: hidden;
       border-radius: 2px;
       background: #eee;
+      transform: translateZ(10px); /* 3D depth */
     }
 
     .photo-img img {
@@ -383,13 +476,54 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center 20%; /* Keep the face in focus near the top */
+      object-position: center 20%;
       opacity: 0;
       transition: opacity 1.5s ease-in-out;
     }
 
-    .photo-img img.active {
-      opacity: 1;
+    .photo-img img.active { opacity: 1; }
+
+    /* Scratch-Off Canvas Area */
+    .scratch-container {
+        margin-top: 15px;
+        position: relative;
+        width: 200px;
+        height: 40px;
+        z-index: 2;
+        opacity: 0;
+        transform: translateY(10px);
+        transition: all 0.6s ease;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .card.is-open .scratch-container {
+        transition-delay: 1.4s;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .secret-msg {
+        position: absolute;
+        inset: 0;
+        background: rgba(255,255,255,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Poppins';
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--primary);
+        text-align: center;
+    }
+
+    #scratch-pad {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        width: 100%;
+        height: 100%;
     }
 
     .it-is-birthday {
@@ -402,11 +536,12 @@
       z-index: 1;
       transform: translateY(15px);
       transition: all 0.6s ease;
+      font-weight: 500;
     }
 
     .card.is-open .it-is-birthday {
-      transition-delay: 1.4s;
-      opacity: 0.6;
+      transition-delay: 1.6s;
+      opacity: 0.7;
       transform: translateY(0);
     }
 
@@ -418,7 +553,22 @@
 </head>
 <body>
 
-  <div class="scene">
+  <!-- Custom Cursor -->
+  <div id="custom-cursor"></div>
+
+  <!-- Envelope Intro Screen -->
+  <div id="envelope-screen">
+      <div class="envelope-wrapper" id="envelope-btn">
+          <div class="envelope-flap" id="env-flap"></div>
+          <div class="envelope-front"></div>
+          <div class="envelope-text" id="env-text">
+              <h3>A Special Gift</h3>
+              <p>Tap to open</p>
+          </div>
+      </div>
+  </div>
+
+  <div class="scene" id="main-scene">
     <div class="card" id="card">
       
       <!-- COVER -->
@@ -427,12 +577,13 @@
         <div class="card-face cover-back">
             <div class="svg-cake-container">
                 <div class="velas">
-                    <div class="fuego"></div>
-                    <div class="fuego"></div>
-                    <div class="fuego"></div>
-                    <div class="fuego"></div>
-                    <div class="fuego"></div>
+                    <div class="fuego active"></div>
+                    <div class="fuego active"></div>
+                    <div class="fuego active"></div>
+                    <div class="fuego active"></div>
+                    <div class="fuego active"></div>
                 </div>
+                <!-- SVG Cake -->
                 <svg id="cake" version="1.1" x="0px" y="0px" width="200px" height="500px" viewBox="0 0 200 500" enable-background="new 0 0 200 500" xml:space="preserve">
                     <path fill="#a88679" d="M173.667-13.94c-49.298,0-102.782,0-147.334,0c-3.999,0-4-16.002,0-16.002
             c44.697,0,96.586,0,147.334,0C177.667-29.942,177.668-13.94,173.667-13.94z">
@@ -583,7 +734,9 @@
                 </svg>
             </div>
             <div class="cake-text">
-                <p>"Sometimes, the best moments in life are the simple ones. Wishing you a birthday filled with all the happy little things that make you smile!"</p>
+                <p>"Sometimes, the best moments in life are the simple ones."</p>
+                <!-- Mic feature button -->
+                <button id="mic-btn">Blow candles</button>
             </div>
         </div>
 
@@ -594,10 +747,11 @@
         </div>
       </div>
 
-      <!-- INSIDE RIGHT (Claudia Page) -->
+      <!-- INSIDE RIGHT (Glassmorphism & Interactive Features) -->
       <div class="card-face inside-right">
-        <div class="blob" style="width: 200px; height: 200px; top: -50px; left: -50px; background: #e9dcc9;"></div>
-        <div class="blob" style="width: 150px; height: 150px; bottom: 50px; right: -30px; background: #dec8ae;"></div>
+        <!-- Glassmorphism Blobs -->
+        <div class="blob" style="width: 200px; height: 200px; top: -50px; left: -50px; background: rgba(233, 220, 201, 0.5);"></div>
+        <div class="blob" style="width: 150px; height: 150px; bottom: 50px; right: -30px; background: rgba(222, 200, 174, 0.5);"></div>
         
         <div class="content-area">
             <h2 class="hi-claudia">Hi, Rashu..!</h2>
@@ -605,8 +759,9 @@
             <h1 class="happy-birthday-main">Happy Birthday</h1>
         </div>
 
+        <!-- 3D Photo Frame Wrapper -->
         <div class="photo-frame-wrapper">
-            <div class="photo-frame">
+            <div class="photo-frame" data-tilt data-tilt-max="15" data-tilt-speed="400" data-tilt-perspective="500" data-tilt-glare="true" data-tilt-max-glare="0.3">
                 <div class="photo-img">
                     <img class="slide active" src="https://lh3.googleusercontent.com/rd-d/ALs6j_Fp-NTeiSfUT0SM5RsN7qyx9jTW2Iq-ZR2YLuC-Nv6uyfZ42S0AhHzrzxN4KU-3r40_DGPumElE9_TgOdFrzinhf7Mbkth5r5z2XB9AqwqF5j_yGUc_NE-MQbLP-Lr7BndSGE4_j_Cxb5siYPxIlypqLuWgnLaWsQutStuMs32cE4Qf3mbNOuSmv7Sr6P4AaZfVvy0CI_MxGZmdjkXfe1LhtKyyTewZIcH6rWHXeo-Nyf-guVPsxLrevR_QtfteqeEQrmuSCqVBanAXQB-C7Kll7cdOhD8ce0_YKqtwKWYpeCUziRcGwE3KYCKpVF7WKfSXjc_0vIiz5xxDvwLY0IfMs-pq8LyWhopyYO94Bus276bXqHbEGh_h2O1pg4O26Dnmw0nmoXH0B_EX-JGkhW-fevYGBLCaQpjO5UefnDlmVQ-N5fJccK2ZsxXDIRviqqGvMVzsS6z6_5kvtR3Uy2EsQAhYce_GiPHp-7MGrwdZ5gH5xrcZzGe2gUvgF0BOlOr9G6fIbs3DkRMJjYiRUOFfwX4BTlqkxDcPwoZX6N1pwN2blMeGRinIsg8bCuuCXpbRzpOXixl14TXt8ENSwg2cU1BVivloHIKGwMWsIfTh1taI3tJLPgNloNwPmbNpsm_N-XWVgtvDu-3lcwtOG3aIgvlkWwSdi8pckoVgudyyb74b9bGX3ChsCrCGWxbAallLf38cWuKkXzR5Z0fTvxl82QnZT08Y0CR20p-ecPKTqEP3YMG02JUrh-Q90UuCz-7lns9PD85_yFkdgCBPOm_duJFrTvB_4cCi_AfCsD3_IWU9i3Fm-EJXF75X3rUsQxsaD6FGnssbt-7onBsoj1EEIb1u8qy3vIPkMr9SRMiPkOd80nwtMtlpwyxOsllRSDILppKB0-4fAF42ojRbgLVlnfPwvvBKBJptrpKO1m82WLIgyYGxVCTWiTAR_dM5DPDnHzOcuGGix6g1yMrFpW0l3DWBqq8xZ_mHaYuP0rdPcTH1IKnKtJoBvB7exPZepj-XxXLaTCdMu4AO1LQ-X8xvoz7yAbY50Hrwa1tfkbtrVvV7T6nkUe9hUQB7mTcqc-5qMVcFhHZUiKDS8SM2YR4xmvK_e1R4_ZhNcfkGvL7kZjQ=w1910-h882?auditContext=prefetch" alt="Rashu Photo 1">
                     <img class="slide" src="https://lh3.googleusercontent.com/rd-d/ALs6j_GFH8uK4VGKVQtrPqRWXRJ3thPDzF0ki5xKpJUf52Zcl84j0EXazK2Q1_NJlrw7qZYcCGju5DfvudBw90LaoOqgzzGYjIiNmOn0ngBPzz7g17nGQBaxqcHl5Tmyqre4W0JCFGe2DzhcW14qbYKKBZPwOLaELRjwqtKeixj30F-udCFmtWDRHfyLrdosZm3GrhGZz5Apypd-2HAPbHJ1XBWpS1lWbE7OqVTySFsQk1XUpomEbjOS6DuBO-sXIpOCOxvSvgsrlE9r7wQ8ifyP8VA6PRYvR0ZKHoXgJcf_n5PeaD41nUH86ECXvAsJQrmB8Z-olKzBy9Xv3EpXwJYLx1I-ypTtAVrr4OrkoiiClg5K0MAEll1B78LF84Jlmyg4E7HrzMqJ9_Jkdhp3BQNdi0-PSMpaJH1oa25_tWYA84jMYllTaDY53W8Dx1Ygdoi47WXxnYTKG16iDNnYwFR0E0bZ1I5CdE6MP4xyuPKfs33dRhte8bzhD5DCfSxEZzLB5FQ0Kme0sDFlbqalRl7ni4GuXUbWZOdOW_cskt90zZ_2hlhxENhxFrtLSiCZYPaq66dF5pz9zIwW4s801orLQR14HgF49YDvodYahHrJ-0NfriFhX0FqdQKIeAJItc4cNbG9cxhIUCUroY8DXAORN83mApHmDI8AFm_Z8XRAGy8wEIozYC2d_oZqa59kSGAHqLv_mw3xNmXkhKbtb7ncjQWWSB2BzU1JGjcC7EhVw_4dTHfHSPkWTYuE0mIby6CqJTTlS2MosdcDaf0ao9FO2IibF-4BEMRt6wSxcvsgiOTGbxHqpa1BkNcHPh0IxAIdG4i992q3XmPv9jerwvA5ewom4O7edaurVodiPUM5Nd5AZBd0tC1Sbpl_Gzn_4P3nGwFNalVJZ43_tnMPzVguU8WT0vEm3v7GgXDaHHTDIMr9IULz7N7u9YWFfWs_Q1QFfEDXTTFc79woXWrLeJvh5Mu8BjxFYyyr96BL7_WhV-zBnJGCM0Qj_nAMj9hfYYAE7TXwooVttPlviEpudJdqFLxUx884woMyUahsSnjnNpQi5X0TPROhDo2xPgPHqJeYBGG-_zsP7grtatNpx5IHb7zeHiwkJcp0iGPnpeuAe5QbxwX6=w1910-h882?auditContext=prefetch" alt="Rashu Photo 2">
@@ -615,87 +770,220 @@
             </div>
         </div>
 
+        <!-- Scratch off container -->
+        <div class="scratch-container">
+            <div class="secret-msg">Have the most amazing year ahead! 🎉</div>
+            <canvas id="scratch-pad"></canvas>
+        </div>
+
         <div class="it-is-birthday">It's your birthday!</div>
       </div>
 
     </div>
   </div>
 
+  <!-- Background Music -->
+  <audio id="bgMusic" loop>
+      <source src="happy-clappy.mp3" type="audio/mpeg">
+  </audio>
+
   <script>
+    // --- Custom Cursor Logic ---
+    const cursor = document.getElementById('custom-cursor');
+    document.addEventListener('mousemove', (e) => {
+        cursor.style.left = e.clientX + 'px';
+        cursor.style.top = e.clientY + 'px';
+    });
+    document.addEventListener('mousedown', () => cursor.style.transform = 'translate(-50%, -50%) scale(0.8)');
+    document.addEventListener('mouseup', () => cursor.style.transform = 'translate(-50%, -50%) scale(1)');
+
+    // Add hover states to interactable elements
+    document.querySelectorAll('.card, #envelope-btn, #mic-btn, #scratch-pad').forEach(el => {
+        el.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+        el.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+    });
+
+    // --- Audio Synthesis (Web Audio API) ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+
+    function playMagicSound() {
+        try {
+            if (!audioCtx) audioCtx = new AudioContext();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 1.5);
+            
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.1, audioCtx.currentTime + 0.1);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+            
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1.5);
+        } catch(e) { console.log('Audio error', e); }
+    }
+
+    // --- Envelope & GSAP Intro ---
+    const envBtn = document.getElementById('envelope-btn');
+    const envFlap = document.getElementById('env-flap');
+    const envScreen = document.getElementById('envelope-screen');
+    const mainScene = document.getElementById('main-scene');
+    const bgMusic = document.getElementById('bgMusic');
+
+    envBtn.addEventListener('click', () => {
+        playMagicSound(); // Play chime
+        
+        // Start background music with low volume
+        bgMusic.volume = 0.15; // 15% volume so it's not loud
+        bgMusic.play().catch(e => console.log("Audio playback failed:", e));
+        
+        // GSAP Timeline for Envelope Open
+        const tl = gsap.timeline();
+        tl.to(envFlap, { rotateX: 180, duration: 0.5, ease: "power2.inOut", transformOrigin: "top" })
+          .to(envBtn, { y: 200, opacity: 0, duration: 0.8, ease: "power3.in" }, "+=0.2")
+          .to(envScreen, { opacity: 0, duration: 0.5, onComplete: () => {
+              envScreen.style.display = 'none';
+              mainScene.style.visibility = 'visible';
+              gsap.to(mainScene, { opacity: 1, duration: 1 });
+          }}, "-=0.4");
+    });
+
+    // --- Card Folding & Slideshow Logic ---
     const card = document.getElementById('card');
     
-    // Load Cover Image safely with Fallback
+    // Load Cover Image securely
     const coverFront = document.querySelector('.cover-front');
     const coverImgUrl = "https://lh3.googleusercontent.com/rd-d/ALs6j_FN0xKrMsvyr_VRQ5pnfbR-Pu2U-qZxe64N1Hjgbp5B5XJ6IbrPkPhXm2suWifuVYxdUZXJk7Oq0pF3blEKBjLpBb2jZEfXhB_9UGwHwus4yoPQBFDFigvEx_GtFok1N3NF8EL2K_zeyAQRaN1b2yvX0LlMXzHlXFe25TQ-lpE_t92rRll0f4BFa8DrUlrYagj7JNNOSxIn9hKhglBwlraBALXFQl5DkuEWvOieaAu1Rm47W_yTGQFM89AXITQ5-Nx_eQtuWlNp1fdVK9k_a7zKoHzdhjVI7BU7swO_WRL4OXhexPm0oc6H9RFfA5XGvRfK1xdi4Rp3OJeEKmyCQRD4balsMSfEYc9eDRwcLiTzb0LC_GQQxJBWbFnotDtRMQwEJmoxy0Qm-Fmu6J_vGGOsTyUE2OuuIl8pKCj-8ioQlL4_23zOQslRaLQ7Xwmp-5PulDYIJGfCp0gBWi4Btiex9OVIdQPs-O33ny98-SmYtQyzqWjRZ3QLXPFZBRrnzQJygXthcJ7xHMSxZW8BJ9pb6qGRSlRRVSPPsuuCTLvRpKtMWL5gIiMHVfqa1oFmAn7ME-nFJvzhAY90tZUo_amRf1v39djkkWzXZ41h7cjTYgZF_KsIAFG8Kwyjz1ezCZw-MdcLkPbHZLmsumOgGri_e-1Zr0CykpwIk4s9cVkP0bzGUeIu9Mv9Y0QUWKZPJzWuB3wTud9qj72Mk4REQf7Qlm8xQzq_4dBNP0zscPyeLeAY-t-GDO7cXjWFzvQ1lvLBsoH7XTkbUpGJl0qv-emrntP1mlUixINU-koY5U9ICeGjMD8Wey271KSaG-qthUU0B3tMDsPyZqNUZ8WNwSWe98imZx8GNSBcHiR5Oewu94PJfbhRXBsqifZ2cY0IN0vENG1tBmbMhMCxuwtiN1Nrl0RufIlFPAS29CBHtZ_g1_CiSPz0HO0S8V-uEmHsXPt9S_vmDI-jff4bd4q2syHm4g9F5lXQD-b6iyQ4BXMSEkmkv23W8rKBYvAB9_G2pEWHZ6V6Xgt2yVW1bUZl-OKan5wfCTWK7TPmrXdk-SzUpjvDPrc6TTdOnAeHwOYQ2kO0j0cLlEn-dMzq8K104q0LExLE0zwesCjW6xW_WHpHEkI5=w1910-h882?auditContext=forDisplay";
     
     const coverImg = new Image();
     coverImg.src = coverImgUrl;
     coverImg.onload = () => {
-        // Remove dark overlay and just show the image
         coverFront.style.backgroundImage = `url('${coverImgUrl}')`;
         coverFront.style.backgroundSize = "cover";
         coverFront.style.backgroundPosition = "center";
-        
-        // Remove text since image loaded successfully
         const title = coverFront.querySelector('h1');
         const tapText = coverFront.querySelector('.tap-text');
         if (title) title.style.display = 'none';
         if (tapText) tapText.style.display = 'none';
     };
 
-    card.addEventListener('click', () => {
+    card.addEventListener('click', (e) => {
+      // Prevent opening/closing if clicking on mic button or scratch pad
+      if(e.target.closest('#mic-btn') || e.target.closest('#scratch-pad')) return;
+
       card.classList.toggle('is-open');
       
       if (!card.classList.contains('has-opened')) {
         card.classList.add('has-opened');
         
-        // Start cake animation
+        // Start SVG cake animation
         setTimeout(() => {
           document.getElementById('bizcocho_1').beginElement();
         }, 500); 
-
-        // Fire confetti when opening
-        setTimeout(() => {
-          triggerConfetti();
-        }, 600);
+        
+        // Initialize Scratchpad (Needs to be visible to get correct dimensions)
+        setTimeout(initScratchPad, 1500);
       }
     });
 
-    // --- Slideshow Logic ---
     const slides = document.querySelectorAll('.photo-img .slide');
     let currentSlide = 0;
-    
     setInterval(() => {
         slides[currentSlide].classList.remove('active');
         currentSlide = (currentSlide + 1) % slides.length;
         slides[currentSlide].classList.add('active');
-    }, 3500); // Changes photo every 3.5 seconds
+    }, 3500);
 
     function triggerConfetti() {
-        var duration = 3000;
+        var duration = 4000;
         var animationEnd = Date.now() + duration;
         var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-        function randomInRange(min, max) {
-            return Math.random() * (max - min) + min;
-        }
+        function randomInRange(min, max) { return Math.random() * (max - min) + min; }
 
         var interval = setInterval(function() {
             var timeLeft = animationEnd - Date.now();
-
-            if (timeLeft <= 0) {
-                return clearInterval(interval);
-            }
-
+            if (timeLeft <= 0) return clearInterval(interval);
             var particleCount = 50 * (timeLeft / duration);
             
-            // Fire from the right edge
             confetti(Object.assign({}, defaults, { 
                 particleCount, 
-                origin: { x: randomInRange(0.5, 0.9), y: Math.random() - 0.2 },
-                colors: ['#5c4033', '#d4a373', '#fdf6e9', '#1a233a'] // Match card colors
+                origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 },
+                colors: ['#5c4033', '#d4a373', '#fdf6e9', '#1a233a'] 
             }));
         }, 250);
+    }
+
+    // --- Blow Candles Redirect ---
+    const micBtn = document.getElementById('mic-btn');
+
+    micBtn.addEventListener('click', () => {
+        window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/blow";
+    });
+
+    // --- Scratch-Off Logic ---
+    function initScratchPad() {
+        const canvas = document.getElementById('scratch-pad');
+        const ctx = canvas.getContext('2d');
+        const container = document.querySelector('.scratch-container');
+        
+        canvas.width = container.offsetWidth;
+        canvas.height = container.offsetHeight;
+        
+        // Fill silver coating
+        ctx.fillStyle = '#C0C0C0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Diagonal shine effect
+        let gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+        gradient.addColorStop(0, "rgba(255,255,255,0)");
+        gradient.addColorStop(0.5, "rgba(255,255,255,0.4)");
+        gradient.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Overlay Text
+        ctx.font = '12px Poppins';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Scratch here to reveal', canvas.width/2, canvas.height/2);
+
+        // Ready to scratch
+        ctx.globalCompositeOperation = 'destination-out';
+        let isDrawing = false;
+
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function scratch(e) {
+            if (!isDrawing) return;
+            e.preventDefault(); // Prevent scrolling on touch
+            const pos = getMousePos(e);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        canvas.addEventListener('mousedown', () => isDrawing = true);
+        canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); }, {passive: false});
+        
+        window.addEventListener('mouseup', () => isDrawing = false);
+        window.addEventListener('touchend', () => isDrawing = false);
+        
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('touchmove', scratch, {passive: false});
     }
   </script>
 </body>
