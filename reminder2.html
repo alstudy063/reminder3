@@ -11,624 +11,1058 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* Theme Variables */
+        :root {
+            --color-primary-50: #f0f9ff;
+            --color-primary-100: #e0f2fe;
+            --color-primary-400: #38bdf8;
+            --color-primary-500: #0ea5e9;
+            --color-primary-600: #0284c7;
+            --color-primary-900: #0c4a6e;
+            --header-height: 4.5rem;
+            --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        /* Color Themes */
+        [data-theme="emerald"] {
+            --color-primary-50: #ecfdf5; --color-primary-100: #d1fae5;
+            --color-primary-400: #34d399; --color-primary-500: #10b981;
+            --color-primary-600: #059669; --color-primary-900: #064e3b;
+        }
+        [data-theme="violet"] {
+            --color-primary-50: #f5f3ff; --color-primary-100: #ede9fe;
+            --color-primary-400: #a78bfa; --color-primary-500: #8b5cf6;
+            --color-primary-600: #7c3aed; --color-primary-900: #4c1d95;
+        }
+        [data-theme="rose"] {
+            --color-primary-50: #fff1f2; --color-primary-100: #ffe4e6;
+            --color-primary-400: #fb7185; --color-primary-500: #f43f5e;
+            --color-primary-600: #e11d48; --color-primary-900: #881337;
+        }
+
+        body {
+            -webkit-tap-highlight-color: transparent;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+            overscroll-behavior-y: contain;
+            user-select: none; /* Disable copy text globally */
+            -webkit-user-select: none;
+        }
+
+        /* Allow text selection in input fields */
+        input, textarea, select {
+            user-select: auto;
+            -webkit-user-select: auto;
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .dark .glass-effect {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        .tab-active { color: var(--color-primary-500); position: relative; }
+        .tab-active::after {
+            content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px;
+            background-color: var(--color-primary-500); border-radius: 9999px;
+        }
+    </style>
 
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
-                    colors: { brand: { 50: '#f5f7ff', 100: '#ebf0ff', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' } },
-                    boxShadow: { 'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)', 'card-hover': '0 10px 30px -5px rgba(0, 0, 0, 0.1)' }
+                    colors: {
+                        primary: {
+                            50: 'var(--color-primary-50)',
+                            100: 'var(--color-primary-100)',
+                            400: 'var(--color-primary-400)',
+                            500: 'var(--color-primary-500)',
+                            600: 'var(--color-primary-600)',
+                            900: 'var(--color-primary-900)',
+                        },
+                        surface: { light: '#ffffff', dark: '#0f172a', alt: '#f8fafc' }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                    }
                 }
             }
         }
     </script>
-    <style>
-        body { 
-            background-color: #f8fafc; 
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: background-color 0.2s, color 0.2s;
-        }
-        
-        /* Dark mode overrides */
-        body.dark {
-            background-color: #0f172a;
-            color: #e2e8f0;
-        }
-        body.dark .main-card {
-            background: #1e293b;
-            border-color: #334155;
-        }
-        body.dark .bg-white {
-            background-color: #1e293b;
-        }
-        body.dark .bg-slate-50 {
-            background-color: #0f172a;
-        }
-        body.dark .border-slate-200 {
-            border-color: #334155;
-        }
-        body.dark .text-slate-800, body.dark .text-slate-700, body.dark .text-slate-900 {
-            color: #f1f5f9;
-        }
-        body.dark .text-slate-500, body.dark .text-slate-400, body.dark .text-slate-600 {
-            color: #94a3b8;
-        }
-        body.dark .bg-slate-100 {
-            background-color: #334155;
-        }
-        body.dark .bg-slate-50 {
-            background-color: #1e293b;
-        }
-        body.dark .bg-gradient-to-br.from-white {
-            background: linear-gradient(to bottom right, #1e293b, #0f172a);
-        }
-        body.dark .hover\:bg-slate-50:hover {
-            background-color: #334155;
-        }
-        body.dark .bg-brand-50 {
-            background-color: #312e81;
-        }
-        body.dark .text-brand-600 {
-            color: #818cf8;
-        }
-        
-        /* Fixed scrolling bug - allowed natural scrolling */
-        #app-screen {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .main-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        @media (max-width: 768px) {
-            .pb-safe-bottom {
-                padding-bottom: 90px;
-            }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.3s ease-in forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        html, body {
-            overscroll-behavior-y: none;
-        }
-
-        /* Ensure modal content scrolls independently with visible scrollbar */
-        .modal-scroll-container {
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 #f1f5f9;
-        }
-        .modal-scroll-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        .modal-scroll-container::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 10px;
-        }
-        .modal-scroll-container::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-        body.dark .modal-scroll-container::-webkit-scrollbar-track {
-            background: #1e293b;
-        }
-        body.dark .modal-scroll-container::-webkit-scrollbar-thumb {
-            background: #475569;
-        }
-    </style>
 </head>
-<body class="text-slate-800 antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen selection:bg-primary-100 dark:selection:bg-primary-900 transition-colors duration-200">
 
-    <!-- MAIN APP SCREEN (auto guest mode) -->
-    <div id="app-screen" class="flex flex-col min-h-screen">
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm dark:bg-slate-900 dark:border-slate-700">
-            <div class="max-w-[1400px] mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
-                <div class="flex items-center gap-3 cursor-pointer group" id="nav-brand">
-                    <div class="bg-brand-600 text-white p-2 rounded-xl flex items-center justify-center h-10 w-10 shadow-md group-hover:scale-105 transition-transform"><i class="ph-bold ph-book-open text-xl"></i></div>
-                    <span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white">StudyFlow <span class="text-brand-600">Pro</span></span>
-                </div>
-                
-                <nav class="hidden md:flex items-center gap-2">
-                    <button class="nav-btn-home px-5 py-2 rounded-lg bg-brand-50 text-brand-600 font-bold text-sm dark:bg-brand-900 dark:text-brand-300">Home</button>
-                    <button class="nav-btn-add px-5 py-2 rounded-lg text-slate-600 hover:bg-slate-50 font-semibold text-sm dark:text-slate-300 dark:hover:bg-slate-800">Add Topic</button>
-                    <button class="nav-btn-mastery px-5 py-2 rounded-lg text-slate-600 hover:bg-slate-50 font-semibold text-sm dark:text-slate-300 dark:hover:bg-slate-800">My Mastery</button>
-                </nav>
-
-                <div class="flex items-center gap-4">
-                    <div id="sync-indicator" class="hidden text-brand-600 items-center gap-1.5 text-sm font-bold bg-brand-50 px-3 py-1.5 rounded-full dark:bg-brand-900 dark:text-brand-300"><i class="ph-bold ph-arrows-clockwise animate-spin text-lg"></i><span class="hidden sm:inline">Syncing</span></div>
-                    <span id="user-greeting" class="text-sm font-bold text-slate-600 hidden sm:block dark:text-slate-300">Hi, User</span>
-                    <div id="user-avatar" class="nav-btn-account h-10 w-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm cursor-pointer border border-slate-200 hover:border-brand-300 transition-all dark:bg-slate-800 dark:text-slate-200 dark:border-slate-600">
-                        <i class="ph-fill ph-user text-lg"></i>
-                    </div>
-                </div>
+    <!-- Desktop Sidebar -->
+    <aside class="fixed top-0 left-0 h-screen w-64 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 z-40 hidden md:flex flex-col">
+        <div class="h-[var(--header-height)] flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
+            <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20 mr-3 transition-colors">
+                <i class="ph-bold ph-graduation-cap text-xl"></i>
             </div>
-        </header>
-
-        <main class="max-w-[1400px] mx-auto w-full px-4 sm:px-8 pt-8 pb-24 md:pb-12 flex-1">
-            <!-- Stats Dashboard -->
-            <div id="stats-container" class="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
-                <div class="main-card rounded-3xl p-6 flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4 text-slate-500 dark:text-slate-400">
-                        <span class="text-[11px] font-bold uppercase tracking-wider">Due Today</span>
-                        <div class="h-8 w-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 dark:bg-brand-900 dark:text-brand-300"><i class="ph-bold ph-calendar-blank"></i></div>
-                    </div>
-                    <div id="stat-due" class="text-4xl font-black text-brand-600 dark:text-brand-400">0</div>
-                </div>
-                <div class="main-card rounded-3xl p-6 flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4 text-slate-500 dark:text-slate-400">
-                        <span class="text-[11px] font-bold uppercase tracking-wider">Overdue</span>
-                        <div class="h-8 w-8 rounded-lg bg-red-50 flex items-center justify-center text-red-500 dark:bg-red-900/30 dark:text-red-400"><i class="ph-bold ph-warning-circle"></i></div>
-                    </div>
-                    <div id="stat-overdue" class="text-4xl font-black text-red-500 dark:text-red-400">0</div>
-                </div>
-                <div class="main-card rounded-3xl p-6 flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-4 text-slate-500 dark:text-slate-400">
-                        <span class="text-[11px] font-bold uppercase tracking-wider">Mastered</span>
-                        <div class="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"><i class="ph-bold ph-check-circle"></i></div>
-                    </div>
-                    <div id="stat-mastered" class="text-4xl font-black text-emerald-500 dark:text-emerald-400">0</div>
-                </div>
-                <div class="main-card rounded-3xl p-6 flex flex-col justify-between bg-gradient-to-br from-white to-orange-50 dark:from-slate-800 dark:to-slate-900">
-                    <div class="flex items-center justify-between mb-4 text-slate-500 dark:text-slate-400">
-                        <span class="text-[11px] font-bold uppercase tracking-wider">Streak</span>
-                        <span class="text-xl">🔥</span>
-                    </div>
-                    <div id="stat-streak" class="text-4xl font-black text-slate-800 dark:text-white">1</div>
-                </div>
+            <div>
+                <h1 class="text-lg font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">StudyFlow <span class="text-primary-500 transition-colors">Pro</span></h1>
             </div>
-
-            <!-- Filters -->
-            <div class="main-card rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 mb-8">
-                <div class="relative w-full sm:w-64">
-                    <select id="filter-subject" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-800 py-2.5 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/20 font-bold text-sm cursor-pointer dark:bg-slate-800 dark:border-slate-700 dark:text-white">
-                        <option value="All">All Subjects</option>
-                        <option value="Biology">Biology</option>
-                        <option value="Chemistry">Chemistry</option>
-                        <option value="Physics">Physics</option>
-                    </select>
-                    <i class="ph-bold ph-caret-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
-                </div>
-                <div class="flex items-center w-full sm:w-auto p-1 bg-slate-100 rounded-xl overflow-x-auto no-scrollbar dark:bg-slate-800">
-                    <button class="filter-status-btn px-6 py-2 rounded-lg bg-white shadow-sm text-brand-600 font-bold text-sm transition-all dark:bg-slate-700 dark:text-brand-300" data-status="All">All Tasks</button>
-                    <button class="filter-status-btn px-6 py-2 rounded-lg text-slate-500 hover:text-slate-800 font-semibold text-sm transition-all dark:text-slate-400 dark:hover:text-white" data-status="Due">Due Today</button>
-                    <button class="filter-status-btn px-6 py-2 rounded-lg text-slate-500 hover:text-slate-800 font-semibold text-sm transition-all dark:text-slate-400 dark:hover:text-white" data-status="Overdue">Overdue</button>
-                </div>
-            </div>
-
-            <!-- Tasks Area -->
-            <div id="tasks-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
-            
-            <div id="empty-state" class="hidden flex-col items-center justify-center py-20 text-center main-card rounded-[3rem] max-w-2xl mx-auto mt-4 border-dashed">
-                <div class="bg-emerald-50 h-20 w-20 rounded-full flex items-center justify-center mb-6 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400"><i class="ph-fill ph-check-circle text-4xl"></i></div>
-                <h3 class="text-2xl font-bold text-slate-800 mb-2 dark:text-white">You're all caught up!</h3>
-                <p class="text-slate-500 font-medium dark:text-slate-400">No tasks found. Enjoy your break or add a new topic.</p>
-            </div>
-
-            <div id="see-more-container" class="flex justify-center mt-10"></div>
-        </main>
+        </div>
         
-        <!-- Mobile Bottom Nav -->
-        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around items-center px-4 py-3 z-40 shadow-[0_-5px_15px_-3px_rgba(0,0,0,0.05)] dark:bg-slate-900 dark:border-slate-700">
-            <button class="nav-btn-home flex flex-col items-center text-brand-600"><i class="ph-fill ph-house text-2xl"></i><span class="text-[10px] font-bold">Home</span></button>
-            <button class="nav-btn-add bg-brand-600 text-white h-14 w-14 rounded-2xl shadow-lg flex items-center justify-center -translate-y-6 border-4 border-white dark:border-slate-900"><i class="ph-bold ph-plus text-2xl"></i></button>
-            <button class="nav-btn-mastery flex flex-col items-center text-slate-400"><i class="ph-bold ph-chart-bar text-2xl"></i><span class="text-[10px] font-bold">Mastery</span></button>
-        </nav>
-    </div>
+        <div class="flex-1 py-6 px-4 space-y-2">
+            <button id="nav-desktop-home" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all">
+                <i class="ph-bold ph-house text-xl"></i> Home
+            </button>
+            <button id="nav-desktop-stats" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl font-bold transition-all">
+                <i class="ph-bold ph-chart-line-up text-xl"></i> Statistics
+            </button>
+        </div>
 
-    <!-- MODAL SYSTEM -->
-    <div id="modal-overlay" class="fixed inset-0 bg-slate-900/60 z-50 hidden opacity-0 transition-opacity duration-200 flex items-center justify-center p-4">
-        
-        <!-- Add/Edit Topic Modal -->
-        <div id="modal-topic" class="bg-white rounded-3xl w-full max-w-lg shadow-2xl hidden flex-col overflow-hidden max-h-[90vh] dark:bg-slate-800" data-modal-content>
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
-                <h2 id="modal-topic-title" class="text-xl font-bold text-slate-800 dark:text-white">Add Topic</h2>
-                <button class="close-modal text-slate-400 hover:text-slate-600 p-2 dark:text-slate-500 dark:hover:text-slate-300"><i class="ph-bold ph-x text-lg"></i></button>
-            </div>
-            <form id="form-topic" class="p-6 space-y-4 overflow-y-auto">
-                <input type="hidden" id="topic-id">
+        <div class="p-4 border-t border-slate-200 dark:border-slate-800">
+            <!-- Redesigned Desktop "New Topic" Button -->
+            <button id="btn-add-topic-desktop" class="w-full relative group overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold shadow-xl transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95">
+                <div class="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <i class="ph-bold ph-plus text-xl relative z-10 group-hover:rotate-90 transition-transform duration-300 group-hover:text-white"></i>
+                <span class="relative z-10 group-hover:text-white transition-colors">Create Topic</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Header / Navigation -->
+    <header class="fixed top-0 left-0 md:left-64 right-0 z-30 glass-effect border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 h-[var(--header-height)] flex items-center justify-between">
+            <div class="flex items-center gap-3 md:hidden">
+                <div class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20 transition-colors">
+                    <i class="ph-bold ph-graduation-cap text-2xl"></i>
+                </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 dark:text-slate-400">Topic Name</label>
-                    <input type="text" id="topic-name" required placeholder="e.g. Chemical Bonding" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-500/20 transition-all font-medium dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+                    <h1 class="text-xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">StudyFlow</h1>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500">Pro</p>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+            </div>
+
+            <div class="hidden md:block">
+                <h2 id="header-title" class="text-xl font-bold text-slate-800 dark:text-slate-100">Dashboard</h2>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div id="sync-indicator-wrapper" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500">
+                    <span id="sync-dot" class="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span id="sync-text">Saved</span>
+                </div>
+                <button id="btn-profile" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-primary-500 transition-all shadow-sm cursor-pointer" title="Settings & Profile">
+                    <img id="profile-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" alt="User" class="w-full h-full object-cover">
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="md:ml-64 max-w-7xl mx-auto px-4 pt-24 pb-28 md:pb-12 min-h-screen relative overflow-hidden">
+        
+        <!-- DASHBOARD VIEW -->
+        <div id="view-dashboard" class="transition-all duration-300 origin-top">
+            <!-- Welcome Section -->
+            <section class="mb-8">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 dark:text-slate-400">Subject</label>
-                        <select id="topic-subject" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none transition-all font-medium dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-                            <option>Biology</option><option>Chemistry</option><option>Physics</option>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-1">Hello, <span id="user-firstname">Scholar</span>! 👋</h2>
+                        <p class="text-slate-500 dark:text-slate-400">Ready to conquer your revision today?</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <div class="bg-white dark:bg-slate-900 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3 shadow-sm">
+                            <div class="text-orange-500 text-xl"><i class="ph-fill ph-fire"></i></div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Streak</p>
+                                <p class="text-sm font-bold leading-none"><span id="stat-streak">0</span> Days</p>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-slate-900 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3 shadow-sm">
+                            <div class="text-primary-500 transition-colors text-xl"><i class="ph-fill ph-check-circle"></i></div>
+                            <div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Done Today</p>
+                                <p class="text-sm font-bold leading-none"><span id="stat-done">0</span> / <span id="stat-total">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filters Section -->
+            <section class="mb-6 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sticky top-[var(--header-height)] z-20 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md">
+                <div class="flex items-center gap-3 min-w-max">
+                    <button class="subject-filter active px-5 py-2 rounded-full text-sm font-semibold bg-primary-500 text-white shadow-md shadow-primary-500/20 transition-all" data-subject="All">All Subjects</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Physics">Physics</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Chemistry">Chemistry</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Biology">Biology</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Math">Math</button>
+                </div>
+            </section>
+
+            <!-- Dynamic Content Tabs -->
+            <section class="mb-6 flex border-b border-slate-200 dark:border-slate-800">
+                <button class="status-tab tab-active px-4 py-3 text-sm font-bold transition-all" data-status="All">All Tasks</button>
+                <button class="status-tab px-4 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all" data-status="Due">Due Today</button>
+                <button class="status-tab px-4 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all" data-status="Mastered">Mastered</button>
+            </section>
+
+            <!-- Tasks Grid -->
+            <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Tasks will be injected here -->
+                <div class="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 opacity-50">
+                    <div class="loader mb-4"></div>
+                    <p class="font-medium">Loading your journey...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATISTICS VIEW (Hidden by default) -->
+        <div id="view-statistics" class="hidden absolute top-24 left-4 right-4 md:left-4 md:right-0 pb-28 md:pb-12 transition-all duration-300 opacity-0 translate-y-4">
+            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">Your Progress 📈</h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
+                    <i class="ph-fill ph-books text-3xl text-primary-500 mb-2"></i>
+                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-total-topics">0</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Total Topics</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
+                    <i class="ph-fill ph-check-circle text-3xl text-green-500 mb-2"></i>
+                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-mastered">0</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Mastered</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
+                    <i class="ph-fill ph-clock-countdown text-3xl text-orange-500 mb-2"></i>
+                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-pending">0</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Pending Review</p>
+                </div>
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
+                    <i class="ph-fill ph-fire text-3xl text-red-500 mb-2"></i>
+                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-streak-view">0</p>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Day Streak</p>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="ph ph-chart-donut"></i> Topics by Subject</h3>
+                <div id="stats-subjects-container" class="space-y-4">
+                    <!-- Subject bars injected here -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Action Bar (Mobile Oriented) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 glass-effect border-t border-slate-200 dark:border-slate-800 pb-[var(--safe-area-inset-bottom)] md:hidden">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <button id="nav-mobile-home" class="nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors">
+                <i class="ph-bold ph-house text-2xl"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Home</span>
+            </button>
+            
+            <!-- Central Action Button -->
+            <button id="btn-add-topic" class="w-14 h-14 -mt-10 bg-primary-500 text-white rounded-2xl shadow-xl shadow-primary-500/30 flex items-center justify-center transition-transform active:scale-90 border-4 border-slate-50 dark:border-slate-950">
+                <i class="ph-bold ph-plus text-2xl"></i>
+            </button>
+
+            <button id="nav-mobile-stats" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary-500 transition-colors">
+                <i class="ph-bold ph-chart-line-up text-2xl"></i>
+                <span class="text-[10px] font-bold uppercase tracking-wider">Stats</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Modal: Add/Edit Topic -->
+    <!-- Added 'modal-overlay' class to enable close-on-backdrop-click -->
+    <div id="modal-topic" class="modal-overlay fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl transition-transform duration-300 translate-y-full sm:translate-y-10 overflow-hidden flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+            
+            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 id="modal-topic-title" class="text-xl font-bold">New Revision Topic</h3>
+                <button onclick="window.closeModal('topic')" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+                <input type="hidden" id="topic-id">
+                
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Topic Name</label>
+                    <input type="text" id="topic-name" placeholder="e.g. Electric Fields & Potential" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Subject</label>
+                        <select id="topic-subject" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium appearance-none">
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Biology">Biology</option>
+                            <option value="Math">Math</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 dark:text-slate-400">Date</label>
-                        <input type="date" id="topic-date" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none font-medium dark:bg-slate-900 dark:border-slate-700 dark:text-white">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Next Review</label>
+                        <input type="date" id="topic-date" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium">
                     </div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 dark:text-slate-400">Link (Optional)</label>
-                    <input type="url" id="topic-link" placeholder="Study resource URL" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none font-medium dark:bg-slate-900 dark:border-slate-700 dark:text-white">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 dark:text-slate-400">Notes</label>
-                    <textarea id="topic-notes" rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 focus:outline-none resize-none font-medium dark:bg-slate-900 dark:border-slate-700 dark:text-white"></textarea>
-                </div>
-                <div class="pt-4 flex gap-3">
-                    <button type="button" id="btn-delete-topic" class="hidden px-5 py-3 rounded-xl bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-colors dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">Delete</button>
-                    <button type="submit" class="flex-1 px-5 py-3 rounded-xl bg-brand-600 text-white font-bold hover:bg-brand-700 transition-all">Save Changes</button>
-                </div>
-            </form>
-        </div>
 
-        <!-- Mastery Modal -->
-        <div id="modal-mastery" class="bg-white rounded-3xl w-full max-w-md shadow-2xl hidden flex-col overflow-hidden dark:bg-slate-800" data-modal-content>
-            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 dark:bg-slate-900 dark:border-slate-700">
-                <h2 class="text-xl font-bold text-slate-800 dark:text-white">My Mastery</h2>
-                <button class="close-modal text-slate-400 p-2 dark:text-slate-500"><i class="ph-bold ph-x text-lg"></i></button>
-            </div>
-            <div class="p-6 space-y-6" id="mastery-container"></div>
-        </div>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Quick Notes</label>
+                    <textarea id="topic-notes" placeholder="Focus on Gauss's Law applications..." rows="3" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium resize-none"></textarea>
+                </div>
 
-        <!-- Account Modal -->
-        <div id="modal-account" class="bg-white rounded-3xl w-full max-w-md shadow-2xl hidden flex-col overflow-hidden p-8 dark:bg-slate-800" data-modal-content>
-            <div class="flex flex-col items-center">
-                <div id="account-avatar-lg" class="h-20 w-20 rounded-2xl bg-brand-600 text-white flex items-center justify-center text-3xl font-black mb-4">U</div>
-                <h3 id="account-name" class="text-xl font-bold text-slate-800 dark:text-white">User</h3>
-                <p id="account-email" class="text-sm text-slate-500 mb-6 dark:text-slate-400">Anonymous Mode</p>
-                
-                <div class="w-full space-y-3">
-                    <button id="theme-toggle" class="w-full py-3.5 px-5 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold flex items-center justify-center gap-3 dark:border-slate-700 dark:hover:bg-slate-700 transition-all">
-                        <i class="ph-bold ph-sun-dim text-xl"></i> 
-                        <span id="theme-text">Switch to Dark Mode</span>
-                    </button>
-                    
-                    <button id="btn-export-backup" class="w-full py-3.5 px-5 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold flex items-center justify-center gap-3 dark:border-slate-700 dark:hover:bg-slate-700">
-                        <i class="ph-bold ph-download-simple"></i> Export Backup (JSON)
-                    </button>
-                    
-                    <label class="w-full py-3.5 px-5 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold flex items-center justify-center gap-3 cursor-pointer dark:border-slate-700 dark:hover:bg-slate-700">
-                        <i class="ph-bold ph-upload"></i> Import Backup
-                        <input type="file" id="import-backup-input" accept=".json" class="hidden">
-                    </label>
-                    
-                    <button id="btn-google-signin-modal" class="w-full py-3.5 px-5 rounded-xl border border-slate-200 hover:bg-slate-50 font-bold flex items-center justify-center gap-3 dark:border-slate-700 dark:hover:bg-slate-700">
-                        <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                        Link Google Account
-                    </button>
-                    
-                    <button id="btn-logout" class="w-full py-3.5 px-5 rounded-xl bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-all flex items-center justify-center gap-2 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50">
-                        <i class="ph-bold ph-sign-out"></i> Sign Out
-                    </button>
-                    <button class="close-modal w-full py-3.5 px-5 text-slate-500 font-bold dark:text-slate-400">Cancel</button>
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Resource Link (Optional)</label>
+                    <input type="url" id="topic-link" placeholder="https://youtube.com/..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium">
                 </div>
             </div>
-        </div>
 
-        <!-- Full List Modal (scrollable cards) -->
-        <div id="modal-full-list" class="bg-white rounded-3xl w-full max-w-6xl shadow-2xl hidden flex flex-col overflow-hidden max-h-[85vh] dark:bg-slate-800" data-modal-content>
-            <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center dark:bg-slate-900 dark:border-slate-700 flex-shrink-0">
-                <div>
-                    <h2 id="full-list-title" class="text-xl font-bold text-slate-800 dark:text-white">All Tasks</h2>
-                    <p id="full-list-count" class="text-xs font-medium text-slate-400"></p>
-                </div>
-                <button class="close-modal h-10 w-10 rounded-full hover:bg-slate-200 flex items-center justify-center transition-colors dark:hover:bg-slate-700"><i class="ph-bold ph-x"></i></button>
-            </div>
-            <!-- Scrollable container with visible scrollbar -->
-            <div id="full-list-container" class="flex-1 overflow-y-auto p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 modal-scroll-container">
-                <!-- Cards will be injected here and will be scrollable -->
+            <div class="p-6 bg-slate-50 dark:bg-slate-800/30 flex gap-3">
+                <button id="btn-delete-topic" class="hidden flex-1 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 py-4 rounded-2xl font-bold hover:bg-red-100 transition-all flex items-center justify-center gap-2">
+                    <i class="ph ph-trash"></i> Delete
+                </button>
+                <button id="btn-save-topic" class="flex-[2] bg-primary-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all">Save Topic</button>
             </div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signInAnonymously, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    <!-- Modal: Settings & Profile -->
+    <div id="modal-settings" class="modal-overlay fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl transition-transform duration-300 translate-y-full sm:translate-y-10 overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+            
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-xl font-bold flex items-center gap-2"><i class="ph-fill ph-gear"></i> Settings</h3>
+                <button onclick="window.closeModal('settings')" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
 
-        const firebaseConfig = { apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU", authDomain: "studymaster-919ba.firebaseapp.com", databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com", projectId: "studymaster-919ba", storageBucket: "studymaster-919ba.firebasestorage.app", messagingSenderId: "426684063256", appId: "1:426684063256:web:52c17625a9450ea9662d6d" };
+            <div class="p-6 space-y-6">
+                <!-- User Details Area -->
+                <div class="flex flex-col items-center text-center pb-6 border-b border-slate-100 dark:border-slate-800">
+                    <div class="w-20 h-20 rounded-full bg-slate-200 dark:bg-slate-800 mb-3 overflow-hidden border-4 border-slate-50 dark:border-slate-950 shadow-md">
+                        <img id="settings-profile-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" alt="User" class="w-full h-full object-cover">
+                    </div>
+                    <h4 id="settings-user-name" class="text-lg font-bold text-slate-900 dark:text-white">Guest User</h4>
+                    <p id="settings-user-email" class="text-xs text-slate-500 mb-4">Local Mode (Not Synced)</p>
+                    
+                    <button id="btn-auth" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white py-3 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
+                        <i class="ph-bold ph-google-logo text-xl"></i> <span id="btn-auth-text">Sign in with Google</span>
+                    </button>
+                </div>
+
+                <!-- Appearance Options -->
+                <div class="space-y-4">
+                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Appearance</h5>
+                    
+                    <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-700">
+                        <div class="flex items-center gap-3">
+                            <i class="ph-fill ph-moon text-xl text-slate-600 dark:text-slate-300"></i>
+                            <span class="font-semibold text-sm">Dark Mode</span>
+                        </div>
+                        <button id="theme-toggle" class="w-12 h-6 rounded-full bg-slate-300 dark:bg-primary-500 relative transition-colors duration-300 focus:outline-none">
+                            <div id="theme-toggle-knob" class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 transform dark:translate-x-6"></div>
+                        </button>
+                    </div>
+
+                    <div class="space-y-3">
+                        <span class="text-xs font-semibold text-slate-500">Theme Color</span>
+                        <div class="flex items-center gap-3">
+                            <button class="color-btn w-8 h-8 rounded-full bg-[#0ea5e9] border-2 border-transparent hover:scale-110 transition-transform active-color ring-2 ring-offset-2 ring-[#0ea5e9] dark:ring-offset-slate-900" data-color="blue"></button>
+                            <button class="color-btn w-8 h-8 rounded-full bg-[#10b981] border-2 border-transparent hover:scale-110 transition-transform" data-color="emerald"></button>
+                            <button class="color-btn w-8 h-8 rounded-full bg-[#8b5cf6] border-2 border-transparent hover:scale-110 transition-transform" data-color="violet"></button>
+                            <button class="color-btn w-8 h-8 rounded-full bg-[#f43f5e] border-2 border-transparent hover:scale-110 transition-transform" data-color="rose"></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Modular via CDN) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // User provided Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+            measurementId: "G-CWQB2330GF"
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = "studyflow-pro";
+        const provider = new GoogleAuthProvider();
 
-        let currentUser = null, tasks = [], currentSubjectFilter = 'All', currentStatusFilter = 'All';
-        let autoGuestInProgress = false;
+        // --- Core State ---
+        let tasks = [];
+        let currentSubjectFilter = 'All';
+        let currentStatusFilter = 'All';
+        let currentUser = null;
+        let unsubscribeTasks = null;
+        let activeView = 'dashboard';
 
-        // Theme handling
-        function initTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const isDark = savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (isDark) {
-                document.body.classList.add('dark');
-                document.getElementById('theme-text').innerText = 'Switch to Light Mode';
+        // --- Initial Mock Data ---
+        const getInitialData = () => [
+            { id: Date.now().toString() + '1', topic: 'Thermodynamics: First Law', subject: 'Physics', nextReviewDate: new Date().toISOString().split('T')[0], interval: 1, completed: false, notes: 'Review adiabatic processes', summaryLink: 'https://youtube.com', lastModified: Date.now() },
+            { id: Date.now().toString() + '2', topic: 'Organic Reaction Mechanisms', subject: 'Chemistry', nextReviewDate: new Date().toISOString().split('T')[0], interval: 7, completed: false, notes: 'SN1 vs SN2 comparison table', summaryLink: '', lastModified: Date.now() },
+        ];
+
+        // --- Initialization ---
+        window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            setupUIEventListeners();
+            loadLocalData();
+            
+            // Listen to Auth State
+            onAuthStateChanged(auth, (user) => {
+                currentUser = user;
+                updateProfileUI();
+                if (user) {
+                    syncLocalToCloud(user.uid).then(() => {
+                        subscribeToCloudTasks(user.uid);
+                    });
+                } else {
+                    if (unsubscribeTasks) unsubscribeTasks();
+                    setSyncStatus('idle');
+                    loadLocalData();
+                }
+            });
+        });
+
+        // --- Auth & Data Functions ---
+        async function handleAuthClick() {
+            if (currentUser) {
+                await signOut(auth);
+                tasks = getInitialData(); // Reset to defaults locally on sign out
+                saveLocalData();
+                renderTasks();
+                showToast("Signed out successfully.");
             } else {
-                document.body.classList.remove('dark');
-                document.getElementById('theme-text').innerText = 'Switch to Dark Mode';
+                try {
+                    await signInWithPopup(auth, provider);
+                    window.closeModal('settings');
+                    showToast("Signed in! Syncing data...");
+                } catch (error) {
+                    console.error("Auth error", error);
+                    showToast("Sign in failed.");
+                }
             }
         }
-        function toggleTheme() {
-            if (document.body.classList.contains('dark')) {
-                document.body.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                document.getElementById('theme-text').innerText = 'Switch to Dark Mode';
-            } else {
-                document.body.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                document.getElementById('theme-text').innerText = 'Switch to Light Mode';
+
+        async function syncLocalToCloud(userId) {
+            setSyncStatus('syncing');
+            const localTasks = JSON.parse(localStorage.getItem('studyflow_tasks') || '[]');
+            const userRef = collection(db, 'artifacts', 'studyflow-pro', 'users', userId, 'tasks');
+            
+            for (const task of localTasks) {
+                if (!task._deleted) {
+                    await setDoc(doc(userRef, task.id), task, { merge: true });
+                }
             }
+            localStorage.removeItem('studyflow_tasks'); // Clean up local once synced
         }
 
-        // Helpers
-        const getTodayStr = () => { const d=new Date(); const offset=d.getTimezoneOffset()*60000; return new Date(d.getTime()-offset).toISOString().split('T')[0]; };
-        const addDaysStr = (dateStr, days) => { const d=new Date(dateStr); d.setDate(d.getDate()+days); return d.toISOString().split('T')[0]; };
-        const getLocalKey = () => currentUser ? `studyflow_tasks_${currentUser.uid}` : 'studyflow_tasks_anon';
-
-        const ui = {
-            appScreen: document.getElementById('app-screen'),
-            tasksContainer: document.getElementById('tasks-container'),
-            emptyState: document.getElementById('empty-state'),
-            seeMoreContainer: document.getElementById('see-more-container'),
-            syncIndicator: document.getElementById('sync-indicator'),
-            modals: {
-                overlay: document.getElementById('modal-overlay'),
-                topic: document.getElementById('modal-topic'),
-                mastery: document.getElementById('modal-mastery'),
-                account: document.getElementById('modal-account'),
-                fullList: document.getElementById('modal-full-list')
-            }
-        };
-
-        function loadData() {
-            const data = localStorage.getItem(getLocalKey());
-            tasks = data ? JSON.parse(data) : [];
+        function subscribeToCloudTasks(userId) {
+            setSyncStatus('syncing');
+            const userRef = collection(db, 'artifacts', 'studyflow-pro', 'users', userId, 'tasks');
+            
+            unsubscribeTasks = onSnapshot(userRef, (snapshot) => {
+                tasks = snapshot.docs.map(doc => doc.data());
+                renderTasks();
+                renderStatistics();
+                setSyncStatus('idle');
+            }, (error) => {
+                console.error("Firestore Listen Error:", error);
+                showToast("Error syncing data.");
+                setSyncStatus('idle');
+            });
         }
 
         function saveData() {
-            localStorage.setItem(getLocalKey(), JSON.stringify(tasks));
+            if (currentUser) {
+                setSyncStatus('syncing');
+                const userRef = collection(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks');
+                // Batch writes handled individually based on action via handleTaskAction/saveTopic
+            } else {
+                saveLocalData();
+                renderTasks();
+                renderStatistics();
+            }
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('studyflow_tasks', JSON.stringify(tasks));
+        }
+
+        function loadLocalData() {
+            const stored = localStorage.getItem('studyflow_tasks');
+            if (stored) {
+                tasks = JSON.parse(stored);
+            } else {
+                tasks = getInitialData();
+                saveLocalData();
+            }
             renderTasks();
-            syncToCloud();
+            renderStatistics();
         }
 
-        function openModal(modalId) {
-            ui.modals.overlay.classList.remove('hidden');
-            setTimeout(() => ui.modals.overlay.classList.remove('opacity-0'), 10);
-            Object.values(ui.modals).forEach(m => m.id && m.id !== 'modal-overlay' ? m.classList.add('hidden') : null);
-            ui.modals[modalId].classList.remove('hidden');
-        }
-
-        function closeModal() {
-            ui.modals.overlay.classList.add('opacity-0');
-            setTimeout(() => ui.modals.overlay.classList.add('hidden'), 200);
-        }
-
-        async function syncToCloud() {
-            if(!currentUser || currentUser.isAnonymous || !navigator.onLine) return;
-            const pending = tasks.filter(t => t.syncStatus === 'pending');
-            if(pending.length === 0) return;
-            ui.syncIndicator.classList.remove('hidden');
-            try {
-                for(const task of pending) {
-                    const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'reminders', task.id);
-                    await setDoc(docRef, {...task, syncStatus: 'synced'});
-                    task.syncStatus = 'synced';
+        function setSyncStatus(status) {
+            const wrapper = document.getElementById('sync-indicator-wrapper');
+            const dot = document.getElementById('sync-dot');
+            const text = document.getElementById('sync-text');
+            
+            if (currentUser) {
+                wrapper.classList.remove('hidden');
+                wrapper.classList.add('flex');
+                if (status === 'syncing') {
+                    dot.className = 'w-2 h-2 rounded-full bg-blue-500 animate-pulse';
+                    text.textContent = 'Syncing...';
+                } else {
+                    dot.className = 'w-2 h-2 rounded-full bg-green-500';
+                    text.textContent = 'Saved to Cloud';
                 }
-                localStorage.setItem(getLocalKey(), JSON.stringify(tasks));
-            } catch(e) { console.error(e); }
-            ui.syncIndicator.classList.add('hidden');
+            } else {
+                wrapper.classList.add('hidden');
+                wrapper.classList.remove('flex');
+            }
         }
 
-        function createCard(task) {
-            const card = document.createElement('div');
-            card.className = `main-card rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:shadow-card-hover fade-in`;
-            let color = "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300";
-            if(task.subject === 'Biology') color = "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
-            if(task.subject === 'Physics') color = "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300";
-            if(task.subject === 'Chemistry') color = "bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-400";
-            card.innerHTML = `
-                <div class="flex justify-between items-start">
-                    <span class="${color} text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">${task.subject}</span>
-                    <button class="btn-master h-8 w-8 rounded-full hover:bg-emerald-50 text-slate-300 hover:text-emerald-500 transition-colors dark:hover:bg-emerald-900/30" data-id="${task.id}"><i class="ph-bold ph-check-circle text-xl pointer-events-none"></i></button>
-                </div>
-                <h3 class="font-bold text-slate-800 leading-tight dark:text-white">${task.topic}</h3>
-                ${task.notes ? `<p class="text-xs text-slate-500 line-clamp-2 dark:text-slate-400">${task.notes}</p>` : ''}
-                <div class="mt-2 pt-3 border-t border-slate-100 flex justify-between items-center text-[10px] font-bold text-slate-400 dark:border-slate-700">
-                    <span>DUE: <span class="text-slate-700 dark:text-slate-300">${task.nextReviewDate}</span></span>
-                    <div class="flex gap-2">
-                        <button class="btn-edit text-slate-400 hover:text-brand-600 px-2 py-1" data-id="${task.id}">EDIT</button>
-                        <button class="btn-review bg-brand-600 text-white px-3 py-1.5 rounded-lg" data-id="${task.id}">REVIEWED</button>
-                    </div>
-                </div>
-            `;
-            return card;
+        // --- UI Rendering ---
+        function updateProfileUI() {
+            const imgEl = document.getElementById('profile-img');
+            const settingsImgEl = document.getElementById('settings-profile-img');
+            const nameEl = document.getElementById('settings-user-name');
+            const emailEl = document.getElementById('settings-user-email');
+            const btnEl = document.getElementById('btn-auth');
+            const btnText = document.getElementById('btn-auth-text');
+            const firstNameEl = document.getElementById('user-firstname');
+
+            if (currentUser) {
+                const imgUrl = currentUser.photoURL || `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser.displayName}`;
+                imgEl.src = imgUrl;
+                settingsImgEl.src = imgUrl;
+                nameEl.textContent = currentUser.displayName || "Scholar";
+                firstNameEl.textContent = (currentUser.displayName || "Scholar").split(' ')[0];
+                emailEl.textContent = currentUser.email;
+                btnText.textContent = "Sign Out";
+                btnEl.classList.replace('bg-slate-100', 'bg-red-50');
+                btnEl.classList.replace('dark:bg-slate-800', 'dark:bg-red-900/20');
+                btnEl.classList.replace('text-slate-800', 'text-red-600');
+                btnEl.querySelector('i').className = 'ph-bold ph-sign-out text-xl';
+            } else {
+                imgEl.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Guest";
+                settingsImgEl.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Guest";
+                nameEl.textContent = "Guest User";
+                firstNameEl.textContent = "Scholar";
+                emailEl.textContent = "Local Mode (Not Synced)";
+                btnText.textContent = "Sign in with Google";
+                btnEl.classList.replace('bg-red-50', 'bg-slate-100');
+                btnEl.classList.replace('dark:bg-red-900/20', 'dark:bg-slate-800');
+                btnEl.classList.replace('text-red-600', 'text-slate-800');
+                btnEl.querySelector('i').className = 'ph-bold ph-google-logo text-xl';
+            }
         }
 
         function renderTasks() {
-            const today = getTodayStr();
-            let filtered = tasks.filter(t => !t._deleted && !t.completed);
-            if (currentSubjectFilter !== 'All') filtered = filtered.filter(t => t.subject === currentSubjectFilter);
-            if (currentStatusFilter === 'Due') filtered = filtered.filter(t => t.nextReviewDate === today);
-            else if (currentStatusFilter === 'Overdue') filtered = filtered.filter(t => t.nextReviewDate < today);
-            filtered.sort((a,b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
+            const grid = document.getElementById('task-grid');
+            let filteredTasks = tasks.filter(t => !t._deleted);
+
+            // Update stats
+            const doneCount = filteredTasks.filter(t => t.completed && t.nextReviewDate === new Date().toISOString().split('T')[0]).length;
+            const totalDue = filteredTasks.filter(t => !t.completed && t.nextReviewDate <= new Date().toISOString().split('T')[0]).length;
+            document.getElementById('stat-done').textContent = doneCount;
+            document.getElementById('stat-total').textContent = totalDue || filteredTasks.length;
+
+            if (currentSubjectFilter !== 'All') {
+                filteredTasks = filteredTasks.filter(t => t.subject === currentSubjectFilter);
+            }
+
+            if (currentStatusFilter === 'Due') {
+                const today = new Date().toISOString().split('T')[0];
+                filteredTasks = filteredTasks.filter(t => t.nextReviewDate <= today && !t.completed);
+            } else if (currentStatusFilter === 'Mastered') {
+                filteredTasks = filteredTasks.filter(t => t.completed);
+            }
+
+            filteredTasks.sort((a, b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
+
+            if (filteredTasks.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-20 flex flex-col items-center justify-center text-slate-400">
+                        <i class="ph ph-mask-sad text-6xl mb-4"></i>
+                        <p class="font-bold">No topics found.</p>
+                        <p class="text-sm">Time to add something new!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filteredTasks.map(task => {
+                const today = new Date().toISOString().split('T')[0];
+                const isOverdue = task.nextReviewDate < today && !task.completed;
+                const isDueToday = task.nextReviewDate === today && !task.completed;
+                
+                let statusBadge = '';
+                if (task.completed) statusBadge = `<span class="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Mastered</span>`;
+                else if (isOverdue) statusBadge = `<span class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Overdue</span>`;
+                else if (isDueToday) statusBadge = `<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Due Today</span>`;
+                else statusBadge = `<span class="bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Upcoming</span>`;
+
+                const subjectColors = { Physics: 'bg-indigo-500', Chemistry: 'bg-emerald-500', Biology: 'bg-rose-500', Math: 'bg-amber-500', Other: 'bg-slate-500' };
+
+                return `
+                <div class="group relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 hover:border-primary-400 dark:hover:border-primary-500 transition-all card-shadow flex flex-col justify-between">
+                    <div class="absolute top-0 left-8 w-10 h-1 ${subjectColors[task.subject] || 'bg-slate-500'} rounded-b-full"></div>
+                    <div>
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full ${subjectColors[task.subject] || 'bg-slate-500'}"></span>
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${task.subject}</span>
+                            </div>
+                            ${statusBadge}
+                        </div>
+                        <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 leading-tight">${task.topic}</h4>
+                        ${task.notes ? `<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">${task.notes}</p>` : ''}
+                        
+                        ${task.summaryLink ? `
+                            <a href="${task.summaryLink}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold hover:text-primary-500 hover:border-primary-300 dark:hover:border-primary-700 transition-all w-fit mb-2">
+                                <i class="ph-bold ph-link text-sm"></i> Open Resource
+                            </a>
+                        ` : ''}
+                    </div>
+
+                    <div class="mt-2 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5 text-slate-400">
+                            <i class="ph-fill ph-calendar-blank"></i>
+                            <span class="text-xs font-bold">${formatDate(task.nextReviewDate)}</span>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="window.handleTaskAction('${task.id}', 'edit')" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-all">
+                                <i class="ph-bold ph-pencil-simple text-lg"></i>
+                            </button>
+                            ${!task.completed ? `
+                                <button onclick="window.handleTaskAction('${task.id}', 'review')" class="btn-review flex items-center gap-2 bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary-500 hover:text-white transition-all">
+                                    <i class="ph-bold ph-brain"></i> Review
+                                </button>
+                            ` : `
+                                <button onclick="window.handleTaskAction('${task.id}', 'reset')" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-green-500 transition-all" title="Reset">
+                                    <i class="ph-bold ph-arrow-counter-clockwise text-lg"></i>
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function renderStatistics() {
+            const activeTasks = tasks.filter(t => !t._deleted);
+            document.getElementById('stats-total-topics').textContent = activeTasks.length;
+            document.getElementById('stats-mastered').textContent = activeTasks.filter(t => t.completed).length;
             
-            ui.tasksContainer.innerHTML = '';
-            ui.seeMoreContainer.innerHTML = '';
-            if (filtered.length === 0) {
-                ui.emptyState.classList.remove('hidden');
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('stats-pending').textContent = activeTasks.filter(t => !t.completed && t.nextReviewDate <= today).length;
+            document.getElementById('stats-streak-view').textContent = document.getElementById('stat-streak').textContent;
+
+            const subjects = ['Physics', 'Chemistry', 'Biology', 'Math', 'Other'];
+            const container = document.getElementById('stats-subjects-container');
+            const total = activeTasks.length || 1; // prevent div by zero
+
+            const subjectColors = { Physics: 'bg-indigo-500', Chemistry: 'bg-emerald-500', Biology: 'bg-rose-500', Math: 'bg-amber-500', Other: 'bg-slate-500' };
+
+            container.innerHTML = subjects.map(sub => {
+                const count = activeTasks.filter(t => t.subject === sub).length;
+                const percent = Math.round((count / total) * 100);
+                if (count === 0) return '';
+                return `
+                    <div class="mb-2">
+                        <div class="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
+                            <span>${sub}</span><span>${count} (${percent}%)</span>
+                        </div>
+                        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                            <div class="${subjectColors[sub]} h-2.5 rounded-full transition-all duration-1000" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<p class="text-sm text-slate-400">No data available yet.</p>';
+        }
+
+        function switchView(view) {
+            activeView = view;
+            const dashboard = document.getElementById('view-dashboard');
+            const stats = document.getElementById('view-statistics');
+            const title = document.getElementById('header-title');
+            
+            // Desktop Nav highlight
+            document.getElementById('nav-desktop-home').className = view === 'dashboard' 
+                ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all'
+                : 'nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl font-bold transition-all';
+            
+            document.getElementById('nav-desktop-stats').className = view === 'stats' 
+                ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all'
+                : 'nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl font-bold transition-all';
+
+            // Mobile Nav highlight
+            document.getElementById('nav-mobile-home').className = view === 'dashboard' ? 'nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors' : 'nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary-500 transition-colors';
+            document.getElementById('nav-mobile-stats').className = view === 'stats' ? 'nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors' : 'nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary-500 transition-colors';
+
+            if (view === 'dashboard') {
+                stats.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                setTimeout(() => {
+                    stats.classList.add('hidden');
+                    dashboard.classList.remove('hidden');
+                    // Force reflow
+                    void dashboard.offsetWidth;
+                    dashboard.classList.remove('opacity-0', 'scale-95');
+                }, 300);
+                title.textContent = 'Dashboard';
             } else {
-                ui.emptyState.classList.add('hidden');
-                const limit = window.innerWidth > 1024 ? 6 : 4;
-                filtered.slice(0, limit).forEach(t => ui.tasksContainer.appendChild(createCard(t)));
-                if (filtered.length > limit) {
-                    const btn = document.createElement('button');
-                    btn.className = "bg-white border border-slate-200 px-6 py-2.5 rounded-xl font-bold text-slate-600 hover:bg-slate-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700";
-                    btn.textContent = `View All ${filtered.length} Tasks`;
-                    btn.onclick = () => {
-                        const list = document.getElementById('full-list-container');
-                        list.innerHTML = '';
-                        filtered.forEach(t => list.appendChild(createCard(t)));
-                        document.getElementById('full-list-count').textContent = `${filtered.length} tasks in total`;
-                        openModal('fullList');
-                    };
-                    ui.seeMoreContainer.appendChild(btn);
-                }
+                dashboard.classList.add('opacity-0', 'scale-95');
+                setTimeout(() => {
+                    dashboard.classList.add('hidden');
+                    stats.classList.remove('hidden');
+                    void stats.offsetWidth;
+                    stats.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                }, 300);
+                title.textContent = 'Statistics';
+                renderStatistics();
             }
-            document.getElementById('stat-due').textContent = tasks.filter(t => !t._deleted && !t.completed && t.nextReviewDate === today).length;
-            document.getElementById('stat-overdue').textContent = tasks.filter(t => !t._deleted && !t.completed && t.nextReviewDate < today).length;
-            document.getElementById('stat-mastered').textContent = tasks.filter(t => !t._deleted && t.completed).length;
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // Backup: Export
-        function exportBackup() {
-            const dataStr = JSON.stringify(tasks, null, 2);
-            const blob = new Blob([dataStr], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `studyflow_backup_${new Date().toISOString().slice(0,19)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
 
-        // Backup: Import
-        function importBackup(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if (Array.isArray(imported)) {
-                        if (confirm('Import will replace all current tasks. Continue?')) {
-                            tasks = imported.map(t => ({ ...t, syncStatus: 'pending' }));
-                            saveData();
-                            closeModal();
-                            alert('Backup imported successfully!');
-                        }
-                    } else {
-                        alert('Invalid backup file: not an array of tasks.');
-                    }
-                } catch (err) {
-                    alert('Error parsing backup file.');
-                }
-            };
-            reader.readAsText(file);
-        }
+        // --- Event Listeners & Interactions ---
+        function setupUIEventListeners() {
+            // Theme setup is handled in initTheme
+            document.getElementById('theme-toggle').onclick = toggleDarkMode;
+            document.getElementById('btn-auth').onclick = handleAuthClick;
+            document.getElementById('btn-profile').onclick = () => window.openModal('settings');
 
-        function autoGuestSignIn() {
-            if (!currentUser && !autoGuestInProgress) {
-                autoGuestInProgress = true;
-                signInAnonymously(auth).catch(err => { console.error(err); autoGuestInProgress = false; });
-            }
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                autoGuestInProgress = false;
-                loadData();
-                renderTasks();
-                const displayName = user.displayName || (user.isAnonymous ? "Guest" : "Learner");
-                const initials = displayName.charAt(0).toUpperCase();
-                const avatarDiv = document.getElementById('user-avatar');
-                avatarDiv.textContent = initials;
-                document.getElementById('account-avatar-lg').textContent = initials;
-                document.getElementById('user-greeting').textContent = `Hi, ${displayName.split(' ')[0]}`;
-                document.getElementById('account-name').textContent = displayName;
-                document.getElementById('account-email').textContent = user.email || (user.isAnonymous ? "Anonymous Mode" : "No email");
-            } else {
-                currentUser = null;
-                autoGuestSignIn();
-            }
-        });
-
-        // --- Modal close on outside click ---
-        const overlay = document.getElementById('modal-overlay');
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                closeModal();
-            }
-        });
-        document.querySelectorAll('[data-modal-content]').forEach(modal => {
-            modal.addEventListener('click', (e) => e.stopPropagation());
-        });
-
-        // Event listeners
-        document.getElementById('theme-toggle').onclick = toggleTheme;
-        document.getElementById('btn-export-backup').onclick = exportBackup;
-        document.getElementById('import-backup-input').onchange = (e) => {
-            if (e.target.files.length) importBackup(e.target.files[0]);
-            e.target.value = '';
-        };
-        document.getElementById('btn-google-signin-modal').onclick = () => { signInWithPopup(auth, new GoogleAuthProvider()); closeModal(); };
-        document.getElementById('btn-logout').onclick = () => { closeModal(); signOut(auth); };
-        document.querySelectorAll('.nav-btn-add').forEach(b => b.onclick = () => {
-            document.getElementById('form-topic').reset();
-            document.getElementById('topic-id').value = '';
-            document.getElementById('topic-date').value = getTodayStr();
-            document.getElementById('modal-topic-title').textContent = 'Add Topic';
-            document.getElementById('btn-delete-topic').classList.add('hidden');
-            openModal('topic');
-        });
-        document.querySelectorAll('.nav-btn-mastery').forEach(b => b.onclick = () => {
-            const container = document.getElementById('mastery-container');
-            container.innerHTML = '';
-            ['Biology','Chemistry','Physics'].forEach(sub => {
-                const subTasks = tasks.filter(t => !t._deleted && t.subject === sub);
-                const mastered = subTasks.filter(t => t.completed).length;
-                const pct = subTasks.length ? Math.round((mastered/subTasks.length)*100) : 0;
-                container.innerHTML += `<div><div class="flex justify-between text-xs font-bold mb-2"><span>${sub}</span><span>${pct}%</span></div><div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden dark:bg-slate-700"><div class="h-full bg-brand-600 transition-all duration-500" style="width: ${pct}%"></div></div></div>`;
+            // View Switchers
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    if (btn.id.includes('home')) switchView('dashboard');
+                    if (btn.id.includes('stats')) switchView('stats');
+                };
             });
-            openModal('mastery');
-        });
-        document.querySelectorAll('.nav-btn-account').forEach(b => b.onclick = () => openModal('account'));
-        document.querySelectorAll('.close-modal').forEach(b => b.onclick = closeModal);
-        document.getElementById('form-topic').onsubmit = (e) => {
-            e.preventDefault();
-            const id = document.getElementById('topic-id').value || crypto.randomUUID();
-            const newTask = { id, topic: document.getElementById('topic-name').value, subject: document.getElementById('topic-subject').value, nextReviewDate: document.getElementById('topic-date').value, notes: document.getElementById('topic-notes').value, summaryLink: document.getElementById('topic-link').value, completed: false, _deleted: false, syncStatus: 'pending', reviewCount: 0 };
-            const idx = tasks.findIndex(t => t.id === id);
-            if(idx > -1) tasks[idx] = {...tasks[idx], ...newTask};
-            else tasks.push(newTask);
-            saveData();
-            closeModal();
-        };
-        document.getElementById('filter-subject').onchange = (e) => { currentSubjectFilter = e.target.value; renderTasks(); };
-        document.querySelectorAll('.filter-status-btn').forEach(btn => btn.onclick = (e) => {
-            document.querySelectorAll('.filter-status-btn').forEach(b => { b.classList.remove('bg-white', 'shadow-sm', 'text-brand-600'); b.classList.add('text-slate-500'); });
-            e.target.classList.add('bg-white', 'shadow-sm', 'text-brand-600');
-            currentStatusFilter = e.target.dataset.status;
-            renderTasks();
-        });
-        document.body.onclick = (e) => {
-            const id = e.target.dataset.id;
-            if(!id) return;
-            if(e.target.closest('.btn-review')) {
-                const idx = tasks.findIndex(t => t.id === id);
-                if(idx !== -1) { tasks[idx].reviewCount = (tasks[idx].reviewCount || 0) + 1; tasks[idx].nextReviewDate = addDaysStr(getTodayStr(), 3 * tasks[idx].reviewCount); tasks[idx].syncStatus = 'pending'; saveData(); let streak = parseInt(document.getElementById('stat-streak').textContent); document.getElementById('stat-streak').textContent = streak + 1; }
-            }
-            if(e.target.closest('.btn-master')) { const idx = tasks.findIndex(t => t.id === id); if(idx !== -1) { tasks[idx].completed = true; tasks[idx].syncStatus = 'pending'; saveData(); } }
-            if(e.target.closest('.btn-edit')) { const task = tasks.find(t => t.id === id); if(task) { document.getElementById('topic-id').value = task.id; document.getElementById('topic-name').value = task.topic; document.getElementById('topic-subject').value = task.subject; document.getElementById('topic-date').value = task.nextReviewDate; document.getElementById('topic-notes').value = task.notes || ''; document.getElementById('topic-link').value = task.summaryLink || ''; document.getElementById('modal-topic-title').textContent = 'Edit Topic'; document.getElementById('btn-delete-topic').classList.remove('hidden'); openModal('topic'); } }
-        };
-        document.getElementById('btn-delete-topic').onclick = () => { const id = document.getElementById('topic-id').value; const idx = tasks.findIndex(t => t.id === id); if(idx !== -1) { tasks[idx]._deleted = true; tasks[idx].syncStatus = 'pending'; saveData(); } closeModal(); };
-        document.querySelectorAll('.nav-btn-home').forEach(b => b.onclick = () => { currentSubjectFilter = 'All'; currentStatusFilter = 'All'; renderTasks(); window.scrollTo({top:0, behavior:'smooth'}); });
 
-        initTheme();
-        if (!auth.currentUser) autoGuestSignIn();
+            // Filters
+            document.querySelectorAll('.subject-filter').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.subject-filter').forEach(b => {
+                        b.classList.remove('active', 'bg-primary-500', 'text-white');
+                        b.classList.add('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-400', 'border');
+                    });
+                    btn.classList.add('active', 'bg-primary-500', 'text-white');
+                    btn.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-400', 'border');
+                    currentSubjectFilter = btn.dataset.subject;
+                    renderTasks();
+                };
+            });
+
+            document.querySelectorAll('.status-tab').forEach(tab => {
+                tab.onclick = () => {
+                    document.querySelectorAll('.status-tab').forEach(t => {
+                        t.classList.remove('tab-active', 'text-slate-900', 'dark:text-white');
+                        t.classList.add('text-slate-500');
+                    });
+                    tab.classList.add('tab-active', 'text-slate-900', 'dark:text-white');
+                    tab.classList.remove('text-slate-500');
+                    currentStatusFilter = tab.dataset.status;
+                    renderTasks();
+                };
+            });
+
+            // Modal Backdrop Clicks (Fixing the bug)
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) {
+                        const id = overlay.id.replace('modal-', '');
+                        window.closeModal(id);
+                    }
+                });
+            });
+
+            // Topic Modal triggers
+            const openAddModal = () => {
+                document.getElementById('modal-topic-title').textContent = 'New Revision Topic';
+                document.getElementById('btn-delete-topic').classList.add('hidden');
+                document.getElementById('topic-id').value = '';
+                document.getElementById('topic-name').value = '';
+                document.getElementById('topic-notes').value = '';
+                document.getElementById('topic-link').value = '';
+                document.getElementById('topic-date').value = new Date().toISOString().split('T')[0];
+                window.openModal('topic');
+            };
+
+            document.getElementById('btn-add-topic').onclick = openAddModal;
+            document.getElementById('btn-add-topic-desktop').onclick = openAddModal;
+
+            // Save Topic
+            document.getElementById('btn-save-topic').onclick = async () => {
+                const id = document.getElementById('topic-id').value;
+                const name = document.getElementById('topic-name').value;
+                const subject = document.getElementById('topic-subject').value;
+                const date = document.getElementById('topic-date').value;
+                const notes = document.getElementById('topic-notes').value;
+                const link = document.getElementById('topic-link').value;
+
+                if (!name) return showToast("Topic name is required!");
+
+                const taskData = {
+                    topic: name,
+                    subject,
+                    nextReviewDate: date,
+                    notes,
+                    summaryLink: link,
+                    lastModified: Date.now()
+                };
+
+                if (id) {
+                    // Update
+                    if (currentUser) {
+                        const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks', id);
+                        await setDoc(ref, taskData, { merge: true });
+                    } else {
+                        const idx = tasks.findIndex(t => t.id === id);
+                        tasks[idx] = { ...tasks[idx], ...taskData };
+                        saveData();
+                    }
+                } else {
+                    // Create
+                    const newId = Date.now().toString();
+                    taskData.id = newId;
+                    taskData.interval = 1;
+                    taskData.completed = false;
+                    
+                    if (currentUser) {
+                        const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks', newId);
+                        await setDoc(ref, taskData);
+                    } else {
+                        tasks.push(taskData);
+                        saveData();
+                    }
+                }
+                
+                window.closeModal('topic');
+                if(!currentUser) renderTasks(); // Firestore listener handles this if logged in
+            };
+
+            // Delete Topic
+            document.getElementById('btn-delete-topic').onclick = async () => {
+                const id = document.getElementById('topic-id').value;
+                if (currentUser) {
+                    const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks', id);
+                    await deleteDoc(ref);
+                } else {
+                    const idx = tasks.findIndex(t => t.id === id);
+                    if (idx !== -1) tasks[idx]._deleted = true;
+                    saveData();
+                    renderTasks();
+                }
+                window.closeModal('topic');
+            };
+
+            // Theme Color Buttons
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const color = btn.dataset.color;
+                    setThemeColor(color);
+                };
+            });
+        }
+
+        // --- Global Methods for Inline HTML Calls ---
+        window.openModal = function(id) {
+            const el = document.getElementById(`modal-${id}`);
+            el.classList.remove('pointer-events-none', 'opacity-0');
+            el.firstElementChild.classList.remove('translate-y-full', 'sm:translate-y-10');
+        };
+
+        window.closeModal = function(id) {
+            const el = document.getElementById(`modal-${id}`);
+            el.firstElementChild.classList.add('translate-y-full', 'sm:translate-y-10');
+            setTimeout(() => {
+                el.classList.add('opacity-0', 'pointer-events-none');
+            }, 300);
+        };
+
+        window.handleTaskAction = async function(id, action) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            if (action === 'edit') {
+                document.getElementById('topic-id').value = task.id;
+                document.getElementById('topic-name').value = task.topic;
+                document.getElementById('topic-subject').value = task.subject;
+                document.getElementById('topic-date').value = task.nextReviewDate;
+                document.getElementById('topic-notes').value = task.notes || '';
+                document.getElementById('topic-link').value = task.summaryLink || '';
+                document.getElementById('modal-topic-title').textContent = 'Edit Topic';
+                document.getElementById('btn-delete-topic').classList.remove('hidden');
+                window.openModal('topic');
+            } else if (action === 'review') {
+                const currentInterval = task.interval || 1;
+                let nextInterval = 1;
+                
+                if (currentInterval === 1) nextInterval = 3;
+                else if (currentInterval === 3) nextInterval = 7;
+                else if (currentInterval === 7) nextInterval = 14;
+                else if (currentInterval === 14) nextInterval = 30;
+                else nextInterval = 60;
+
+                const nextDate = new Date();
+                nextDate.setDate(nextDate.getDate() + nextInterval);
+                
+                const updates = {
+                    interval: nextInterval,
+                    nextReviewDate: nextDate.toISOString().split('T')[0],
+                    lastModified: Date.now()
+                };
+                
+                if (nextInterval >= 14) {
+                    updates.completed = true;
+                    showToast('Topic Mastered! 🏆');
+                } else {
+                    showToast('Revision Scheduled! 🧠');
+                }
+                
+                // Update Streak visually
+                const streak = parseInt(document.getElementById('stat-streak').textContent);
+                document.getElementById('stat-streak').textContent = streak + 1;
+                
+                if (currentUser) {
+                    const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks', id);
+                    await setDoc(ref, updates, { merge: true });
+                } else {
+                    Object.assign(task, updates);
+                    saveData();
+                    renderTasks();
+                }
+            } else if (action === 'reset') {
+                const updates = {
+                    completed: false,
+                    interval: 1,
+                    nextReviewDate: new Date().toISOString().split('T')[0],
+                    lastModified: Date.now()
+                };
+
+                if (currentUser) {
+                    const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks', id);
+                    await setDoc(ref, updates, { merge: true });
+                } else {
+                    Object.assign(task, updates);
+                    saveData();
+                    renderTasks();
+                }
+            }
+        };
+
+        // --- Utilities ---
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+            if (dateStr === today.toISOString().split('T')[0]) return 'Today';
+            if (dateStr === tomorrow.toISOString().split('T')[0]) return 'Tomorrow';
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function showToast(msg) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-full font-bold text-sm shadow-2xl animate-slide-up flex items-center gap-2';
+            toast.innerHTML = `<i class="ph-bold ph-check-circle text-primary-500"></i> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translate(-50%, 20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        function initTheme() {
+            // Dark Mode
+            const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) document.documentElement.classList.add('dark');
+            updateThemeToggleUI(isDark);
+
+            // Color Theme
+            const color = localStorage.getItem('studyflow_color') || 'blue';
+            setThemeColor(color);
+        }
+
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.theme = isDark ? 'dark' : 'light';
+            updateThemeToggleUI(isDark);
+        }
+
+        function updateThemeToggleUI(isDark) {
+            const knob = document.getElementById('theme-toggle-knob');
+            const bg = document.getElementById('theme-toggle');
+            if (isDark) {
+                knob.classList.add('translate-x-6');
+                bg.classList.add('bg-primary-500');
+                bg.classList.remove('bg-slate-300');
+            } else {
+                knob.classList.remove('translate-x-6');
+                bg.classList.remove('bg-primary-500');
+                bg.classList.add('bg-slate-300');
+            }
+        }
+
+        function setThemeColor(color) {
+            document.body.setAttribute('data-theme', color);
+            localStorage.setItem('studyflow_color', color);
+            
+            // Update active ring on buttons
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                if(btn.dataset.color === color) {
+                    btn.classList.add('ring-2', 'ring-offset-2', 'dark:ring-offset-slate-900');
+                    if (color === 'blue') btn.classList.add('ring-[#0ea5e9]');
+                    else if (color === 'emerald') btn.classList.add('ring-[#10b981]');
+                    else if (color === 'violet') btn.classList.add('ring-[#8b5cf6]');
+                    else if (color === 'rose') btn.classList.add('ring-[#f43f5e]');
+                } else {
+                    btn.classList.remove('ring-2', 'ring-offset-2', 'dark:ring-offset-slate-900', 'ring-[#0ea5e9]', 'ring-[#10b981]', 'ring-[#8b5cf6]', 'ring-[#f43f5e]');
+                }
+            });
+        }
     </script>
 </body>
 </html>
