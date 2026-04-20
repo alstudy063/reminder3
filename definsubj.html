@@ -7,6 +7,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for LaTeX support -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
     <script type="importmap">
         {
             "imports": {
@@ -298,8 +304,8 @@
         <div class="bg-green-50/50 p-4 rounded-2xl border border-green-100/50"><h4 class="font-semibold text-gray-800 mb-1">New Flashcard</h4>
             <form id="add-definition-form" class="space-y-2">
                 <select id="add-definition-lesson" class="modern-input !mt-1" required></select>
-                <input type="text" id="new-definition-topic" placeholder="Topic / Term" class="modern-input" required>
-                <textarea id="new-definition-text" rows="2" placeholder="Definition or formula content..." class="modern-input" required></textarea>
+                <input type="text" id="new-definition-topic" placeholder="Topic / Term (LaTeX supported via $...$)" class="modern-input" required>
+                <textarea id="new-definition-text" rows="2" placeholder="Definition or formula content... (LaTeX supported via $$...$$)" class="modern-input" required></textarea>
                 <button type="submit" class="bg-green-600 hover:bg-green-700 transition transform hover:-translate-y-1 active:scale-95 text-white w-full py-2.5 mt-2 rounded-xl shadow-md font-medium">Save Card</button>
             </form>
         </div></div></div></div>
@@ -378,6 +384,20 @@
         function closeAllModals(){ document.querySelectorAll('.modal').forEach(m=>closeModal(m.id)); }
         function showModal(title,msg){ document.getElementById('modal-title').innerText=title; document.getElementById('modal-message').innerText=msg; openModal('infoModal'); }
         function showConfirmModal(msg,cb){ document.getElementById('confirm-message').innerText=msg; openModal('confirmModal'); window.confirmCallback=cb; }
+
+        function renderMath(el) {
+            if (window.renderMathInElement && el) {
+                window.renderMathInElement(el, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
 
         function getUserDocRef(userId) { return doc(db, 'artifacts', 'studyflow-pro', 'users', userId, 'data', 'mainAppData'); }
 
@@ -553,6 +573,8 @@
 
             if (!document.getElementById('suggestions-section').classList.contains('hidden')) showSuggestionsContent();
             if (!document.getElementById('history-section').classList.contains('hidden')) renderHistory();
+            
+            setTimeout(() => renderMath(document.getElementById('definitions-display')), 50);
         }
 
         function renderSubjectsList() {
@@ -593,6 +615,7 @@
             });
             document.getElementById('lesson-definitions-modal-title').textContent = lesson.name;
             openModal('lessonDefinitionsModal');
+            setTimeout(() => renderMath(container), 50);
         };
         
         function createDefinitionCard(def) {
@@ -661,6 +684,7 @@
                 card.addEventListener('click', (e) => { if (e.target.closest('.def-btn')) return; card.classList.add('is-revealed'); });
                 container.appendChild(card);
             });
+            setTimeout(() => renderMath(container), 50);
         }
         function renderHistory() {
             const container = document.getElementById('history-container'); container.innerHTML = '';
@@ -676,6 +700,7 @@
                 });
                 wrapper.querySelector('.collapsible-header').addEventListener('click',()=>{ contentDiv.classList.toggle('hidden'); headerIcon.classList.toggle('rotate-180'); }); container.appendChild(wrapper);
             });
+            setTimeout(() => renderMath(container), 50);
         }
         function markDefStatus(id, status) {
             const def = definitions.find(d => d.id === id); if (!def) return;
