@@ -433,11 +433,8 @@
         let unsubscribeTasks = null;
         let activeView = 'dashboard';
 
-        // --- Initial Mock Data ---
-        const getInitialData = () => [
-            { id: Date.now().toString() + '1', topic: 'Thermodynamics: First Law', subject: 'Physics', nextReviewDate: new Date().toISOString().split('T')[0], interval: 1, completed: false, notes: 'Review adiabatic processes', summaryLink: 'https://youtube.com', lastModified: Date.now() },
-            { id: Date.now().toString() + '2', topic: 'Organic Reaction Mechanisms', subject: 'Chemistry', nextReviewDate: new Date().toISOString().split('T')[0], interval: 7, completed: false, notes: 'SN1 vs SN2 comparison table', summaryLink: '', lastModified: Date.now() },
-        ];
+        // --- Initial Data: Empty (no sample reminders) ---
+        const getInitialData = () => [];
 
         // --- Initialization ---
         window.addEventListener('DOMContentLoaded', () => {
@@ -465,7 +462,7 @@
         async function handleAuthClick() {
             if (currentUser) {
                 await signOut(auth);
-                tasks = getInitialData(); // Reset to defaults locally on sign out
+                tasks = []; // Clear tasks on sign out, no sample reminders
                 saveLocalData();
                 renderTasks();
                 showToast("Signed out successfully.");
@@ -513,8 +510,7 @@
         function saveData() {
             if (currentUser) {
                 setSyncStatus('syncing');
-                const userRef = collection(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks');
-                // Batch writes handled individually based on action via handleTaskAction/saveTopic
+                // Firestore updates happen in individual actions
             } else {
                 saveLocalData();
                 renderTasks();
@@ -531,7 +527,7 @@
             if (stored) {
                 tasks = JSON.parse(stored);
             } else {
-                tasks = getInitialData();
+                tasks = getInitialData(); // empty array
                 saveLocalData();
             }
             renderTasks();
