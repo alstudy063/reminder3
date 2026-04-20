@@ -150,7 +150,7 @@
 </head>
 <body class="text-slate-800 antialiased selection:bg-brand-500 selection:text-white" oncontextmenu="return event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA' || event.target.isContentEditable">
 
-    <!-- MAIN APP SCREEN (auto guest mode) -->
+    <!-- MAIN APP SCREEN (auto guest mode with delayed fallback) -->
     <div id="app-screen" class="flex flex-col min-h-screen">
         <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm dark:bg-slate-900 dark:border-slate-700">
             <div class="max-w-[1400px] mx-auto px-4 sm:px-8 h-20 flex items-center justify-between">
@@ -359,7 +359,8 @@
         const appId = "studyflow-pro";
 
         let currentUser = null, tasks = [], currentSubjectFilter = 'All', currentStatusFilter = 'All';
-        let autoGuestInProgress = false;
+        let guestTimeout = null;
+        let initialAuthProcessed = false;
 
         // Theme handling
         function initTheme() {
@@ -452,13 +453,10 @@
             if(task.subject === 'Physics') color = "bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300";
             if(task.subject === 'Chemistry') color = "bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-900/30 dark:text-fuchsia-400";
             
-            // Build action buttons
             let actionButtons = `
                 <button class="btn-edit text-slate-400 hover:text-brand-600 px-2 py-1" data-id="${task.id}">EDIT</button>
             `;
-            // Add Summary button if link exists
             if (task.summaryLink && task.summaryLink.trim() !== "") {
-                // Escape single quotes to prevent XSS
                 const safeLink = task.summaryLink.replace(/'/g, "\\'");
                 actionButtons += `
                     <button class="btn-summary text-slate-400 hover:text-brand-600 px-2 py-1" data-link="${safeLink}" onclick="event.stopPropagation(); window.open('${safeLink}', '_blank')">SUMMARY</button>
@@ -520,7 +518,6 @@
             document.getElementById('stat-mastered').textContent = tasks.filter(t => !t._deleted && t.completed).length;
         }
 
-        // Backup: Export
         function exportBackup() {
             const dataStr = JSON.stringify(tasks, null, 2);
             const blob = new Blob([dataStr], {type: 'application/json'});
@@ -532,7 +529,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // Backup: Import
         function importBackup(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -555,17 +551,25 @@
             reader.readAsText(file);
         }
 
-        function autoGuestSignIn() {
-            if (!currentUser && !autoGuestInProgress) {
-                autoGuestInProgress = true;
-                signInAnonymously(auth).catch(err => { console.error(err); autoGuestInProgress = false; });
-            }
+        // Delayed anonymous sign-in to avoid racing with persisted user
+        function scheduleGuestSignIn() {
+            if (guestTimeout) clearTimeout(guestTimeout);
+            guestTimeout = setTimeout(() => {
+                if (!currentUser && !initialAuthProcessed) {
+                    // Still no user after delay, sign in anonymously
+                    signInAnonymously(auth).catch(err => console.error("Guest sign-in failed:", err));
+                }
+                initialAuthProcessed = true;
+            }, 800);
         }
 
+        // Auth state handler - FIXED: no immediate guest sign-in, use delay
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                // Cancel any pending guest sign-in
+                if (guestTimeout) clearTimeout(guestTimeout);
                 currentUser = user;
-                autoGuestInProgress = false;
+                initialAuthProcessed = true;
                 loadData();
                 renderTasks();
                 const displayName = user.displayName || (user.isAnonymous ? "Guest" : "Learner");
@@ -578,16 +582,17 @@
                 document.getElementById('account-email').textContent = user.email || (user.isAnonymous ? "Anonymous Mode" : "No email");
             } else {
                 currentUser = null;
-                autoGuestSignIn();
+                // Only schedule guest sign-in if we haven't already processed a user
+                if (!initialAuthProcessed) {
+                    scheduleGuestSignIn();
+                }
             }
         });
 
-        // --- Modal close on outside click ---
+        // Modal close on outside click
         const overlay = document.getElementById('modal-overlay');
         overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                closeModal();
-            }
+            if (e.target === overlay) closeModal();
         });
         document.querySelectorAll('[data-modal-content]').forEach(modal => {
             modal.addEventListener('click', (e) => e.stopPropagation());
@@ -654,7 +659,7 @@
         document.querySelectorAll('.nav-btn-home').forEach(b => b.onclick = () => { currentSubjectFilter = 'All'; currentStatusFilter = 'All'; renderTasks(); window.scrollTo({top:0, behavior:'smooth'}); });
 
         initTheme();
-        if (!auth.currentUser) autoGuestSignIn();
+        // Do not call autoGuestSignIn immediately; auth state will handle it with delay
     </script>
 </body>
 </html>
