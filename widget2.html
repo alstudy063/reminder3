@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Study Master - Telegram Links</title>
-    <!-- Tailwind CSS -->
+    <title>Study Master - Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SortableJS for Drag and Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script>
         tailwind.config = {
@@ -21,229 +19,285 @@
         }
     </script>
     <style>
-        /* Hide elements dynamically */
+        /* Disable text selection everywhere except inputs */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        input, textarea, [contenteditable="true"] {
+            user-select: text !important;
+        }
+
         .hidden-view { display: none !important; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-        .sortable-ghost { opacity: 0.4; }
-        .sortable-drag { cursor: grabbing !important; }
+        
+        /* Android-style Drag & Drop Animations */
+        .sortable-ghost { 
+            opacity: 0.3; 
+            transform: scale(0.95);
+            background: #f3f4f6 !important;
+        }
+        .sortable-chosen { 
+            transform: scale(1.05) rotate(1deg); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); 
+            z-index: 50; 
+            cursor: grabbing !important;
+        }
+        
+        /* Modern Transitions */
+        .page-transition {
+            transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Action Menu (FB Reaction Style) */
+        .menu-open {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            visibility: visible;
+        }
+        .menu-closed {
+            opacity: 0;
+            transform: scale(0.8) translateY(20px);
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        /* Subtle Bounce for Lists */
+        @keyframes bounce-in {
+            0% { transform: scale(0.9); opacity: 0; }
+            70% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .card-appear {
+            animation: bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
 
     <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900 absolute inset-0 z-50">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    <div id="loading-screen" class="flex flex-col items-center justify-center h-screen bg-gray-50 dark:bg-gray-950 absolute inset-0 z-[100]">
+        <div class="relative w-16 h-16">
+            <div class="absolute inset-0 rounded-full border-4 border-blue-100 dark:border-blue-900/30"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+        </div>
+        <p class="mt-4 font-bold text-blue-600 animate-pulse uppercase tracking-widest text-xs">Study Master</p>
     </div>
 
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="hidden-view flex items-center justify-center h-screen w-full px-4">
-        <div class="p-8 rounded-2xl shadow-xl max-w-sm w-full text-center bg-white dark:bg-gray-800">
-            <div class="bg-blue-100 dark:bg-blue-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <!-- Send Icon -->
-                <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+    <div id="login-screen" class="hidden-view flex items-center justify-center h-screen w-full px-6">
+        <div class="p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800">
+            <div class="bg-gradient-to-tr from-blue-600 to-blue-400 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl shadow-blue-500/20 rotate-12">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </div>
-            <h1 class="text-2xl font-bold mb-2">Study Master</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Save your important Telegram links easily.</p>
-            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2">
-                Sign in with Google
+            <h1 class="text-3xl font-black mb-3 tracking-tight">Study Master</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-10 leading-relaxed">Your professional archive for academic Telegram links.</p>
+            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-2xl transition-all active:scale-95 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-3">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.908 3.152-1.928 4.176-1.264 1.264-3.224 2.64-6.88 2.64-5.552 0-10.032-4.48-10.032-10.032s4.48-10.032 10.032-10.032c3.008 0 5.256 1.184 6.848 2.7l2.256-2.256c-2.432-2.336-5.616-3.648-9.104-3.648-7.72 0-14 6.28-14 14s6.28 14 14 14c4.168 0 7.344-1.376 9.8-3.92 2.544-2.544 3.352-6.104 3.352-9.024 0-.872-.072-1.712-.208-2.52h-12.944z"/></svg>
+                Google Login
             </button>
         </div>
     </div>
 
-    <!-- MAIN APP APP -->
-    <div id="app-screen" class="hidden-view flex h-screen w-full">
+    <!-- MAIN APP SCREEN -->
+    <div id="app-screen" class="hidden-view flex h-screen w-full overflow-hidden">
         
-        <!-- DESKTOP SIDEBAR -->
-        <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-0 h-screen">
-            <div class="p-6 flex items-center gap-3">
-                <div class="bg-blue-500 text-white p-2 rounded-lg">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+        <!-- SIDEBAR (Desktop) -->
+        <aside class="hidden lg:flex flex-col w-72 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 sticky top-0 h-screen z-10">
+            <div class="p-8 flex items-center gap-4">
+                <div class="bg-blue-600 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </div>
-                <h1 class="font-bold text-xl">Study Master</h1>
+                <h1 class="font-black text-xl tracking-tighter uppercase">StudyMaster</h1>
             </div>
             
-            <nav class="flex-1 px-4 space-y-2 mt-4">
-                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">
+            <nav class="flex-1 px-6 space-y-2 mt-2">
+                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     Dashboard
                 </button>
-                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 font-medium">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
                     Settings
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-3 mb-4 px-2">
-                    <img id="user-avatar" src="" alt="Profile" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-600" />
+            <div class="p-6 border-t border-gray-100 dark:border-gray-800">
+                <div class="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-2xl flex items-center gap-3">
+                    <img id="user-avatar" src="" alt="Profile" class="w-10 h-10 rounded-full bg-gray-200" />
                     <div class="overflow-hidden">
-                        <p id="user-name" class="text-sm font-medium truncate">User</p>
+                        <p id="user-name" class="text-sm font-bold truncate">Guest User</p>
+                        <p class="text-[10px] text-gray-400 uppercase font-black">Pro Member</p>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 w-full max-w-4xl mx-auto flex flex-col h-screen overflow-hidden relative">
+        <!-- MAIN AREA -->
+        <main class="flex-1 w-full max-w-5xl mx-auto flex flex-col h-screen overflow-hidden" id="main-content">
             
-            <!-- Header -->
-            <header class="px-6 py-5 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-10">
-                <h2 id="header-title" class="text-2xl font-bold capitalize">My Links</h2>
-                <button onclick="window.openModal()" id="btn-add-desktop" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg shadow-blue-500/30 transition-transform active:scale-95 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span class="hidden md:inline ml-2 pr-2 font-medium">Add Link</span>
+            <header class="px-6 py-6 flex items-center justify-between border-b border-gray-100 dark:border-gray-800 bg-white/70 dark:bg-gray-950/70 backdrop-blur-xl sticky top-0 z-30">
+                <div>
+                    <h2 id="header-title" class="text-3xl font-black tracking-tight">Archive</h2>
+                    <p class="text-[10px] text-gray-400 font-bold uppercase mt-1" id="header-subtitle">Managing all your links</p>
+                </div>
+                <button onclick="window.openModal()" id="btn-add-desktop" class="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl px-6 py-3 shadow-xl shadow-blue-500/30 transition-all active:scale-95 flex items-center gap-2 font-bold">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                    <span class="hidden sm:inline">Create New</span>
                 </button>
             </header>
 
-            <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6">
+            <div class="flex-1 overflow-y-auto p-4 sm:p-8 pb-32 md:pb-8 scroll-smooth" id="scrollable-content">
                 
                 <!-- HOME TAB -->
-                <div id="tab-home">
-                    
-                    <!-- Pinned Links Section -->
-                    <div id="pinned-section" class="hidden-view mb-8">
-                        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
-                            Pinned
-                        </h3>
-                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Pinned links injected here -->
+                <div id="tab-home" class="page-transition">
+                    <!-- PINNED -->
+                    <div id="pinned-section" class="hidden-view mb-12">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="w-8 h-8 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
+                            </div>
+                            <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Pinned Cards</h3>
                         </div>
+                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5"></div>
                     </div>
 
-                    <!-- All Other Links -->
+                    <!-- OTHERS -->
                     <div>
-                        <h3 id="unpinned-title" class="hidden-view text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Other Links</h3>
-                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Unpinned links injected here -->
+                        <div id="unpinned-header" class="hidden-view flex items-center gap-3 mb-6">
+                             <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            </div>
+                            <h3 class="text-xs font-black text-gray-400 uppercase tracking-widest">Recent Archive</h3>
                         </div>
+                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-5"></div>
                     </div>
                     
-                    <!-- Empty State -->
-                    <div id="empty-state" class="hidden-view col-span-full flex flex-col items-center justify-center h-64 text-gray-400">
-                        <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                        <p class="text-lg font-medium">No links saved yet!</p>
-                        <p class="text-sm mt-1">Click the + button to add your first Telegram link.</p>
+                    <!-- EMPTY STATE -->
+                    <div id="empty-state" class="hidden-view flex flex-col items-center justify-center py-20 text-center">
+                        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mb-6">
+                            <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">No Links Found</h4>
+                        <p class="text-gray-500 max-w-xs text-sm">Organize your telegram groups and channels by creating your first archive card.</p>
+                        <button onclick="window.openModal()" class="mt-8 bg-blue-600 text-white px-8 py-3 rounded-xl font-bold active:scale-95 transition-all">Add Card</button>
                     </div>
                 </div>
 
                 <!-- SETTINGS TAB -->
-                <div id="tab-settings" class="hidden-view max-w-xl mx-auto space-y-6">
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4">Appearance</h3>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <svg id="theme-icon-dark" class="hidden w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                                <svg id="theme-icon-light" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                <span>Dark Mode</span>
+                <div id="tab-settings" class="hidden-view max-w-2xl mx-auto space-y-6 page-transition">
+                    <div class="bg-white dark:bg-gray-900 rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <h3 class="text-lg font-black mb-6 flex items-center gap-2 uppercase tracking-tight text-xs text-gray-400">Appearance</h3>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-white dark:bg-gray-900 p-2 rounded-xl shadow-sm">
+                                    <svg id="theme-icon-light" class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                    <svg id="theme-icon-dark" class="hidden w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                                </div>
+                                <span class="font-bold">Dark Mode</span>
                             </div>
-                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-12 h-6 rounded-full transition-colors relative bg-gray-300">
-                                <div id="theme-toggle-dot" class="w-4 h-4 rounded-full bg-white absolute top-1 transition-transform translate-x-1"></div>
+                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-14 h-8 rounded-full transition-all relative bg-gray-300">
+                                <div id="theme-toggle-dot" class="w-6 h-6 rounded-full bg-white absolute top-1 left-1 transition-all"></div>
                             </button>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4 text-red-500">Danger Zone</h3>
-                        <button id="btn-logout" class="flex items-center gap-2 text-red-500 hover:text-red-600 font-medium px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            Sign Out
+                    <div class="bg-white dark:bg-gray-900 rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-sm">
+                        <h3 class="text-lg font-black mb-6 uppercase tracking-tight text-xs text-gray-400">Account</h3>
+                        <button id="btn-logout" class="flex items-center gap-3 text-red-500 hover:text-red-600 font-bold p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl transition-all w-full active:scale-95">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Log out of all sessions
                         </button>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- MOBILE BOTTOM NAVIGATION BAR -->
-        <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-center p-3 pb-safe z-50">
-            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="nav-btn flex flex-col items-center gap-1 p-2 text-blue-600 dark:text-blue-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span class="text-[10px] font-medium">Home</span>
+        <!-- MOBILE NAV -->
+        <nav class="lg:hidden fixed bottom-6 left-6 right-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-2xl border border-gray-100 dark:border-gray-800 rounded-[2rem] flex justify-around items-center p-3 shadow-2xl z-40">
+            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="flex flex-col items-center gap-1 p-3 text-blue-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
             </button>
-            
-            <button onclick="window.openModal()" id="btn-add-mobile" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg shadow-blue-500/30 transform -translate-y-5">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <button onclick="window.openModal()" class="bg-blue-600 text-white rounded-2xl p-4 shadow-xl shadow-blue-500/40 transform -translate-y-4 active:scale-90 transition-all">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
             </button>
-
-            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span class="text-[10px] font-medium">Settings</span>
+            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="flex flex-col items-center gap-1 p-3 text-gray-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
             </button>
         </nav>
     </div>
 
-    <!-- ADD LINK MODAL -->
-    <div id="add-modal" class="hidden-view fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl transition-all relative">
-            <button onclick="window.closeModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-            <h2 class="text-xl font-bold mb-4">Add New Card</h2>
-            <form id="add-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Card Title</label>
-                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Profile Image URL (Optional)</label>
-                    <input type="url" id="input-image" placeholder="Paste an image link here..." class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
-                </div>
-                
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
-                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Telegram Links</label>
-                    <div id="dynamic-links-container" class="space-y-3">
-                        <!-- Default first link -->
-                        <div class="link-entry flex gap-2 items-center">
-                            <input type="text" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                            <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                            <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <button type="button" onclick="window.addLinkField()" class="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Add another link
-                    </button>
-                </div>
-
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-xl font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                        Cancel
-                    </button>
-                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors flex justify-center items-center">
-                        Save Card
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- LINK SELECTOR POPUP -->
-    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="select-modal-title">Select a link to open</h3>
-                <button onclick="window.closeLinkModal()" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <!-- MODAL -->
+    <div id="add-modal" class="hidden-view fixed inset-0 bg-gray-950/60 backdrop-blur-md z-[100] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-900 w-full max-w-xl max-h-[85vh] overflow-hidden rounded-[2.5rem] shadow-2xl transition-all relative flex flex-col">
+            <div class="p-8 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center">
+                <h2 id="modal-heading" class="text-2xl font-black tracking-tight">Create Card</h2>
+                <button onclick="window.closeModal()" class="p-2 bg-gray-100 dark:bg-gray-800 rounded-xl hover:scale-110 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">This card has multiple links attached.</p>
-            <div id="select-modal-links" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-                <!-- Buttons injected dynamically -->
+            
+            <form id="add-form" class="flex-1 overflow-y-auto p-8 space-y-6">
+                <div>
+                    <label class="block text-[10px] font-black uppercase text-gray-400 mb-2 tracking-widest">General Info</label>
+                    <div class="space-y-4">
+                        <input type="text" id="input-title" placeholder="Card Title (e.g. Mathematics 101)" required class="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-400" />
+                        <input type="url" id="input-image" placeholder="Cover Image URL (Optional)" class="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none focus:ring-4 focus:ring-blue-500/20 transition-all placeholder:text-gray-400" />
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-[10px] font-black uppercase text-gray-400 tracking-widest">Telegram Links</label>
+                        <button type="button" onclick="window.addLinkField()" class="text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-lg hover:scale-105 transition-all">+ Add Link</button>
+                    </div>
+                    <div id="dynamic-links-container" class="space-y-3"></div>
+                </div>
+            </form>
+
+            <div class="p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50 flex gap-4">
+                <button type="button" onclick="window.closeModal()" class="flex-1 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800 transition-all">Discard</button>
+                <button type="submit" form="add-form" id="btn-save" class="flex-[2] py-4 rounded-2xl font-black bg-blue-600 hover:bg-blue-700 text-white transition-all shadow-xl shadow-blue-500/30 active:scale-95">Save Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- FIREBASE & APP LOGIC -->
+    <!-- LINK PICKER -->
+    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-gray-950/80 backdrop-blur-xl z-[110] flex items-center justify-center p-6">
+        <div class="bg-white dark:bg-gray-900 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl scale-100">
+            <h3 class="text-2xl font-black mb-2 tracking-tight" id="select-modal-title">Open Link</h3>
+            <p class="text-sm text-gray-400 mb-8 font-medium">Multiple destinations found for this card.</p>
+            <div id="select-modal-links" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+            <button onclick="window.closeLinkModal()" class="w-full mt-6 py-4 font-bold text-gray-400">Close</button>
+        </div>
+    </div>
+
+    <!-- ACTION MENU -->
+    <div id="action-menu" class="menu-closed fixed z-[150] bg-white dark:bg-gray-900 rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.4)] border border-gray-100 dark:border-gray-800 flex items-center p-3 gap-2 transition-all duration-300">
+        <button onclick="window.triggerAction('pin')" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 group w-16 transition-all active:scale-90">
+            <svg id="icon-action-pin" class="w-6 h-6 text-gray-400 group-hover:text-yellow-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+        </button>
+        <div class="w-px h-10 bg-gray-100 dark:bg-gray-800"></div>
+        <button onclick="window.triggerAction('edit')" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 group w-16 transition-all active:scale-90">
+            <svg class="w-6 h-6 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+        </button>
+        <div class="w-px h-10 bg-gray-100 dark:bg-gray-800"></div>
+        <button onclick="window.triggerAction('delete')" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-red-50 dark:hover:bg-red-900/20 group w-16 transition-all active:scale-90">
+            <svg class="w-6 h-6 text-gray-400 group-hover:text-red-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+        </button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -258,55 +312,42 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const APP_ID = 'studyflow-pro';
+        const APP_ID = 'studyflow-pro-v2';
 
-        // State variables
         let currentUser = null;
         let activeTab = 'home';
         let isDarkMode = false;
         let linksUnsubscribe = null;
-        let allLinksData = []; // Store fetched links locally for popups
+        let allLinksData = []; 
+        let editingCardId = null;
+        let actionMenuTargetId = null;
+        let actionMenuTargetIsPinned = false;
+        let sortablePinned, sortableUnpinned;
 
-        // Sortable instances
-        let sortablePinned = null;
-        let sortableUnpinned = null;
-
-        // DOM Elements
         const elLoading = document.getElementById('loading-screen');
         const elLogin = document.getElementById('login-screen');
         const elApp = document.getElementById('app-screen');
-        
-        const elPinnedSection = document.getElementById('pinned-section');
         const elPinnedContainer = document.getElementById('pinned-container');
         const elUnpinnedContainer = document.getElementById('unpinned-container');
-        const elUnpinnedTitle = document.getElementById('unpinned-title');
-        const elEmptyState = document.getElementById('empty-state');
-        
         const elModal = document.getElementById('add-modal');
-        const elLinkModal = document.getElementById('link-select-modal');
-        const elAddForm = document.getElementById('add-form');
+        const elActionMenu = document.getElementById('action-menu');
 
-        // --- INITIALIZATION ---
+        // Initialization (Suruvat)
         function init() {
-            // Setup Theme
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
+            if (localStorage.getItem('theme') === 'dark') {
                 isDarkMode = true;
                 document.documentElement.classList.add('dark');
                 updateThemeUI();
             }
 
-            // Listen for Auth changes
             onAuthStateChanged(auth, (user) => {
-                elLoading.classList.add('hidden-view');
+                elLoading.style.display = 'none';
                 if (user) {
                     currentUser = user;
                     elLogin.classList.add('hidden-view');
                     elApp.classList.remove('hidden-view');
-                    
                     document.getElementById('user-name').textContent = user.displayName;
-                    document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
-                    
+                    document.getElementById('user-avatar').src = user.photoURL;
                     fetchLinks();
                 } else {
                     currentUser = null;
@@ -315,378 +356,216 @@
                     if (linksUnsubscribe) linksUnsubscribe();
                 }
             });
+
+            document.addEventListener('click', (e) => {
+                if (!elActionMenu.contains(e.target) && !e.target.closest('.action-btn-trigger')) closeActionMenu();
+            });
         }
 
-        // --- AUTH FUNCTIONS ---
-        document.getElementById('btn-login').addEventListener('click', async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Login Error:", error);
-            }
-        });
+        // Auth
+        document.getElementById('btn-login').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
 
-        document.getElementById('btn-logout').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-            } catch (error) {
-                console.error("Logout Error:", error);
-            }
-        });
-
-        // --- FIRESTORE DATA ---
+        // Fetch Data
         function fetchLinks() {
-            if (!currentUser) return;
-            
-            const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
-            
-            linksUnsubscribe = onSnapshot(linksColRef, (snapshot) => {
-                const links = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
-                
-                // Sort links:
-                // 1. Pinned status
-                // 2. Custom Order (if drag-dropped)
-                // 3. Fallback to newest first
-                links.sort((a, b) => {
-                    if (a.isPinned && !b.isPinned) return -1;
-                    if (!a.isPinned && b.isPinned) return 1;
-                    
-                    const orderA = a.order !== undefined ? a.order : 99999;
-                    const orderB = b.order !== undefined ? b.order : 99999;
-                    if (orderA !== orderB) return orderA - orderB;
-                    
-                    const timeA = a.createdAt?.toMillis() || 0;
-                    const timeB = b.createdAt?.toMillis() || 0;
-                    return timeB - timeA;
-                });
-                
+            const colRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
+            linksUnsubscribe = onSnapshot(colRef, (snap) => {
+                const links = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                links.sort((a,b) => (a.order || 0) - (b.order || 0));
                 allLinksData = links;
                 renderLinks(links);
-            }, (error) => {
-                console.error("Error fetching links: ", error);
             });
         }
 
         function renderLinks(links) {
-            // Reset Views
-            elPinnedSection.classList.add('hidden-view');
-            elUnpinnedTitle.classList.add('hidden-view');
-            elEmptyState.classList.add('hidden-view');
             elPinnedContainer.innerHTML = '';
             elUnpinnedContainer.innerHTML = '';
+            const pinned = links.filter(l => l.isPinned);
+            const unpinned = links.filter(l => !l.isPinned);
 
-            if (links.length === 0) {
-                elEmptyState.classList.remove('hidden-view');
-                initDragAndDrop();
-                return;
-            }
+            document.getElementById('pinned-section').classList.toggle('hidden-view', pinned.length === 0);
+            document.getElementById('unpinned-header').classList.toggle('hidden-view', unpinned.length === 0);
+            document.getElementById('empty-state').classList.toggle('hidden-view', links.length > 0);
 
-            const pinnedLinks = links.filter(l => l.isPinned);
-            const unpinnedLinks = links.filter(l => !l.isPinned);
-
-            if (pinnedLinks.length > 0) {
-                elPinnedSection.classList.remove('hidden-view');
-                elPinnedContainer.innerHTML = pinnedLinks.map(createCardHTML).join('');
-            }
-
-            if (unpinnedLinks.length > 0) {
-                if (pinnedLinks.length > 0) elUnpinnedTitle.classList.remove('hidden-view');
-                elUnpinnedContainer.innerHTML = unpinnedLinks.map(createCardHTML).join('');
-            }
-
+            pinned.forEach(l => elPinnedContainer.insertAdjacentHTML('beforeend', createCardHTML(l)));
+            unpinned.forEach(l => elUnpinnedContainer.insertAdjacentHTML('beforeend', createCardHTML(l)));
             initDragAndDrop();
         }
 
-        function createCardHTML(link) {
-            // Backwards compatibility for old records with single URL
-            let linksArray = link.links || [];
-            if (linksArray.length === 0 && link.url) {
-                linksArray = [{ name: 'Main Link', url: link.url }];
-            }
-
-            const pinIconColor = link.isPinned ? "text-yellow-500 fill-yellow-500" : "text-gray-400 fill-none";
-            const linkCountBadge = linksArray.length > 1 
-                ? `<span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-xs px-2 py-0.5 rounded-full ml-2 font-medium">${linksArray.length} links</span>` 
-                : '';
-
+        function createCardHTML(l) {
+            const count = (l.links || []).length;
+            const img = l.imageUrl ? `<img src="${l.imageUrl}" class="w-full h-full object-cover">` : `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`;
+            
             return `
-                <div class="group bg-white dark:bg-gray-800 rounded-2xl p-3 pr-4 shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 flex items-center gap-2 relative transition-all" data-id="${link.id}">
-                    
-                    <!-- Drag Handle -->
-                    <div class="drag-handle cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-gray-500 transition-colors hidden sm:block">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path></svg>
+                <div class="group card-appear bg-white dark:bg-gray-900 rounded-[2rem] p-4 pr-3 border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-xl hover:scale-[1.02] transition-all flex items-center gap-4 relative" data-id="${l.id}">
+                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1 text-gray-200 hover:text-gray-400 hidden sm:block">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path></svg>
                     </div>
-
-                    <!-- Main Clickable Area -->
-                    <div onclick="window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-3 cursor-pointer overflow-hidden py-1">
-                        <div class="shrink-0 w-12 h-12 rounded-full overflow-hidden bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center border border-gray-100 dark:border-gray-700">
-                            ${link.imageUrl ? 
-                                `<img src="${link.imageUrl}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : 
-                                `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
-                            }
+                    <div onclick="window.handleCardClick('${l.id}')" class="flex-1 flex items-center gap-4 cursor-pointer overflow-hidden py-1">
+                        <div class="shrink-0 w-14 h-14 rounded-2xl overflow-hidden bg-gray-50 dark:bg-gray-800 flex items-center justify-center border border-gray-100 dark:border-gray-800">
+                            ${img}
                         </div>
-                        <div class="flex-1 min-w-0 pr-12">
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate flex items-center">
-                                ${link.title}
-                                ${linkCountBadge}
-                            </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5 flex items-center gap-1">
-                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                                ${linksArray.length === 1 ? linksArray[0].name || 'Link' : 'Tap to select link'}
-                            </p>
+                        <div class="min-w-0">
+                            <h3 class="text-base font-bold text-gray-900 dark:text-white truncate">${l.title}</h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-lg font-black uppercase tracking-tighter">${count} Links</span>
+                                <span class="text-[10px] text-gray-400 font-bold uppercase truncate">Tap to View</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- Actions -->
-                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center flex-col sm:flex-row opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onclick="event.stopPropagation(); window.togglePin('${link.id}', ${!!link.isPinned})" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors" title="Pin Card">
-                            <svg class="w-5 h-5 ${pinIconColor}" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-                        </button>
-                        <button onclick="event.stopPropagation(); window.deleteLink('${link.id}')" class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors" title="Delete Card">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
+                    <button onclick="window.openActionMenu(event, '${l.id}', ${!!l.isPinned})" class="action-btn-trigger p-3 text-gray-300 hover:text-blue-600 rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all shrink-0 active:scale-90">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"></path></svg>
+                    </button>
                 </div>
             `;
         }
 
-        // --- DRAG AND DROP (SortableJS) ---
         function initDragAndDrop() {
-            if (sortablePinned) sortablePinned.destroy();
-            if (sortableUnpinned) sortableUnpinned.destroy();
-
-            const commonConfig = {
-                animation: 150,
-                handle: '.drag-handle', // use drag handle to prevent touch issue
-                delay: 100, // small delay for mobile touch-and-hold
-                delayOnTouchOnly: true,
-                onEnd: async function (evt) {
-                    const container = evt.to;
-                    const items = container.children;
+            const config = {
+                animation: 400,
+                handle: '.drag-handle',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                onEnd: async (e) => {
+                    const items = e.to.children;
                     for(let i=0; i<items.length; i++) {
                         const id = items[i].dataset.id;
-                        if(id && currentUser) {
-                            const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
-                            // Avoid awaiting to prevent UI blocking
-                            updateDoc(docRef, { order: i }).catch(e => console.error(e));
-                        }
+                        await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id), { order: i });
                     }
                 }
             };
-
-            sortablePinned = Sortable.create(elPinnedContainer, commonConfig);
-            sortableUnpinned = Sortable.create(elUnpinnedContainer, commonConfig);
+            if(sortablePinned) sortablePinned.destroy();
+            if(sortableUnpinned) sortableUnpinned.destroy();
+            sortablePinned = Sortable.create(elPinnedContainer, config);
+            sortableUnpinned = Sortable.create(elUnpinnedContainer, config);
         }
 
-        // --- ACTION HANDLERS ---
+        // Action Menu Logic
+        window.openActionMenu = (e, id, pinned) => {
+            e.stopPropagation();
+            actionMenuTargetId = id;
+            actionMenuTargetIsPinned = pinned;
+            const rect = e.currentTarget.getBoundingClientRect();
+            
+            const pinIcon = document.getElementById('icon-action-pin');
+            if(pinned) { pinIcon.classList.add('fill-yellow-500', 'text-yellow-500'); } 
+            else { pinIcon.classList.remove('fill-yellow-500', 'text-yellow-500'); }
+
+            elActionMenu.style.top = `${rect.top - 90}px`;
+            elActionMenu.style.left = `${rect.left - 80}px`;
+            elActionMenu.classList.replace('menu-closed', 'menu-open');
+        };
+
+        function closeActionMenu() { elActionMenu.classList.replace('menu-open', 'menu-closed'); }
+
+        window.triggerAction = async (type) => {
+            const id = actionMenuTargetId;
+            closeActionMenu();
+            if(type === 'pin') await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id), { isPinned: !actionMenuTargetIsPinned });
+            else if(type === 'delete') await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
+            else if(type === 'edit') window.editCard(id);
+        };
+
         window.handleCardClick = (id) => {
-            const linkData = allLinksData.find(l => l.id === id);
-            if(!linkData) return;
-
-            let linksArray = linkData.links || [];
-            if (linksArray.length === 0 && linkData.url) {
-                linksArray = [{ name: 'Main Link', url: linkData.url }];
-            }
-
-            if (linksArray.length === 1) {
-                window.open(linksArray[0].url, '_blank');
-            } else if (linksArray.length > 1) {
-                // Show Popup
-                document.getElementById('select-modal-title').innerText = linkData.title;
-                const linksContainer = document.getElementById('select-modal-links');
-                
-                linksContainer.innerHTML = linksArray.map(l => `
-                    <button onclick="window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors flex justify-between items-center group">
-                        <span class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${l.name}</span>
-                        <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+            const data = allLinksData.find(l => l.id === id);
+            const links = data.links || [];
+            if(links.length === 1) window.open(links[0].url, '_blank');
+            else {
+                document.getElementById('select-modal-title').innerText = data.title;
+                const container = document.getElementById('select-modal-links');
+                container.innerHTML = links.map(l => `
+                    <button onclick="window.open('${l.url}', '_blank')" class="w-full text-left p-5 bg-gray-50 dark:bg-gray-800 rounded-2xl flex justify-between items-center group active:scale-95 transition-all">
+                        <span class="font-bold text-gray-800 dark:text-gray-200">${l.name}</span>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                 `).join('');
-                
-                elLinkModal.classList.remove('hidden-view');
+                document.getElementById('link-select-modal').classList.remove('hidden-view');
             }
         };
 
-        window.togglePin = async (id, currentStatus) => {
-            if (!currentUser) return;
-            try {
-                const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
-                await updateDoc(docRef, { isPinned: !currentStatus });
-            } catch (error) {
-                console.error("Error pinning: ", error);
-            }
-        };
-
-        window.deleteLink = async (id) => {
-            if (!currentUser) return;
-            if(!confirm("Are you sure you want to delete this card?")) return;
-            try {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
-            } catch (error) {
-                console.error("Error deleting: ", error);
-            }
-        };
-
-        // --- ADD MODAL DYNAMIC LINKS ---
-        window.addLinkField = () => {
+        window.editCard = (id) => {
+            const l = allLinksData.find(x => x.id === id);
+            editingCardId = id;
+            document.getElementById('modal-heading').innerText = "Edit Card";
+            document.getElementById('input-title').value = l.title;
+            document.getElementById('input-image').value = l.imageUrl || '';
             const container = document.getElementById('dynamic-links-container');
-            const newDiv = document.createElement('div');
-            newDiv.className = 'link-entry flex gap-2 items-center';
-            newDiv.innerHTML = `
-                <input type="text" placeholder="Name (e.g. Part 2)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            container.innerHTML = '';
+            (l.links || []).forEach(link => window.addLinkField(link.name, link.url));
+            elModal.classList.remove('hidden-view');
+        };
+
+        window.addLinkField = (name='', url='') => {
+            const container = document.getElementById('dynamic-links-container');
+            const div = document.createElement('div');
+            div.className = 'flex gap-3 items-center group';
+            div.innerHTML = `
+                <input type="text" value="${name}" placeholder="Name" required class="link-name flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-sm border-none focus:ring-2 focus:ring-blue-500" />
+                <input type="url" value="${url}" placeholder="URL" required class="link-url flex-[2] px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 text-sm border-none focus:ring-2 focus:ring-blue-500" />
+                <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-400 hover:text-red-600 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
             `;
-            container.appendChild(newDiv);
+            container.appendChild(div);
         };
 
-        elAddForm.addEventListener('submit', async (e) => {
+        document.getElementById('add-form').onsubmit = async (e) => {
             e.preventDefault();
-            if (!currentUser) return;
-
-            const title = document.getElementById('input-title').value;
-            const img = document.getElementById('input-image').value;
             const btn = document.getElementById('btn-save');
-
-            // Gather dynamic links
-            const linkEntries = document.querySelectorAll('.link-entry');
-            const links = [];
-            linkEntries.forEach(entry => {
-                const name = entry.querySelector('.link-name').value;
-                const url = entry.querySelector('.link-url').value;
-                if(name && url) {
-                    links.push({ name, url });
-                }
-            });
-
-            if(links.length === 0) {
-                alert("Please add at least one valid link.");
-                return;
-            }
-
             btn.disabled = true;
-            btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>`;
+            const links = Array.from(document.querySelectorAll('#dynamic-links-container > div')).map(div => ({
+                name: div.querySelector('.link-name').value,
+                url: div.querySelector('.link-url').value
+            }));
+            const payload = {
+                title: document.getElementById('input-title').value,
+                imageUrl: document.getElementById('input-image').value,
+                links: links,
+                updatedAt: serverTimestamp()
+            };
+            if(editingCardId) await updateDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', editingCardId), payload);
+            else await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks'), {...payload, isPinned: false, order: 999, createdAt: serverTimestamp()});
+            window.closeModal();
+            btn.disabled = false;
+        };
 
-            try {
-                const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
-                await addDoc(linksColRef, {
-                    title: title,
-                    links: links,
-                    imageUrl: img || '',
-                    isPinned: false,
-                    order: 0,
-                    createdAt: serverTimestamp()
-                });
-                
-                elAddForm.reset();
-                // reset dynamic inputs to 1
-                document.getElementById('dynamic-links-container').innerHTML = `
-                    <div class="link-entry flex gap-2 items-center">
-                        <input type="text" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                        <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
-                `;
-                window.closeModal();
-            } catch (error) {
-                console.error("Error adding document: ", error);
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Save Card';
-            }
-        });
-
-        // --- UI UTILS ---
         window.switchTab = (tab) => {
-            activeTab = tab;
-            
             document.getElementById('tab-home').classList.toggle('hidden-view', tab !== 'home');
             document.getElementById('tab-settings').classList.toggle('hidden-view', tab !== 'settings');
-            document.getElementById('btn-add-desktop').classList.toggle('hidden-view', tab !== 'home');
-            document.getElementById('btn-add-mobile').classList.toggle('hidden-view', tab !== 'home');
+            document.getElementById('header-title').innerText = tab === 'home' ? 'Archive' : 'Settings';
+            document.getElementById('header-subtitle').innerText = tab === 'home' ? 'Managing all your links' : 'Configuration';
             
-            document.getElementById('header-title').textContent = tab === 'home' ? 'My Links' : 'Settings';
-
-            const activeClassDesk = ['bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-600', 'dark:text-blue-400', 'font-medium'];
-            const inactiveClassDesk = ['hover:bg-gray-100', 'dark:hover:bg-gray-700/50'];
-            
-            const btnHomeD = document.getElementById('nav-home-desktop');
-            const btnSetD = document.getElementById('nav-settings-desktop');
-            
-            if (tab === 'home') {
-                btnHomeD.classList.remove(...inactiveClassDesk);
-                btnHomeD.classList.add(...activeClassDesk);
-                btnSetD.classList.remove(...activeClassDesk);
-                btnSetD.classList.add(...inactiveClassDesk);
-                
-                document.getElementById('nav-home-mobile').classList.replace('text-gray-500', 'text-blue-600');
-                document.getElementById('nav-home-mobile').classList.replace('dark:text-gray-400', 'dark:text-blue-400');
-                document.getElementById('nav-settings-mobile').classList.replace('text-blue-600', 'text-gray-500');
-                document.getElementById('nav-settings-mobile').classList.replace('dark:text-blue-400', 'dark:text-gray-400');
-            } else {
-                btnSetD.classList.remove(...inactiveClassDesk);
-                btnSetD.classList.add(...activeClassDesk);
-                btnHomeD.classList.remove(...activeClassDesk);
-                btnHomeD.classList.add(...inactiveClassDesk);
-
-                document.getElementById('nav-settings-mobile').classList.replace('text-gray-500', 'text-blue-600');
-                document.getElementById('nav-settings-mobile').classList.replace('dark:text-gray-400', 'dark:text-blue-400');
-                document.getElementById('nav-home-mobile').classList.replace('text-blue-600', 'text-gray-500');
-                document.getElementById('nav-home-mobile').classList.replace('dark:text-blue-400', 'dark:text-gray-400');
-            }
+            // Icon highlight
+            const hMobile = document.getElementById('nav-home-mobile');
+            const sMobile = document.getElementById('nav-settings-mobile');
+            if(tab === 'home') { hMobile.classList.add('text-blue-600'); sMobile.classList.remove('text-blue-600'); sMobile.classList.add('text-gray-400'); }
+            else { sMobile.classList.add('text-blue-600'); sMobile.classList.remove('text-gray-400'); hMobile.classList.remove('text-blue-600'); hMobile.classList.add('text-gray-400'); }
         };
 
         window.toggleTheme = () => {
             isDarkMode = !isDarkMode;
-            if (isDarkMode) {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            }
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
             updateThemeUI();
         };
 
         function updateThemeUI() {
-            const btn = document.getElementById('btn-theme');
             const dot = document.getElementById('theme-toggle-dot');
-            const iconDark = document.getElementById('theme-icon-dark');
-            const iconLight = document.getElementById('theme-icon-light');
-
-            if (isDarkMode) {
-                btn.classList.replace('bg-gray-300', 'bg-blue-500');
-                dot.classList.replace('translate-x-1', 'translate-x-7');
-                iconDark.classList.remove('hidden');
-                iconLight.classList.add('hidden');
-            } else {
-                btn.classList.replace('bg-blue-500', 'bg-gray-300');
-                dot.classList.replace('translate-x-7', 'translate-x-1');
-                iconLight.classList.remove('hidden');
-                iconDark.classList.add('hidden');
-            }
+            const btn = document.getElementById('btn-theme');
+            if(isDarkMode) { dot.classList.replace('left-1', 'left-7'); btn.classList.replace('bg-gray-300', 'bg-blue-600'); document.getElementById('theme-icon-dark').classList.remove('hidden'); document.getElementById('theme-icon-light').classList.add('hidden'); }
+            else { dot.classList.replace('left-7', 'left-1'); btn.classList.replace('bg-blue-600', 'bg-gray-300'); document.getElementById('theme-icon-light').classList.remove('hidden'); document.getElementById('theme-icon-dark').classList.add('hidden'); }
         }
 
         window.openModal = () => {
+            editingCardId = null;
+            document.getElementById('add-form').reset();
+            document.getElementById('dynamic-links-container').innerHTML = '';
+            window.addLinkField();
             elModal.classList.remove('hidden-view');
         };
+        window.closeModal = () => elModal.classList.add('hidden-view');
+        window.closeLinkModal = () => document.getElementById('link-select-modal').classList.add('hidden-view');
 
-        window.closeModal = () => {
-            elModal.classList.add('hidden-view');
-        };
-
-        window.closeLinkModal = () => {
-            elLinkModal.classList.add('hidden-view');
-        }
-
-        // Start App
         init();
     </script>
 </body>
