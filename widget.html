@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="si" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Study Master - Telegram Links</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        blue: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"}
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Hide elements dynamically */
+        .hidden-view { display: none !important; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
+
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900 absolute inset-0 z-50">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="hidden-view flex items-center justify-center h-screen w-full px-4">
+        <div class="p-8 rounded-2xl shadow-xl max-w-sm w-full text-center bg-white dark:bg-gray-800">
+            <div class="bg-blue-100 dark:bg-blue-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <!-- Send Icon -->
+                <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </div>
+            <h1 class="text-2xl font-bold mb-2">Study Master</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Save your important Telegram links easily.</p>
+            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2">
+                Sign in with Google
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN APP APP -->
+    <div id="app-screen" class="hidden-view flex h-screen w-full">
+        
+        <!-- DESKTOP SIDEBAR -->
+        <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-0 h-screen">
+            <div class="p-6 flex items-center gap-3">
+                <div class="bg-blue-500 text-white p-2 rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </div>
+                <h1 class="font-bold text-xl">Study Master</h1>
+            </div>
+            
+            <nav class="flex-1 px-4 space-y-2 mt-4">
+                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Dashboard
+                </button>
+                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Settings
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center gap-3 mb-4 px-2">
+                    <img id="user-avatar" src="" alt="Profile" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-600" />
+                    <div class="overflow-hidden">
+                        <p id="user-name" class="text-sm font-medium truncate">User</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 w-full max-w-4xl mx-auto flex flex-col h-screen overflow-hidden relative">
+            
+            <!-- Header -->
+            <header class="px-6 py-5 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-10">
+                <h2 id="header-title" class="text-2xl font-bold capitalize">My Links</h2>
+                <button onclick="window.openModal()" id="btn-add-desktop" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg shadow-blue-500/30 transition-transform active:scale-95 flex items-center justify-center">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span class="hidden md:inline ml-2 pr-2 font-medium">Add Link</span>
+                </button>
+            </header>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6">
+                
+                <!-- HOME TAB -->
+                <div id="tab-home">
+                    <div id="links-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Links will be injected here via JS -->
+                    </div>
+                </div>
+
+                <!-- SETTINGS TAB -->
+                <div id="tab-settings" class="hidden-view max-w-xl mx-auto space-y-6">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4">Appearance</h3>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <svg id="theme-icon-dark" class="hidden w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                                <svg id="theme-icon-light" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                <span>Dark Mode</span>
+                            </div>
+                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-12 h-6 rounded-full transition-colors relative bg-gray-300">
+                                <div id="theme-toggle-dot" class="w-4 h-4 rounded-full bg-white absolute top-1 transition-transform translate-x-1"></div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
+                        <h3 class="text-lg font-semibold mb-4 text-red-500">Danger Zone</h3>
+                        <button id="btn-logout" class="flex items-center gap-2 text-red-500 hover:text-red-600 font-medium px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Sign Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- MOBILE BOTTOM NAVIGATION BAR -->
+        <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-center p-3 pb-safe z-50">
+            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="nav-btn flex flex-col items-center gap-1 p-2 text-blue-600 dark:text-blue-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-[10px] font-medium">Home</span>
+            </button>
+            
+            <button onclick="window.openModal()" id="btn-add-mobile" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg shadow-blue-500/30 transform -translate-y-5">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            </button>
+
+            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[10px] font-medium">Settings</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- ADD LINK MODAL -->
+    <div id="add-modal" class="hidden-view fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl p-6 shadow-2xl transition-all">
+            <h2 class="text-xl font-bold mb-4">Add New Link</h2>
+            <form id="add-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Name / Title</label>
+                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Telegram Link</label>
+                    <input type="url" id="input-url" placeholder="https://t.me/c/..." required class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Profile Image URL (Optional)</label>
+                    <input type="url" id="input-image" placeholder="Paste an image link here..." class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                    <p class="text-xs text-gray-500 mt-1">If left blank, a default icon will be used.</p>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-xl font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                        Cancel
+                    </button>
+                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors flex justify-center items-center">
+                        Save Link
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+            measurementId: "G-CWQB2330GF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const APP_ID = 'studyflow-pro';
+
+        // State variables
+        let currentUser = null;
+        let activeTab = 'home';
+        let isDarkMode = false;
+        let linksUnsubscribe = null;
+
+        // DOM Elements
+        const elLoading = document.getElementById('loading-screen');
+        const elLogin = document.getElementById('login-screen');
+        const elApp = document.getElementById('app-screen');
+        const elLinksContainer = document.getElementById('links-container');
+        const elModal = document.getElementById('add-modal');
+        const elAddForm = document.getElementById('add-form');
+
+        // --- INITIALIZATION ---
+        function init() {
+            // Setup Theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                isDarkMode = true;
+                document.documentElement.classList.add('dark');
+                updateThemeUI();
+            }
+
+            // Listen for Auth changes
+            onAuthStateChanged(auth, (user) => {
+                elLoading.classList.add('hidden-view');
+                if (user) {
+                    currentUser = user;
+                    elLogin.classList.add('hidden-view');
+                    elApp.classList.remove('hidden-view');
+                    
+                    // Update user profile info
+                    document.getElementById('user-name').textContent = user.displayName;
+                    document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
+                    
+                    fetchLinks();
+                } else {
+                    currentUser = null;
+                    elApp.classList.add('hidden-view');
+                    elLogin.classList.remove('hidden-view');
+                    if (linksUnsubscribe) linksUnsubscribe();
+                }
+            });
+        }
+
+        // --- AUTH FUNCTIONS ---
+        document.getElementById('btn-login').addEventListener('click', async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Login Error:", error);
+            }
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error("Logout Error:", error);
+            }
+        });
+
+        // --- FIRESTORE DATA ---
+        function fetchLinks() {
+            if (!currentUser) return;
+            
+            const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
+            
+            linksUnsubscribe = onSnapshot(linksColRef, (snapshot) => {
+                const links = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                // Sort by time
+                links.sort((a, b) => {
+                    const timeA = a.createdAt?.toMillis() || 0;
+                    const timeB = b.createdAt?.toMillis() || 0;
+                    return timeB - timeA;
+                });
+                
+                renderLinks(links);
+            }, (error) => {
+                console.error("Error fetching links: ", error);
+            });
+        }
+
+        function renderLinks(links) {
+            if (links.length === 0) {
+                elLinksContainer.innerHTML = `
+                    <div class="col-span-full flex flex-col items-center justify-center h-64 text-gray-400">
+                        <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <p class="text-lg font-medium">No links saved yet!</p>
+                        <p class="text-sm">Click the + button to add your first Telegram link.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            elLinksContainer.innerHTML = links.map(link => `
+                <div onclick="window.open('${link.url}', '_blank')" class="group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 cursor-pointer transition-all hover:-translate-y-1 relative">
+                    <div class="flex items-center gap-4">
+                        <div class="shrink-0 w-12 h-12 rounded-full overflow-hidden bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                            ${link.imageUrl ? 
+                                `<img src="${link.imageUrl}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : 
+                                `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
+                            }
+                        </div>
+                        <div class="flex-1 min-w-0 pr-8">
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">${link.title}</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5 flex items-center gap-1">
+                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                ${link.url.replace(/^https?:\/\//, '')}
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="event.stopPropagation(); window.deleteLink('${link.id}')" class="absolute top-1/2 -translate-y-1/2 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        window.deleteLink = async (id) => {
+            if (!currentUser) return;
+            try {
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
+            } catch (error) {
+                console.error("Error deleting: ", error);
+            }
+        };
+
+        // --- FORM HANDLING ---
+        elAddForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) return;
+
+            const title = document.getElementById('input-title').value;
+            const url = document.getElementById('input-url').value;
+            const img = document.getElementById('input-image').value;
+            const btn = document.getElementById('btn-save');
+
+            btn.disabled = true;
+            btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>`;
+
+            try {
+                const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
+                await addDoc(linksColRef, {
+                    title: title,
+                    url: url,
+                    imageUrl: img || '',
+                    createdAt: serverTimestamp()
+                });
+                
+                elAddForm.reset();
+                window.closeModal();
+            } catch (error) {
+                console.error("Error adding document: ", error);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Save Link';
+            }
+        });
+
+        // --- UI UTILS (Attached to window for inline HTML access) ---
+        window.switchTab = (tab) => {
+            activeTab = tab;
+            
+            // Toggle Views
+            document.getElementById('tab-home').classList.toggle('hidden-view', tab !== 'home');
+            document.getElementById('tab-settings').classList.toggle('hidden-view', tab !== 'settings');
+            
+            // Toggle Buttons (Desktop Add Link & Mobile Add Link)
+            document.getElementById('btn-add-desktop').classList.toggle('hidden-view', tab !== 'home');
+            document.getElementById('btn-add-mobile').classList.toggle('hidden-view', tab !== 'home');
+            
+            // Update Title
+            document.getElementById('header-title').textContent = tab === 'home' ? 'My Links' : 'Settings';
+
+            // Update Nav Styles (Desktop & Mobile)
+            const activeClassDesk = ['bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-600', 'dark:text-blue-400', 'font-medium'];
+            const inactiveClassDesk = ['hover:bg-gray-100', 'dark:hover:bg-gray-700/50'];
+            
+            const btnHomeD = document.getElementById('nav-home-desktop');
+            const btnSetD = document.getElementById('nav-settings-desktop');
+            
+            if (tab === 'home') {
+                btnHomeD.classList.remove(...inactiveClassDesk);
+                btnHomeD.classList.add(...activeClassDesk);
+                btnSetD.classList.remove(...activeClassDesk);
+                btnSetD.classList.add(...inactiveClassDesk);
+                
+                document.getElementById('nav-home-mobile').classList.replace('text-gray-500', 'text-blue-600');
+                document.getElementById('nav-home-mobile').classList.replace('dark:text-gray-400', 'dark:text-blue-400');
+                document.getElementById('nav-settings-mobile').classList.replace('text-blue-600', 'text-gray-500');
+                document.getElementById('nav-settings-mobile').classList.replace('dark:text-blue-400', 'dark:text-gray-400');
+            } else {
+                btnSetD.classList.remove(...inactiveClassDesk);
+                btnSetD.classList.add(...activeClassDesk);
+                btnHomeD.classList.remove(...activeClassDesk);
+                btnHomeD.classList.add(...inactiveClassDesk);
+
+                document.getElementById('nav-settings-mobile').classList.replace('text-gray-500', 'text-blue-600');
+                document.getElementById('nav-settings-mobile').classList.replace('dark:text-gray-400', 'dark:text-blue-400');
+                document.getElementById('nav-home-mobile').classList.replace('text-blue-600', 'text-gray-500');
+                document.getElementById('nav-home-mobile').classList.replace('dark:text-blue-400', 'dark:text-gray-400');
+            }
+        };
+
+        window.toggleTheme = () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+            updateThemeUI();
+        };
+
+        function updateThemeUI() {
+            const btn = document.getElementById('btn-theme');
+            const dot = document.getElementById('theme-toggle-dot');
+            const iconDark = document.getElementById('theme-icon-dark');
+            const iconLight = document.getElementById('theme-icon-light');
+
+            if (isDarkMode) {
+                btn.classList.replace('bg-gray-300', 'bg-blue-500');
+                dot.classList.replace('translate-x-1', 'translate-x-7');
+                iconDark.classList.remove('hidden');
+                iconLight.classList.add('hidden');
+            } else {
+                btn.classList.replace('bg-blue-500', 'bg-gray-300');
+                dot.classList.replace('translate-x-7', 'translate-x-1');
+                iconLight.classList.remove('hidden');
+                iconDark.classList.add('hidden');
+            }
+        }
+
+        window.openModal = () => {
+            elModal.classList.remove('hidden-view');
+        };
+
+        window.closeModal = () => {
+            elModal.classList.add('hidden-view');
+            elAddForm.reset();
+        };
+
+        // Start App
+        init();
+    </script>
+</body>
+</html>
