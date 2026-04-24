@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html lang="si" class="light">
+<html lang="en" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Study Master - Telegram Links</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SortableJS for Drag and Drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -19,9 +21,32 @@
         }
     </script>
     <style>
-        /* Hide elements dynamically */
+        /* CSS Hide class */
         .hidden-view { display: none !important; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Drag and Drop Android-like Animations */
+        .sortable-ghost { opacity: 0; }
+        .sortable-chosen { 
+            transform: scale(1.03); 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
+            background: var(--bg-chosen, white); 
+            z-index: 40; 
+        }
+        .dark .sortable-chosen { --bg-chosen: #1f2937; }
+        .sortable-drag { opacity: 1 !important; cursor: grabbing !important; }
+        
+        /* Action Menu Animations */
+        .menu-open {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+        .menu-closed {
+            opacity: 0;
+            transform: scale(0.8) translateY(10px);
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
@@ -46,11 +71,11 @@
         </div>
     </div>
 
-    <!-- MAIN APP APP -->
+    <!-- MAIN APP SCREEN -->
     <div id="app-screen" class="hidden-view flex h-screen w-full">
         
         <!-- DESKTOP SIDEBAR -->
-        <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-0 h-screen">
+        <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-0 h-screen z-10">
             <div class="p-6 flex items-center gap-3">
                 <div class="bg-blue-500 text-white p-2 rounded-lg">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
@@ -80,7 +105,7 @@
         </aside>
 
         <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 w-full max-w-4xl mx-auto flex flex-col h-screen overflow-hidden relative">
+        <main class="flex-1 w-full max-w-4xl mx-auto flex flex-col h-screen overflow-hidden relative" id="main-content">
             
             <!-- Header -->
             <header class="px-6 py-5 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-10">
@@ -92,12 +117,35 @@
             </header>
 
             <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6">
+            <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6" id="scrollable-content">
                 
                 <!-- HOME TAB -->
                 <div id="tab-home">
-                    <div id="links-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Links will be injected here via JS -->
+                    
+                    <!-- Pinned Links Section -->
+                    <div id="pinned-section" class="hidden-view mb-8">
+                        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
+                            Pinned
+                        </h3>
+                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Pinned links injected here -->
+                        </div>
+                    </div>
+
+                    <!-- All Other Links -->
+                    <div>
+                        <h3 id="unpinned-title" class="hidden-view text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Other Links</h3>
+                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Unpinned links injected here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="empty-state" class="hidden-view col-span-full flex flex-col items-center justify-center h-64 text-gray-400">
+                        <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        <p class="text-lg font-medium">No links saved yet!</p>
+                        <p class="text-sm mt-1">Click the + button to add your first Telegram link.</p>
                     </div>
                 </div>
 
@@ -129,7 +177,7 @@
         </main>
 
         <!-- MOBILE BOTTOM NAVIGATION BAR -->
-        <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-center p-3 pb-safe z-50">
+        <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-center p-3 pb-safe z-10">
             <button onclick="window.switchTab('home')" id="nav-home-mobile" class="nav-btn flex flex-col items-center gap-1 p-2 text-blue-600 dark:text-blue-400">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 <span class="text-[10px] font-medium">Home</span>
@@ -146,46 +194,95 @@
         </nav>
     </div>
 
-    <!-- ADD LINK MODAL -->
+    <!-- ADD / EDIT LINK MODAL -->
     <div id="add-modal" class="hidden-view fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl p-6 shadow-2xl transition-all">
-            <h2 class="text-xl font-bold mb-4">Add New Link</h2>
+        <div class="bg-white dark:bg-gray-800 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl transition-all relative">
+            <button onclick="window.closeModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 id="modal-heading" class="text-xl font-bold mb-4">Add New Card</h2>
             <form id="add-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Name / Title</label>
+                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Card Title</label>
                     <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Telegram Link</label>
-                    <input type="url" id="input-url" placeholder="https://t.me/c/..." required class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Profile Image URL (Optional)</label>
                     <input type="url" id="input-image" placeholder="Paste an image link here..." class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
-                    <p class="text-xs text-gray-500 mt-1">If left blank, a default icon will be used.</p>
+                </div>
+                
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
+                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Telegram Links</label>
+                    <div id="dynamic-links-container" class="space-y-3">
+                        <!-- Dynamic links injected here -->
+                    </div>
+                    <button type="button" onclick="window.addLinkField()" class="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Add another link
+                    </button>
                 </div>
 
                 <div class="flex gap-3 pt-4">
                     <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-xl font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors flex justify-center items-center">
-                        Save Link
+                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors flex justify-center items-center shadow-lg shadow-blue-500/30">
+                        Save Card
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <!-- LINK SELECTOR POPUP -->
+    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transition-all">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="select-modal-title">Select a link to open</h3>
+                <button onclick="window.closeLinkModal()" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">This card has multiple links attached.</p>
+            <div id="select-modal-links" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+                <!-- Buttons injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- FLOATING ACTION MENU (FB Reaction Style) -->
+    <!-- Menu display (Pradarshit kara) -->
+    <div id="action-menu" class="menu-closed fixed z-[70] bg-white dark:bg-gray-800 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 flex items-center p-2 gap-1 transition-all duration-200 origin-bottom sm:origin-top-right">
+        
+        <button id="btn-action-pin" onclick="window.triggerAction('pin')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-16 group">
+            <svg id="icon-action-pin" class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-yellow-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            <span id="text-action-pin" class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-1">Pin</span>
+        </button>
+
+        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+        
+        <button onclick="window.triggerAction('edit')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-16 group">
+            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-1">Edit</span>
+        </button>
+
+        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+
+        <button onclick="window.triggerAction('delete')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-16 group">
+            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-red-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-1 group-hover:text-red-500">Delete</span>
+        </button>
+
+    </div>
+
     <!-- FIREBASE & APP LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase Configuration
+        // Firebase setup kara
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -202,23 +299,40 @@
         const db = getFirestore(app);
         const APP_ID = 'studyflow-pro';
 
-        // State variables
+        // State variables (Sthiti)
         let currentUser = null;
         let activeTab = 'home';
         let isDarkMode = false;
         let linksUnsubscribe = null;
+        let allLinksData = []; 
+        let editingCardId = null; // Edit sathi
 
-        // DOM Elements
+        // Action Menu State
+        let actionMenuTargetId = null;
+        let actionMenuTargetIsPinned = false;
+
+        // Sortable instances
+        let sortablePinned = null;
+        let sortableUnpinned = null;
+
+        // DOM elements (Ghatak)
         const elLoading = document.getElementById('loading-screen');
         const elLogin = document.getElementById('login-screen');
         const elApp = document.getElementById('app-screen');
-        const elLinksContainer = document.getElementById('links-container');
+        
+        const elPinnedSection = document.getElementById('pinned-section');
+        const elPinnedContainer = document.getElementById('pinned-container');
+        const elUnpinnedContainer = document.getElementById('unpinned-container');
+        const elUnpinnedTitle = document.getElementById('unpinned-title');
+        const elEmptyState = document.getElementById('empty-state');
+        
         const elModal = document.getElementById('add-modal');
+        const elLinkModal = document.getElementById('link-select-modal');
         const elAddForm = document.getElementById('add-form');
+        const elActionMenu = document.getElementById('action-menu');
 
         // --- INITIALIZATION ---
         function init() {
-            // Setup Theme
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 isDarkMode = true;
@@ -226,7 +340,6 @@
                 updateThemeUI();
             }
 
-            // Listen for Auth changes
             onAuthStateChanged(auth, (user) => {
                 elLoading.classList.add('hidden-view');
                 if (user) {
@@ -234,7 +347,6 @@
                     elLogin.classList.add('hidden-view');
                     elApp.classList.remove('hidden-view');
                     
-                    // Update user profile info
                     document.getElementById('user-name').textContent = user.displayName;
                     document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
                     
@@ -246,6 +358,16 @@
                     if (linksUnsubscribe) linksUnsubscribe();
                 }
             });
+
+            // Close Action Menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!elActionMenu.contains(e.target) && !e.target.closest('.action-btn-trigger')) {
+                    closeActionMenu();
+                }
+            });
+
+            // Close menu on scroll
+            document.getElementById('scrollable-content').addEventListener('scroll', closeActionMenu);
         }
 
         // --- AUTH FUNCTIONS ---
@@ -278,13 +400,20 @@
                     ...doc.data()
                 }));
                 
-                // Sort by time
                 links.sort((a, b) => {
+                    if (a.isPinned && !b.isPinned) return -1;
+                    if (!a.isPinned && b.isPinned) return 1;
+                    
+                    const orderA = a.order !== undefined ? a.order : 99999;
+                    const orderB = b.order !== undefined ? b.order : 99999;
+                    if (orderA !== orderB) return orderA - orderB;
+                    
                     const timeA = a.createdAt?.toMillis() || 0;
                     const timeB = b.createdAt?.toMillis() || 0;
                     return timeB - timeA;
                 });
                 
+                allLinksData = links;
                 renderLinks(links);
             }, (error) => {
                 console.error("Error fetching links: ", error);
@@ -292,98 +421,346 @@
         }
 
         function renderLinks(links) {
+            elPinnedSection.classList.add('hidden-view');
+            elUnpinnedTitle.classList.add('hidden-view');
+            elEmptyState.classList.add('hidden-view');
+            elPinnedContainer.innerHTML = '';
+            elUnpinnedContainer.innerHTML = '';
+
             if (links.length === 0) {
-                elLinksContainer.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center h-64 text-gray-400">
-                        <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                        <p class="text-lg font-medium">No links saved yet!</p>
-                        <p class="text-sm">Click the + button to add your first Telegram link.</p>
-                    </div>
-                `;
+                elEmptyState.classList.remove('hidden-view');
+                initDragAndDrop();
                 return;
             }
 
-            elLinksContainer.innerHTML = links.map(link => `
-                <div onclick="window.open('${link.url}', '_blank')" class="group bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 cursor-pointer transition-all hover:-translate-y-1 relative">
-                    <div class="flex items-center gap-4">
-                        <div class="shrink-0 w-12 h-12 rounded-full overflow-hidden bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+            const pinnedLinks = links.filter(l => l.isPinned);
+            const unpinnedLinks = links.filter(l => !l.isPinned);
+
+            if (pinnedLinks.length > 0) {
+                elPinnedSection.classList.remove('hidden-view');
+                elPinnedContainer.innerHTML = pinnedLinks.map(createCardHTML).join('');
+            }
+
+            if (unpinnedLinks.length > 0) {
+                if (pinnedLinks.length > 0) elUnpinnedTitle.classList.remove('hidden-view');
+                elUnpinnedContainer.innerHTML = unpinnedLinks.map(createCardHTML).join('');
+            }
+
+            initDragAndDrop();
+        }
+
+        function createCardHTML(link) {
+            let linksArray = link.links || [];
+            if (linksArray.length === 0 && link.url) {
+                linksArray = [{ name: 'Main Link', url: link.url }];
+            }
+
+            const linkCountBadge = linksArray.length > 1 
+                ? `<span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded-full ml-2 font-bold uppercase tracking-wide">${linksArray.length} links</span>` 
+                : '';
+
+            // Clean, action-free UI on the right, only a simple "..." button
+            return `
+                <div class="group bg-white dark:bg-gray-800 rounded-2xl p-3 pr-2 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-2 relative transition-all" data-id="${link.id}">
+                    
+                    <!-- Drag Handle -->
+                    <div class="drag-handle cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-gray-500 transition-colors hidden sm:block">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path></svg>
+                    </div>
+
+                    <!-- Main Clickable Area -->
+                    <div onclick="window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-3 cursor-pointer overflow-hidden py-1">
+                        <div class="shrink-0 w-12 h-12 rounded-full overflow-hidden bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center border border-gray-100 dark:border-gray-700">
                             ${link.imageUrl ? 
                                 `<img src="${link.imageUrl}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : 
                                 `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
                             }
                         </div>
-                        <div class="flex-1 min-w-0 pr-8">
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate">${link.title}</h3>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate flex items-center">
+                                ${link.title}
+                                ${linkCountBadge}
+                            </h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5 flex items-center gap-1">
-                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                ${link.url.replace(/^https?:\/\//, '')}
+                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                ${linksArray.length === 1 ? linksArray[0].name || 'Link' : 'Tap to select link'}
                             </p>
                         </div>
                     </div>
-                    <button onclick="event.stopPropagation(); window.deleteLink('${link.id}')" class="absolute top-1/2 -translate-y-1/2 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    
+                    <!-- Action Menu Trigger (FB style popup) -->
+                    <button onclick="window.openActionMenu(event, '${link.id}', ${!!link.isPinned})" class="action-btn-trigger p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 shrink-0">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"></path></svg>
                     </button>
                 </div>
-            `).join('');
+            `;
         }
 
-        window.deleteLink = async (id) => {
-            if (!currentUser) return;
+        // Drag and Drop animation (Halchal) Android style
+        function initDragAndDrop() {
+            if (sortablePinned) sortablePinned.destroy();
+            if (sortableUnpinned) sortableUnpinned.destroy();
+
+            const commonConfig = {
+                animation: 350, // Android style smooth sliding
+                easing: "cubic-bezier(0.2, 0, 0, 1)", // Quick snap, smooth settle
+                handle: '.drag-handle',
+                delay: 150, 
+                delayOnTouchOnly: true,
+                ghostClass: "sortable-ghost",
+                chosenClass: "sortable-chosen",
+                dragClass: "sortable-drag",
+                onEnd: async function (evt) {
+                    const container = evt.to;
+                    const items = container.children;
+                    for(let i=0; i<items.length; i++) {
+                        const id = items[i].dataset.id;
+                        if(id && currentUser) {
+                            const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
+                            updateDoc(docRef, { order: i }).catch(e => console.error(e));
+                        }
+                    }
+                }
+            };
+
+            sortablePinned = Sortable.create(elPinnedContainer, commonConfig);
+            sortableUnpinned = Sortable.create(elUnpinnedContainer, commonConfig);
+        }
+
+        // Action Menu (Kriya menu) logic
+        window.openActionMenu = (event, id, isPinned) => {
+            event.stopPropagation();
+            
+            actionMenuTargetId = id;
+            actionMenuTargetIsPinned = isPinned;
+
+            // Setup Pin Button UI inside the menu
+            const pinIcon = document.getElementById('icon-action-pin');
+            const pinText = document.getElementById('text-action-pin');
+            if (isPinned) {
+                pinIcon.classList.add('text-yellow-500', 'fill-yellow-500');
+                pinIcon.classList.remove('text-gray-500', 'dark:text-gray-400');
+                pinText.innerText = "Unpin";
+            } else {
+                pinIcon.classList.remove('text-yellow-500', 'fill-yellow-500');
+                pinIcon.classList.add('text-gray-500', 'dark:text-gray-400');
+                pinText.innerText = "Pin";
+            }
+
+            // Position Menu near the button
+            const rect = event.currentTarget.getBoundingClientRect();
+            
+            // Default position: above the button, centered
+            let top = rect.top - 80; // height of menu + padding
+            let left = rect.left - 100; // shift left to center
+
+            // Adjust if mobile screen or edge collision
+            if (window.innerWidth < 640) {
+                // Mobile: hover over the card itself
+                top = rect.top - 70;
+                left = Math.max(10, (window.innerWidth / 2) - 100); 
+            }
+
+            elActionMenu.style.top = `${top}px`;
+            elActionMenu.style.left = `${left}px`;
+            
+            elActionMenu.classList.remove('menu-closed');
+            elActionMenu.classList.add('menu-open');
+        };
+
+        function closeActionMenu() {
+            elActionMenu.classList.remove('menu-open');
+            elActionMenu.classList.add('menu-closed');
+            actionMenuTargetId = null;
+        }
+
+        window.triggerAction = async (actionType) => {
+            const id = actionMenuTargetId;
+            if(!id || !currentUser) return;
+
+            closeActionMenu();
+
             try {
-                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
+                if (actionType === 'pin') {
+                    const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
+                    await updateDoc(docRef, { isPinned: !actionMenuTargetIsPinned });
+                } 
+                else if (actionType === 'delete') {
+                    if(!confirm("Are you sure you want to delete this card?")) return;
+                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
+                }
+                else if (actionType === 'edit') {
+                    window.editCard(id);
+                }
             } catch (error) {
-                console.error("Error deleting: ", error);
+                console.error("Action error:", error);
             }
         };
 
-        // --- FORM HANDLING ---
+        window.handleCardClick = (id) => {
+            const linkData = allLinksData.find(l => l.id === id);
+            if(!linkData) return;
+
+            let linksArray = linkData.links || [];
+            if (linksArray.length === 0 && linkData.url) {
+                linksArray = [{ name: 'Main Link', url: linkData.url }];
+            }
+
+            if (linksArray.length === 1) {
+                window.open(linksArray[0].url, '_blank');
+            } else if (linksArray.length > 1) {
+                document.getElementById('select-modal-title').innerText = linkData.title;
+                const linksContainer = document.getElementById('select-modal-links');
+                
+                linksContainer.innerHTML = linksArray.map(l => `
+                    <button onclick="window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors flex justify-between items-center group">
+                        <span class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${l.name}</span>
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </button>
+                `).join('');
+                
+                elLinkModal.classList.remove('hidden-view');
+            }
+        };
+
+        // Card edit kara
+        window.editCard = (id) => {
+            const linkData = allLinksData.find(l => l.id === id);
+            if(!linkData) return;
+
+            editingCardId = id;
+            document.getElementById('modal-heading').innerText = "Edit Card";
+            document.getElementById('btn-save').innerHTML = "Update Card";
+
+            document.getElementById('input-title').value = linkData.title;
+            document.getElementById('input-image').value = linkData.imageUrl || "";
+
+            let linksArray = linkData.links || [];
+            if (linksArray.length === 0 && linkData.url) {
+                linksArray = [{ name: 'Main Link', url: linkData.url }];
+            }
+
+            const container = document.getElementById('dynamic-links-container');
+            container.innerHTML = ''; // Clear existing
+            
+            linksArray.forEach(l => {
+                const newDiv = document.createElement('div');
+                newDiv.className = 'link-entry flex gap-2 items-center';
+                newDiv.innerHTML = `
+                    <input type="text" value="${l.name}" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input type="url" value="${l.url}" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                container.appendChild(newDiv);
+            });
+
+            if(linksArray.length === 0) window.addLinkField(); // Fail safe
+            
+            elModal.classList.remove('hidden-view');
+        };
+
+        // --- ADD / EDIT FORM LOGIC ---
+        window.addLinkField = () => {
+            const container = document.getElementById('dynamic-links-container');
+            const newDiv = document.createElement('div');
+            newDiv.className = 'link-entry flex gap-2 items-center';
+            newDiv.innerHTML = `
+                <input type="text" placeholder="Name (e.g. Part 2)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+            `;
+            container.appendChild(newDiv);
+        };
+
+        function resetForm() {
+            elAddForm.reset();
+            editingCardId = null;
+            document.getElementById('modal-heading').innerText = "Add New Card";
+            document.getElementById('btn-save').innerHTML = "Save Card";
+            
+            document.getElementById('dynamic-links-container').innerHTML = `
+                <div class="link-entry flex gap-2 items-center">
+                    <input type="text" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `;
+        }
+
         elAddForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
 
             const title = document.getElementById('input-title').value;
-            const url = document.getElementById('input-url').value;
             const img = document.getElementById('input-image').value;
             const btn = document.getElementById('btn-save');
+
+            const linkEntries = document.querySelectorAll('.link-entry');
+            const links = [];
+            linkEntries.forEach(entry => {
+                const name = entry.querySelector('.link-name').value;
+                const url = entry.querySelector('.link-url').value;
+                if(name && url) {
+                    links.push({ name, url });
+                }
+            });
+
+            if(links.length === 0) {
+                alert("Please add at least one valid link.");
+                return;
+            }
 
             btn.disabled = true;
             btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>`;
 
             try {
-                const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
-                await addDoc(linksColRef, {
-                    title: title,
-                    url: url,
-                    imageUrl: img || '',
-                    createdAt: serverTimestamp()
-                });
+                if (editingCardId) {
+                    // Update current record
+                    const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', editingCardId);
+                    await updateDoc(docRef, {
+                        title: title,
+                        links: links,
+                        imageUrl: img || ''
+                    });
+                } else {
+                    // Create new record
+                    const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
+                    await addDoc(linksColRef, {
+                        title: title,
+                        links: links,
+                        imageUrl: img || '',
+                        isPinned: false,
+                        order: 0,
+                        createdAt: serverTimestamp()
+                    });
+                }
                 
-                elAddForm.reset();
                 window.closeModal();
             } catch (error) {
-                console.error("Error adding document: ", error);
+                console.error("Error saving document: ", error);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = 'Save Link';
+                btn.innerHTML = editingCardId ? "Update Card" : "Save Card";
             }
         });
 
-        // --- UI UTILS (Attached to window for inline HTML access) ---
+        // --- UI UTILS ---
         window.switchTab = (tab) => {
             activeTab = tab;
             
-            // Toggle Views
             document.getElementById('tab-home').classList.toggle('hidden-view', tab !== 'home');
             document.getElementById('tab-settings').classList.toggle('hidden-view', tab !== 'settings');
-            
-            // Toggle Buttons (Desktop Add Link & Mobile Add Link)
             document.getElementById('btn-add-desktop').classList.toggle('hidden-view', tab !== 'home');
             document.getElementById('btn-add-mobile').classList.toggle('hidden-view', tab !== 'home');
             
-            // Update Title
             document.getElementById('header-title').textContent = tab === 'home' ? 'My Links' : 'Settings';
 
-            // Update Nav Styles (Desktop & Mobile)
             const activeClassDesk = ['bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-600', 'dark:text-blue-400', 'font-medium'];
             const inactiveClassDesk = ['hover:bg-gray-100', 'dark:hover:bg-gray-700/50'];
             
@@ -445,12 +822,16 @@
         }
 
         window.openModal = () => {
+            resetForm();
             elModal.classList.remove('hidden-view');
         };
 
         window.closeModal = () => {
             elModal.classList.add('hidden-view');
-            elAddForm.reset();
+        };
+
+        window.closeLinkModal = () => {
+            elLinkModal.classList.add('hidden-view');
         };
 
         // Start App
