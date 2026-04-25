@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Study Master - Telegram Links</title>
+    <title>Study Master - Pro Premium</title>
+    <!-- Premium Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- SortableJS for Drag and Drop -->
@@ -13,163 +15,360 @@
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
                     colors: {
-                        blue: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"}
+                        primary: {"50":"#eef2ff","100":"#e0e7ff","200":"#c7d2fe","300":"#a5b4fc","400":"#818cf8","500":"#6366f1","600":"#4f46e5","700":"#4338ca","800":"#3730a3","900":"#312e81","950":"#1e1b4b"},
+                        darkbg: "#0B1121"
+                    },
+                    animation: {
+                        blob: "blob 7s infinite",
+                        pulseGlow: "pulseGlow 2s infinite",
+                    },
+                    keyframes: {
+                        blob: {
+                            "0%": { transform: "translate(0px, 0px) scale(1)" },
+                            "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+                            "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+                            "100%": { transform: "translate(0px, 0px) scale(1)" }
+                        },
+                        pulseGlow: {
+                            "0%, 100%": { boxShadow: "0 0 0 0 rgba(99, 102, 241, 0.4)" },
+                            "50%": { boxShadow: "0 0 0 15px rgba(99, 102, 241, 0)" }
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        /* CSS Hide class */
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            overflow-x: hidden;
+        }
+        
+        input, textarea {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
+        }
+
         .hidden-view { display: none !important; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
         
-        /* Drag and Drop Android-like Animations */
-        .sortable-ghost { opacity: 0; }
-        .sortable-chosen { 
-            transform: scale(1.03); 
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); 
-            background: var(--bg-chosen, white); 
-            z-index: 40; 
+        /* Premium Glassmorphism */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
         }
-        .dark .sortable-chosen { --bg-chosen: #1f2937; }
-        .sortable-drag { opacity: 1 !important; cursor: grabbing !important; }
+        .dark .glass-panel {
+            background: rgba(17, 24, 33, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Premium Button Gradients */
+        .btn-premium {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            background-size: 200% auto;
+            transition: 0.5s;
+            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+        }
+        .btn-premium:hover {
+            background-position: right center;
+            box-shadow: 0 15px 25px -10px rgba(168, 85, 247, 0.6);
+        }
+
+        /* Drag and Drop Animations - Fixed for Pro feel */
+        .sortable-ghost { opacity: 0 !important; }
+        .sortable-chosen { 
+            opacity: 1 !important;
+            cursor: grabbing !important;
+        }
+        .sortable-drag { 
+            /* Android home screen float effect */
+            transform: scale(1.06) rotate(2deg) !important; 
+            box-shadow: 0 40px 80px -15px rgba(0, 0, 0, 0.4) !important; 
+            background: rgba(255, 255, 255, 0.95) !important; 
+            backdrop-filter: blur(12px) !important;
+            z-index: 100 !important; 
+            cursor: grabbing !important;
+            border: 2px solid #6366f1 !important; /* Premium border glow */
+            border-radius: 1.25rem !important;
+            opacity: 1 !important;
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+        }
+        .dark .sortable-drag { 
+            background: rgba(31, 41, 55, 0.95) !important; 
+        }
         
+        @keyframes dropBounce {
+            0% { transform: scale(1.05) translateY(-4px) rotate(2deg); }
+            50% { transform: scale(0.98) translateY(2px) rotate(-1deg); }
+            100% { transform: scale(1) translateY(0) rotate(0); }
+        }
+        .dropped-card {
+            animation: dropBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+        }
+
+        /* Card Swipe Transition */
+        .swipe-transition {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+        }
+
+        /* Card Hover Physics */
+        .card-hover-physics {
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+        }
+        .card-hover-physics:hover, .card-hover-physics:active {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+            border-color: #818cf8;
+            z-index: 10;
+        }
+        .dark .card-hover-physics:hover {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+            border-color: #6366f1;
+        }
+
         /* Action Menu Animations */
         .menu-open {
             opacity: 1;
-            transform: scale(1);
+            transform: scale(1) translateY(0);
             pointer-events: auto;
         }
         .menu-closed {
             opacity: 0;
-            transform: scale(0.8) translateY(10px);
+            transform: scale(0.8) translateY(15px);
             pointer-events: none;
         }
+
+        /* UI Animations */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(40px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-card {
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0; 
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8) translateY(30px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-modal {
+            animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-tab {
+            animation: fadeInTab 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* Ripple Effect */
+        .ripple-btn {
+            position: relative;
+            overflow: hidden;
+            transform: translate3d(0, 0, 0);
+        }
+        .ripple-btn::after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+        .ripple-btn:active::after {
+            transform: scale(0, 0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+
+        /* Custom Scrollbar for sleekness */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.5); }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-darkbg text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-100/60 via-slate-50 to-purple-50/40 dark:from-indigo-900/20 dark:via-darkbg dark:to-purple-900/10">
 
     <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900 absolute inset-0 z-50">
-        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    <div id="loading-screen" class="flex items-center justify-center h-screen glass-panel absolute inset-0 z-50 transition-opacity duration-500 rounded-none border-none">
+        <div class="relative w-24 h-24">
+            <div class="absolute inset-0 rounded-full border-t-4 border-primary-500 animate-[spin_1s_linear_infinite]"></div>
+            <div class="absolute inset-4 rounded-full border-r-4 border-purple-500 animate-[spin_1.5s_linear_infinite_reverse]"></div>
+            <div class="absolute inset-0 flex items-center justify-center font-extrabold text-primary-500 text-sm animate-pulse">SM</div>
+        </div>
     </div>
 
     <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="hidden-view flex items-center justify-center h-screen w-full px-4">
-        <div class="p-8 rounded-2xl shadow-xl max-w-sm w-full text-center bg-white dark:bg-gray-800">
-            <div class="bg-blue-100 dark:bg-blue-900/30 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <!-- Send Icon -->
-                <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+    <div id="login-screen" class="hidden-view flex items-center justify-center h-screen w-full px-4 relative overflow-hidden">
+        <!-- Decorative Background Blobs -->
+        <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob dark:opacity-20"></div>
+        <div class="absolute top-1/3 right-1/4 w-72 h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob [animation-delay:2s] dark:opacity-20"></div>
+        <div class="absolute -bottom-8 left-1/3 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob [animation-delay:4s] dark:opacity-20"></div>
+
+        <div class="glass-panel p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center relative z-10 animate-modal">
+            <div class="bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/40 dark:to-purple-900/40 w-24 h-24 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner transform rotate-3 hover:rotate-6 transition-transform">
+                <svg class="w-12 h-12 text-primary-600 dark:text-primary-400 transform -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </div>
-            <h1 class="text-2xl font-bold mb-2">Study Master</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Save your important Telegram links easily.</p>
-            <button id="btn-login" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2">
-                Sign in with Google
+            <h1 class="text-4xl font-extrabold mb-3 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-purple-600 dark:from-primary-400 dark:to-purple-400">StudyMaster</h1>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-10 font-medium">Your premium hub for saved links.</p>
+            <button id="btn-login" onclick="window.triggerHaptic('medium')" class="w-full btn-premium ripple-btn text-white font-bold py-4 px-4 rounded-2xl flex items-center justify-center gap-3 transform active:scale-95 text-lg">
+                <svg class="w-6 h-6 bg-white rounded-full p-1" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                Continue with Google
             </button>
         </div>
     </div>
 
     <!-- MAIN APP SCREEN -->
-    <div id="app-screen" class="hidden-view flex h-screen w-full">
+    <div id="app-screen" class="hidden-view flex h-screen w-full relative">
         
         <!-- DESKTOP SIDEBAR -->
-        <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-0 h-screen z-10">
-            <div class="p-6 flex items-center gap-3">
-                <div class="bg-blue-500 text-white p-2 rounded-lg">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+        <aside class="hidden md:flex flex-col w-72 glass-panel border-r border-white/30 dark:border-white/5 sticky top-0 h-screen z-20 shadow-lg">
+            <div class="p-8 flex items-center gap-4">
+                <div class="bg-gradient-to-br from-primary-500 to-purple-600 text-white p-2.5 rounded-xl shadow-lg shadow-primary-500/30 transform -rotate-3">
+                    <svg class="w-6 h-6 transform rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                 </div>
-                <h1 class="font-bold text-xl">Study Master</h1>
+                <h1 class="font-extrabold text-2xl tracking-tight text-gray-900 dark:text-white">StudyMaster</h1>
             </div>
             
-            <nav class="flex-1 px-4 space-y-2 mt-4">
-                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <nav class="flex-1 px-5 space-y-3 mt-2">
+                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="ripple-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 active:scale-[0.98] bg-primary-50 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300 font-bold shadow-sm border border-primary-100 dark:border-primary-800">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                     Dashboard
                 </button>
-                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors hover:bg-gray-100 dark:hover:bg-gray-700/50">
+                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="ripple-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 active:scale-[0.98] hover:bg-white/60 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400 font-semibold hover:text-gray-900 dark:hover:text-white border border-transparent">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     Settings
                 </button>
             </nav>
 
-            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-                <div class="flex items-center gap-3 mb-4 px-2">
-                    <img id="user-avatar" src="" alt="Profile" class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-600" />
+            <div class="p-6">
+                <div class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-[1.5rem] p-4 flex items-center gap-3 shadow-sm border border-white/40 dark:border-white/10 group cursor-pointer hover:bg-white/80 dark:hover:bg-gray-800/80 transition-colors">
+                    <img id="user-avatar" src="" alt="Profile" class="w-12 h-12 rounded-2xl ring-2 ring-primary-100 dark:ring-primary-900/50 object-cover group-hover:scale-105 transition-transform" />
                     <div class="overflow-hidden">
-                        <p id="user-name" class="text-sm font-medium truncate">User</p>
+                        <p id="user-name" class="text-sm font-bold truncate text-gray-900 dark:text-white">User</p>
+                        <p class="text-[10px] text-primary-600 dark:text-primary-400 uppercase tracking-widest font-extrabold mt-0.5 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd"></path></svg>
+                            PRO
+                        </p>
                     </div>
                 </div>
             </div>
         </aside>
 
         <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 w-full max-w-4xl mx-auto flex flex-col h-screen overflow-hidden relative" id="main-content">
+        <main class="flex-1 w-full max-w-5xl mx-auto flex flex-col h-screen overflow-hidden relative z-10" id="main-content">
             
             <!-- Header -->
-            <header class="px-6 py-5 flex items-center justify-between border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-10">
-                <h2 id="header-title" class="text-2xl font-bold capitalize">My Links</h2>
-                <button onclick="window.openModal()" id="btn-add-desktop" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-3 shadow-lg shadow-blue-500/30 transition-transform active:scale-95 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span class="hidden md:inline ml-2 pr-2 font-medium">Add Link</span>
+            <header class="px-6 py-6 flex items-center justify-between glass-panel border-b border-white/30 dark:border-white/5 sticky top-0 z-30 shadow-sm rounded-none">
+                <h2 id="header-title" class="text-3xl font-extrabold capitalize tracking-tight text-gray-900 dark:text-white">My Links</h2>
+                <button onclick="window.openModal()" id="btn-add-desktop" class="btn-premium ripple-btn text-white rounded-2xl px-6 py-3 shadow-xl transition-all active:scale-95 flex items-center justify-center font-bold tracking-wide hover:-translate-y-1">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Add New</span>
                 </button>
             </header>
 
             <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6" id="scrollable-content">
+            <div class="flex-1 overflow-y-auto p-4 pb-28 md:p-8 md:pb-8 overscroll-y-contain" id="scrollable-content">
                 
                 <!-- HOME TAB -->
-                <div id="tab-home">
+                <div id="tab-home" class="animate-tab">
                     
+                    <!-- Search Bar (New Feature) -->
+                    <div class="mb-8 relative group animate-card" style="animation-delay: 50ms;">
+                        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400 group-focus-within:text-primary-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="search-input" placeholder="Search your links..." class="w-full pl-12 pr-4 py-4 rounded-[1.5rem] bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-white/40 dark:border-white/10 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-sm font-medium text-gray-900 dark:text-white placeholder-gray-400">
+                    </div>
+
                     <!-- Pinned Links Section -->
-                    <div id="pinned-section" class="hidden-view mb-8">
-                        <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
-                            Pinned
+                    <div id="pinned-section" class="hidden-view mb-10">
+                        <h3 class="text-sm font-extrabold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-4 flex items-center gap-2 animate-card" style="animation-delay: 100ms;">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
+                            Pinned Favorites
                         </h3>
-                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             <!-- Pinned links injected here -->
                         </div>
                     </div>
 
                     <!-- All Other Links -->
                     <div>
-                        <h3 id="unpinned-title" class="hidden-view text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Other Links</h3>
-                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <h3 id="unpinned-title" class="hidden-view text-sm font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4 animate-card" style="animation-delay: 150ms;">All Links</h3>
+                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                             <!-- Unpinned links injected here -->
                         </div>
                     </div>
                     
                     <!-- Empty State -->
-                    <div id="empty-state" class="hidden-view col-span-full flex flex-col items-center justify-center h-64 text-gray-400">
-                        <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                        <p class="text-lg font-medium">No links saved yet!</p>
-                        <p class="text-sm mt-1">Click the + button to add your first Telegram link.</p>
+                    <div id="empty-state" class="hidden-view col-span-full flex flex-col items-center justify-center h-72 text-gray-400 bg-white/30 dark:bg-gray-800/20 backdrop-blur-sm rounded-[2rem] border border-dashed border-gray-300 dark:border-gray-700 mt-4 animate-card" style="animation-delay: 200ms;">
+                        <div class="bg-primary-50 dark:bg-primary-900/30 p-4 rounded-full mb-4 animate-bounce">
+                            <svg class="w-12 h-12 text-primary-500 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                        </div>
+                        <p class="text-xl font-extrabold text-gray-700 dark:text-gray-200" id="empty-state-title">No links found!</p>
+                        <p class="text-sm mt-2 font-medium" id="empty-state-subtitle">Click the Add button to create your first card.</p>
                     </div>
                 </div>
 
                 <!-- SETTINGS TAB -->
-                <div id="tab-settings" class="hidden-view max-w-xl mx-auto space-y-6">
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4">Appearance</h3>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <svg id="theme-icon-dark" class="hidden w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                                <svg id="theme-icon-light" class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                <span>Dark Mode</span>
+                <div id="tab-settings" class="hidden-view max-w-2xl mx-auto space-y-6 animate-tab">
+                    <div class="glass-panel rounded-[2rem] p-8 hover:shadow-xl transition-shadow">
+                        <h3 class="text-xl font-extrabold mb-6 flex items-center gap-3">
+                            <div class="p-2 bg-primary-100 dark:bg-primary-900/50 rounded-xl text-primary-600 dark:text-primary-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg></div>
+                            Appearance
+                        </h3>
+                        <div class="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                            <div class="flex items-center gap-4">
+                                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-xl">
+                                    <svg id="theme-icon-dark" class="hidden w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                                    <svg id="theme-icon-light" class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 dark:text-white text-lg">Dark Mode</h4>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5">Toggle beautiful dark theme</p>
+                                </div>
                             </div>
-                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-12 h-6 rounded-full transition-colors relative bg-gray-300">
-                                <div id="theme-toggle-dot" class="w-4 h-4 rounded-full bg-white absolute top-1 transition-transform translate-x-1"></div>
+                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-14 h-7 rounded-full transition-colors relative bg-gray-300 shadow-inner">
+                                <div id="theme-toggle-dot" class="w-5 h-5 rounded-full bg-white absolute top-1 shadow-md transition-transform translate-x-1"></div>
                             </button>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm">
-                        <h3 class="text-lg font-semibold mb-4 text-red-500">Danger Zone</h3>
-                        <button id="btn-logout" class="flex items-center gap-2 text-red-500 hover:text-red-600 font-medium px-4 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full justify-center">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            Sign Out
+                    <div class="glass-panel rounded-[2rem] p-8 border-red-100 dark:border-red-900/30 hover:shadow-xl transition-shadow">
+                        <h3 class="text-xl font-extrabold mb-6 text-red-500 flex items-center gap-3">
+                            <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>
+                            Danger Zone
+                        </h3>
+                        <button id="btn-logout" class="ripple-btn flex items-center gap-3 text-red-500 hover:text-red-600 font-bold px-6 py-4 rounded-2xl bg-red-50 hover:bg-red-100 dark:bg-red-900/10 dark:hover:bg-red-900/20 transition-all active:scale-95 w-full justify-center border border-red-100 dark:border-red-900/30">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                            Secure Sign Out
                         </button>
                     </div>
                 </div>
@@ -177,57 +376,58 @@
         </main>
 
         <!-- MOBILE BOTTOM NAVIGATION BAR -->
-        <nav class="md:hidden fixed bottom-0 w-full bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex justify-around items-center p-3 pb-safe z-10">
-            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="nav-btn flex flex-col items-center gap-1 p-2 text-blue-600 dark:text-blue-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span class="text-[10px] font-medium">Home</span>
+        <nav class="md:hidden fixed bottom-0 w-full glass-panel border-t border-white/30 dark:border-white/5 flex justify-around items-center p-2 pb-safe z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.3)] rounded-t-[2rem]">
+            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="ripple-btn flex flex-col items-center gap-1.5 p-3 text-primary-600 dark:text-primary-400 transition-all duration-300 active:scale-90">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                <span class="text-[10px] font-bold tracking-wide">Home</span>
             </button>
             
-            <button onclick="window.openModal()" id="btn-add-mobile" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg shadow-blue-500/30 transform -translate-y-5">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <button onclick="window.openModal()" id="btn-add-mobile" class="btn-premium text-white rounded-full p-4 shadow-xl shadow-primary-500/40 transform -translate-y-6 border-4 border-slate-50 dark:border-darkbg transition-transform active:scale-90 relative animate-pulseGlow">
+                <svg class="w-7 h-7 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
             </button>
 
-            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="nav-btn flex flex-col items-center gap-1 p-2 text-gray-500 dark:text-gray-400">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span class="text-[10px] font-medium">Settings</span>
+            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="ripple-btn flex flex-col items-center gap-1.5 p-3 text-gray-400 dark:text-gray-500 transition-all duration-300 active:scale-90">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span class="text-[10px] font-bold tracking-wide">Settings</span>
             </button>
         </nav>
     </div>
 
     <!-- ADD / EDIT LINK MODAL -->
-    <div id="add-modal" class="hidden-view fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl p-6 shadow-2xl transition-all relative">
-            <button onclick="window.closeModal()" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <div id="add-modal" class="hidden-view fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[2rem] p-8 shadow-2xl transition-all relative animate-modal">
+            <button onclick="window.closeModal()" class="absolute top-5 right-5 p-2 bg-gray-100/50 dark:bg-gray-800/50 text-gray-500 hover:text-gray-800 dark:hover:text-white rounded-full transition-all active:scale-90 hover:bg-gray-200 dark:hover:bg-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
-            <h2 id="modal-heading" class="text-xl font-bold mb-4">Add New Card</h2>
-            <form id="add-form" class="space-y-4">
+            <h2 id="modal-heading" class="text-2xl font-extrabold mb-6 tracking-tight text-gray-900 dark:text-white">Add New Card</h2>
+            <form id="add-form" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Card Title</label>
-                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Card Title</label>
+                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-5 py-3.5 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner font-medium text-gray-900 dark:text-white placeholder-gray-400" />
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Profile Image URL (Optional)</label>
-                    <input type="url" id="input-image" placeholder="Paste an image link here..." class="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Profile Image URL <span class="text-gray-400 font-normal">(Optional)</span></label>
+                    <input type="url" id="input-image" placeholder="Paste an image link here..." class="w-full px-5 py-3.5 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner font-medium text-gray-900 dark:text-white placeholder-gray-400" />
                 </div>
                 
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
-                    <label class="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Telegram Links</label>
+                <div class="border-t border-gray-200/50 dark:border-gray-700/50 pt-5 mt-2">
+                    <label class="block text-sm font-bold mb-3 text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                        Telegram Links
+                        <button type="button" onclick="window.triggerHaptic(); window.addLinkField()" class="ripple-btn text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg> Add
+                        </button>
+                    </label>
                     <div id="dynamic-links-container" class="space-y-3">
                         <!-- Dynamic links injected here -->
                     </div>
-                    <button type="button" onclick="window.addLinkField()" class="mt-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Add another link
-                    </button>
                 </div>
 
-                <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-xl font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                <div class="flex gap-4 pt-5">
+                    <button type="button" onclick="window.closeModal()" class="ripple-btn flex-1 py-3.5 px-4 rounded-2xl font-bold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-all active:scale-95">
                         Cancel
                     </button>
-                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors flex justify-center items-center shadow-lg shadow-blue-500/30">
+                    <button type="submit" id="btn-save" class="ripple-btn flex-1 py-3.5 px-4 rounded-2xl font-bold btn-premium text-white transition-all active:scale-95 flex justify-center items-center">
                         Save Card
                     </button>
                 </div>
@@ -236,42 +436,41 @@
     </div>
 
     <!-- LINK SELECTOR POPUP -->
-    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl transition-all">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-white" id="select-modal-title">Select a link to open</h3>
-                <button onclick="window.closeLinkModal()" class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-sm rounded-[2rem] p-6 shadow-2xl transition-all animate-modal">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-xl font-extrabold text-gray-900 dark:text-white" id="select-modal-title">Select Link</h3>
+                <button onclick="window.closeLinkModal()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">This card has multiple links attached.</p>
-            <div id="select-modal-links" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-5 font-medium">Multiple destinations available.</p>
+            <div id="select-modal-links" class="flex flex-col gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                 <!-- Buttons injected dynamically -->
             </div>
         </div>
     </div>
 
-    <!-- FLOATING ACTION MENU (FB Reaction Style) -->
-    <!-- Menu display (Pradarshit kara) -->
-    <div id="action-menu" class="menu-closed fixed z-[70] bg-white dark:bg-gray-800 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-700 flex items-center p-2 gap-1 transition-all duration-200 origin-bottom sm:origin-top-right">
+    <!-- FLOATING ACTION MENU -->
+    <div id="action-menu" class="menu-closed fixed z-[70] glass-panel rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.3)] flex items-center p-2.5 gap-1.5 transition-all duration-300 origin-bottom sm:origin-top-right border border-white/50 dark:border-white/10">
         
-        <button id="btn-action-pin" onclick="window.triggerAction('pin')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-16 group">
-            <svg id="icon-action-pin" class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-yellow-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-            <span id="text-action-pin" class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-1">Pin</span>
+        <button id="btn-action-pin" onclick="window.triggerAction('pin')" class="ripple-btn flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-gray-700/50 transition-colors w-[4.5rem] group">
+            <svg id="icon-action-pin" class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-yellow-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
+            <span id="text-action-pin" class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1.5 tracking-wide">Pin</span>
         </button>
 
-        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700/50"></div>
         
-        <button onclick="window.triggerAction('edit')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-16 group">
-            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-blue-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-1">Edit</span>
+        <button onclick="window.triggerAction('edit')" class="ripple-btn flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-gray-700/50 transition-colors w-[4.5rem] group">
+            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1.5 tracking-wide">Edit</span>
         </button>
 
-        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700"></div>
+        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700/50"></div>
 
-        <button onclick="window.triggerAction('delete')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-16 group">
-            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-red-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            <span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 mt-1 group-hover:text-red-500">Delete</span>
+        <button onclick="window.triggerAction('delete')" class="ripple-btn flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-[4.5rem] group">
+            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-red-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1.5 group-hover:text-red-500 tracking-wide">Delete</span>
         </button>
 
     </div>
@@ -282,7 +481,6 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase setup kara
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -299,23 +497,20 @@
         const db = getFirestore(app);
         const APP_ID = 'studyflow-pro';
 
-        // State variables (Sthiti)
         let currentUser = null;
         let activeTab = 'home';
         let isDarkMode = false;
         let linksUnsubscribe = null;
         let allLinksData = []; 
-        let editingCardId = null; // Edit sathi
+        let currentFilteredData = [];
+        let editingCardId = null; 
 
-        // Action Menu State
         let actionMenuTargetId = null;
         let actionMenuTargetIsPinned = false;
 
-        // Sortable instances
         let sortablePinned = null;
         let sortableUnpinned = null;
 
-        // DOM elements (Ghatak)
         const elLoading = document.getElementById('loading-screen');
         const elLogin = document.getElementById('login-screen');
         const elApp = document.getElementById('app-screen');
@@ -325,13 +520,21 @@
         const elUnpinnedContainer = document.getElementById('unpinned-container');
         const elUnpinnedTitle = document.getElementById('unpinned-title');
         const elEmptyState = document.getElementById('empty-state');
+        const elSearchInput = document.getElementById('search-input');
         
         const elModal = document.getElementById('add-modal');
         const elLinkModal = document.getElementById('link-select-modal');
         const elAddForm = document.getElementById('add-form');
         const elActionMenu = document.getElementById('action-menu');
 
-        // --- INITIALIZATION ---
+        // Feature 3: Haptic Feedback Function
+        window.triggerHaptic = (type = 'light') => {
+            if (!navigator.vibrate) return;
+            if (type === 'light') navigator.vibrate(20);
+            if (type === 'medium') navigator.vibrate(50);
+            if (type === 'heavy') navigator.vibrate([50, 50, 50]);
+        };
+
         function init() {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
@@ -341,14 +544,14 @@
             }
 
             onAuthStateChanged(auth, (user) => {
-                elLoading.classList.add('hidden-view');
+                setTimeout(() => elLoading.classList.add('hidden-view'), 600); 
                 if (user) {
                     currentUser = user;
                     elLogin.classList.add('hidden-view');
                     elApp.classList.remove('hidden-view');
                     
                     document.getElementById('user-name').textContent = user.displayName;
-                    document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
+                    document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName + '&background=6366f1&color=fff';
                     
                     fetchLinks();
                 } else {
@@ -359,19 +562,23 @@
                 }
             });
 
-            // Close Action Menu when clicking outside
             document.addEventListener('click', (e) => {
-                if (!elActionMenu.contains(e.target) && !e.target.closest('.action-btn-trigger')) {
+                if (!elActionMenu.contains(e.target) && !e.target.closest('.action-btn-trigger') && !e.target.closest('.card-body-click')) {
                     closeActionMenu();
                 }
             });
 
-            // Close menu on scroll
             document.getElementById('scrollable-content').addEventListener('scroll', closeActionMenu);
+            
+            // Feature 4: Search & Filter Listeners
+            elSearchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                filterLinks(query);
+            });
         }
 
-        // --- AUTH FUNCTIONS ---
         document.getElementById('btn-login').addEventListener('click', async () => {
+            window.triggerHaptic('medium');
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
@@ -381,6 +588,7 @@
         });
 
         document.getElementById('btn-logout').addEventListener('click', async () => {
+            window.triggerHaptic('medium');
             try {
                 await signOut(auth);
             } catch (error) {
@@ -388,7 +596,6 @@
             }
         });
 
-        // --- FIRESTORE DATA ---
         function fetchLinks() {
             if (!currentUser) return;
             
@@ -410,17 +617,30 @@
                     
                     const timeA = a.createdAt?.toMillis() || 0;
                     const timeB = b.createdAt?.toMillis() || 0;
-                    return timeB - timeA;
+                    return timeA - timeB; 
                 });
                 
                 allLinksData = links;
-                renderLinks(links);
+                filterLinks(elSearchInput.value.toLowerCase()); // Apply current search if any
             }, (error) => {
                 console.error("Error fetching links: ", error);
             });
         }
 
-        function renderLinks(links) {
+        // Feature 4: Filtering Logic
+        function filterLinks(query) {
+            if (!query) {
+                currentFilteredData = allLinksData;
+            } else {
+                currentFilteredData = allLinksData.filter(link => 
+                    link.title.toLowerCase().includes(query) || 
+                    (link.links && link.links.some(l => l.name.toLowerCase().includes(query)))
+                );
+            }
+            renderLinks(currentFilteredData, !!query);
+        }
+
+        function renderLinks(links, isSearching = false) {
             elPinnedSection.classList.add('hidden-view');
             elUnpinnedTitle.classList.add('hidden-view');
             elEmptyState.classList.add('hidden-view');
@@ -428,8 +648,10 @@
             elUnpinnedContainer.innerHTML = '';
 
             if (links.length === 0) {
+                document.getElementById('empty-state-title').innerText = isSearching ? "No matches found!" : "No links saved yet!";
+                document.getElementById('empty-state-subtitle').innerText = isSearching ? "Try a different search term." : "Click the Add button to create your first card.";
                 elEmptyState.classList.remove('hidden-view');
-                initDragAndDrop();
+                if(!isSearching) initDragAndDrop();
                 return;
             }
 
@@ -438,79 +660,190 @@
 
             if (pinnedLinks.length > 0) {
                 elPinnedSection.classList.remove('hidden-view');
-                elPinnedContainer.innerHTML = pinnedLinks.map(createCardHTML).join('');
+                elPinnedContainer.innerHTML = pinnedLinks.map((l, i) => createCardHTML(l, i)).join('');
             }
 
             if (unpinnedLinks.length > 0) {
-                if (pinnedLinks.length > 0) elUnpinnedTitle.classList.remove('hidden-view');
-                elUnpinnedContainer.innerHTML = unpinnedLinks.map(createCardHTML).join('');
+                if (pinnedLinks.length > 0 && !isSearching) elUnpinnedTitle.classList.remove('hidden-view');
+                elUnpinnedContainer.innerHTML = unpinnedLinks.map((l, i) => createCardHTML(l, i)).join('');
             }
 
-            initDragAndDrop();
+            if(!isSearching) initDragAndDrop();
         }
 
-        function createCardHTML(link) {
+        // Action Wrapper for swipe/context actions
+        window.quickAction = async (id, actionType, isPinned) => {
+            if(!id || !currentUser) return;
+            try {
+                if (actionType === 'pin') {
+                    const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
+                    await updateDoc(docRef, { isPinned: !isPinned });
+                } 
+                else if (actionType === 'delete') {
+                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // Context Menu / Long Press Logic (Point 5)
+        let pressTimer = null;
+        window.handleCardTouchStart = (e, id, isPinned) => {
+            // Initiate Long Press tracking
+            pressTimer = setTimeout(() => {
+                window.triggerHaptic('heavy'); // Notify user it triggered
+                window.openActionMenu(e.touches[0], id, isPinned, true);
+                e.target.dataset.preventClick = "true"; // Prevent normal click opening links
+            }, 500);
+        };
+        window.handleCardTouchMove = () => clearTimeout(pressTimer);
+        window.handleCardTouchEnd = () => clearTimeout(pressTimer);
+        
+        window.handleContextMenu = (e, id, isPinned) => {
+            e.preventDefault(); // Stop default browser menu
+            window.triggerHaptic('medium');
+            window.openActionMenu(e, id, isPinned, true);
+        };
+
+        // Swipe Action Logic (Point 2)
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isScrolling = false;
+        
+        window.handleSwipeStart = (e) => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            isScrolling = false;
+            e.currentTarget.style.transition = 'none';
+        }
+        window.handleSwipeMove = (e) => {
+            if(isScrolling) return;
+            const diffX = e.touches[0].clientX - touchStartX;
+            const diffY = e.touches[0].clientY - touchStartY;
+
+            // Determine intent
+            if(Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 10) {
+                isScrolling = true;
+                e.currentTarget.style.transform = `translateX(0)`;
+                return;
+            }
+
+            if(Math.abs(diffX) > 15) {
+                // We are swiping horizontally, limit it slightly
+                let move = diffX;
+                if(move > 80) move = 80 + (move - 80)*0.2; // Resist pulling too far right
+                if(move < -80) move = -80 + (move + 80)*0.2; // Resist pulling too far left
+                e.currentTarget.style.transform = `translateX(${move}px)`;
+            }
+        }
+        window.handleSwipeEnd = (e, id, isPinned) => {
+            if(isScrolling) return;
+            const target = e.currentTarget;
+            target.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            
+            const diffX = e.changedTouches[0].clientX - touchStartX;
+            
+            if (diffX < -65) {
+                // Swiped Left - Delete
+                window.triggerHaptic('heavy');
+                target.style.transform = `translateX(-120%)`;
+                setTimeout(() => window.quickAction(id, 'delete'), 250);
+            } else if (diffX > 65) {
+                // Swiped Right - Toggle Pin
+                window.triggerHaptic('medium');
+                target.style.transform = `translateX(120%)`;
+                setTimeout(() => window.quickAction(id, 'pin', isPinned), 250);
+            } else {
+                // Snap back
+                target.style.transform = `translateX(0)`;
+            }
+        }
+
+        function createCardHTML(link, index = 0) {
             let linksArray = link.links || [];
             if (linksArray.length === 0 && link.url) {
                 linksArray = [{ name: 'Main Link', url: link.url }];
             }
 
             const linkCountBadge = linksArray.length > 1 
-                ? `<span class="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-[10px] px-2 py-0.5 rounded-full ml-2 font-bold uppercase tracking-wide">${linksArray.length} links</span>` 
+                ? `<span class="bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 text-[10px] px-2.5 py-1 rounded-md ml-2 font-extrabold uppercase tracking-widest border border-primary-200 dark:border-primary-800 shadow-sm">${linksArray.length} links</span>` 
                 : '';
 
-            // Clean, action-free UI on the right, only a simple "..." button
+            const animationDelay = index * 50; // Staggered entry
+
             return `
-                <div class="group bg-white dark:bg-gray-800 rounded-2xl p-3 pr-2 shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-2 relative transition-all" data-id="${link.id}">
+                <div class="relative overflow-hidden rounded-[1.25rem] group mb-1 animate-card" style="animation-delay: ${animationDelay}ms;" data-id="${link.id}">
                     
-                    <!-- Drag Handle -->
-                    <div class="drag-handle cursor-grab active:cursor-grabbing p-2 text-gray-300 hover:text-gray-500 transition-colors hidden sm:block">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path></svg>
+                    <!-- Feature 2: Swipe Actions Background Layer -->
+                    <div class="absolute inset-0 flex justify-between items-center px-5 rounded-[1.25rem] bg-gradient-to-r from-yellow-400 via-gray-200 to-red-500 dark:from-yellow-600 dark:via-gray-800 dark:to-red-600">
+                        <div class="text-white font-extrabold text-sm flex items-center gap-1"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg> ${link.isPinned ? 'Unpin' : 'Pin'}</div>
+                        <div class="text-white font-extrabold text-sm flex items-center gap-1">Delete <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></div>
                     </div>
 
-                    <!-- Main Clickable Area -->
-                    <div onclick="window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-3 cursor-pointer overflow-hidden py-1">
-                        <div class="shrink-0 w-12 h-12 rounded-full overflow-hidden bg-blue-50 dark:bg-blue-900/40 flex items-center justify-center border border-gray-100 dark:border-gray-700">
-                            ${link.imageUrl ? 
-                                `<img src="${link.imageUrl}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : 
-                                `<svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
-                            }
+                    <!-- Foreground Main Card -->
+                    <div class="glass-panel relative z-10 rounded-[1.25rem] p-3 shadow-sm hover:shadow-xl transition-shadow duration-300 flex items-center gap-3 card-hover-physics border border-white/50 dark:border-white/10" 
+                         ontouchstart="window.handleSwipeStart(event); window.handleCardTouchStart(event, '${link.id}', ${!!link.isPinned})"
+                         ontouchmove="window.handleSwipeMove(event); window.handleCardTouchMove(event)"
+                         ontouchend="window.handleSwipeEnd(event, '${link.id}', ${!!link.isPinned}); window.handleCardTouchEnd(event)"
+                         oncontextmenu="window.handleContextMenu(event, '${link.id}', ${!!link.isPinned})">
+                        
+                        <!-- Drag Handle -->
+                        <div class="drag-handle cursor-grab active:cursor-grabbing p-2.5 text-gray-300 hover:text-primary-500 transition-colors hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path></svg>
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="text-base font-semibold text-gray-900 dark:text-white truncate flex items-center">
-                                ${link.title}
-                                ${linkCountBadge}
-                            </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate mt-0.5 flex items-center gap-1">
-                                <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                                ${linksArray.length === 1 ? linksArray[0].name || 'Link' : 'Tap to select link'}
-                            </p>
+
+                        <!-- Clickable Content -->
+                        <div onclick="if(this.parentElement.dataset.preventClick === 'true') { this.parentElement.dataset.preventClick = 'false'; return; } window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-4 cursor-pointer overflow-hidden py-1.5 pl-2 sm:pl-0 card-body-click">
+                            <div class="shrink-0 w-14 h-14 rounded-[1rem] overflow-hidden bg-gradient-to-br from-primary-50 to-purple-50 dark:from-primary-900/40 dark:to-purple-900/40 flex items-center justify-center border border-primary-100 dark:border-primary-800 shadow-inner transform transition-transform group-hover:scale-105 group-hover:rotate-3">
+                                ${link.imageUrl ? 
+                                    `<img src="${link.imageUrl}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : 
+                                    `<svg class="w-7 h-7 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
+                                }
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-[1.05rem] font-bold text-gray-900 dark:text-white truncate flex items-center tracking-tight">
+                                    ${link.title}
+                                    ${linkCountBadge}
+                                </h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 truncate mt-1 flex items-center gap-1.5 font-semibold">
+                                    <svg class="w-3.5 h-3.5 shrink-0 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                                    ${linksArray.length === 1 ? linksArray[0].name || 'Link' : 'Tap to select link'}
+                                </p>
+                            </div>
                         </div>
+                        
+                        <!-- 3-Dots Button -->
+                        <button onclick="window.triggerHaptic('light'); window.openActionMenu(event, '${link.id}', ${!!link.isPinned})" class="action-btn-trigger p-2.5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all duration-200 z-10 shrink-0">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"></path></svg>
+                        </button>
                     </div>
-                    
-                    <!-- Action Menu Trigger (FB style popup) -->
-                    <button onclick="window.openActionMenu(event, '${link.id}', ${!!link.isPinned})" class="action-btn-trigger p-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors z-10 shrink-0">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"></path></svg>
-                    </button>
                 </div>
             `;
         }
 
-        // Drag and Drop animation (Halchal) Android style
         function initDragAndDrop() {
             if (sortablePinned) sortablePinned.destroy();
             if (sortableUnpinned) sortableUnpinned.destroy();
 
             const commonConfig = {
-                animation: 350, // Android style smooth sliding
-                easing: "cubic-bezier(0.2, 0, 0, 1)", // Quick snap, smooth settle
+                animation: 400, 
+                easing: "cubic-bezier(0.25, 1, 0.5, 1)", 
                 handle: '.drag-handle',
                 delay: 150, 
                 delayOnTouchOnly: true,
                 ghostClass: "sortable-ghost",
                 chosenClass: "sortable-chosen",
                 dragClass: "sortable-drag",
+                forceFallback: true, 
+                fallbackClass: "sortable-drag", 
+                fallbackOnBody: true,
+                swapThreshold: 0.65, 
+                onStart: function() { window.triggerHaptic('medium'); },
                 onEnd: async function (evt) {
+                    window.triggerHaptic('light');
+                    const itemEl = evt.item;
+                    itemEl.classList.add('dropped-card');
+                    setTimeout(() => itemEl.classList.remove('dropped-card'), 500);
+
                     const container = evt.to;
                     const items = container.children;
                     for(let i=0; i<items.length; i++) {
@@ -527,14 +860,13 @@
             sortableUnpinned = Sortable.create(elUnpinnedContainer, commonConfig);
         }
 
-        // Action Menu (Kriya menu) logic
-        window.openActionMenu = (event, id, isPinned) => {
-            event.stopPropagation();
+        // Updated for Long Press & Context Menu placement
+        window.openActionMenu = (event, id, isPinned, useExactCoords = false) => {
+            if(!useExactCoords) event.stopPropagation();
             
             actionMenuTargetId = id;
             actionMenuTargetIsPinned = isPinned;
 
-            // Setup Pin Button UI inside the menu
             const pinIcon = document.getElementById('icon-action-pin');
             const pinText = document.getElementById('text-action-pin');
             if (isPinned) {
@@ -547,18 +879,21 @@
                 pinText.innerText = "Pin";
             }
 
-            // Position Menu near the button
-            const rect = event.currentTarget.getBoundingClientRect();
+            let top, left;
             
-            // Default position: above the button, centered
-            let top = rect.top - 80; // height of menu + padding
-            let left = rect.left - 100; // shift left to center
-
-            // Adjust if mobile screen or edge collision
-            if (window.innerWidth < 640) {
-                // Mobile: hover over the card itself
-                top = rect.top - 70;
-                left = Math.max(10, (window.innerWidth / 2) - 100); 
+            if(useExactCoords && event.clientY) {
+                // Open exactly where tapped/clicked
+                top = event.clientY - 40;
+                left = event.clientX + 10;
+            } else {
+                // Open near the 3-dots button
+                const rect = event.currentTarget.getBoundingClientRect();
+                top = rect.top - 85; 
+                left = rect.left - 120; 
+                if (window.innerWidth < 640) {
+                    top = rect.top - 75;
+                    left = Math.max(10, (window.innerWidth / 2) - 110); 
+                }
             }
 
             elActionMenu.style.top = `${top}px`;
@@ -575,6 +910,7 @@
         }
 
         window.triggerAction = async (actionType) => {
+            window.triggerHaptic('medium');
             const id = actionMenuTargetId;
             if(!id || !currentUser) return;
 
@@ -582,12 +918,11 @@
 
             try {
                 if (actionType === 'pin') {
-                    const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
-                    await updateDoc(docRef, { isPinned: !actionMenuTargetIsPinned });
+                    await window.quickAction(id, 'pin', actionMenuTargetIsPinned);
                 } 
                 else if (actionType === 'delete') {
                     if(!confirm("Are you sure you want to delete this card?")) return;
-                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
+                    await window.quickAction(id, 'delete');
                 }
                 else if (actionType === 'edit') {
                     window.editCard(id);
@@ -598,6 +933,7 @@
         };
 
         window.handleCardClick = (id) => {
+            window.triggerHaptic('light');
             const linkData = allLinksData.find(l => l.id === id);
             if(!linkData) return;
 
@@ -613,9 +949,9 @@
                 const linksContainer = document.getElementById('select-modal-links');
                 
                 linksContainer.innerHTML = linksArray.map(l => `
-                    <button onclick="window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-xl border border-gray-200 dark:border-gray-700 transition-colors flex justify-between items-center group">
-                        <span class="font-medium text-gray-800 dark:text-gray-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${l.name}</span>
-                        <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    <button onclick="window.triggerHaptic('light'); window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-white/50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 transition-all shadow-sm flex justify-between items-center group">
+                        <span class="font-bold text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">${l.name}</span>
+                        <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                     </button>
                 `).join('');
                 
@@ -623,7 +959,6 @@
             }
         };
 
-        // Card edit kara
         window.editCard = (id) => {
             const linkData = allLinksData.find(l => l.id === id);
             if(!linkData) return;
@@ -641,36 +976,35 @@
             }
 
             const container = document.getElementById('dynamic-links-container');
-            container.innerHTML = ''; // Clear existing
+            container.innerHTML = ''; 
             
             linksArray.forEach(l => {
                 const newDiv = document.createElement('div');
                 newDiv.className = 'link-entry flex gap-2 items-center';
                 newDiv.innerHTML = `
-                    <input type="text" value="${l.name}" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    <input type="url" value="${l.url}" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <input type="text" value="${l.name}" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
+                    <input type="url" value="${l.url}" placeholder="https://t.me/..." required class="link-url flex-1 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
+                    <button type="button" onclick="window.triggerHaptic('medium'); this.parentElement.remove()" class="ripple-btn p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-transform active:scale-90 bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 `;
                 container.appendChild(newDiv);
             });
 
-            if(linksArray.length === 0) window.addLinkField(); // Fail safe
+            if(linksArray.length === 0) window.addLinkField(); 
             
             elModal.classList.remove('hidden-view');
         };
 
-        // --- ADD / EDIT FORM LOGIC ---
         window.addLinkField = () => {
             const container = document.getElementById('dynamic-links-container');
             const newDiv = document.createElement('div');
-            newDiv.className = 'link-entry flex gap-2 items-center';
+            newDiv.className = 'link-entry flex gap-2 items-center animate-modal';
             newDiv.innerHTML = `
-                <input type="text" placeholder="Name (e.g. Part 2)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <input type="text" placeholder="Name (e.g. Part 2)" required class="link-name w-1/3 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
+                <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
+                <button type="button" onclick="window.triggerHaptic('medium'); this.parentElement.remove()" class="ripple-btn p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-transform active:scale-90 bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                 </button>
             `;
             container.appendChild(newDiv);
@@ -684,10 +1018,10 @@
             
             document.getElementById('dynamic-links-container').innerHTML = `
                 <div class="link-entry flex gap-2 items-center">
-                    <input type="text" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                    <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <input type="text" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
+                    <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
+                    <button type="button" onclick="window.triggerHaptic('medium'); this.parentElement.remove()" class="ripple-btn p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-transform active:scale-90 bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                     </button>
                 </div>
             `;
@@ -696,6 +1030,7 @@
         elAddForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
+            window.triggerHaptic('medium');
 
             const title = document.getElementById('input-title').value;
             const img = document.getElementById('input-image').value;
@@ -717,11 +1052,10 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = `<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>`;
+            btn.innerHTML = `<div class="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>`;
 
             try {
                 if (editingCardId) {
-                    // Update current record
                     const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', editingCardId);
                     await updateDoc(docRef, {
                         title: title,
@@ -729,14 +1063,15 @@
                         imageUrl: img || ''
                     });
                 } else {
-                    // Create new record
+                    const maxOrder = allLinksData.length > 0 ? Math.max(...allLinksData.map(l => typeof l.order === 'number' ? l.order : 0)) : 0;
+                    
                     const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
                     await addDoc(linksColRef, {
                         title: title,
                         links: links,
                         imageUrl: img || '',
                         isPinned: false,
-                        order: 0,
+                        order: maxOrder + 1,
                         createdAt: serverTimestamp()
                     });
                 }
@@ -750,19 +1085,33 @@
             }
         });
 
-        // --- UI UTILS ---
         window.switchTab = (tab) => {
+            window.triggerHaptic('light');
             activeTab = tab;
             
-            document.getElementById('tab-home').classList.toggle('hidden-view', tab !== 'home');
-            document.getElementById('tab-settings').classList.toggle('hidden-view', tab !== 'settings');
+            const elTabHome = document.getElementById('tab-home');
+            const elTabSettings = document.getElementById('tab-settings');
+
+            elTabHome.classList.toggle('hidden-view', tab !== 'home');
+            elTabSettings.classList.toggle('hidden-view', tab !== 'settings');
+
+            if(tab === 'home') {
+                elTabHome.classList.remove('animate-tab');
+                void elTabHome.offsetWidth; 
+                elTabHome.classList.add('animate-tab');
+            } else {
+                elTabSettings.classList.remove('animate-tab');
+                void elTabSettings.offsetWidth; 
+                elTabSettings.classList.add('animate-tab');
+            }
+            
             document.getElementById('btn-add-desktop').classList.toggle('hidden-view', tab !== 'home');
             document.getElementById('btn-add-mobile').classList.toggle('hidden-view', tab !== 'home');
             
             document.getElementById('header-title').textContent = tab === 'home' ? 'My Links' : 'Settings';
 
-            const activeClassDesk = ['bg-blue-50', 'dark:bg-blue-900/20', 'text-blue-600', 'dark:text-blue-400', 'font-medium'];
-            const inactiveClassDesk = ['hover:bg-gray-100', 'dark:hover:bg-gray-700/50'];
+            const activeClassDesk = ['bg-primary-50', 'dark:bg-primary-900/40', 'text-primary-600', 'dark:text-primary-300', 'font-bold', 'shadow-sm', 'border', 'border-primary-100', 'dark:border-primary-800'];
+            const inactiveClassDesk = ['hover:bg-white/60', 'dark:hover:bg-gray-800/50', 'text-gray-600', 'dark:text-gray-400', 'font-semibold', 'border-transparent'];
             
             const btnHomeD = document.getElementById('nav-home-desktop');
             const btnSetD = document.getElementById('nav-settings-desktop');
@@ -773,24 +1122,25 @@
                 btnSetD.classList.remove(...activeClassDesk);
                 btnSetD.classList.add(...inactiveClassDesk);
                 
-                document.getElementById('nav-home-mobile').classList.replace('text-gray-500', 'text-blue-600');
-                document.getElementById('nav-home-mobile').classList.replace('dark:text-gray-400', 'dark:text-blue-400');
-                document.getElementById('nav-settings-mobile').classList.replace('text-blue-600', 'text-gray-500');
-                document.getElementById('nav-settings-mobile').classList.replace('dark:text-blue-400', 'dark:text-gray-400');
+                document.getElementById('nav-home-mobile').classList.replace('text-gray-400', 'text-primary-600');
+                document.getElementById('nav-home-mobile').classList.replace('dark:text-gray-500', 'dark:text-primary-400');
+                document.getElementById('nav-settings-mobile').classList.replace('text-primary-600', 'text-gray-400');
+                document.getElementById('nav-settings-mobile').classList.replace('dark:text-primary-400', 'dark:text-gray-500');
             } else {
                 btnSetD.classList.remove(...inactiveClassDesk);
                 btnSetD.classList.add(...activeClassDesk);
                 btnHomeD.classList.remove(...activeClassDesk);
                 btnHomeD.classList.add(...inactiveClassDesk);
 
-                document.getElementById('nav-settings-mobile').classList.replace('text-gray-500', 'text-blue-600');
-                document.getElementById('nav-settings-mobile').classList.replace('dark:text-gray-400', 'dark:text-blue-400');
-                document.getElementById('nav-home-mobile').classList.replace('text-blue-600', 'text-gray-500');
-                document.getElementById('nav-home-mobile').classList.replace('dark:text-blue-400', 'dark:text-gray-400');
+                document.getElementById('nav-settings-mobile').classList.replace('text-gray-400', 'text-primary-600');
+                document.getElementById('nav-settings-mobile').classList.replace('dark:text-gray-500', 'dark:text-primary-400');
+                document.getElementById('nav-home-mobile').classList.replace('text-primary-600', 'text-gray-400');
+                document.getElementById('nav-home-mobile').classList.replace('dark:text-primary-400', 'dark:text-gray-500');
             }
         };
 
         window.toggleTheme = () => {
+            window.triggerHaptic('medium');
             isDarkMode = !isDarkMode;
             if (isDarkMode) {
                 document.documentElement.classList.add('dark');
@@ -809,32 +1159,34 @@
             const iconLight = document.getElementById('theme-icon-light');
 
             if (isDarkMode) {
-                btn.classList.replace('bg-gray-300', 'bg-blue-500');
-                dot.classList.replace('translate-x-1', 'translate-x-7');
+                btn.classList.replace('bg-gray-300', 'bg-primary-500');
+                dot.classList.replace('translate-x-1', 'translate-x-8');
                 iconDark.classList.remove('hidden');
                 iconLight.classList.add('hidden');
             } else {
-                btn.classList.replace('bg-blue-500', 'bg-gray-300');
-                dot.classList.replace('translate-x-7', 'translate-x-1');
+                btn.classList.replace('bg-primary-500', 'bg-gray-300');
+                dot.classList.replace('translate-x-8', 'translate-x-1');
                 iconLight.classList.remove('hidden');
                 iconDark.classList.add('hidden');
             }
         }
 
         window.openModal = () => {
+            window.triggerHaptic('light');
             resetForm();
             elModal.classList.remove('hidden-view');
         };
 
         window.closeModal = () => {
+            window.triggerHaptic('light');
             elModal.classList.add('hidden-view');
         };
 
         window.closeLinkModal = () => {
+            window.triggerHaptic('light');
             elLinkModal.classList.add('hidden-view');
         };
 
-        // Start App
         init();
     </script>
 </body>
