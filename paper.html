@@ -7,12 +7,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js for Progress Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Custom styles for specific design nuances */
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        /* Import Plus Jakarta Sans for English and Noto Sans Sinhala for Sinhala characters */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            /* Fallback to Noto Sans Sinhala when Sinhala unicode is detected */
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
             background-color: #FAF8F5;
             color: #111827;
             overscroll-behavior-y: none;
@@ -40,10 +43,6 @@
         .chart-orange { background-color: #FCD2A8; }
         .chart-pink { background-color: #F5B6C0; }
         .chart-blue { background-color: #BDE0FE; }
-
-        .overlapping-avatar {
-            border: 2px solid #FAF8F5;
-        }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex justify-center items-center p-0 lg:p-6 transition-colors duration-300">
@@ -61,24 +60,24 @@
                 </div>
 
                 <!-- Nav Icons -->
-                <button title="Progress Analytics" class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-colors relative group">
+                <button data-view="progress" onclick="switchView('progress')" title="Progress Analytics" class="desktop-nav-btn w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-all relative group">
                     <i data-lucide="trending-up" class="w-5 h-5"></i>
                     <span class="absolute top-0 right-0 w-3 h-3 bg-red-400 rounded-full border-2 border-[#F2EDE4]"></span>
                 </button>
 
-                <button title="Dashboard" class="w-14 h-14 flex items-center justify-center rounded-full bg-black text-white shadow-md shadow-black/20 transition-transform hover:scale-105">
+                <button data-view="home" onclick="switchView('home')" title="Dashboard" class="desktop-nav-btn w-14 h-14 flex items-center justify-center rounded-full bg-black text-white shadow-md shadow-black/20 transition-all hover:scale-105">
                     <i data-lucide="home" class="w-6 h-6 fill-current"></i>
                 </button>
 
-                <button title="Exam Schedule" class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-colors">
+                <button data-view="schedule" onclick="switchView('schedule')" title="Exam Schedule" class="desktop-nav-btn w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-all">
                     <i data-lucide="calendar-days" class="w-5 h-5"></i>
                 </button>
 
-                <button title="All Papers" class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-colors">
+                <button data-view="papers" onclick="switchView('papers')" title="All Papers" class="desktop-nav-btn w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-all">
                     <i data-lucide="file-text" class="w-5 h-5"></i>
                 </button>
 
-                <button title="Goals & Topics" class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-colors">
+                <button data-view="goals" onclick="switchView('goals')" title="Goals & Topics" class="desktop-nav-btn w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm text-gray-600 hover:text-black transition-all">
                     <i data-lucide="target" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -97,112 +96,228 @@
         <!-- Scrollable Wrapper for Mobile (Scrolls whole page), Fixed for Desktop (Scrolls columns independently) -->
         <div class="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden no-scrollbar w-full h-full pb-24 lg:pb-0 relative z-0">
             
-            <!-- Main Content Area -->
-            <main class="flex-1 flex flex-col h-auto lg:h-full lg:overflow-y-auto no-scrollbar px-5 lg:px-0 pt-8 lg:pt-4">
-                
-                <!-- Header -->
-                <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 pr-0 lg:pr-4">
-                    <h1 class="text-4xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.15]">
-                        Track your<br>progress
-                    </h1>
-                    <button onclick="openAddPaperModal()" class="flex items-center justify-center gap-2 bg-black text-white px-6 py-3.5 rounded-full font-bold shadow-lg hover:scale-105 transition-transform flex-shrink-0">
-                        <i data-lucide="plus" class="w-5 h-5"></i> Add Paper
-                    </button>
-                </header>
+            <!-- ================= VIEW: HOME ================= -->
+            <div id="view-home" class="view-section flex flex-col lg:flex-row w-full h-full">
+                <!-- Main Content Area -->
+                <main class="flex-1 flex flex-col h-auto lg:h-full lg:overflow-y-auto no-scrollbar px-5 lg:px-0 pt-8 lg:pt-4">
+                    <!-- Header -->
+                    <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 pr-0 lg:pr-4">
+                        <h1 class="text-4xl lg:text-6xl font-bold tracking-tight text-gray-900 leading-[1.15]">
+                            Track your<br>progress
+                        </h1>
+                        <button onclick="openAddPaperModal()" class="flex items-center justify-center gap-2 bg-black text-white px-6 py-3.5 rounded-full font-bold shadow-lg hover:scale-105 transition-transform flex-shrink-0">
+                            <i data-lucide="plus" class="w-5 h-5"></i> Add Paper
+                        </button>
+                    </header>
 
-                <!-- Subject Progress Summary -->
-                <h2 class="text-lg font-semibold text-gray-500 mb-4">Subject Summary</h2>
-                <div id="subjectSummaryContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-4 mb-6 -mx-5 px-5 lg:mx-0 lg:px-0">
-                    <!-- Dynamic Summary Cards Injected Here -->
-                    <div class="text-gray-400 text-sm italic">Loading summary...</div>
-                </div>
-
-                <!-- Recent Papers Section -->
-                <div class="flex justify-between items-end mb-4 pr-0 lg:pr-4 mt-4">
-                    <h2 class="text-lg font-semibold text-gray-500">Recent Papers</h2>
-                    <div class="flex gap-2">
-                        <button onclick="filterPapers('All')" class="text-xs font-semibold bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full hover:bg-gray-300 filter-btn active-filter">All</button>
+                    <!-- Subject Progress Summary -->
+                    <h2 class="text-lg font-semibold text-gray-500 mb-4">Subject Summary</h2>
+                    <div id="subjectSummaryContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-4 mb-6 -mx-5 px-5 lg:mx-0 lg:px-0">
+                        <div class="text-gray-400 text-sm italic">Loading summary...</div>
                     </div>
-                </div>
 
-                <!-- Course/Paper Grid -->
-                <div id="papersGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8 pr-0 lg:pr-4">
-                    <!-- Dynamic Papers Injected Here -->
-                </div>
-                
-                <div class="h-10 lg:h-20 w-full opacity-50"></div>
-            </main>
-
-            <!-- Right Side Panel -->
-            <aside class="w-full lg:w-[400px] flex-shrink-0 flex flex-col h-auto lg:h-full lg:overflow-y-auto no-scrollbar gap-6 px-5 lg:px-0 pb-10 lg:pb-10 pt-4 lg:pt-0 border-t border-gray-200 lg:border-t-0 mt-4 lg:mt-0">
-                
-                <!-- Top Nav -->
-                <div class="hidden lg:flex justify-between items-center mt-2 lg:mt-8 px-2">
-                    <button class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm hover:shadow-md transition-shadow">
-                        <i data-lucide="bell" class="w-5 h-5 text-gray-700"></i>
-                    </button>
-                    <button onclick="openSettings()" class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm hover:shadow-md transition-shadow">
-                        <i data-lucide="settings" class="w-5 h-5 text-gray-700"></i>
-                    </button>
-                </div>
-
-                <!-- Profile Info -->
-                <div class="flex flex-col items-center mt-4 lg:mt-2">
-                    <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg mb-4 relative group">
-                        <img src="https://i.pravatar.cc/150?img=47" alt="User Avatar" class="w-full h-full object-cover">
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900" id="userNameDisplay">Student</h2>
-                </div>
-
-                <!-- Activity Chart Card (Preserved UI) -->
-                <div class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 mx-0 lg:mx-2">
-                    <div class="flex justify-between items-start mb-6">
-                        <div>
-                            <h3 class="text-sm font-semibold text-gray-500 mb-1">Recent Activity</h3>
-                            <div class="flex items-center gap-3">
-                                <span class="text-3xl font-bold text-gray-900" id="totalPapersStat">0</span>
-                                <span class="bg-[#F8E7CD] text-orange-800 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
-                                    Papers tracked
-                                </span>
-                            </div>
+                    <!-- Recent Papers Section -->
+                    <div class="flex justify-between items-end mb-4 pr-0 lg:pr-4 mt-4">
+                        <h2 class="text-lg font-semibold text-gray-500">Recent Papers</h2>
+                        <div class="flex gap-2">
+                            <button onclick="filterPapers('All')" class="text-xs font-semibold bg-gray-200 text-gray-700 px-3 py-1.5 rounded-full hover:bg-gray-300 filter-btn active-filter">All</button>
                         </div>
                     </div>
 
-                    <!-- Custom Stacked Bar Chart (Decorative) -->
-                    <div class="h-24 flex items-end justify-between gap-1 sm:gap-2 mt-4 pb-6 relative">
-                        <div class="absolute bottom-6 left-0 w-full h-[1px] bg-gray-100"></div>
-                        <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-blue rounded-t-sm" style="height: 15%"></div><div class="w-full chart-green rounded-b-sm" style="height: 25%"></div></div>
-                        <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-purple rounded-t-sm" style="height: 20%"></div><div class="w-full chart-pink rounded-b-sm" style="height: 35%"></div></div>
-                        <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-green rounded-t-sm" style="height: 40%"></div><div class="w-full chart-orange rounded-b-sm" style="height: 20%"></div></div>
-                        <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-purple rounded-t-sm" style="height: 25%"></div><div class="w-full chart-pink rounded-b-sm" style="height: 30%"></div></div>
-                        <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-orange rounded-t-sm" style="height: 30%"></div><div class="w-full chart-blue rounded-b-sm" style="height: 20%"></div></div>
-                    </div>
-                </div>
-
-                <!-- Difficult Topics Section (Replaces My Courses) -->
-                <div class="mx-0 lg:mx-2 mt-2 flex-1 flex flex-col">
-                    <div class="flex justify-between items-end mb-4">
-                        <h2 class="text-lg font-semibold text-gray-500">Difficult Topics</h2>
-                        <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">Needs Revision</span>
+                    <!-- Course/Paper Grid -->
+                    <div id="papersGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8 pr-0 lg:pr-4">
+                        <!-- Dynamic Papers Injected Here -->
                     </div>
                     
-                    <div id="difficultTopicsList" class="flex flex-col gap-3 pb-8">
-                        <!-- Dynamic Difficult Topics Injected Here -->
-                        <div class="text-sm text-gray-400 italic text-center py-4">Add papers and tag difficult topics to see them here.</div>
+                    <div class="h-10 lg:h-20 w-full opacity-50"></div>
+                </main>
+
+                <!-- Right Side Panel -->
+                <aside class="w-full lg:w-[400px] flex-shrink-0 flex flex-col h-auto lg:h-full lg:overflow-y-auto no-scrollbar gap-6 px-5 lg:px-0 pb-10 lg:pb-10 pt-4 lg:pt-0 border-t border-gray-200 lg:border-t-0 mt-4 lg:mt-0">
+                    
+                    <!-- Top Nav -->
+                    <div class="hidden lg:flex justify-between items-center mt-2 lg:mt-8 px-2">
+                        <button class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <i data-lucide="bell" class="w-5 h-5 text-gray-700"></i>
+                        </button>
+                        <button onclick="openSettings()" class="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <i data-lucide="settings" class="w-5 h-5 text-gray-700"></i>
+                        </button>
+                    </div>
+
+                    <!-- Profile Info -->
+                    <div class="flex flex-col items-center mt-4 lg:mt-2">
+                        <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg mb-4 relative group">
+                            <img src="https://i.pravatar.cc/150?img=47" alt="User Avatar" class="w-full h-full object-cover">
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900" id="userNameDisplay">Student</h2>
+                    </div>
+
+                    <!-- Activity Chart Card (Preserved UI) -->
+                    <div class="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100 mx-0 lg:mx-2 cursor-pointer hover:border-black transition-colors" onclick="switchView('progress')">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-500 mb-1">Recent Activity</h3>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-3xl font-bold text-gray-900" id="totalPapersStat">0</span>
+                                    <span class="bg-[#F8E7CD] text-orange-800 text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                                        Papers tracked
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Custom Stacked Bar Chart (Decorative) -->
+                        <div class="h-24 flex items-end justify-between gap-1 sm:gap-2 mt-4 pb-6 relative">
+                            <div class="absolute bottom-6 left-0 w-full h-[1px] bg-gray-100"></div>
+                            <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-blue rounded-t-sm" style="height: 15%"></div><div class="w-full chart-green rounded-b-sm" style="height: 25%"></div></div>
+                            <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-purple rounded-t-sm" style="height: 20%"></div><div class="w-full chart-pink rounded-b-sm" style="height: 35%"></div></div>
+                            <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-green rounded-t-sm" style="height: 40%"></div><div class="w-full chart-orange rounded-b-sm" style="height: 20%"></div></div>
+                            <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-purple rounded-t-sm" style="height: 25%"></div><div class="w-full chart-pink rounded-b-sm" style="height: 30%"></div></div>
+                            <div class="w-[12%] max-w-[32px] flex flex-col justify-end h-full gap-[2px] relative z-10"><div class="w-full chart-orange rounded-t-sm" style="height: 30%"></div><div class="w-full chart-blue rounded-b-sm" style="height: 20%"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- Difficult Topics Section -->
+                    <div class="mx-0 lg:mx-2 mt-2 flex-1 flex flex-col">
+                        <div class="flex justify-between items-end mb-4">
+                            <h2 class="text-lg font-semibold text-gray-500">Difficult Topics</h2>
+                            <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold">Needs Revision</span>
+                        </div>
+                        
+                        <div id="difficultTopicsList" class="flex flex-col gap-3 pb-8">
+                            <!-- Dynamic Difficult Topics Injected Here -->
+                            <div class="text-sm text-gray-400 italic text-center py-4">Add papers and tag difficult topics to see them here.</div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- ================= VIEW: PROGRESS ================= -->
+            <div id="view-progress" class="view-section hidden flex-col w-full h-full p-6 lg:p-12 overflow-y-auto no-scrollbar">
+                <header class="mb-8">
+                    <h1 class="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">Analytics & Progress</h1>
+                    <p class="text-gray-500 text-lg">Visualize your score improvements over time.</p>
+                </header>
+                
+                <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 flex-1 min-h-[400px]">
+                    <canvas id="progressChartCanvas"></canvas>
+                </div>
+            </div>
+
+            <!-- ================= VIEW: SCHEDULE ================= -->
+            <div id="view-schedule" class="view-section hidden flex-col w-full h-full p-6 lg:p-12 overflow-y-auto no-scrollbar">
+                <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div>
+                        <h1 class="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">Exam Schedule</h1>
+                        <p class="text-gray-500 text-lg">Keep track of your upcoming exams and study tasks.</p>
+                    </div>
+                </header>
+
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <!-- Add Task Form -->
+                    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100 w-full lg:w-1/3 h-fit">
+                        <h3 class="text-xl font-bold text-gray-900 mb-4">Add New Event</h3>
+                        <form id="addScheduleForm" onsubmit="handleScheduleSubmit(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Event Name</label>
+                                <input type="text" id="scheduleName" required placeholder="e.g. Physics Mock Exam" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-black bg-gray-50 focus:bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Date</label>
+                                <input type="date" id="scheduleDate" required class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-black bg-gray-50 focus:bg-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Type</label>
+                                <select id="scheduleType" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-black bg-gray-50 focus:bg-white">
+                                    <option value="Exam">Exam</option>
+                                    <option value="Study">Study Session</option>
+                                    <option value="Assignment">Assignment</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="w-full bg-black text-white px-6 py-3 rounded-full text-sm font-bold shadow-lg hover:bg-gray-800 transition-colors mt-2">Add Event</button>
+                        </form>
+                    </div>
+
+                    <!-- Tasks List -->
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-500 mb-4">Upcoming Events</h3>
+                        <div id="scheduleList" class="flex flex-col gap-4">
+                            <div class="text-gray-400 italic">Loading schedule...</div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-            </aside>
+            <!-- ================= VIEW: ALL PAPERS ================= -->
+            <div id="view-papers" class="view-section hidden flex-col w-full h-full p-6 lg:p-12 overflow-y-auto no-scrollbar">
+                <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div>
+                        <h1 class="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">All Papers</h1>
+                        <p class="text-gray-500 text-lg">A complete history of your past papers and results.</p>
+                    </div>
+                    <div class="relative w-full md:w-64">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                        <input type="text" id="paperSearch" onkeyup="renderAllPapersTable()" placeholder="Search papers..." class="w-full pl-10 pr-4 py-3 rounded-full border border-gray-200 text-sm focus:outline-none focus:border-black bg-white shadow-sm">
+                    </div>
+                </header>
+
+                <div class="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                                    <th class="p-4 font-semibold rounded-tl-[32px]">Date</th>
+                                    <th class="p-4 font-semibold">Subject</th>
+                                    <th class="p-4 font-semibold">Paper Name</th>
+                                    <th class="p-4 font-semibold">Score</th>
+                                    <th class="p-4 font-semibold">Grade</th>
+                                    <th class="p-4 font-semibold rounded-tr-[32px] text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allPapersTableBody" class="text-sm text-gray-800">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= VIEW: GOALS & TOPICS ================= -->
+            <div id="view-goals" class="view-section hidden flex-col w-full h-full p-6 lg:p-12 overflow-y-auto no-scrollbar">
+                <header class="mb-8">
+                    <h1 class="text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-4">Goals & Weak Areas</h1>
+                    <p class="text-gray-500 text-lg">Review the topics you frequently struggle with to focus your study sessions.</p>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Subject Averages vs Targets -->
+                    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Subject Averages</h3>
+                        <div id="goalsSubjectList" class="space-y-6">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Master Difficult Topics List -->
+                    <div class="bg-white p-6 rounded-[32px] shadow-sm border border-gray-100">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Topics to Revise</h3>
+                        <div id="goalsTopicsList" class="flex flex-wrap gap-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- Mobile Bottom Navigation Bar -->
     <nav class="flex lg:hidden fixed bottom-0 left-0 w-full bg-white border-t border-gray-100 px-8 py-4 justify-between items-center z-40 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.06)]">
-        <button class="flex flex-col items-center gap-1 text-black">
+        <button onclick="switchView('home')" class="flex flex-col items-center gap-1 text-black">
             <i data-lucide="home" class="w-6 h-6 fill-current"></i>
             <span class="text-[10px] font-bold">Home</span>
         </button>
-        <button class="flex flex-col items-center gap-1 text-gray-400 hover:text-black transition-colors">
+        <button onclick="switchView('papers')" class="flex flex-col items-center gap-1 text-gray-400 hover:text-black transition-colors">
             <i data-lucide="file-text" class="w-6 h-6"></i>
             <span class="text-[10px] font-medium">Papers</span>
         </button>
@@ -229,19 +344,19 @@
                     </div>
                     <span class="text-xs font-semibold text-gray-600 group-hover:text-black">Add Paper</span>
                 </button>
-                <button class="flex flex-col items-center gap-2 group">
+                <button onclick="switchView('progress')" class="flex flex-col items-center gap-2 group">
                     <div class="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
                         <i data-lucide="trending-up" class="w-6 h-6"></i>
                     </div>
                     <span class="text-xs font-semibold text-gray-600 group-hover:text-black">Progress</span>
                 </button>
-                <button class="flex flex-col items-center gap-2 group">
+                <button onclick="switchView('schedule')" class="flex flex-col items-center gap-2 group">
                     <div class="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
                         <i data-lucide="calendar-days" class="w-6 h-6"></i>
                     </div>
                     <span class="text-xs font-semibold text-gray-600 group-hover:text-black">Schedule</span>
                 </button>
-                <button class="flex flex-col items-center gap-2 group">
+                <button onclick="switchView('goals')" class="flex flex-col items-center gap-2 group">
                     <div class="w-14 h-14 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-colors">
                         <i data-lucide="target" class="w-6 h-6"></i>
                     </div>
@@ -267,7 +382,6 @@
             <h2 class="text-2xl font-bold text-gray-900 mb-6 mt-2">Add New Paper</h2>
 
             <form id="addPaperForm" onsubmit="handlePaperSubmit(event)" class="space-y-4">
-                <!-- Row 1: Name & Year -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Paper Name</label>
@@ -279,7 +393,6 @@
                     </div>
                 </div>
 
-                <!-- Row 2: Subject & Date -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Subject</label>
@@ -298,7 +411,6 @@
                     </div>
                 </div>
 
-                <!-- Row 3: Score -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Marks / Score (%)</label>
                     <div class="flex gap-4 items-center">
@@ -310,13 +422,11 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Difficult Topics -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Difficult Topics (Comma separated)</label>
                     <input type="text" id="paperTopics" placeholder="e.g. Integration, Vectors, Mechanics" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-black bg-gray-50 focus:bg-white transition-colors">
                 </div>
 
-                <!-- Row 5: Resource Link -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Resource Link (Optional)</label>
                     <div class="relative">
@@ -342,7 +452,6 @@
                 <i data-lucide="x" class="w-5 h-5 text-gray-700"></i>
             </button>
             <h2 class="text-3xl font-bold text-gray-900 mb-8 mt-2">Settings</h2>
-            <!-- Settings content simplified for brevity, kept structure -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-8">
                     <section>
@@ -357,7 +466,7 @@
                         <h3 class="text-lg font-semibold text-gray-500 mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5"></i> Appearance</h3>
                         <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 space-y-6">
                             <div>
-                                <p class="text-sm font-medium text-gray-700 mb-3">Material You Colors</p>
+                                <p class="text-sm font-medium text-gray-700 mb-3">Theme Colors</p>
                                 <div class="flex gap-3 flex-wrap">
                                     <button onclick="changeBgColor('#FAF8F5')" class="w-10 h-10 rounded-full bg-[#FAF8F5] border-[3px] border-white shadow-md focus:outline-none hover:scale-110 transition-transform"></button>
                                     <button onclick="changeBgColor('#FCE1C3')" class="w-10 h-10 rounded-full bg-[#FCE1C3] border-[3px] border-white shadow-md hover:scale-110 transition-transform"></button>
@@ -376,6 +485,7 @@
     <!-- UI Interaction Scripts -->
     <script>
         lucide.createIcons();
+        let progressChartInstance = null;
 
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMoreMenu');
@@ -407,7 +517,44 @@
 
         function changeBgColor(color) { document.body.style.backgroundColor = color; }
 
-        // Live grade calculation in form
+        // Navigation View Switcher
+        window.switchView = function(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+            
+            const target = document.getElementById('view-' + viewName);
+            if(target) {
+                target.classList.remove('hidden');
+                target.classList.add('flex');
+            }
+            
+            document.querySelectorAll('.desktop-nav-btn').forEach(btn => {
+                const icon = btn.querySelector('i');
+                if(btn.dataset.view === viewName) {
+                    btn.classList.remove('bg-white', 'text-gray-600', 'w-12', 'h-12');
+                    btn.classList.add('bg-black', 'text-white', 'w-14', 'h-14', 'shadow-md', 'shadow-black/20');
+                    if(icon && viewName === 'home') icon.classList.add('fill-current');
+                } else {
+                    btn.classList.add('bg-white', 'text-gray-600', 'w-12', 'h-12');
+                    btn.classList.remove('bg-black', 'text-white', 'w-14', 'h-14', 'shadow-md', 'shadow-black/20');
+                    if(icon) icon.classList.remove('fill-current');
+                }
+            });
+
+            const mobileMenu = document.getElementById('mobileMoreMenu');
+            if(!mobileMenu.classList.contains('hidden')) {
+                toggleMobileMenu();
+            }
+
+            // Trigger re-renders based on view
+            if(viewName === 'progress' && window.renderProgressChart) window.renderProgressChart();
+            if(viewName === 'papers' && window.renderAllPapersTable) window.renderAllPapersTable();
+            if(viewName === 'goals' && window.renderGoalsView) window.renderGoalsView();
+        };
+
+        // Live grade calculation
         document.getElementById('paperScore').addEventListener('input', function(e) {
             const val = parseInt(e.target.value);
             const display = document.getElementById('liveGradeDisplay');
@@ -431,7 +578,9 @@
         // State
         let db, auth, currentUser, appId;
         let unsubscribePapers = null;
+        let unsubscribeSchedule = null;
         let papersData = [];
+        let scheduleData = [];
         let currentFilter = 'All';
 
         const subjectColors = {
@@ -443,7 +592,7 @@
             'Literature': 'bg-white'
         };
 
-        // Initialize App & Auth
+        // Initialize Firebase
         try {
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
             const app = initializeApp(firebaseConfig);
@@ -478,37 +627,43 @@
                         </div>
                     `;
                     document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
-                    setupFirestoreListener();
+                    setupFirestoreListeners();
                 } else {
                     document.getElementById('userNameDisplay').textContent = "Student";
                     authStatusContainer.innerHTML = `<p class="text-gray-600 font-medium text-sm">You are logged out.</p>`;
                     if(unsubscribePapers) unsubscribePapers();
+                    if(unsubscribeSchedule) unsubscribeSchedule();
                     papersData = [];
+                    scheduleData = [];
                     renderAll();
                 }
             });
         } catch (error) {
             console.error("Firebase initialization failed:", error);
-            // Fallback for visual preview without DB
             renderAll();
         }
 
-        function setupFirestoreListener() {
+        function setupFirestoreListeners() {
             if (!currentUser) return;
-            const papersRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'papers');
             
+            // Papers Listener
+            const papersRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'papers');
             unsubscribePapers = onSnapshot(papersRef, (snapshot) => {
                 papersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                // Sort locally by date descending
                 papersData.sort((a, b) => new Date(b.date) - new Date(a.date));
                 document.getElementById('totalPapersStat').textContent = papersData.length;
                 renderAll();
-            }, (error) => {
-                console.error("Error listening to papers:", error);
-            });
+            }, (error) => console.error("Error listening to papers:", error));
+
+            // Schedule Listener
+            const scheduleRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'schedule');
+            unsubscribeSchedule = onSnapshot(scheduleRef, (snapshot) => {
+                scheduleData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                scheduleData.sort((a, b) => new Date(a.date) - new Date(b.date)); // Sort ascending for schedule
+                renderScheduleList();
+            }, (error) => console.error("Error listening to schedule:", error));
         }
 
-        // Global Utility: Calculate Grade
         window.calculateGrade = (score) => {
             if (score >= 75) return { letter: 'A', color: 'text-green-600', bg: 'bg-green-100', border: 'border-green-200' };
             if (score >= 65) return { letter: 'B', color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-200' };
@@ -517,7 +672,7 @@
             return { letter: 'F', color: 'text-red-600', bg: 'bg-red-100', border: 'border-red-200' };
         };
 
-        // Form Submit Handler
+        // Form Handlers
         window.handlePaperSubmit = async (e) => {
             e.preventDefault();
             if (!currentUser) return alert("Must be logged in to save data.");
@@ -537,61 +692,83 @@
             };
 
             try {
-                const papersRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'papers');
-                await addDoc(papersRef, newPaper);
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'papers'), newPaper);
                 closeAddPaperModal();
             } catch (error) {
                 console.error("Error adding paper: ", error);
-                alert("Failed to add paper.");
             }
         };
 
-        // Delete Paper Handler
+        window.handleScheduleSubmit = async (e) => {
+            e.preventDefault();
+            if (!currentUser) return alert("Must be logged in.");
+            
+            const newEvent = {
+                name: document.getElementById('scheduleName').value,
+                date: document.getElementById('scheduleDate').value,
+                type: document.getElementById('scheduleType').value,
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                await addDoc(collection(db, 'artifacts', appId, 'users', currentUser.uid, 'schedule'), newEvent);
+                document.getElementById('addScheduleForm').reset();
+            } catch (error) {
+                console.error("Error adding event: ", error);
+            }
+        };
+
+        // Delete Handlers
         window.deletePaper = async (id) => {
             if (!currentUser) return;
-            try {
-                await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'papers', id));
-            } catch (error) {
-                console.error("Error deleting paper: ", error);
-            }
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'papers', id)); } 
+            catch (error) { console.error("Error deleting: ", error); }
         };
 
-        // Filtering
+        window.deleteScheduleItem = async (id) => {
+            if (!currentUser) return;
+            try { await deleteDoc(doc(db, 'artifacts', appId, 'users', currentUser.uid, 'schedule', id)); } 
+            catch (error) { console.error("Error deleting: ", error); }
+        };
+
+        // Global Render Functions
         window.filterPapers = (subject) => {
             currentFilter = subject;
-            renderAll();
+            renderPapersGrid();
         };
 
-        // Render Functions
         function renderAll() {
             renderSubjectSummary();
             renderPapersGrid();
-            renderDifficultTopics();
+            renderDifficultTopicsHome();
+            window.renderAllPapersTable();
+            window.renderProgressChart();
+            window.renderGoalsView();
             lucide.createIcons();
         }
 
+        // Home View Components
         function renderSubjectSummary() {
             const container = document.getElementById('subjectSummaryContainer');
             if (papersData.length === 0) {
-                container.innerHTML = `<div class="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100 flex-shrink-0"><p class="text-sm text-gray-500 font-medium">Add papers to see summary.</p></div>`;
+                container.innerHTML = `<div class="bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100"><p class="text-sm text-gray-500 font-medium">Add papers to see summary.</p></div>`;
                 return;
             }
 
-            const subjectStats = {};
+            const stats = {};
             papersData.forEach(p => {
-                if(!subjectStats[p.subject]) subjectStats[p.subject] = { total: 0, count: 0 };
-                subjectStats[p.subject].total += p.score;
-                subjectStats[p.subject].count += 1;
+                if(!stats[p.subject]) stats[p.subject] = { total: 0, count: 0 };
+                stats[p.subject].total += p.score;
+                stats[p.subject].count += 1;
             });
 
-            container.innerHTML = Object.entries(subjectStats).map(([subj, data]) => {
+            container.innerHTML = Object.entries(stats).map(([subj, data]) => {
                 const avg = Math.round(data.total / data.count);
                 const gradeInfo = window.calculateGrade(avg);
                 const colorClass = subjectColors[subj] || 'bg-white border border-gray-200';
-                const isSelected = currentFilter === subj ? 'ring-2 ring-black' : '';
                 
                 return `
-                <button onclick="filterPapers('${subj}')" class="${colorClass} ${isSelected} p-5 rounded-[24px] min-w-[200px] flex-shrink-0 flex flex-col justify-between hover:-translate-y-1 transition-transform shadow-sm text-left group">
+                <button onclick="filterPapers('${subj}')" class="${colorClass} p-5 rounded-[24px] min-w-[200px] flex-shrink-0 flex flex-col justify-between hover:-translate-y-1 transition-transform shadow-sm text-left group">
                     <div class="flex justify-between items-start mb-4">
                         <span class="font-semibold text-gray-800 text-sm bg-white/40 px-3 py-1.5 rounded-full">${subj}</span>
                         <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm font-bold text-sm ${gradeInfo.color}">${gradeInfo.letter}</div>
@@ -610,98 +787,218 @@
             const filtered = currentFilter === 'All' ? papersData : papersData.filter(p => p.subject === currentFilter);
             
             if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="col-span-full flex flex-col items-center justify-center py-12 bg-white border border-dashed border-gray-300 rounded-[32px]">
-                        <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-400">
-                            <i data-lucide="inbox" class="w-8 h-8"></i>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-1">No papers found</h3>
-                        <p class="text-sm text-gray-500 mb-4">You haven't tracked any ${currentFilter !== 'All' ? currentFilter : ''} papers yet.</p>
-                        <button onclick="openAddPaperModal()" class="text-sm font-bold bg-black text-white px-5 py-2.5 rounded-full hover:bg-gray-800 transition-colors">Add One Now</button>
-                    </div>
-                `;
+                grid.innerHTML = `<div class="col-span-full py-12 text-center text-gray-500 bg-white rounded-[32px] border border-dashed">No papers found. Add some!</div>`;
                 return;
             }
 
-            grid.innerHTML = filtered.map(paper => {
+            // Only show up to 4 recent papers on Home to save space
+            grid.innerHTML = filtered.slice(0, 4).map(paper => {
                 const grade = window.calculateGrade(paper.score);
                 const colorBg = subjectColors[paper.subject] || 'bg-gray-50';
-                
-                const topicsHtml = paper.difficultTopics && paper.difficultTopics.length > 0 
-                    ? `<div class="flex flex-wrap gap-1 mt-3">
-                        ${paper.difficultTopics.map(t => `<span class="text-[10px] uppercase tracking-wider font-bold bg-white text-gray-600 px-2 py-1 rounded-md shadow-sm border border-gray-100">${t}</span>`).join('')}
-                       </div>` 
-                    : '';
-
-                const linkHtml = paper.resourceLink 
-                    ? `<a href="${paper.resourceLink}" target="_blank" class="mt-4 flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 w-max px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors">
-                        <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Resources
-                       </a>`
-                    : '';
+                const topicsHtml = paper.difficultTopics?.length ? `<div class="flex flex-wrap gap-1 mt-3">${paper.difficultTopics.map(t => `<span class="text-[10px] uppercase font-bold bg-white text-gray-600 px-2 py-1 rounded-md shadow-sm border border-gray-100">${t}</span>`).join('')}</div>` : '';
 
                 return `
                 <div class="${colorBg} rounded-[32px] p-6 lg:p-7 flex flex-col justify-between shadow-sm relative group">
                     <button onclick="deletePaper('${paper.id}')" class="absolute top-6 right-6 p-2 rounded-full bg-white/50 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white shadow-sm">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
-
                     <div class="flex justify-between items-start mb-6 pr-10">
-                        <div class="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 uppercase tracking-wide">
-                            ${paper.subject}
-                        </div>
-                        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full text-sm font-bold shadow-sm ${grade.color}">
-                            ${grade.letter} <span class="text-gray-400 font-medium ml-1">(${paper.score}%)</span>
-                        </div>
+                        <div class="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 uppercase tracking-wide">${paper.subject}</div>
+                        <div class="flex items-center gap-1 bg-white px-3 py-1.5 rounded-full text-sm font-bold shadow-sm ${grade.color}">${grade.letter}</div>
                     </div>
-                    
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 leading-tight mb-1">
-                            ${paper.year} ${paper.name}
-                        </h3>
-                        <p class="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1">
-                            <i data-lucide="calendar" class="w-3 h-3"></i> ${new Date(paper.date).toLocaleDateString()}
-                        </p>
+                        <h3 class="text-xl font-bold text-gray-900 leading-tight mb-1">${paper.year} ${paper.name}</h3>
+                        <p class="text-xs font-medium text-gray-500 mb-2">${new Date(paper.date).toLocaleDateString()}</p>
                         ${topicsHtml}
-                        ${linkHtml}
                     </div>
                 </div>
                 `;
             }).join('');
+            lucide.createIcons();
         }
 
-        function renderDifficultTopics() {
+        function renderDifficultTopicsHome() {
             const list = document.getElementById('difficultTopicsList');
             const topicsMap = new Map();
-
-            papersData.forEach(paper => {
-                if (paper.difficultTopics) {
-                    paper.difficultTopics.forEach(topic => {
-                        const t = topic.toUpperCase();
-                        if (!topicsMap.has(t)) topicsMap.set(t, { name: topic, papers: [] });
-                        topicsMap.get(t).papers.push(`${paper.year} ${paper.name}`);
-                    });
-                }
-            });
+            papersData.forEach(p => p.difficultTopics?.forEach(t => {
+                const upper = t.toUpperCase();
+                if (!topicsMap.has(upper)) topicsMap.set(upper, 0);
+                topicsMap.set(upper, topicsMap.get(upper) + 1);
+            }));
 
             if (topicsMap.size === 0) {
-                list.innerHTML = `<div class="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100"><i data-lucide="check-circle" class="w-8 h-8 text-green-400 mx-auto mb-2"></i><p class="text-sm text-gray-500 font-medium">No difficult topics tagged yet! Great job.</p></div>`;
+                list.innerHTML = `<div class="bg-gray-50 rounded-2xl p-6 text-center border border-gray-100 text-sm text-gray-500">No difficult topics tagged.</div>`;
                 return;
             }
 
-            const sortedTopics = Array.from(topicsMap.values()).sort((a, b) => b.papers.length - a.papers.length);
-
-            list.innerHTML = sortedTopics.map(topic => `
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-2 group hover:border-black transition-colors cursor-default">
-                    <div class="flex justify-between items-center">
-                        <span class="font-bold text-gray-900">${topic.name}</span>
-                        <span class="text-xs font-bold bg-red-50 text-red-500 px-2 py-1 rounded-full">${topic.papers.length} time${topic.papers.length > 1 ? 's' : ''}</span>
-                    </div>
-                    <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wider leading-relaxed">
-                        Seen in: ${topic.papers.slice(0, 3).join(', ')}${topic.papers.length > 3 ? '...' : ''}
-                    </p>
+            const sorted = Array.from(topicsMap.entries()).sort((a,b) => b[1]-a[1]).slice(0, 5); // top 5
+            list.innerHTML = sorted.map(([name, count]) => `
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex justify-between items-center group cursor-pointer hover:border-black transition-colors" onclick="switchView('goals')">
+                    <span class="font-bold text-gray-900 text-sm">${name}</span>
+                    <span class="text-xs font-bold bg-red-50 text-red-500 px-2 py-1 rounded-full">${count} times</span>
                 </div>
             `).join('');
         }
+
+        // Specific View Renderers attached to Window
+        window.renderAllPapersTable = () => {
+            const tbody = document.getElementById('allPapersTableBody');
+            const query = document.getElementById('paperSearch')?.value.toLowerCase() || '';
+            
+            const filtered = papersData.filter(p => 
+                p.name.toLowerCase().includes(query) || 
+                p.subject.toLowerCase().includes(query)
+            );
+
+            if(filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-gray-500 italic">No papers found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(paper => {
+                const grade = window.calculateGrade(paper.score);
+                return `
+                <tr class="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td class="p-4 font-medium text-gray-600">${new Date(paper.date).toLocaleDateString()}</td>
+                    <td class="p-4"><span class="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-xs font-bold uppercase">${paper.subject}</span></td>
+                    <td class="p-4 font-bold text-gray-900">${paper.year} ${paper.name}</td>
+                    <td class="p-4 font-bold text-gray-900">${paper.score}%</td>
+                    <td class="p-4"><span class="${grade.color} ${grade.bg} px-2 py-1 rounded-md font-bold text-xs">${grade.letter}</span></td>
+                    <td class="p-4 text-right">
+                        <button onclick="deletePaper('${paper.id}')" class="text-red-400 hover:text-red-600 transition-colors p-2"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        };
+
+        window.renderProgressChart = () => {
+            const ctx = document.getElementById('progressChartCanvas');
+            if(!ctx) return;
+            
+            if(window.progressChartInstance) {
+                window.progressChartInstance.destroy();
+            }
+
+            // Sort papers ascending for the chart timeline
+            const chartData = [...papersData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const labels = chartData.map(p => p.name.substring(0,10) + '...');
+            const dataPoints = chartData.map(p => p.score);
+
+            window.progressChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Paper Scores (%)',
+                        data: dataPoints,
+                        borderColor: '#000000',
+                        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointBackgroundColor: '#000000',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100 },
+                        x: { display: false } // Hide x-axis labels to keep it clean if many papers
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        };
+
+        function renderScheduleList() {
+            const list = document.getElementById('scheduleList');
+            if (scheduleData.length === 0) {
+                list.innerHTML = `<div class="bg-gray-50 p-6 rounded-2xl text-center text-gray-500 text-sm border border-gray-100">No upcoming events.</div>`;
+                return;
+            }
+
+            list.innerHTML = scheduleData.map(event => {
+                const dateObj = new Date(event.date);
+                const isPast = dateObj < new Date(new Date().setHours(0,0,0,0));
+                const colors = event.type === 'Exam' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100';
+                
+                return `
+                <div class="flex items-center justify-between p-4 rounded-2xl border ${isPast ? 'bg-gray-50 border-gray-200 opacity-60' : 'bg-white border-gray-100 shadow-sm'}">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl flex flex-col items-center justify-center ${colors} border">
+                            <span class="text-xs font-bold uppercase">${dateObj.toLocaleString('default', { month: 'short' })}</span>
+                            <span class="text-lg font-black leading-none">${dateObj.getDate()}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 ${isPast ? 'line-through' : ''}">${event.name}</h4>
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">${event.type}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteScheduleItem('${event.id}')" class="p-2 text-gray-400 hover:text-red-500 transition-colors"><i data-lucide="check-circle" class="w-5 h-5"></i></button>
+                </div>
+                `;
+            }).join('');
+            lucide.createIcons();
+        }
+
+        window.renderGoalsView = () => {
+            // Render Subject Averages
+            const stats = {};
+            papersData.forEach(p => {
+                if(!stats[p.subject]) stats[p.subject] = { total: 0, count: 0 };
+                stats[p.subject].total += p.score;
+                stats[p.subject].count += 1;
+            });
+
+            const subjList = document.getElementById('goalsSubjectList');
+            if(Object.keys(stats).length === 0) {
+                subjList.innerHTML = `<p class="text-gray-500 italic text-sm">Add papers to see averages.</p>`;
+            } else {
+                subjList.innerHTML = Object.entries(stats).map(([subj, data]) => {
+                    const avg = Math.round(data.total / data.count);
+                    const gradeInfo = window.calculateGrade(avg);
+                    return `
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="font-bold text-gray-800">${subj}</span>
+                            <span class="font-bold ${gradeInfo.color} text-lg">${avg}% <span class="text-xs text-gray-400">Avg</span></span>
+                        </div>
+                        <div class="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                            <div class="bg-black h-3 rounded-full transition-all" style="width: ${avg}%"></div>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+
+            // Render Topic Tags
+            const topicsMap = new Map();
+            papersData.forEach(p => p.difficultTopics?.forEach(t => {
+                const upper = t.toUpperCase();
+                if (!topicsMap.has(upper)) topicsMap.set(upper, 0);
+                topicsMap.set(upper, topicsMap.get(upper) + 1);
+            }));
+
+            const topicsList = document.getElementById('goalsTopicsList');
+            if(topicsMap.size === 0) {
+                topicsList.innerHTML = `<p class="text-gray-500 italic text-sm">No topics tracked.</p>`;
+            } else {
+                const sorted = Array.from(topicsMap.entries()).sort((a,b) => b[1]-a[1]);
+                topicsList.innerHTML = sorted.map(([name, count]) => `
+                    <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 px-4 py-2 rounded-xl">
+                        <span class="font-bold text-gray-800">${name}</span>
+                        <span class="bg-black text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${count}</span>
+                    </div>
+                `).join('');
+            }
+        };
     </script>
 </body>
 </html>
