@@ -182,6 +182,16 @@
 </head>
 <body class="paused">
 
+    <!-- HTML5 Audio Elements for Local Files -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="https://alstudy063.github.io/reminder3/hbd/rasangika/John_Bartmann_-_09_-_Happy_Clappy-1(chosic.com).mp3" type="audio/mpeg">
+    </audio>
+    <audio id="cheer-sound" preload="auto">
+        <source src="https://alstudy063.github.io/reminder3/hbd/rasangika/Children%20Yay%20Sound%20Effect%20(HD).mp3" type="audio/mpeg">
+        <!-- Google's free backup sound effect if the local file is missing -->
+        <source src="https://actions.google.com/sounds/v1/crowds/kids_cheering.ogg" type="audio/ogg"> 
+    </audio>
+
     <!-- Mic Permission Modal -->
     <div id="permission-modal">
         <div class="modal-content">
@@ -279,6 +289,10 @@
         const candlesDiv = document.getElementById('candles');
         const bizcocho1 = document.getElementById('bizcocho_1');
 
+        // Audio elements
+        const bgMusic = document.getElementById('bg-music');
+        const cheerSound = document.getElementById('cheer-sound');
+
         startBtn.addEventListener('click', async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -290,6 +304,11 @@
                 modal.style.display = 'none';
                 body.classList.remove('paused');
                 bizcocho1.beginElement();
+                
+                // Play Background Music
+                bgMusic.volume = 0.4; // 40% volume
+                bgMusic.play().catch(e => console.log("BG music play failed:", e));
+
                 listenToMic();
             } catch (err) {
                 alert("අයියෝ! ඉටිපන්දම් නිවන්න Mic එක allow කරන්න ඕනි යකොව්. 😒");
@@ -315,6 +334,11 @@
         function triggerBlowOut() {
             isBlownOut = true;
             candlesDiv.classList.add('blown-out');
+
+            // Play the celebration sound
+            cheerSound.volume = 1.0; // 100% volume
+            cheerSound.play().catch(e => console.log("Cheer sound play failed:", e));
+
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
