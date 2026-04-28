@@ -28,7 +28,21 @@
             background-color: var(--bg-main);
             color: var(--text-main);
             overscroll-behavior-y: none;
-            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease;
+            transition: background-color 0.5s cubic-bezier(0.16, 1, 0.3, 1), color 0.5s ease;
+            
+            /* Prevent Text Selection */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        /* Allow selection inside inputs */
+        input, select, textarea {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -44,31 +58,57 @@
         .text-themed-muted { color: var(--text-muted) !important; }
         .text-themed-accent { color: var(--accent-color) !important; }
 
-        /* Premium Animations */
+        /* Modern Luxury Animations */
         @keyframes slideUpFade {
-            0% { opacity: 0; transform: translateY(20px); }
-            100% { opacity: 1; transform: translateY(0); }
+            0% { opacity: 0; transform: translateY(30px); filter: blur(4px); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
         @keyframes modalEnter {
-            0% { opacity: 0; transform: scale(0.96) translateY(15px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
+            0% { opacity: 0; transform: scale(0.97) translateY(20px); filter: blur(4px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
         @keyframes fadeIn {
-            0% { opacity: 0; }
-            100% { opacity: 1; }
+            0% { opacity: 0; filter: blur(2px); }
+            100% { opacity: 1; filter: blur(0); }
+        }
+        
+        /* Shimmering Skeletons */
+        @keyframes shimmer { 
+            0% { background-position: 200% 0; } 
+            100% { background-position: -200% 0; } 
+        }
+        .skeleton {
+            background: linear-gradient(90deg, var(--card-border) 25%, var(--bg-sidebar) 50%, var(--card-border) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .animate-slide-up { animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-modal { animation: modalEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-fade { animation: fadeIn 0.4s ease-out forwards; }
+        /* Toast Notifications */
+        @keyframes toastSlideIn {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes toastSlideOut {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(20px) scale(0.95); }
+        }
+        .toast-enter { animation: toastSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .toast-leave { animation: toastSlideOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        .animate-slide-up { animation: slideUpFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-modal { animation: modalEnter 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-fade { animation: fadeIn 0.5s ease-out forwards; }
         
         /* Smooth transitions for interactive elements */
         button, a, input, select {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
     </style>
 </head>
 <body class="h-screen w-screen overflow-hidden flex justify-center items-center p-0 lg:p-6 transition-colors duration-300">
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-24 lg:bottom-10 right-6 lg:right-10 z-[100] flex flex-col gap-3 pointer-events-none"></div>
 
     <!-- Main App Container -->
     <div class="w-full max-w-[1600px] h-full flex flex-col lg:flex-row gap-0 lg:gap-10 relative">
@@ -130,18 +170,21 @@
 
                     <h2 class="text-lg font-semibold text-themed-muted mb-4">Subject Summary</h2>
                     <div id="subjectSummaryContainer" class="flex gap-4 overflow-x-auto no-scrollbar pb-4 mb-6 -mx-5 px-5 lg:mx-0 lg:px-0">
-                        <div class="text-themed-muted text-sm italic">Loading summary...</div>
+                        <!-- Skeletons for smooth loading -->
+                        <div class="skeleton min-w-[200px] h-[140px] rounded-[24px]"></div>
+                        <div class="skeleton min-w-[200px] h-[140px] rounded-[24px]"></div>
+                        <div class="skeleton min-w-[200px] h-[140px] rounded-[24px]"></div>
                     </div>
 
                     <div class="flex justify-between items-end mb-4 pr-0 lg:pr-4 mt-4">
                         <h2 class="text-lg font-semibold text-themed-muted">Recent Papers</h2>
                         <div class="flex gap-2">
-                            <button onclick="filterPapers('All')" class="text-xs font-semibold bg-themed-card border border-themed-card text-themed-main px-3 py-1.5 rounded-full shadow-sm hover:-translate-y-0.5 transition-all filter-btn">All</button>
+                            <button onclick="triggerHaptic(); filterPapers('All');" class="text-xs font-semibold bg-themed-card border border-themed-card text-themed-main px-3 py-1.5 rounded-full shadow-sm hover:-translate-y-0.5 transition-all filter-btn">All</button>
                         </div>
                     </div>
 
                     <div id="papersGrid" class="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-8 pr-0 lg:pr-4">
-                        <!-- Dynamic Papers -->
+                        <!-- Dynamic Papers / Empty State -->
                     </div>
                     
                     <div class="h-10 lg:h-20 w-full opacity-50"></div>
@@ -149,7 +192,7 @@
 
                 <aside class="w-full lg:w-[400px] flex-shrink-0 flex flex-col h-auto lg:h-full lg:overflow-y-auto no-scrollbar gap-6 px-5 lg:px-0 pb-10 lg:pb-10 pt-4 lg:pt-0 border-t border-themed-card lg:border-t-0 mt-4 lg:mt-0">
                     <div class="hidden lg:flex justify-between items-center mt-2 lg:mt-8 px-2">
-                        <button class="w-12 h-12 flex items-center justify-center rounded-full bg-themed-card shadow-sm hover:-translate-y-1 transition-all group">
+                        <button onclick="triggerHaptic()" class="w-12 h-12 flex items-center justify-center rounded-full bg-themed-card shadow-sm hover:-translate-y-1 transition-all group">
                             <i data-lucide="bell" class="w-5 h-5 text-themed-muted group-hover:text-themed-accent transition-colors"></i>
                         </button>
                         <button onclick="openSettings()" class="w-12 h-12 flex items-center justify-center rounded-full bg-themed-card shadow-sm hover:rotate-45 transition-all group">
@@ -187,7 +230,9 @@
                             <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full font-semibold shadow-sm">Needs Revision</span>
                         </div>
                         <div id="difficultTopicsList" class="flex flex-col gap-3 pb-8">
-                            <div class="text-sm text-themed-muted italic text-center py-4">Add papers to track topics.</div>
+                            <!-- Skeletons initially -->
+                            <div class="skeleton w-full h-[60px] rounded-2xl"></div>
+                            <div class="skeleton w-full h-[60px] rounded-2xl"></div>
                         </div>
                     </div>
                 </aside>
@@ -238,7 +283,10 @@
                     <div class="flex-1">
                         <h3 class="text-lg font-semibold text-themed-muted mb-4">Upcoming Events</h3>
                         <div id="scheduleList" class="flex flex-col gap-4">
-                            <div class="text-themed-muted italic">Loading schedule...</div>
+                            <!-- Skeletons -->
+                            <div class="skeleton w-full h-[88px] rounded-2xl"></div>
+                            <div class="skeleton w-full h-[88px] rounded-2xl"></div>
+                            <div class="skeleton w-full h-[88px] rounded-2xl"></div>
                         </div>
                     </div>
                 </div>
@@ -298,10 +346,10 @@
 
     <!-- Mobile Nav -->
     <nav class="flex lg:hidden fixed bottom-0 left-0 w-full bg-themed-card border-t border-themed-card px-8 py-4 justify-between items-center z-40 rounded-t-[32px] shadow-[0_-10px_40px_rgba(0,0,0,0.06)]">
-        <button onclick="switchView('home')" class="flex flex-col items-center gap-1 text-themed-accent hover:-translate-y-1 transition-transform">
+        <button data-view="home" onclick="switchView('home')" class="mobile-nav-btn flex flex-col items-center gap-1 text-themed-accent hover:-translate-y-1 transition-transform">
             <i data-lucide="home" class="w-6 h-6 fill-current"></i><span class="text-[10px] font-bold">Home</span>
         </button>
-        <button onclick="switchView('papers')" class="flex flex-col items-center gap-1 text-themed-muted hover:text-themed-accent hover:-translate-y-1 transition-transform">
+        <button data-view="papers" onclick="switchView('papers')" class="mobile-nav-btn flex flex-col items-center gap-1 text-themed-muted hover:text-themed-accent hover:-translate-y-1 transition-transform">
             <i data-lucide="file-text" class="w-6 h-6"></i><span class="text-[10px] font-medium">Papers</span>
         </button>
         <button onclick="toggleMobileMenu()" class="flex flex-col items-center gap-1 text-themed-muted hover:text-themed-accent hover:-translate-y-1 transition-transform">
@@ -314,7 +362,7 @@
         <div class="absolute bottom-[90px] left-4 right-4 bg-themed-card rounded-[32px] p-6 shadow-2xl transform translate-y-4 transition-transform duration-300 border border-themed-card animate-modal">
             <div class="flex justify-between items-center mb-6 px-2">
                 <h3 class="text-lg font-bold text-themed-main">More Options</h3>
-                <button onclick="toggleMobileMenu()" class="bg-themed-sidebar p-2 rounded-full text-themed-muted hover:bg-black/5 hover:rotate-90 transition-all">
+                <button onclick="triggerHaptic(); toggleMobileMenu();" class="bg-themed-sidebar p-2 rounded-full text-themed-muted hover:bg-black/5 hover:rotate-90 transition-all">
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
@@ -326,19 +374,19 @@
                     </div>
                     <span class="text-xs font-semibold text-themed-muted group-hover:text-themed-accent">Add Paper</span>
                 </button>
-                <button onclick="switchView('progress')" class="flex flex-col items-center gap-2 group">
+                <button onclick="toggleMobileMenu(); switchView('progress');" class="flex flex-col items-center gap-2 group">
                     <div class="w-14 h-14 rounded-full bg-themed-sidebar flex items-center justify-center group-hover:bg-themed-accent group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
                         <i data-lucide="trending-up" class="w-6 h-6"></i>
                     </div>
                     <span class="text-xs font-semibold text-themed-muted group-hover:text-themed-accent">Progress</span>
                 </button>
-                <button onclick="switchView('schedule')" class="flex flex-col items-center gap-2 group">
+                <button onclick="toggleMobileMenu(); switchView('schedule');" class="flex flex-col items-center gap-2 group">
                     <div class="w-14 h-14 rounded-full bg-themed-sidebar flex items-center justify-center group-hover:bg-themed-accent group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
                         <i data-lucide="calendar-days" class="w-6 h-6"></i>
                     </div>
                     <span class="text-xs font-semibold text-themed-muted group-hover:text-themed-accent">Schedule</span>
                 </button>
-                <button onclick="switchView('goals')" class="flex flex-col items-center gap-2 group">
+                <button onclick="toggleMobileMenu(); switchView('goals');" class="flex flex-col items-center gap-2 group">
                     <div class="w-14 h-14 rounded-full bg-themed-sidebar flex items-center justify-center group-hover:bg-themed-accent group-hover:text-white transition-all group-hover:scale-110 shadow-sm">
                         <i data-lucide="target" class="w-6 h-6"></i>
                     </div>
@@ -394,13 +442,8 @@
                     </div>
                 </div>
                 <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label class="block text-sm font-semibold text-themed-muted">Difficult Topics & Summary Links</label>
-                        <button type="button" onclick="addTopicInputRow()" class="text-xs bg-themed-main text-themed-accent px-3 py-1.5 rounded-full font-bold hover:shadow-sm transition-shadow flex items-center gap-1"><i data-lucide="plus" class="w-3 h-3"></i> Add Topic</button>
-                    </div>
-                    <div id="dynamicTopicsContainer" class="space-y-2 max-h-40 overflow-y-auto no-scrollbar pr-2">
-                        <!-- Dynamic topic rows injected here -->
-                    </div>
+                    <label class="block text-sm font-semibold text-themed-muted mb-1">Difficult Topics (Comma separated)</label>
+                    <input type="text" id="paperTopics" class="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm bg-gray-50 focus:bg-white text-black focus:outline-none focus:border-themed-accent transition-colors">
                 </div>
                 <div class="pt-4 flex justify-end gap-3">
                     <button type="button" onclick="closeAddPaperModal()" class="px-6 py-3 rounded-full text-sm font-semibold text-themed-muted hover:bg-black/5 transition-colors">Cancel</button>
@@ -412,109 +455,157 @@
 
     <!-- Master Settings Modal -->
     <div id="settingsModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-opacity animate-fade" onclick="if(event.target === this) closeSettings()">
-        <div class="bg-themed-card w-full max-w-4xl rounded-[32px] shadow-2xl p-6 lg:p-8 h-[90vh] flex flex-col relative animate-modal">
-            <button onclick="closeSettings()" class="absolute top-6 right-6 p-2 rounded-full bg-themed-sidebar hover:bg-black/5 text-themed-muted hover:text-black hover:rotate-90 transition-all z-10">
+        <div class="bg-themed-main w-full max-w-4xl rounded-[32px] shadow-2xl p-6 lg:p-8 max-h-[90vh] flex flex-col relative animate-modal overflow-hidden">
+            <button onclick="closeSettings()" class="absolute top-6 right-6 p-2 rounded-full bg-themed-card hover:bg-black/5 text-themed-muted hover:text-black hover:rotate-90 transition-all z-10 shadow-sm border border-themed-card">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <h2 class="text-3xl font-bold text-themed-main mb-6 mt-2 flex-shrink-0">Settings</h2>
             
-            <div class="flex-1 overflow-y-auto no-scrollbar grid grid-cols-1 lg:grid-cols-2 gap-8 pb-8">
-                <!-- Left Column -->
-                <div class="space-y-8">
-                    <!-- Account & Sync -->
-                    <section>
-                        <h3 class="text-lg font-semibold text-themed-muted mb-4 flex items-center gap-2"><i data-lucide="user" class="w-5 h-5"></i> Account & Sync</h3>
-                        <div id="authStatusContainer" class="bg-themed-main p-6 rounded-2xl border border-themed-card text-center shadow-sm hover:shadow-md transition-shadow">
-                            <!-- Dynamically injected -->
-                            <p class="text-sm text-themed-muted animate-pulse">Loading...</p>
+            <div class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-6 pb-8">
+                <!-- Top Row: Account & Appearance -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    
+                    <!-- Account -->
+                    <div class="bg-themed-card rounded-[32px] p-6 shadow-sm border border-themed-card flex flex-col relative overflow-hidden">
+                        <h3 class="text-lg font-bold text-themed-main mb-4 flex items-center gap-2"><i data-lucide="user" class="w-5 h-5"></i> Account</h3>
+                        <div id="authStatusContainer" class="flex-1 flex flex-col gap-4 justify-center">
+                            <!-- Skeletons -->
+                            <div class="skeleton h-24 w-full rounded-[24px]"></div>
+                            <div class="skeleton h-12 w-full rounded-full mt-2"></div>
                         </div>
-                    </section>
+                    </div>
 
-                    <!-- Appearance / Material You -->
-                    <section>
-                        <h3 class="text-lg font-semibold text-themed-muted mb-4 flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5"></i> Appearance</h3>
-                        <div class="bg-themed-main p-6 rounded-2xl border border-themed-card shadow-sm hover:shadow-md transition-shadow">
-                            <p class="text-sm font-medium text-themed-main mb-3">Material You Themes</p>
-                            <div class="flex gap-3 flex-wrap">
-                                <button onclick="applyTheme('pastel', true)" title="Pastel (Default)" class="w-10 h-10 rounded-full bg-[#FAF8F5] border-[3px] border-white shadow-md hover:scale-125 transition-transform"></button>
-                                <button onclick="applyTheme('ocean', true)" title="Ocean Blue" class="w-10 h-10 rounded-full bg-[#E0F2FE] border-[3px] border-white shadow-md hover:scale-125 transition-transform"></button>
-                                <button onclick="applyTheme('mint', true)" title="Mint Green" class="w-10 h-10 rounded-full bg-[#D1FAE5] border-[3px] border-white shadow-md hover:scale-125 transition-transform"></button>
-                                <button onclick="applyTheme('dark', true)" title="Dark Mode" class="w-10 h-10 rounded-full bg-[#111827] border-[3px] border-gray-600 shadow-md hover:scale-125 transition-transform"></button>
-                                <button onclick="applyTheme('rose', true)" title="Rose" class="w-10 h-10 rounded-full bg-[#FFF1F2] border-[3px] border-white shadow-md hover:scale-125 transition-transform"></button>
-                                <button onclick="applyTheme('purple', true)" title="Deep Purple" class="w-10 h-10 rounded-full bg-[#FAF5FF] border-[3px] border-white shadow-md hover:scale-125 transition-transform"></button>
-                            </div>
+                    <!-- Appearance -->
+                    <div class="bg-themed-card rounded-[32px] p-6 shadow-sm border border-themed-card flex flex-col">
+                        <h3 class="text-lg font-bold text-themed-main mb-2 flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5"></i> Appearance</h3>
+                        <p class="text-sm text-themed-muted mb-4">Choose your preferred app theme.</p>
+                        <div class="grid grid-cols-2 gap-3" id="theme-selector">
+                            <button onclick="applyTheme('pastel', true)" data-theme="pastel" class="theme-btn flex flex-col items-center p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="w-full h-10 rounded flex overflow-hidden mb-2">
+                                    <div class="w-1/3 h-full bg-[#F2EDE4]"></div>
+                                    <div class="w-2/3 h-full bg-[#FAF8F5]"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700">Pastel (Default)</span>
+                            </button>
+                            <button onclick="applyTheme('ocean', true)" data-theme="ocean" class="theme-btn flex flex-col items-center p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="w-full h-10 rounded flex overflow-hidden mb-2">
+                                    <div class="w-1/3 h-full bg-[#BAE6FD]"></div>
+                                    <div class="w-2/3 h-full bg-[#E0F2FE]"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700">Ocean Blue</span>
+                            </button>
+                            <button onclick="applyTheme('mint', true)" data-theme="mint" class="theme-btn flex flex-col items-center p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="w-full h-10 rounded flex overflow-hidden mb-2">
+                                    <div class="w-1/3 h-full bg-[#A7F3D0]"></div>
+                                    <div class="w-2/3 h-full bg-[#D1FAE5]"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700">Mint Green</span>
+                            </button>
+                            <button onclick="applyTheme('dark', true)" data-theme="dark" class="theme-btn flex flex-col items-center p-2.5 rounded-xl border border-gray-200 bg-[#111827] transition-all">
+                                <div class="w-full h-10 rounded flex overflow-hidden mb-2">
+                                    <div class="w-1/3 h-full bg-[#1F2937]"></div>
+                                    <div class="w-2/3 h-full bg-[#111827]"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-white">Dark Mode</span>
+                            </button>
+                            <button onclick="applyTheme('rose', true)" data-theme="rose" class="theme-btn flex flex-col items-center p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="w-full h-10 rounded flex overflow-hidden mb-2">
+                                    <div class="w-1/3 h-full bg-[#FFE4E6]"></div>
+                                    <div class="w-2/3 h-full bg-[#FFF1F2]"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700">Rose</span>
+                            </button>
+                            <button onclick="applyTheme('purple', true)" data-theme="purple" class="theme-btn flex flex-col items-center p-2.5 rounded-xl border border-gray-200 bg-white hover:border-gray-300 transition-all">
+                                <div class="w-full h-10 rounded flex overflow-hidden mb-2">
+                                    <div class="w-1/3 h-full bg-[#F3E8FF]"></div>
+                                    <div class="w-2/3 h-full bg-[#FAF5FF]"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-700">Deep Purple</span>
+                            </button>
                         </div>
-                    </section>
+                    </div>
                 </div>
 
-                <!-- Right Column -->
-                <div class="space-y-8">
-                    <!-- Subject Management -->
-                    <section>
-                        <h3 class="text-lg font-semibold text-themed-muted mb-4 flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5"></i> Manage Subjects</h3>
-                        <div class="bg-themed-main p-6 rounded-2xl border border-themed-card shadow-sm hover:shadow-md transition-shadow">
-                            <form id="addSubjectForm" onsubmit="handleAddSubject(event)" class="flex gap-2 mb-4 group">
-                                <input type="text" id="newSubName" required placeholder="New subject..." class="flex-1 rounded-xl px-4 py-2 text-sm border focus:outline-none focus:border-themed-accent text-black transition-colors">
-                                <input type="color" id="newSubColor" value="#BDE0FE" class="w-10 h-10 rounded-xl cursor-pointer p-0 border-0 hover:scale-105 transition-transform">
-                                <button type="submit" class="bg-themed-accent text-white px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all">+</button>
-                            </form>
-                            <div id="settingsSubjectList" class="space-y-2 max-h-40 overflow-y-auto pr-2 no-scrollbar">
-                                <!-- Populated dynamically -->
-                            </div>
-                        </div>
-                    </section>
+                <!-- Bottom Row: Data & Subjects -->
+                <div class="bg-themed-card rounded-[32px] p-6 lg:p-8 shadow-sm border border-themed-card">
+                    <h3 class="text-lg font-bold text-themed-main mb-6 flex items-center gap-2"><i data-lucide="database" class="w-5 h-5"></i> Manage Data & Subjects</h3>
+                    
+                    <!-- Data Management Buttons -->
+                    <div class="flex flex-wrap items-center gap-3 mb-8">
+                        <button onclick="exportData()" class="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-800 transition-colors shadow-md shadow-black/10">
+                            <i data-lucide="download" class="w-4 h-4"></i> Export Backup
+                        </button>
+                        <label class="flex items-center gap-2 bg-gray-100 text-gray-800 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-gray-200 cursor-pointer transition-colors border border-gray-200">
+                            <i data-lucide="upload" class="w-4 h-4"></i> Import Backup
+                            <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
+                        </label>
+                        <button onclick="factoryReset()" class="flex items-center gap-2 ml-auto bg-red-50 text-red-500 px-5 py-2.5 rounded-full text-sm font-bold hover:bg-red-100 transition-colors border border-red-100">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i> Clear All Data
+                        </button>
+                    </div>
 
-                    <!-- Data Portability -->
-                    <section>
-                        <h3 class="text-lg font-semibold text-themed-muted mb-4 flex items-center gap-2"><i data-lucide="database" class="w-5 h-5"></i> Data Management</h3>
-                        <div class="bg-themed-main p-6 rounded-2xl border border-themed-card space-y-4 shadow-sm hover:shadow-md transition-shadow">
-                            <button onclick="exportData()" class="w-full flex items-center justify-between bg-white border border-gray-200 px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:-translate-y-0.5 active:scale-[0.98] transition-all">
-                                <span>Export Backup (JSON)</span><i data-lucide="download" class="w-4 h-4"></i>
+                    <!-- Add Subject Form -->
+                    <div class="bg-themed-main p-6 rounded-[24px] border border-themed-card shadow-inner">
+                        <h4 class="text-sm font-bold text-themed-main mb-4">Add New Subject</h4>
+                        <form id="addSubjectForm" onsubmit="handleAddSubject(event)" class="flex flex-col md:flex-row gap-3">
+                            <input type="text" id="newSubName" required placeholder="Subject Name" class="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-themed-accent transition-colors bg-white text-black shadow-sm">
+                            
+                            <select id="newSubColor" class="rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-themed-accent transition-colors bg-white text-black cursor-pointer md:w-40 appearance-none shadow-sm bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2224%22%20height%3D%2224%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20stroke%3D%22%23000%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%2F%3E%3C%2Fsvg%3E')] bg-[length:16px] bg-no-repeat bg-[position:right_12px_center] pr-10">
+                                <option value="#FFC0CB">Pink</option>
+                                <option value="#BDE0FE">Blue</option>
+                                <option value="#D1FAE5">Mint</option>
+                                <option value="#FCE1C3">Peach</option>
+                                <option value="#E9D5FF">Purple</option>
+                                <option value="#F3F4F6">Gray</option>
+                            </select>
+
+                            <button type="submit" onclick="triggerHaptic()" class="bg-black text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-md shadow-black/10">
+                                Add Subject
                             </button>
-                            <label class="w-full flex items-center justify-between bg-white border border-gray-200 px-4 py-3 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 cursor-pointer hover:-translate-y-0.5 active:scale-[0.98] transition-all">
-                                <span>Import Backup</span><i data-lucide="upload" class="w-4 h-4"></i>
-                                <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="importData(event)">
-                            </label>
-                            <button onclick="factoryReset()" class="w-full flex items-center justify-between bg-red-50 border border-red-100 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 hover:bg-red-100 hover:-translate-y-0.5 active:scale-[0.98] transition-all">
-                                <span>Clear All Data</span><i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                        </form>
+                        
+                        <div id="settingsSubjectList" class="mt-4 space-y-2 max-h-[160px] overflow-y-auto pr-2 no-scrollbar">
+                            <!-- Populated dynamically -->
                         </div>
-                    </section>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Paper Details Modal -->
-    <div id="paperDetailsModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[65] flex items-center justify-center p-4 transition-opacity animate-fade" onclick="if(event.target === this) closePaperDetailsModal()">
-        <div class="bg-themed-card w-full max-w-lg rounded-[32px] shadow-2xl p-6 lg:p-8 max-h-[95vh] overflow-y-auto no-scrollbar relative animate-modal">
-            <button onclick="closePaperDetailsModal()" class="absolute top-6 right-6 p-2 rounded-full bg-themed-sidebar hover:bg-black/5 text-themed-muted hover:text-black hover:rotate-90 transition-all z-10">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-            <div class="mb-8 mt-2 pr-8 border-b border-gray-100 pb-6">
-                <div class="flex items-center gap-2 mb-3">
-                    <span id="pdSubject" class="bg-black/5 text-themed-main px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider"></span>
-                    <span id="pdScore" class="px-3 py-1 rounded-full text-xs font-bold shadow-sm"></span>
-                </div>
-                <h2 id="pdName" class="text-3xl font-bold text-themed-main leading-tight"></h2>
-                <p id="pdDate" class="text-sm text-themed-muted mt-2 flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4"></i> <span id="pdDateText"></span></p>
-            </div>
-            
-            <div>
-                <h3 class="text-lg font-bold text-themed-main mb-4 flex items-center gap-2"><i data-lucide="book-x" class="w-5 h-5 text-themed-muted"></i> Topics to Review</h3>
-                <div id="pdTopicsList" class="flex flex-col gap-3">
-                    <!-- Populated dynamically -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- UI Scripts & Theming -->
+    <!-- UI Scripts & Utilities -->
     <script>
         lucide.createIcons();
         let progressChartInstance = null;
 
+        // 1. Haptic Feedback Utility
+        window.triggerHaptic = () => {
+            if (navigator.vibrate) navigator.vibrate(40);
+        };
+
+        // 2. Custom Toast System
+        window.showToast = (message, type = 'success') => {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const icon = type === 'success' ? 'check-circle' : (type === 'error' ? 'alert-circle' : 'info');
+            const colorClass = type === 'error' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-themed-card text-themed-main border-themed-card shadow-2xl shadow-black/10';
+            
+            toast.className = `flex items-center gap-3 px-5 py-4 rounded-2xl border ${colorClass} toast-enter pointer-events-auto backdrop-blur-md`;
+            toast.innerHTML = `<i data-lucide="${icon}" class="w-5 h-5 ${type==='success'?'text-green-500':''}"></i><span class="text-sm font-bold">${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons({root: toast});
+            triggerHaptic();
+            
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-leave');
+                setTimeout(() => toast.remove(), 400); // Wait for exit animation
+            }, 3000);
+        };
+
         function toggleMobileMenu() {
+            triggerHaptic();
             const menu = document.getElementById('mobileMoreMenu');
             if (menu.classList.contains('hidden')) {
                 menu.classList.remove('hidden');
@@ -536,6 +627,7 @@
         };
 
         window.applyTheme = function(themeName, save = false) {
+            triggerHaptic();
             const t = themes[themeName] || themes['pastel'];
             const root = document.documentElement;
             root.style.setProperty('--bg-main', t.main);
@@ -546,41 +638,69 @@
             root.style.setProperty('--card-bg', t.card);
             root.style.setProperty('--card-border', t.cardBorder);
             
+            // Dynamic Active State for Theme Buttons
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                if(btn.dataset.theme === themeName) {
+                    btn.classList.add('border-black', 'ring-1', 'ring-black');
+                    btn.classList.remove('border-gray-200');
+                } else {
+                    btn.classList.remove('border-black', 'ring-1', 'ring-black');
+                    btn.classList.add('border-gray-200');
+                }
+            });
+
             if(window.progressChartInstance) {
-                window.renderProgressChart(); // Re-render to update the gradient based on new accent color
+                window.renderProgressChart(); 
             }
 
             if(save && window.saveThemeToFirestore) window.saveThemeToFirestore(themeName);
         };
 
         window.switchView = function(viewName) {
+            triggerHaptic();
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.add('hidden'); 
-                el.classList.remove('flex', 'animate-slide-up'); // Remove animation class
+                el.classList.remove('flex', 'animate-slide-up'); 
             });
             const target = document.getElementById('view-' + viewName);
             if(target) {
                 target.classList.remove('hidden', 'opacity-0'); 
                 target.classList.add('flex');
                 
-                // Trigger reflow to restart CSS animation
                 void target.offsetWidth; 
                 target.classList.add('animate-slide-up');
 
-                // Instant scroll reset
                 target.scrollTo({top: 0, behavior: 'instant'}); 
                 const mainWrapper = target.querySelector('main');
                 if(mainWrapper) mainWrapper.scrollTo({top: 0, behavior: 'instant'});
             }
             
+            // Dynamic Icon Filling for Desktop Nav
             document.querySelectorAll('.desktop-nav-btn').forEach(btn => {
-                const icon = btn.querySelector('i');
+                const svg = btn.querySelector('svg');
                 if(btn.dataset.view === viewName) {
                     btn.className = "desktop-nav-btn w-14 h-14 flex items-center justify-center rounded-full bg-themed-accent text-white shadow-lg shadow-black/20 transition-all hover:scale-110";
-                    if(icon && viewName === 'home') icon.classList.add('fill-current');
+                    if (svg) svg.classList.add('fill-current');
                 } else {
                     btn.className = "desktop-nav-btn w-12 h-12 flex items-center justify-center rounded-full bg-themed-card shadow-sm text-themed-muted hover:text-themed-accent transition-all hover:-translate-y-1 group";
-                    if(icon) icon.classList.remove('fill-current');
+                    if (svg) svg.classList.remove('fill-current');
+                }
+            });
+
+            // Dynamic Icon Filling for Mobile Nav
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                const svg = btn.querySelector('svg');
+                const span = btn.querySelector('span');
+                if(btn.dataset.view === viewName) {
+                    btn.classList.add('text-themed-accent');
+                    btn.classList.remove('text-themed-muted');
+                    if (svg) svg.classList.add('fill-current');
+                    if (span) { span.classList.add('font-bold'); span.classList.remove('font-medium'); }
+                } else {
+                    btn.classList.add('text-themed-muted');
+                    btn.classList.remove('text-themed-accent');
+                    if (svg) svg.classList.remove('fill-current');
+                    if (span) { span.classList.remove('font-bold'); span.classList.add('font-medium'); }
                 }
             });
 
@@ -589,89 +709,19 @@
             if(viewName === 'goals' && window.renderGoalsView) window.renderGoalsView();
         };
 
-        function openSettings() { 
-            const modal = document.getElementById('settingsModal');
-            if(modal) {
-                modal.classList.remove('hidden'); 
-                modal.classList.add('flex');
-            }
-        }
-        function closeSettings() { 
-            const modal = document.getElementById('settingsModal');
-            if(modal) {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }
-        }
+        function openSettings() { triggerHaptic(); document.getElementById('settingsModal').classList.remove('hidden'); }
+        function closeSettings() { triggerHaptic(); document.getElementById('settingsModal').classList.add('hidden'); }
         function openAddPaperModal() {
+            triggerHaptic();
             document.getElementById('addPaperModal').classList.remove('hidden');
-            document.getElementById('addPaperModal').classList.add('flex');
             document.getElementById('paperDate').valueAsDate = new Date();
-            if (document.getElementById('dynamicTopicsContainer').children.length === 0) addTopicInputRow();
         }
         function closeAddPaperModal() { 
+            triggerHaptic();
             document.getElementById('addPaperModal').classList.add('hidden');
-            document.getElementById('addPaperModal').classList.remove('flex');
             document.getElementById('addPaperForm').reset();
             document.getElementById('liveGradeDisplay').textContent = '-';
-            document.getElementById('dynamicTopicsContainer').innerHTML = '';
         }
-
-        window.addTopicInputRow = () => {
-            const container = document.getElementById('dynamicTopicsContainer');
-            const row = document.createElement('div');
-            row.className = 'flex gap-2 items-center';
-            row.innerHTML = `
-                <input type="text" placeholder="Topic name" class="topic-name-input flex-[1.5] rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-gray-50 focus:bg-white text-black focus:outline-none focus:border-themed-accent transition-colors">
-                <input type="url" placeholder="Summary Link (Optional)" class="topic-link-input flex-[2] rounded-xl border border-gray-200 px-3 py-2.5 text-sm bg-gray-50 focus:bg-white text-black focus:outline-none focus:border-themed-accent transition-colors">
-                <button type="button" onclick="this.parentElement.remove()" class="p-2 text-red-400 hover:text-red-600 hover:scale-110 hover:bg-red-50 rounded-full transition-all"><i data-lucide="minus-circle" class="w-5 h-5"></i></button>
-            `;
-            container.appendChild(row);
-            lucide.createIcons({root: row});
-        };
-
-        window.openPaperDetailsModal = (id) => {
-            const paper = papersData.find(p => p.id === id);
-            if(!paper) return;
-            
-            document.getElementById('pdName').textContent = `${paper.year} ${paper.name}`;
-            document.getElementById('pdDateText').textContent = new Date(paper.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            document.getElementById('pdSubject').textContent = paper.subject;
-            
-            const g = window.calculateGrade(paper.score);
-            const scoreEl = document.getElementById('pdScore');
-            scoreEl.textContent = `${paper.score}% - Grade ${g.letter}`;
-            scoreEl.className = `px-3 py-1 rounded-full text-xs font-bold shadow-sm ${g.color} ${g.bg}`;
-            
-            const topicsContainer = document.getElementById('pdTopicsList');
-            if(!paper.difficultTopics || paper.difficultTopics.length === 0) {
-                topicsContainer.innerHTML = `<p class="text-sm text-themed-muted italic bg-themed-main p-4 rounded-xl border border-dashed border-gray-200">No difficult topics recorded for this paper. Great job!</p>`;
-            } else {
-                topicsContainer.innerHTML = paper.difficultTopics.map(t => {
-                    // Backward compatibility check
-                    const name = typeof t === 'string' ? t : t.name;
-                    const link = typeof t === 'string' ? null : t.link;
-                    const linkHtml = link ? `<a href="${link}" target="_blank" class="text-themed-accent font-bold hover:underline flex items-center gap-1 text-xs bg-themed-main border border-themed-card shadow-sm px-3 py-1.5 rounded-lg hover:-translate-y-0.5 transition-all" onclick="event.stopPropagation()"><i data-lucide="external-link" class="w-3.5 h-3.5"></i> Read Summary</a>` : '';
-                    
-                    return `
-                    <div class="flex items-center justify-between p-4 border border-gray-100 rounded-2xl bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                        <span class="font-semibold text-themed-main text-sm">${name}</span>
-                        ${linkHtml}
-                    </div>`;
-                }).join('');
-            }
-            lucide.createIcons({root: topicsContainer});
-            
-            const modal = document.getElementById('paperDetailsModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        };
-
-        window.closePaperDetailsModal = () => {
-            const modal = document.getElementById('paperDetailsModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        };
 
         document.getElementById('paperScore').addEventListener('input', function(e) {
             const val = parseInt(e.target.value);
@@ -682,6 +732,19 @@
                 display.textContent = g.letter; display.className = `font-bold text-lg ${g.color} transition-colors`;
             }
         });
+
+        // Common Empty State Markup Generators
+        window.getEmptyStateMarkup = (title, subtitle, svgPathContent) => `
+            <div class="flex flex-col items-center justify-center p-12 text-center col-span-full animate-fade w-full">
+                <div class="w-32 h-32 mb-6 text-themed-accent opacity-20">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full">
+                        ${svgPathContent}
+                    </svg>
+                </div>
+                <h3 class="text-2xl font-bold text-themed-main mb-2">${title}</h3>
+                <p class="text-sm text-themed-muted max-w-[250px]">${subtitle}</p>
+            </div>
+        `;
     </script>
 
     <!-- Firebase & Core Logic -->
@@ -690,7 +753,6 @@
         import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, signOut, GoogleAuthProvider, linkWithPopup, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, doc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // User Provided Config
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -706,9 +768,7 @@
 
         let db, auth, currentUser;
         let listeners = [];
-        // Ensure these are globally available for window functions
-        window.papersData = []; 
-        let scheduleData = [], subjectsData = [];
+        let papersData = [], scheduleData = [], subjectsData = [];
 
         try {
             const finalConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : firebaseConfig;
@@ -731,48 +791,45 @@
                 
                 if (user) {
                     const isGuest = user.isAnonymous;
-                    const name = user.displayName || "Guest Student";
+                    const name = user.displayName || "Guest User";
                     const photo = user.photoURL || `https://ui-avatars.com/api/?name=${name}&background=random`;
+                    const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'GU';
                     
-                    const userNameDisplay = document.getElementById('userNameDisplay');
-                    if(userNameDisplay) userNameDisplay.textContent = name;
-                    
-                    const navAvatar = document.getElementById('navAvatar');
-                    if(navAvatar) navAvatar.src = photo;
-                    
-                    const asideAvatar = document.getElementById('asideAvatar');
-                    if(asideAvatar) asideAvatar.src = photo;
+                    document.getElementById('userNameDisplay').textContent = name;
+                    document.getElementById('navAvatar').src = photo;
+                    document.getElementById('asideAvatar').src = photo;
 
-                    if(authContainer) {
-                        authContainer.innerHTML = `
-                            <div class="flex flex-col items-center animate-fade">
-                                <img src="${photo}" class="w-16 h-16 rounded-full shadow-md mb-3 border-2 border-white hover:scale-110 transition-transform">
-                                <p class="font-bold text-themed-main">${name}</p>
-                                <p class="text-xs text-themed-muted mb-2">${isGuest ? 'Local Guest Account' : user.email}</p>
-                                ${isGuest ? `<button id="googleSyncBtn" class="bg-blue-500 text-white px-5 py-2 rounded-full text-sm font-bold shadow hover:bg-blue-600 flex items-center gap-2 mt-2 hover:-translate-y-0.5 active:scale-95 transition-all"><i data-lucide="cloud" class="w-4 h-4"></i> Sync with Google</button>` 
-                                          : `<button id="logoutBtn" class="text-red-500 text-sm font-semibold hover:bg-red-50 px-4 py-2 rounded-full mt-2 transition-colors">Sign Out</button>`}
+                    const statusText = isGuest ? "Not synced to cloud" : "Synced to cloud";
+                    const cardBg = isGuest ? "bg-[#E6F4EA]" : "bg-blue-50"; 
+                    const avatarBg = isGuest ? "bg-[#D1E8D5]" : "bg-blue-100";
+                    
+                    authContainer.innerHTML = `
+                        <div class="${cardBg} rounded-[24px] p-5 flex items-center gap-4 mb-2 shadow-sm border border-black/5 animate-fade">
+                            <div class="w-14 h-14 ${avatarBg} rounded-full flex items-center justify-center text-gray-800 text-xl font-bold flex-shrink-0 shadow-inner">
+                                ${user.photoURL && !isGuest ? `<img src="${user.photoURL}" class="w-full h-full rounded-full object-cover">` : initials}
                             </div>
-                        `;
-                        if(isGuest) {
-                            const syncBtn = document.getElementById('googleSyncBtn');
-                            if(syncBtn) syncBtn.addEventListener('click', linkGoogle);
-                        } else {
-                            const logoutBtn = document.getElementById('logoutBtn');
-                            if(logoutBtn) logoutBtn.addEventListener('click', () => signOut(auth));
+                            <div class="flex-1 text-left">
+                                <h4 class="font-bold text-gray-900">${name}</h4>
+                                <p class="text-xs text-gray-600">${statusText}</p>
+                            </div>
+                        </div>
+                        ${isGuest ? 
+                            `<button id="googleSyncBtn" class="w-full bg-white border border-gray-200 text-gray-800 px-5 py-3 rounded-xl text-sm font-bold shadow-sm hover:bg-gray-50 flex items-center justify-center gap-2 transition-all active:scale-95"><img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google"> Sign in with Google</button>` 
+                            : 
+                            `<button id="logoutBtn" class="w-full bg-white border border-gray-200 text-red-500 px-5 py-3 rounded-xl text-sm font-bold shadow-sm hover:bg-red-50 transition-all active:scale-95">Sign Out</button>`
                         }
-                    }
+                    `;
+                    
+                    if(isGuest) document.getElementById('googleSyncBtn').addEventListener('click', linkGoogle);
+                    else document.getElementById('logoutBtn').addEventListener('click', () => { triggerHaptic(); signOut(auth); });
                     
                     setupFirestoreListeners();
                     loadProfileSettings();
                 } else {
-                    const userNameDisplay = document.getElementById('userNameDisplay');
-                    if(userNameDisplay) userNameDisplay.textContent = "Student";
-                    
-                    if(authContainer) {
-                        authContainer.innerHTML = `<p class="text-sm text-themed-muted">Logged out.</p>`;
-                    }
+                    document.getElementById('userNameDisplay').textContent = "Student";
+                    authContainer.innerHTML = `<p class="text-sm text-themed-muted">Logged out.</p>`;
                     listeners.forEach(unsub => unsub());
-                    window.papersData = []; scheduleData = []; subjectsData = [];
+                    papersData = []; scheduleData = []; subjectsData = [];
                     renderAll();
                 }
                 lucide.createIcons();
@@ -780,14 +837,16 @@
         } catch (error) { console.error("Firebase init failed:", error); }
 
         window.linkGoogle = async () => {
+            triggerHaptic();
             try {
                 const provider = new GoogleAuthProvider();
                 if (auth.currentUser?.isAnonymous) await linkWithPopup(auth.currentUser, provider);
                 else await signInWithPopup(auth, provider);
+                showToast("Account synced successfully!");
             } catch (e) {
                 console.error(e);
                 if(e.code === 'auth/credential-already-in-use') await signInWithPopup(auth, new GoogleAuthProvider());
-                else alert("Auth failed.");
+                else showToast("Authentication failed.", "error");
             }
         };
 
@@ -798,15 +857,12 @@
             listeners.forEach(unsub => unsub()); listeners = [];
 
             listeners.push(onSnapshot(getColRef('papers'), (snap) => {
-                window.papersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-                window.papersData.sort((a, b) => new Date(b.date) - new Date(a.date));
-                // Animate numbers
+                papersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                papersData.sort((a, b) => new Date(b.date) - new Date(a.date));
                 const statEl = document.getElementById('totalPapersStat');
-                if(statEl) {
-                    statEl.classList.add('scale-125', 'text-themed-accent');
-                    statEl.textContent = window.papersData.length;
-                    setTimeout(() => statEl.classList.remove('scale-125', 'text-themed-accent'), 300);
-                }
+                statEl.classList.add('scale-125', 'text-themed-accent');
+                statEl.textContent = papersData.length;
+                setTimeout(() => statEl.classList.remove('scale-125', 'text-themed-accent'), 300);
                 renderAll();
             }, e => console.error(e)));
 
@@ -849,12 +905,18 @@
                 colorHex: document.getElementById('newSubColor').value
             });
             document.getElementById('addSubjectForm').reset();
+            showToast("Subject added.");
         };
-        window.deleteSubject = async (id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'subjects', id)); };
+        window.deleteSubject = async (id) => { 
+            triggerHaptic();
+            if(currentUser) {
+                await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'subjects', id)); 
+                showToast("Subject deleted.");
+            }
+        };
 
         function renderSubjectsList() {
             const list = document.getElementById('settingsSubjectList');
-            if(!list) return;
             list.innerHTML = subjectsData.map(s => `
                 <div class="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div class="flex items-center gap-3">
@@ -866,19 +928,22 @@
             `).join('');
             
             const select = document.getElementById('paperSubject');
-            if(select) select.innerHTML = subjectsData.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+            select.innerHTML = subjectsData.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
             lucide.createIcons();
         }
 
         window.exportData = () => {
-            const exportObj = { papers: window.papersData, schedule: scheduleData, subjects: subjectsData };
+            triggerHaptic();
+            const exportObj = { papers: papersData, schedule: scheduleData, subjects: subjectsData };
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportObj));
             const node = document.createElement('a');
             node.setAttribute("href", dataStr); node.setAttribute("download", "StudyMaster_Backup.json");
             document.body.appendChild(node); node.click(); node.remove();
+            showToast("Backup exported.");
         };
 
         window.importData = (event) => {
+            triggerHaptic();
             const file = event.target.files[0];
             if (!file || !currentUser) return;
             const reader = new FileReader();
@@ -888,19 +953,20 @@
                     if(data.papers) for(let p of data.papers) { delete p.id; await addDoc(getColRef('papers'), p); }
                     if(data.schedule) for(let s of data.schedule) { delete s.id; await addDoc(getColRef('schedule'), s); }
                     if(data.subjects) for(let s of data.subjects) { delete s.id; await addDoc(getColRef('subjects'), s); }
-                    alert("Import successful!");
-                } catch(err) { alert("Invalid backup file."); }
+                    showToast("Backup imported successfully!");
+                } catch(err) { showToast("Invalid backup file.", "error"); }
             };
             reader.readAsText(file);
         };
 
         window.factoryReset = async () => {
+            triggerHaptic();
             if(!currentUser || !confirm("Are you sure? This deletes ALL data permanently.")) return;
             try {
                 const pSnap = await getDocs(getColRef('papers')); pSnap.forEach(d => deleteDoc(d.ref));
                 const sSnap = await getDocs(getColRef('schedule')); sSnap.forEach(d => deleteDoc(d.ref));
                 const subSnap = await getDocs(getColRef('subjects')); subSnap.forEach(d => deleteDoc(d.ref));
-                alert("Data cleared.");
+                showToast("All data cleared.", "error");
             } catch(e) { console.error(e); }
         };
 
@@ -914,30 +980,25 @@
 
         window.handlePaperSubmit = async (e) => {
             e.preventDefault();
+            triggerHaptic();
             if (!currentUser) return;
-            
-            const topicRows = document.querySelectorAll('#dynamicTopicsContainer > div');
-            const topicsArray = [];
-            topicRows.forEach(row => {
-                const name = row.querySelector('.topic-name-input').value.trim();
-                const link = row.querySelector('.topic-link-input').value.trim();
-                if(name) topicsArray.push({ name, link: link || null });
-            });
-
+            const raw = document.getElementById('paperTopics').value;
             await addDoc(getColRef('papers'), {
                 name: document.getElementById('paperName').value,
                 year: parseInt(document.getElementById('paperYear').value),
                 subject: document.getElementById('paperSubject').value,
                 date: document.getElementById('paperDate').value,
                 score: parseInt(document.getElementById('paperScore').value),
-                difficultTopics: topicsArray,
+                difficultTopics: raw ? raw.split(',').map(t=>t.trim()).filter(t=>t) : [],
                 createdAt: new Date().toISOString()
             });
+            showToast("Paper added successfully!");
             closeAddPaperModal();
         };
 
         window.handleScheduleSubmit = async (e) => {
             e.preventDefault();
+            triggerHaptic();
             if (!currentUser) return;
             await addDoc(getColRef('schedule'), {
                 name: document.getElementById('scheduleName').value,
@@ -946,10 +1007,11 @@
                 createdAt: new Date().toISOString()
             });
             document.getElementById('addScheduleForm').reset();
+            showToast("Event added to schedule!");
         };
 
-        window.deletePaper = async (id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'papers', id)); };
-        window.deleteScheduleItem = async (id) => { if(currentUser) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'schedule', id)); };
+        window.deletePaper = async (id) => { triggerHaptic(); if(currentUser) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'papers', id)); showToast("Paper deleted."); };
+        window.deleteScheduleItem = async (id) => { triggerHaptic(); if(currentUser) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'schedule', id)); showToast("Event checked off!"); };
 
         function getSubjectColor(subjName) {
             const f = subjectsData.find(s => s.name === subjName);
@@ -968,11 +1030,18 @@
 
         function renderSubjectSummary() {
             const cont = document.getElementById('subjectSummaryContainer');
-            if(!cont) return;
-            if(window.papersData.length === 0) { cont.innerHTML = `<div class="bg-themed-card px-6 py-4 rounded-2xl border border-themed-card text-themed-muted text-sm shadow-sm">Add papers to see summary.</div>`; return; }
+            if(papersData.length === 0) { 
+                cont.innerHTML = `
+                    <div class="flex items-center gap-4 bg-themed-card border border-themed-card p-6 rounded-[24px] shadow-sm w-full opacity-70 animate-fade">
+                        <div class="w-12 h-12 bg-themed-main rounded-full flex items-center justify-center text-themed-muted"><i data-lucide="bar-chart-2"></i></div>
+                        <div><h4 class="font-bold text-themed-main">No data to summarize</h4><p class="text-xs text-themed-muted">Log papers to see your averages.</p></div>
+                    </div>
+                `; 
+                return; 
+            }
             
             const stats = {};
-            window.papersData.forEach(p => {
+            papersData.forEach(p => {
                 if(!stats[p.subject]) stats[p.subject] = { total: 0, count: 0 };
                 stats[p.subject].total += p.score; stats[p.subject].count++;
             });
@@ -994,20 +1063,18 @@
 
         function renderPapersGrid() {
             const grid = document.getElementById('papersGrid');
-            if(!grid) return;
-            if(window.papersData.length === 0) { grid.innerHTML = `<div class="col-span-full py-12 text-center text-themed-muted bg-themed-card rounded-[32px] border border-dashed border-gray-300">No papers found.</div>`; return; }
+            if(papersData.length === 0) { 
+                grid.innerHTML = getEmptyStateMarkup('No papers found', 'Add your recent exam or study papers to see them here.', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>');
+                return; 
+            }
             
-            grid.innerHTML = window.papersData.slice(0,4).map((p, index) => {
+            grid.innerHTML = papersData.slice(0,4).map((p, index) => {
                 const g = window.calculateGrade(p.score);
                 const bg = getSubjectColor(p.subject);
-                const tH = p.difficultTopics?.length ? `<div class="flex flex-wrap gap-1 mt-3">${p.difficultTopics.map(t=>{
-                    const n = typeof t === 'string' ? t : t.name;
-                    return `<span class="text-[10px] uppercase font-bold bg-white text-gray-600 px-2 py-1 rounded-md shadow-sm">${n}</span>`;
-                }).join('')}</div>` : '';
-                
+                const tH = p.difficultTopics?.length ? `<div class="flex flex-wrap gap-1 mt-3">${p.difficultTopics.map(t=>`<span class="text-[10px] uppercase font-bold bg-white text-gray-600 px-2 py-1 rounded-md shadow-sm">${t}</span>`).join('')}</div>` : '';
                 return `
-                <div onclick="openPaperDetailsModal('${p.id}')" class="rounded-[32px] p-6 flex flex-col justify-between shadow-sm hover:shadow-md relative group border border-black/5 hover:-translate-y-1 transition-all cursor-pointer" style="background-color: ${bg}; animation: fadeIn 0.4s ease-out ${index * 0.1}s forwards; opacity:0;">
-                    <button onclick="event.stopPropagation(); deletePaper('${p.id}')" class="absolute top-6 right-6 p-2 rounded-full bg-white/50 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-white shadow-sm transition-all hover:scale-110 hover:rotate-12"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <div class="rounded-[32px] p-6 flex flex-col justify-between shadow-sm hover:shadow-md relative group border border-black/5 hover:-translate-y-1 transition-all" style="background-color: ${bg}; animation: fadeIn 0.4s ease-out ${index * 0.1}s forwards; opacity:0;">
+                    <button onclick="deletePaper('${p.id}')" class="absolute top-6 right-6 p-2 rounded-full bg-white/50 text-red-500 opacity-0 group-hover:opacity-100 hover:bg-white shadow-sm transition-all hover:scale-110 hover:rotate-12"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     <div class="flex justify-between items-start mb-6 pr-10">
                         <div class="bg-white/60 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs font-bold text-gray-800 uppercase shadow-sm">${p.subject}</div>
                         <div class="bg-white px-3 py-1.5 rounded-full text-sm font-bold shadow-sm group-hover:scale-105 transition-transform ${g.color}">${g.letter}</div>
@@ -1019,13 +1086,18 @@
 
         function renderDifficultTopicsHome() {
             const list = document.getElementById('difficultTopicsList');
-            if(!list) return;
             const map = new Map();
-            window.papersData.forEach(p => p.difficultTopics?.forEach(t => { 
-                const topicName = (typeof t === 'string' ? t : t.name).toUpperCase();
-                map.set(topicName, (map.get(topicName)||0)+1); 
-            }));
-            if(map.size === 0) { list.innerHTML = `<div class="bg-themed-card rounded-2xl p-6 text-center text-sm text-themed-muted border border-themed-card shadow-sm">No difficult topics tagged.</div>`; return; }
+            papersData.forEach(p => p.difficultTopics?.forEach(t => { map.set(t.toUpperCase(), (map.get(t.toUpperCase())||0)+1); }));
+            
+            if(map.size === 0) { 
+                list.innerHTML = `
+                    <div class="bg-themed-card rounded-2xl p-6 text-center border border-themed-card shadow-sm animate-fade">
+                        <i data-lucide="target" class="w-8 h-8 text-themed-muted opacity-40 mx-auto mb-2"></i>
+                        <p class="text-sm text-themed-muted font-medium">No topics tagged yet.</p>
+                    </div>`; 
+                return; 
+            }
+            
             list.innerHTML = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,c]) => `
                 <div class="bg-themed-card p-4 rounded-2xl shadow-sm border border-themed-card flex justify-between items-center group cursor-pointer hover:border-themed-accent hover:-translate-y-0.5 transition-all" onclick="switchView('goals')">
                     <span class="font-bold text-themed-main text-sm group-hover:text-themed-accent transition-colors">${n}</span><span class="text-xs font-bold bg-red-50 text-red-500 px-2 py-1 rounded-full group-hover:scale-110 transition-transform">${c}x</span>
@@ -1034,10 +1106,16 @@
 
         window.renderAllPapersTable = () => {
             const tb = document.getElementById('allPapersTableBody');
-            if(!tb) return;
             const q = document.getElementById('paperSearch')?.value.toLowerCase() || '';
-            const f = window.papersData.filter(p => p.name.toLowerCase().includes(q) || p.subject.toLowerCase().includes(q));
-            if(!f.length) { tb.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-themed-muted">No papers found.</td></tr>`; return; }
+            const f = papersData.filter(p => p.name.toLowerCase().includes(q) || p.subject.toLowerCase().includes(q));
+            
+            if(!f.length) { 
+                tb.innerHTML = `<tr><td colspan="6" class="p-8">
+                    ${getEmptyStateMarkup('No papers found', 'Try adjusting your search or add a new paper to your history.', '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>')}
+                </td></tr>`; 
+                return; 
+            }
+            
             tb.innerHTML = f.map(p => {
                 const g = window.calculateGrade(p.score);
                 return `
@@ -1054,15 +1132,14 @@
         window.renderProgressChart = () => {
             const ctx = document.getElementById('progressChartCanvas'); if(!ctx) return;
             if(window.progressChartInstance) window.progressChartInstance.destroy();
-            const d = [...window.papersData].sort((a,b)=>new Date(a.date)-new Date(b.date));
+            const d = [...papersData].sort((a,b)=>new Date(a.date)-new Date(b.date));
             const rootStyle = getComputedStyle(document.documentElement);
             const accent = rootStyle.getPropertyValue('--accent-color').trim();
 
-            // Premium Gradient Fill
             const ctx2d = ctx.getContext('2d');
             const gradient = ctx2d.createLinearGradient(0, 0, 0, 400);
-            gradient.addColorStop(0, accent + '80'); // 50% opacity
-            gradient.addColorStop(1, accent + '00'); // 0% opacity
+            gradient.addColorStop(0, accent + '80'); 
+            gradient.addColorStop(1, accent + '00'); 
 
             window.progressChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -1085,8 +1162,11 @@
 
         function renderScheduleList() {
             const list = document.getElementById('scheduleList');
-            if(!list) return;
-            if(!scheduleData.length) { list.innerHTML = `<div class="bg-themed-card p-6 rounded-2xl text-center text-themed-muted border border-themed-card text-sm shadow-sm">No upcoming events.</div>`; return; }
+            if(!scheduleData.length) { 
+                list.innerHTML = getEmptyStateMarkup('Clear Schedule', 'Enjoy your free time or add new upcoming study events.', '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>');
+                return; 
+            }
+            
             list.innerHTML = scheduleData.map((e, index) => {
                 const d = new Date(e.date); const past = d < new Date(new Date().setHours(0,0,0,0));
                 const c = e.type === 'Exam' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-blue-50 text-blue-600 border-blue-100';
@@ -1096,38 +1176,36 @@
                         <div class="w-12 h-12 rounded-xl flex flex-col items-center justify-center ${c} border shadow-sm"><span class="text-[10px] font-bold uppercase">${d.toLocaleString('default',{month:'short'})}</span><span class="text-lg font-black leading-none">${d.getDate()}</span></div>
                         <div><h4 class="font-bold text-themed-main ${past?'line-through':''}">${e.name}</h4><p class="text-[10px] font-semibold text-themed-muted uppercase">${e.type}</p></div>
                     </div>
-                    <button onclick="deleteScheduleItem('${e.id}')" class="p-2 text-themed-muted hover:text-red-500 hover:scale-125 transition-transform"><i data-lucide="check-circle" class="w-5 h-5"></i></button>
+                    <button onclick="deleteScheduleItem('${e.id}')" class="p-2 text-themed-muted hover:text-green-500 hover:scale-125 transition-transform"><i data-lucide="check-circle" class="w-5 h-5"></i></button>
                 </div>`;
             }).join(''); lucide.createIcons();
         }
 
         window.renderGoalsView = () => {
-            const stats = {}; window.papersData.forEach(p => { if(!stats[p.subject]) stats[p.subject] = {t:0,c:0}; stats[p.subject].t+=p.score; stats[p.subject].c++; });
+            const stats = {}; papersData.forEach(p => { if(!stats[p.subject]) stats[p.subject] = {t:0,c:0}; stats[p.subject].t+=p.score; stats[p.subject].c++; });
             const sList = document.getElementById('goalsSubjectList');
-            if(sList) {
-                sList.innerHTML = Object.keys(stats).length ? Object.entries(stats).map(([s,d])=>{
+            
+            if (Object.keys(stats).length === 0) {
+                sList.innerHTML = getEmptyStateMarkup('No Data', 'Add papers to calculate your subject averages.', '<path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/>');
+            } else {
+                sList.innerHTML = Object.entries(stats).map(([s,d])=>{
                     const avg = Math.round(d.t/d.c); const g = window.calculateGrade(avg);
                     return `<div><div class="flex justify-between mb-2"><span class="font-bold text-themed-main">${s}</span><span class="font-bold ${g.color}">${avg}%</span></div>
                     <div class="w-full bg-black/5 rounded-full h-3 shadow-inner"><div class="bg-themed-accent h-3 rounded-full shadow-sm transition-all duration-1000 ease-out" style="width:0%" onload="this.style.width='${avg}%'" data-width="${avg}%"></div></div></div>`;
-                }).join('') : `<p class="text-themed-muted text-sm">Add papers to see averages.</p>`;
-
-                // Trigger animation for the progress bars
-                setTimeout(() => {
-                    sList.querySelectorAll('.bg-themed-accent').forEach(bar => bar.style.width = bar.getAttribute('data-width'));
-                }, 100);
+                }).join('');
+                setTimeout(() => sList.querySelectorAll('.bg-themed-accent').forEach(bar => bar.style.width = bar.getAttribute('data-width')), 100);
             }
 
-            const map = new Map(); 
-            window.papersData.forEach(p => p.difficultTopics?.forEach(t => {
-                const topicName = (typeof t === 'string' ? t : t.name).toUpperCase();
-                map.set(topicName, (map.get(topicName)||0)+1);
-            }));
+            const map = new Map(); papersData.forEach(p => p.difficultTopics?.forEach(t => map.set(t.toUpperCase(), (map.get(t.toUpperCase())||0)+1)));
             const tList = document.getElementById('goalsTopicsList');
-            if(tList) {
-                tList.innerHTML = map.size ? Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`
+            
+            if (map.size === 0) {
+                tList.innerHTML = getEmptyStateMarkup('All Clear', 'You have no difficult topics tracked yet.', '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>');
+            } else {
+                tList.innerHTML = Array.from(map.entries()).sort((a,b)=>b[1]-a[1]).map(([n,c])=>`
                     <div class="flex items-center gap-2 bg-themed-main border border-themed-card px-4 py-2 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all cursor-default">
                         <span class="font-bold text-themed-main">${n}</span><span class="bg-themed-accent text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">${c}</span>
-                    </div>`).join('') : `<p class="text-themed-muted text-sm">No topics tracked.</p>`;
+                    </div>`).join('');
             }
         };
     </script>
