@@ -1,36 +1,29 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ChemNotes - Guest + Google Sign-In</title>
+    <title>ChemNotes - Fixed White Theme</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;600;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- MathJax Configuration -->
+    <!-- MathJax -->
     <script>
         window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true
-            },
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
             options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea'] }
         };
     </script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot, query, orderBy, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -44,299 +37,323 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
-
-        window.auth = auth;
-        window.db = db;
-        window.signInWithPopup = signInWithPopup;
-        window.GoogleAuthProvider = GoogleAuthProvider;
-        window.provider = provider;
-        window.signOut = signOut;
-        window.onAuthStateChanged = onAuthStateChanged;
-        window.collection = collection;
-        window.doc = doc;
-        window.setDoc = setDoc;
-        window.deleteDoc = deleteDoc;
-        window.updateDoc = updateDoc;
-        window.getDocs = getDocs;
-        window.onSnapshot = onSnapshot;
-        window.query = query;
-        window.orderBy = orderBy;
-        window.writeBatch = writeBatch;
-        
-        console.log("Firebase ready");
+        window.auth = auth; window.db = db; window.GoogleAuthProvider = GoogleAuthProvider;
+        window.signInWithPopup = signInWithPopup; window.signOut = signOut; window.onAuthStateChanged = onAuthStateChanged;
+        window.collection = collection; window.doc = doc; window.setDoc = setDoc; window.deleteDoc = deleteDoc;
+        window.updateDoc = updateDoc; window.getDocs = getDocs; window.onSnapshot = onSnapshot;
+        window.query = query; window.orderBy = orderBy; window.writeBatch = writeBatch;
     </script>
-
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fcfcfd; color: #1a1a1e; }
-        .sinhala-font { font-family: 'Noto Sans Sinhala', sans-serif; }
-        .card-clean { background: #ffffff; border: 1px solid #f1f1f4; border-radius: 20px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .card-clean:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0,0,0,0.05); border-color: #e2e2e7; }
-        .nav-link { transition: all 0.2s ease; color: #64748b; }
-        .nav-link.active { background-color: #f1f5f9; color: #0f172a; font-weight: 600; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-slide { animation: slideUp 0.4s ease forwards; }
-        .prose-content img { border-radius: 12px; margin: 1.5rem 0; max-width: 100%; }
-        .prose-content table { width: 100%; border-collapse: collapse; margin: 1rem 0; border: 1px solid #f1f5f9; }
-        .prose-content th, .prose-content td { padding: 12px; border: 1px solid #f1f5f9; text-align: left; }
-        .prose-content th { background: #f8fafc; }
-        .prose-content h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 1rem; }
-        .prose-content h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; }
-        .prose-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
-        .prose-content p { margin-bottom: 1rem; }
-        .modal-overlay { background-color: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
-        .loading-spinner { border: 3px solid #f3f4f6; border-top: 3px solid #4f46e5; border-radius: 50%; width: 40px; height: 40px; animation: spin 0.8s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .btn-google { background-color: #fff; border: 1px solid #dadce0; color: #3c4043; }
-        .btn-google:hover { background-color: #f8f9fa; }
+        /* Light theme (default) - clean, high contrast */
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #6366f1;
+            --primary-dark: #4338ca;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        body.dark {
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+        .bg-primary { background-color: var(--primary); }
+        .bg-primary-light { background-color: var(--primary-light); }
+        .text-primary { color: var(--primary); }
+        .border-primary { border-color: var(--primary); }
+        .hover\:bg-primary-dark:hover { background-color: var(--primary-dark); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        
+        .card-clean {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        body.dark .card-clean {
+            background: #1e293b;
+            border-color: #334155;
+        }
+        .card-clean:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.05);
+            border-color: var(--primary-light);
+        }
+        .nav-link {
+            transition: all 0.2s ease;
+            color: #64748b;
+        }
+        body.dark .nav-link {
+            color: #94a3b8;
+        }
+        .nav-link.active {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 600;
+        }
+        body.dark .nav-link.active {
+            background-color: #334155;
+            color: white;
+        }
+        .sidebar {
+            background-color: white;
+            border-right-color: #e2e8f0;
+        }
+        body.dark .sidebar {
+            background-color: #1e293b;
+            border-right-color: #334155;
+        }
+        .modal-overlay {
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+        }
+        .color-swatch {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .color-swatch:hover { transform: scale(1.1); }
+        .btn-google {
+            background-color: white;
+            border: 1px solid #dadce0;
+            color: #1f2937;
+        }
+        body.dark .btn-google {
+            background-color: #334155;
+            border-color: #475569;
+            color: #e2e8f0;
+        }
+        .prose-content { color: #0f172a; line-height: 1.6; }
+        body.dark .prose-content { color: #e2e8f0; }
+        .prose-content h1, .prose-content h2, .prose-content h3 { font-weight: 700; }
+        .prose-content a { color: var(--primary); }
+        input, textarea, select {
+            background-color: white;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        body.dark input, body.dark textarea, body.dark select {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            ring: 2px solid var(--primary-light);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide { animation: slideUp 0.3s ease forwards; }
     </style>
 </head>
-<body class="antialiased">
-
+<body>
 <div id="app" class="flex flex-col md:flex-row min-h-screen">
     <!-- Sidebar desktop -->
-    <aside class="hidden md:flex flex-col w-72 fixed h-full p-8 border-r border-slate-100 bg-white z-30">
+    <aside class="hidden md:flex flex-col w-72 fixed h-full p-8 border-r sidebar z-30">
         <div class="flex items-center gap-3 mb-12">
-            <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-100">
-                <i data-lucide="book-open" class="text-white w-5 h-5"></i>
-            </div>
-            <h1 class="text-xl font-bold tracking-tight">Chem<span class="text-indigo-600">Notes</span></h1>
+            <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg"><i data-lucide="book-open" class="text-white w-5 h-5"></i></div>
+            <h1 class="text-xl font-bold tracking-tight">Chem<span class="text-primary">Notes</span></h1>
         </div>
         <nav class="space-y-2 flex-1">
-            <button onclick="switchTab('home')" id="nav-home" class="nav-link w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all"><i data-lucide="home" size="18"></i> Dashboard</button>
+            <button onclick="switchTab('home')" id="nav-home" class="nav-link w-full flex items-center gap-3 p-3 rounded-xl"><i data-lucide="home" size="18"></i> Dashboard</button>
             <button onclick="switchTab('reminders')" id="nav-reminders" class="nav-link w-full flex items-center gap-3 p-3 rounded-xl active"><i data-lucide="clock" size="18"></i> Reminders</button>
-            <button onclick="switchTab('all')" id="nav-all" class="nav-link w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all"><i data-lucide="grid" size="18"></i> All Library</button>
-            <button onclick="openSettings()" class="nav-link w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-all"><i data-lucide="settings" size="18"></i> Settings</button>
+            <button onclick="switchTab('all')" id="nav-all" class="nav-link w-full flex items-center gap-3 p-3 rounded-xl"><i data-lucide="grid" size="18"></i> All Library</button>
+            <button onclick="openSettings()" class="nav-link w-full flex items-center gap-3 p-3 rounded-xl"><i data-lucide="settings" size="18"></i> Settings</button>
         </nav>
-        <div class="p-4 rounded-2xl bg-indigo-50 mt-auto border border-indigo-100" id="user-info-sidebar">
-            <p class="text-xs font-bold text-indigo-600 uppercase mb-1">Status</p>
-            <p class="text-sm font-semibold text-slate-800 truncate" id="sidebar-user-status">Guest Mode</p>
-            <button id="sidebar-signin-btn" onclick="openLoginModal()" class="mt-3 text-xs text-indigo-600 hover:text-indigo-800 font-medium">Sign in to sync</button>
+        <div class="p-4 rounded-2xl bg-primary/10 mt-auto border border-primary/20">
+            <p class="text-xs font-bold text-primary uppercase mb-1">Status</p>
+            <p class="text-sm font-semibold truncate" id="sidebar-user-status">Guest Mode</p>
+            <button id="sidebar-signin-btn" onclick="openLoginModal()" class="mt-3 text-xs text-primary hover:underline font-medium">Sign in to sync</button>
             <button id="sidebar-signout-btn" onclick="handleLogout()" class="mt-3 text-xs text-red-500 hover:text-red-700 font-medium hidden">Sign out</button>
         </div>
     </aside>
 
     <main class="flex-1 md:ml-72 p-6 md:p-12 pb-32">
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-12">
-            <div><h2 id="page-title" class="text-3xl font-bold text-slate-900 tracking-tight">Chemistry Master</h2><p id="page-subtitle" class="text-slate-500 mt-1">Keep track of every reaction clearly.</p></div>
-            <button onclick="openAddEditModal()" class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm active:scale-95 flex items-center gap-2"><i data-lucide="plus" size="18"></i> New Entry</button>
+            <div><h2 id="page-title" class="text-3xl font-bold tracking-tight">Chemistry Master</h2><p id="page-subtitle" class="text-slate-500 dark:text-slate-400 mt-1">Keep track of every reaction clearly.</p></div>
+            <button onclick="openAddEditModal()" class="px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary-dark transition-colors shadow-sm active:scale-95 flex items-center gap-2"><i data-lucide="plus" size="18"></i> New Entry</button>
         </header>
-        <div id="search-container" class="mb-10 max-w-xl"><div class="relative"><i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></i><input type="text" id="search-input" onkeyup="filterReactions()" placeholder="Find a reaction..." class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 transition-all"></div></div>
-        
-        <div id="tab-home" class="tab-content hidden animate-slide"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="p-8 rounded-3xl bg-indigo-600 text-white relative overflow-hidden"><div class="relative z-10"><h3 class="text-2xl font-bold mb-1" id="welcome-message">Welcome to ChemNotes! 👋</h3><p class="opacity-90 text-sm">You have <span id="reaction-count" class="font-bold underline">0</span> items to review.</p></div><div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div></div></div></div>
+        <div id="search-container" class="mb-10 max-w-xl"><div class="relative"><i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i><input type="text" id="search-input" onkeyup="filterReactions()" placeholder="Find a reaction..." class="w-full pl-11 pr-4 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-primary/30 transition-all"></div></div>
+        <div id="tab-home" class="tab-content hidden animate-slide"><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="p-8 rounded-3xl bg-primary text-white relative overflow-hidden"><div class="relative z-10"><h3 class="text-2xl font-bold mb-1" id="welcome-message">Welcome to ChemNotes! 👋</h3><p class="opacity-90 text-sm">You have <span id="reaction-count" class="font-bold underline">0</span> items to review.</p></div><div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div></div></div></div>
         <div id="cards-container" class="tab-content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 animate-slide"></div>
-        <div id="loading-overlay" class="flex justify-center py-20 hidden"><div class="loading-spinner"></div></div>
     </main>
 
-    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white border-t border-slate-100 p-4 px-8 flex justify-between items-center z-50">
+    <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-4 px-8 flex justify-between items-center z-50">
         <button onclick="switchTab('home')" class="text-slate-400" id="m-nav-home"><i data-lucide="home"></i></button>
-        <button onclick="switchTab('reminders')" class="text-indigo-600" id="m-nav-reminders"><i data-lucide="clock"></i></button>
+        <button onclick="switchTab('reminders')" class="text-primary" id="m-nav-reminders"><i data-lucide="clock"></i></button>
         <button onclick="switchTab('all')" class="text-slate-400" id="m-nav-all"><i data-lucide="grid"></i></button>
         <button onclick="openSettings()" class="text-slate-400" id="m-nav-settings"><i data-lucide="settings"></i></button>
     </nav>
 
-    <!-- Login Modal (with Guest & Google) -->
-    <div id="login-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4" style="background-color: rgba(0,0,0,0.7); backdrop-filter: blur(8px);">
-        <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-8 animate-slide">
-            <div class="text-center mb-6"><div class="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-3"><i data-lucide="flask-conical" class="text-indigo-600 w-7 h-7"></i></div><h2 class="text-2xl font-bold text-slate-800">Welcome to ChemNotes</h2><p class="text-slate-500 text-sm mt-1">Sync your notes or continue as guest</p></div>
-            <div class="space-y-3">
-                <button onclick="googleSignIn()" class="w-full py-3.5 btn-google rounded-xl font-semibold flex items-center justify-center gap-3 transition"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google</button>
-                <button onclick="continueAsGuest()" class="w-full py-3.5 bg-indigo-50 text-indigo-700 font-semibold rounded-xl hover:bg-indigo-100 transition">Continue as Guest</button>
-                <div id="login-error" class="text-red-500 text-xs text-center hidden"></div>
-            </div>
+    <!-- Login Modal - solid white background -->
+    <div id="login-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5); backdrop-filter: blur(8px);">
+        <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 animate-slide">
+            <div class="text-center mb-6"><div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-3"><i data-lucide="flask-conical" class="text-primary w-7 h-7"></i></div><h2 class="text-2xl font-bold text-slate-800 dark:text-white">ChemNotes</h2><p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Sign in to sync or continue as guest</p></div>
+            <div class="space-y-3"><button onclick="googleSignIn()" class="w-full py-3.5 btn-google rounded-xl font-semibold flex items-center justify-center gap-3 transition"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google</button><button onclick="continueAsGuest()" class="w-full py-3.5 bg-primary/10 text-primary font-semibold rounded-xl hover:bg-primary/20 transition">Continue as Guest</button><div id="login-error" class="text-red-500 text-xs text-center hidden"></div></div>
         </div>
     </div>
 
-    <!-- Settings Modal with Google Sign In option -->
+    <!-- Settings Modal - solid white -->
     <div id="settings-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4">
-        <div class="absolute inset-0 modal-overlay" onclick="closeModal('settings-modal')"></div>
-        <div class="relative w-full max-w-md bg-white rounded-[32px] shadow-2xl overflow-hidden animate-slide">
-            <div class="p-6 border-b border-slate-50 flex justify-between items-center"><h3 class="text-xl font-bold text-slate-900">Settings</h3><button onclick="closeModal('settings-modal')" class="p-2 hover:bg-slate-100 rounded-full"><i data-lucide="x" size="20"></i></button></div>
-            <div class="p-8 space-y-6">
-                <div id="settings-auth-section" class="bg-slate-50 p-4 rounded-2xl">
-                    <!-- dynamic: if signed in show user email + sign out, else show google sign in -->
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('settings-modal')"></div>
+        <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white dark:bg-slate-800 p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white">Settings</h3>
+                <button onclick="closeModal('settings-modal')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full"><i data-lucide="x" size="20"></i></button>
+            </div>
+            <div class="p-8 space-y-8">
+                <div><h4 class="font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><i data-lucide="palette" size="18"></i> Color Theme</h4>
+                    <div class="flex flex-wrap gap-3 items-center">
+                        <div onclick="setPrimaryColor('#4f46e5')" class="color-swatch" style="background-color: #4f46e5"></div>
+                        <div onclick="setPrimaryColor('#dc2626')" class="color-swatch" style="background-color: #dc2626"></div>
+                        <div onclick="setPrimaryColor('#10b981')" class="color-swatch" style="background-color: #10b981"></div>
+                        <div onclick="setPrimaryColor('#f59e0b')" class="color-swatch" style="background-color: #f59e0b"></div>
+                        <div onclick="setPrimaryColor('#8b5cf6')" class="color-swatch" style="background-color: #8b5cf6"></div>
+                        <div onclick="setPrimaryColor('#ec4899')" class="color-swatch" style="background-color: #ec4899"></div>
+                        <input type="color" id="custom-color-picker" class="w-9 h-9 rounded-full border-2 border-white shadow cursor-pointer" value="#4f46e5" onchange="setPrimaryColor(this.value)">
+                    </div>
+                    <div class="mt-4"><button onclick="toggleDarkMode()" id="dark-mode-toggle" class="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-sm flex items-center gap-2"><i data-lucide="moon" size="16"></i> Dark Mode</button></div>
                 </div>
-                <div class="flex items-center justify-between p-4 bg-red-50 rounded-2xl border border-red-100"><div><h4 class="font-bold text-red-600">Danger Zone</h4><p class="text-xs text-red-400">Delete all your notes permanently.</p></div><button onclick="confirmClearData()" class="px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-bold">Clear All</button></div>
-                <div class="text-center"><p class="text-xs text-slate-400">ChemNotes • Guest or Cloud Sync</p></div>
+                <div><h4 class="font-bold text-slate-800 dark:text-white mb-3 flex items-center gap-2"><i data-lucide="layers" size="18"></i> Subjects (Categories)</h4>
+                    <div id="subjects-list" class="space-y-2 mb-3"></div>
+                    <div class="flex gap-2"><input type="text" id="new-subject-input" placeholder="New subject name" class="flex-1 p-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl"><button onclick="addNewSubject()" class="px-4 py-2 bg-primary text-white rounded-xl">Add</button></div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">⚠️ Deleting a subject removes it from the dropdown only. Existing notes keep their category.</p>
+                </div>
+                <div class="border-t pt-6 border-red-200 dark:border-red-800"><h4 class="font-bold text-red-600 mb-3 flex items-center gap-2"><i data-lucide="alert-triangle" size="18"></i> Danger Zone</h4>
+                    <div class="flex items-center justify-between p-4 bg-red-50 dark:bg-red-950/40 rounded-2xl"><div><p class="font-semibold text-slate-800 dark:text-white">Clear all notes</p><p class="text-xs text-red-500">Permanently delete all your chemistry notes.</p></div><button onclick="confirmClearData()" class="px-4 py-2 bg-red-600 text-white rounded-xl text-sm">Delete All</button></div>
+                </div>
+                <div id="settings-auth-section" class="border-t pt-6 border-slate-200 dark:border-slate-700"></div>
+                <div class="text-center text-xs text-slate-400">ChemNotes • v2.0</div>
             </div>
         </div>
     </div>
 
-    <!-- View/Edit/Confirm modals (simplified but functional) -->
-    <div id="view-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4"><div class="absolute inset-0 modal-overlay" onclick="closeModal('view-modal')"></div><div class="relative w-full max-w-2xl bg-white rounded-[32px] shadow-2xl overflow-hidden"><div class="p-8 border-b flex justify-between"><div><span id="view-category-badge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-100">Category</span><h3 id="view-title" class="text-2xl font-bold mt-2"></h3></div><button onclick="closeModal('view-modal')"><i data-lucide="x" size="20"></i></button></div><div id="view-content" class="p-8 max-h-[60vh] overflow-y-auto prose-content"></div><div id="view-footer" class="p-6 border-t flex gap-3 bg-slate-50/50"></div></div></div>
-    <div id="edit-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4"><div class="absolute inset-0 modal-overlay" onclick="closeModal('edit-modal')"></div><div class="relative w-full max-w-4xl bg-white rounded-[32px] shadow-2xl overflow-hidden"><div class="p-6 border-b flex justify-between"><h3 id="edit-modal-title" class="font-bold text-xl">New Entry</h3><button onclick="closeModal('edit-modal')"><i data-lucide="x" size="20"></i></button></div><div class="p-8 space-y-6"><div class="grid grid-cols-2 gap-4"><div><input id="edit-title" placeholder="Title" class="w-full p-3 bg-slate-50 border rounded-2xl"></div><div><select id="edit-category" class="w-full p-3 bg-slate-50 border rounded-2xl"><option>Inorganic</option><option>Organic</option><option>Physical</option></select></div></div><textarea id="direct-editor" class="w-full p-4 bg-slate-50 border rounded-2xl min-h-[250px]" placeholder="Markdown + $$ LaTeX $$"></textarea></div><div class="p-6 border-t bg-slate-50/50 flex justify-end"><button onclick="saveReaction()" class="px-10 py-3 bg-indigo-600 text-white font-bold rounded-2xl">Save</button></div><input type="hidden" id="edit-id"></div></div>
-    <div id="confirm-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4"><div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md"></div><div class="relative w-full max-w-sm bg-white rounded-[32px] p-8 text-center"><div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="alert-triangle" size="32"></i></div><h3 class="text-xl font-bold mb-2">Delete all notes?</h3><p class="text-slate-500 text-sm mb-8">This action is permanent.</p><button onclick="clearAllData()" class="w-full py-4 bg-red-600 text-white font-bold rounded-2xl mb-3">Yes, Delete Everything</button><button onclick="closeModal('confirm-modal')" class="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl">Cancel</button></div></div>
-    <div id="import-modal" class="fixed inset-0 z-[210] hidden items-center justify-center p-4"><div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div><div class="relative w-full max-w-md bg-white rounded-2xl p-6"><h3 class="text-lg font-bold">Import guest data?</h3><p class="text-sm text-slate-600 mt-2">You have local notes. Would you like to copy them to your cloud account?</p><div class="flex gap-3 mt-6"><button onclick="importGuestToCloud()" class="flex-1 py-2 bg-indigo-600 text-white rounded-xl">Yes, import</button><button onclick="skipImport()" class="flex-1 py-2 bg-slate-100 rounded-xl">No, keep separate</button></div></div></div>
+    <!-- View Modal - solid white -->
+    <div id="view-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('view-modal')"></div>
+        <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl overflow-hidden">
+            <div class="p-8 border-b border-slate-200 dark:border-slate-700 flex justify-between">
+                <div><span id="view-category-badge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Category</span><h3 id="view-title" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white"></h3></div>
+                <button onclick="closeModal('view-modal')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full"><i data-lucide="x" size="20"></i></button>
+            </div>
+            <div id="view-content" class="p-8 max-h-[60vh] overflow-y-auto prose-content"></div>
+            <div id="view-footer" class="p-6 border-t border-slate-200 dark:border-slate-700 flex gap-3 bg-slate-50 dark:bg-slate-900/50"></div>
+        </div>
+    </div>
+
+    <!-- Edit Modal - solid white -->
+    <div id="edit-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('edit-modal')"></div>
+        <div class="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between">
+                <h3 id="edit-modal-title" class="font-bold text-xl text-slate-800 dark:text-white">New Entry</h3>
+                <button onclick="closeModal('edit-modal')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full"><i data-lucide="x" size="20"></i></button>
+            </div>
+            <div class="p-8 space-y-6">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><input id="edit-title" placeholder="Title" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl"></div>
+                    <div><select id="edit-category" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl"></select></div>
+                </div>
+                <textarea id="direct-editor" class="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl min-h-[250px]" placeholder="Markdown + $$ LaTeX $$"></textarea>
+            </div>
+            <div class="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end"><button onclick="saveReaction()" class="px-10 py-3 bg-primary text-white font-bold rounded-2xl">Save</button></div>
+            <input type="hidden" id="edit-id">
+        </div>
+    </div>
+
+    <!-- Confirm Modal - solid white -->
+    <div id="confirm-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-[32px] p-8 text-center">
+            <div class="w-16 h-16 bg-red-50 dark:bg-red-900/30 text-red-600 rounded-full flex items-center justify-center mx-auto mb-6"><i data-lucide="alert-triangle" size="32"></i></div>
+            <h3 class="text-xl font-bold text-slate-800 dark:text-white mb-2">Delete all notes?</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mb-8">This action is permanent.</p>
+            <button onclick="clearAllData()" class="w-full py-4 bg-red-600 text-white font-bold rounded-2xl mb-3">Yes, Delete Everything</button>
+            <button onclick="closeModal('confirm-modal')" class="w-full py-4 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white rounded-2xl">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Import Modal - solid white -->
+    <div id="import-modal" class="fixed inset-0 z-[210] hidden items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+        <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl p-6">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Import guest data?</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm mt-2">You have local notes. Copy them to your cloud account?</p>
+            <div class="flex gap-3 mt-6"><button onclick="importGuestToCloud()" class="flex-1 py-2 bg-primary text-white rounded-xl">Yes, import</button><button onclick="skipImport()" class="flex-1 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white rounded-xl">No, keep separate</button></div>
+        </div>
+    </div>
 </div>
 
 <script type="module">
     import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
     import { getFirestore, collection, doc, setDoc, deleteDoc, updateDoc, onSnapshot, query, orderBy, writeBatch, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+    const auth = getAuth(); const db = getFirestore();
+    let currentUser = null, unsubscribeReactions = null, reactionsArray = [], currentTab = 'reminders', pendingImport = false;
+    const LOCAL_KEY = 'reactions_clean_local', SUBJECTS_KEY = 'custom_subjects', THEME_KEY = 'theme_prefs';
+    let customSubjects = JSON.parse(localStorage.getItem(SUBJECTS_KEY) || '[]');
+    const DEFAULT_SUBJECTS = ['Inorganic', 'Organic', 'Physical'];
     
-    const auth = getAuth();
-    const db = getFirestore();
-    let currentUser = null;
-    let unsubscribeReactions = null;
-    let reactionsArray = [];
-    let currentTab = 'reminders';
-    let pendingImport = false;
-
-    // ---------- Local Storage (Guest) helpers ----------
-    const LOCAL_KEY = 'reactions_clean_local';
+    function saveSubjectsToStorage() { localStorage.setItem(SUBJECTS_KEY, JSON.stringify(customSubjects)); if(currentUser) updateUserSubjects(); }
+    async function updateUserSubjects() { if(currentUser) await setDoc(doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/settings`, 'subjects'), { list: customSubjects }, { merge: true }); }
+    async function loadUserSubjects() { if(currentUser) { const docSnap = await getDocs(collection(db, `artifacts/studyflow-pro/users/${currentUser.uid}/settings`)); const subDoc = docSnap.docs.find(d=>d.id==='subjects'); if(subDoc) customSubjects = subDoc.data().list || []; else customSubjects = []; saveSubjectsToStorage(); } renderSubjectDropdown(); renderSubjectsList(); }
+    function getFullSubjects() { return [...DEFAULT_SUBJECTS, ...customSubjects]; }
+    function renderSubjectDropdown() { const select = document.getElementById('edit-category'); if(select) { select.innerHTML = ''; getFullSubjects().forEach(s => { const opt = document.createElement('option'); opt.value = s; opt.textContent = s; select.appendChild(opt); }); } }
+    function renderSubjectsList() { const container = document.getElementById('subjects-list'); if(!container) return; container.innerHTML = ''; [...DEFAULT_SUBJECTS, ...customSubjects].forEach(sub => { const isCustom = customSubjects.includes(sub); const div = document.createElement('div'); div.className = "flex justify-between items-center p-2 bg-slate-50 dark:bg-slate-900/50 rounded-xl"; div.innerHTML = `<span class="text-slate-700 dark:text-slate-300">${sub}</span>${isCustom ? `<button onclick="removeSubject('${sub}')" class="text-red-500 p-1"><i data-lucide="trash-2" size="16"></i></button>` : '<span class="text-xs text-slate-400">default</span>'}`; container.appendChild(div); }); lucide.createIcons(); }
+    function addNewSubject() { const input = document.getElementById('new-subject-input'); const name = input.value.trim(); if(name && !getFullSubjects().includes(name)) { customSubjects.push(name); saveSubjectsToStorage(); renderSubjectsList(); renderSubjectDropdown(); input.value = ''; } }
+    function removeSubject(sub) { customSubjects = customSubjects.filter(s => s !== sub); saveSubjectsToStorage(); renderSubjectsList(); renderSubjectDropdown(); }
+    function setPrimaryColor(color) { document.documentElement.style.setProperty('--primary', color); document.documentElement.style.setProperty('--primary-light', color + 'cc'); document.documentElement.style.setProperty('--primary-dark', color); localStorage.setItem(THEME_KEY, JSON.stringify({ primary: color, dark: document.body.classList.contains('dark') })); }
+    function toggleDarkMode() { document.body.classList.toggle('dark'); const isDark = document.body.classList.contains('dark'); localStorage.setItem(THEME_KEY, JSON.stringify({ dark: isDark, primary: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() })); }
+    function loadTheme() { const saved = localStorage.getItem(THEME_KEY); if(saved) { const { dark, primary } = JSON.parse(saved); if(primary) setPrimaryColor(primary); if(dark) document.body.classList.add('dark'); } else { document.body.classList.remove('dark'); } }
+    
+    function getUserReactionsRef() { if(!currentUser) return null; return collection(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions`); }
+    function subscribeToFirestore() { if(unsubscribeReactions) unsubscribeReactions(); const ref = getUserReactionsRef(); if(!ref) return; const q = query(ref, orderBy("createdAt", "desc")); unsubscribeReactions = onSnapshot(q, (snapshot) => { reactionsArray = []; snapshot.forEach(docSnap => reactionsArray.push({ id: docSnap.id, ...docSnap.data() })); renderUI(); }); }
     function loadLocalReactions() { const data = localStorage.getItem(LOCAL_KEY); return data ? JSON.parse(data) : []; }
     function saveLocalReactions(data) { localStorage.setItem(LOCAL_KEY, JSON.stringify(data)); }
-    function addLocalReaction(reaction) { const arr = loadLocalReactions(); arr.unshift(reaction); saveLocalReactions(arr); return arr; }
-    function updateLocalReaction(id, updated) { let arr = loadLocalReactions(); const idx = arr.findIndex(r => r.id == id); if(idx !== -1) { arr[idx] = { ...arr[idx], ...updated }; saveLocalReactions(arr); } return arr; }
-    function deleteLocalReaction(id) { let arr = loadLocalReactions(); arr = arr.filter(r => r.id != id); saveLocalReactions(arr); return arr; }
+    function addLocalReaction(r) { const arr = loadLocalReactions(); arr.unshift(r); saveLocalReactions(arr); return arr; }
+    function updateLocalReaction(id, upd) { let arr = loadLocalReactions(); const idx = arr.findIndex(r=>r.id==id); if(idx!==-1) { arr[idx]={...arr[idx], ...upd}; saveLocalReactions(arr); } return arr; }
+    function deleteLocalReaction(id) { let arr = loadLocalReactions(); arr = arr.filter(r=>r.id!=id); saveLocalReactions(arr); return arr; }
     function clearLocalReactions() { localStorage.removeItem(LOCAL_KEY); return []; }
-
-    // ---------- Firestore Helpers ----------
-    function getUserReactionsRef() { if (!currentUser) return null; return collection(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions`); }
-    function subscribeToFirestore() {
-        if (unsubscribeReactions) unsubscribeReactions();
-        const ref = getUserReactionsRef();
-        if (!ref) return;
-        const q = query(ref, orderBy("createdAt", "desc"));
-        unsubscribeReactions = onSnapshot(q, (snapshot) => {
-            reactionsArray = [];
-            snapshot.forEach(docSnap => reactionsArray.push({ id: docSnap.id, ...docSnap.data() }));
-            renderUI();
-        }, (err) => console.error(err));
-    }
-
-    // ---------- Core Data Ops (dynamic) ----------
-    async function saveReaction() {
-        const id = document.getElementById('edit-id').value;
-        const title = document.getElementById('edit-title').value.trim();
-        const category = document.getElementById('edit-category').value;
-        const content = document.getElementById('direct-editor').value;
-        if (!title || !content.trim()) return;
-        const now = Date.now();
-        if (currentUser) {
-            const ref = getUserReactionsRef();
-            if (!ref) return;
-            if (id) {
-                const docRef = doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${id}`);
-                await updateDoc(docRef, { title, category, content, updatedAt: now });
-            } else {
-                const newId = now.toString();
-                const docRef = doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${newId}`);
-                await setDoc(docRef, { title, category, content, completed: false, createdAt: now, updatedAt: now });
-            }
-        } else {
-            const arr = loadLocalReactions();
-            if (id) {
-                const idx = arr.findIndex(r => r.id == id);
-                if(idx !== -1) arr[idx] = { ...arr[idx], title, category, content, updatedAt: now };
-                saveLocalReactions(arr);
-                reactionsArray = arr;
-            } else {
-                const newReaction = { id: now, title, category, content, completed: false, createdAt: now, updatedAt: now };
-                arr.unshift(newReaction);
-                saveLocalReactions(arr);
-                reactionsArray = arr;
-            }
-        }
-        closeModal('edit-modal');
-        renderUI();
-    }
-    async function markCompleted(id) {
-        if (currentUser) {
-            const docRef = doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${id}`);
-            await updateDoc(docRef, { completed: true, updatedAt: Date.now() });
-        } else {
-            const arr = loadLocalReactions();
-            const idx = arr.findIndex(r => r.id == id);
-            if(idx !== -1) { arr[idx].completed = true; saveLocalReactions(arr); reactionsArray = arr; renderUI(); }
-        }
-        closeModal('view-modal');
-    }
-    async function deleteReaction(id) {
-        if (currentUser) {
-            const docRef = doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${id}`);
-            await deleteDoc(docRef);
-        } else {
-            const arr = deleteLocalReaction(id);
-            reactionsArray = arr;
-            renderUI();
-        }
-        closeModal('view-modal');
-    }
-    async function clearAllData() {
-        if (currentUser) {
-            const ref = getUserReactionsRef();
-            const snapshot = await getDocs(ref);
-            const batch = writeBatch(db);
-            snapshot.forEach(d => batch.delete(d.ref));
-            await batch.commit();
-        } else {
-            clearLocalReactions();
-            reactionsArray = [];
-            renderUI();
-        }
-        closeModal('confirm-modal');
-    }
-
-    // ---------- UI Rendering ----------
+    
+    async function saveReaction() { const id = document.getElementById('edit-id').value; const title = document.getElementById('edit-title').value.trim(); const category = document.getElementById('edit-category').value; const content = document.getElementById('direct-editor').value; if(!title||!content.trim()) return; const now = Date.now(); if(currentUser) { const ref = getUserReactionsRef(); if(id) { await updateDoc(doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${id}`), { title, category, content, updatedAt: now }); } else { const newId = now.toString(); await setDoc(doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${newId}`), { title, category, content, completed: false, createdAt: now, updatedAt: now }); } } else { if(id) { updateLocalReaction(id, { title, category, content, updatedAt: now }); reactionsArray = loadLocalReactions(); } else { const newReaction = { id: now, title, category, content, completed: false, createdAt: now, updatedAt: now }; addLocalReaction(newReaction); reactionsArray = loadLocalReactions(); } } closeModal('edit-modal'); renderUI(); }
+    async function markCompleted(id) { if(currentUser) { await updateDoc(doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${id}`), { completed: true, updatedAt: Date.now() }); } else { updateLocalReaction(id, { completed: true }); reactionsArray = loadLocalReactions(); renderUI(); } closeModal('view-modal'); }
+    async function deleteReaction(id) { if(currentUser) { await deleteDoc(doc(db, `artifacts/studyflow-pro/users/${currentUser.uid}/reactions/${id}`)); } else { reactionsArray = deleteLocalReaction(id); renderUI(); } closeModal('view-modal'); }
+    async function clearAllData() { if(currentUser) { const ref = getUserReactionsRef(); const snapshot = await getDocs(ref); const batch = writeBatch(db); snapshot.forEach(d=>batch.delete(d.ref)); await batch.commit(); } else { clearLocalReactions(); reactionsArray = []; renderUI(); } closeModal('confirm-modal'); }
     function renderUI() { renderReactions(); updateStats(); lucide.createIcons(); }
-    function renderReactions() {
-        const container = document.getElementById('cards-container');
-        if (!container) return;
-        let filtered = reactionsArray;
-        if (currentTab === 'reminders') filtered = reactionsArray.filter(r => !r.completed);
-        const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
-        if (searchTerm) filtered = filtered.filter(r => r.title?.toLowerCase().includes(searchTerm));
-        container.innerHTML = '';
-        if (filtered.length === 0) { container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400"><i data-lucide="inbox"></i><p class="mt-2">No notes found</p></div>`; lucide.createIcons(); return; }
-        filtered.forEach(r => {
-            const dotColor = r.category === 'Organic' ? 'bg-orange-400' : r.category === 'Physical' ? 'bg-emerald-400' : 'bg-indigo-400';
-            const card = document.createElement('div'); card.className = "card-clean p-6 cursor-pointer flex items-center justify-between"; card.onclick = () => openViewModal(r.id);
-            card.innerHTML = `<div class="flex gap-4"><div class="w-2 h-2 rounded-full ${dotColor} shrink-0 mt-2"></div><div><h4 class="font-semibold sinhala-font">${escapeHtml(r.title)}</h4><p class="text-[10px] font-bold text-slate-400 uppercase">${r.category}</p></div></div>${r.completed ? '<i data-lucide="check-circle" class="text-emerald-500"></i>' : '<i data-lucide="chevron-right"></i>'}`;
-            container.appendChild(card);
-        });
-        lucide.createIcons();
-    }
-    function updateStats() { document.getElementById('reaction-count').innerText = reactionsArray.filter(r => !r.completed).length; }
-    function openViewModal(id) { const r = reactionsArray.find(x => x.id == id); if(!r) return; document.getElementById('view-title').innerText = r.title; document.getElementById('view-category-badge').innerText = r.category; document.getElementById('view-content').innerHTML = marked.parse(r.content || ""); const footer = document.getElementById('view-footer'); footer.innerHTML = (currentTab === 'reminders' && !r.completed) ? `<button onclick="markCompleted('${r.id}')" class="flex-1 py-3 bg-indigo-600 text-white rounded-xl">Mark Done</button>` : `<button onclick="openAddEditModal('${r.id}')" class="flex-1 py-3 bg-slate-100 rounded-xl">Edit</button><button onclick="deleteReaction('${r.id}')" class="px-6 py-3 text-red-500">Delete</button>`; openModal('view-modal'); if(window.MathJax) MathJax.typesetPromise([document.getElementById('view-content')]); lucide.createIcons(); }
-    function openAddEditModal(id=null) { openModal('edit-modal'); if(id) { const r = reactionsArray.find(x=>x.id==id); if(r){ document.getElementById('edit-id').value=r.id; document.getElementById('edit-title').value=r.title; document.getElementById('edit-category').value=r.category; document.getElementById('direct-editor').value=r.content; document.getElementById('edit-modal-title').innerText="Edit Reaction"; } } else { document.getElementById('edit-id').value=''; document.getElementById('edit-title').value=''; document.getElementById('edit-category').value='Inorganic'; document.getElementById('direct-editor').value=''; document.getElementById('edit-modal-title').innerText="New Entry"; } lucide.createIcons(); }
+    function renderReactions() { const container = document.getElementById('cards-container'); if(!container) return; let filtered = reactionsArray; if(currentTab==='reminders') filtered = reactionsArray.filter(r=>!r.completed); const searchTerm = document.getElementById('search-input')?.value.toLowerCase()||''; if(searchTerm) filtered = filtered.filter(r=>r.title?.toLowerCase().includes(searchTerm)); container.innerHTML = ''; if(filtered.length===0) { container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-400 dark:text-slate-500"><i data-lucide="inbox" size="40"></i><p class="mt-2">No notes found</p></div>`; lucide.createIcons(); return; } filtered.forEach(r=>{ const dotColor = r.category==='Organic'?'bg-orange-400':r.category==='Physical'?'bg-emerald-400':'bg-primary'; const card = document.createElement('div'); card.className="card-clean p-6 cursor-pointer flex items-center justify-between"; card.onclick=()=>openViewModal(r.id); card.innerHTML=`<div class="flex gap-4"><div class="w-2 h-2 rounded-full ${dotColor} shrink-0 mt-2"></div><div><h4 class="font-semibold sinhala-font">${escapeHtml(r.title)}</h4><p class="text-[10px] font-bold text-slate-400 uppercase">${r.category}</p></div></div>${r.completed?'<i data-lucide="check-circle" class="text-emerald-500"></i>':'<i data-lucide="chevron-right" class="text-slate-300"></i>'}`; container.appendChild(card); }); lucide.createIcons(); }
+    function updateStats() { document.getElementById('reaction-count').innerText = reactionsArray.filter(r=>!r.completed).length; const welcomeMsg = document.getElementById('welcome-message'); if(welcomeMsg && currentUser) welcomeMsg.innerText = `Welcome ${currentUser.email.split('@')[0]}! 👋`; else if(welcomeMsg) welcomeMsg.innerText = 'Welcome to ChemNotes! 👋'; }
+    function openViewModal(id) { const r = reactionsArray.find(x=>x.id==id); if(!r) return; document.getElementById('view-title').innerText = r.title; document.getElementById('view-category-badge').innerText = r.category; document.getElementById('view-content').innerHTML = marked.parse(r.content||""); const footer = document.getElementById('view-footer'); footer.innerHTML = (currentTab==='reminders'&&!r.completed)?`<button onclick="markCompleted('${r.id}')" class="flex-1 py-3 bg-primary text-white rounded-xl">Mark Done</button>`:`<button onclick="openAddEditModal('${r.id}')" class="flex-1 py-3 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white rounded-xl">Edit</button><button onclick="deleteReaction('${r.id}')" class="px-6 py-3 text-red-500">Delete</button>`; openModal('view-modal'); if(window.MathJax) MathJax.typesetPromise([document.getElementById('view-content')]); lucide.createIcons(); }
+    function openAddEditModal(id=null) { openModal('edit-modal'); renderSubjectDropdown(); if(id) { const r = reactionsArray.find(x=>x.id==id); if(r){ document.getElementById('edit-id').value=r.id; document.getElementById('edit-title').value=r.title; document.getElementById('edit-category').value=r.category; document.getElementById('direct-editor').value=r.content; document.getElementById('edit-modal-title').innerText="Edit Reaction"; } } else { document.getElementById('edit-id').value=''; document.getElementById('edit-title').value=''; document.getElementById('edit-category').value=getFullSubjects()[0]; document.getElementById('direct-editor').value=''; document.getElementById('edit-modal-title').innerText="New Entry"; } lucide.createIcons(); }
     function switchTab(tab) { currentTab = tab; document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden')); if(tab==='home'){ document.getElementById('tab-home')?.classList.remove('hidden'); document.getElementById('search-container').style.display='none'; updateStats(); } else { document.getElementById('cards-container')?.classList.remove('hidden'); document.getElementById('search-container').style.display='block'; renderReactions(); } document.querySelectorAll('.nav-link').forEach(el=>el.classList.remove('active')); document.getElementById(`nav-${tab}`)?.classList.add('active'); const titles={home:'Overview',reminders:'Next Reviews',all:'Reaction Library'}; document.getElementById('page-title').innerText=titles[tab]||'Library'; }
     function openModal(id){ document.getElementById(id).style.display='flex'; }
     function closeModal(id){ document.getElementById(id).style.display='none'; }
-    function openSettings(){ openModal('settings-modal'); updateSettingsUI(); lucide.createIcons(); }
+    function openSettings(){ openModal('settings-modal'); renderSubjectsList(); updateSettingsAuthUI(); lucide.createIcons(); }
     function confirmClearData(){ closeModal('settings-modal'); openModal('confirm-modal'); }
     function escapeHtml(str){ return str.replace(/[&<>]/g, function(m){if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
     function filterReactions(){ renderReactions(); }
-
-    // Auth: Guest & Google
-    async function googleSignIn() {
-        try { await signInWithPopup(auth, new GoogleAuthProvider()); closeModal('login-modal'); } catch(e){ document.getElementById('login-error').innerText=e.message; document.getElementById('login-error').classList.remove('hidden'); }
-    }
+    async function googleSignIn() { try { await signInWithPopup(auth, new GoogleAuthProvider()); closeModal('login-modal'); } catch(e){ document.getElementById('login-error').innerText=e.message; document.getElementById('login-error').classList.remove('hidden'); } }
     function continueAsGuest() { closeModal('login-modal'); if(unsubscribeReactions) unsubscribeReactions(); currentUser = null; reactionsArray = loadLocalReactions(); renderUI(); updateSidebar(); }
     async function handleLogout() { await signOut(auth); if(unsubscribeReactions) unsubscribeReactions(); currentUser = null; reactionsArray = loadLocalReactions(); renderUI(); updateSidebar(); closeModal('settings-modal'); }
-    async function importGuestToCloud() { if(!currentUser) return; const localNotes = loadLocalReactions(); const ref = getUserReactionsRef(); for(const note of localNotes) { const docRef = doc(ref, note.id.toString()); await setDoc(docRef, { title: note.title, category: note.category, content: note.content, completed: note.completed || false, createdAt: note.createdAt || Date.now(), updatedAt: Date.now() }); } clearLocalReactions(); closeModal('import-modal'); subscribeToFirestore(); }
+    async function importGuestToCloud() { if(!currentUser) return; const localNotes = loadLocalReactions(); const ref = getUserReactionsRef(); for(const note of localNotes) { const docRef = doc(ref, note.id.toString()); await setDoc(docRef, { title: note.title, category: note.category, content: note.content, completed: note.completed||false, createdAt: note.createdAt||Date.now(), updatedAt: Date.now() }); } clearLocalReactions(); closeModal('import-modal'); subscribeToFirestore(); }
     function skipImport() { closeModal('import-modal'); subscribeToFirestore(); }
     function updateSidebar() { const statusEl = document.getElementById('sidebar-user-status'); const signInBtn = document.getElementById('sidebar-signin-btn'); const signOutBtn = document.getElementById('sidebar-signout-btn'); if(currentUser) { statusEl.innerText = currentUser.email; signInBtn.classList.add('hidden'); signOutBtn.classList.remove('hidden'); } else { statusEl.innerText = 'Guest Mode'; signInBtn.classList.remove('hidden'); signOutBtn.classList.add('hidden'); } }
-    function updateSettingsUI() { const container = document.getElementById('settings-auth-section'); if(currentUser) { container.innerHTML = `<div class="flex justify-between items-center"><div><p class="font-medium">${currentUser.email}</p><p class="text-xs text-slate-500">Cloud sync active</p></div><button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-200 rounded-lg text-sm">Sign out</button></div>`; } else { container.innerHTML = `<button onclick="openLoginModal()" class="w-full py-2.5 btn-google rounded-xl flex items-center justify-center gap-2"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google</button>`; } lucide.createIcons(); }
+    function updateSettingsAuthUI() { const container = document.getElementById('settings-auth-section'); if(!container) return; if(currentUser) { container.innerHTML = `<div class="flex justify-between items-center"><div><p class="font-medium text-slate-800 dark:text-white">${currentUser.email}</p><p class="text-xs text-slate-500">Cloud sync active</p></div><button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm">Sign out</button></div>`; } else { container.innerHTML = `<button onclick="openLoginModal()" class="w-full py-2.5 btn-google rounded-xl flex items-center justify-center gap-2"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Sign in with Google</button>`; } lucide.createIcons(); }
     function openLoginModal() { openModal('login-modal'); document.getElementById('login-error')?.classList.add('hidden'); lucide.createIcons(); }
-
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            currentUser = user;
-            const localNotes = loadLocalReactions();
-            if (localNotes.length > 0 && !pendingImport) { pendingImport = true; openModal('import-modal'); window.pendingImportCallback = () => { pendingImport = false; }; } else { subscribeToFirestore(); }
-            updateSidebar(); renderUI();
-        } else {
-            if(unsubscribeReactions) unsubscribeReactions();
-            currentUser = null;
-            reactionsArray = loadLocalReactions();
-            renderUI();
-            updateSidebar();
-        }
-        if(document.getElementById('login-modal').style.display === 'flex') closeModal('login-modal');
-    });
-    window.switchTab=switchTab; window.filterReactions=filterReactions; window.saveReaction=saveReaction; window.markCompleted=markCompleted; window.deleteReaction=deleteReaction; window.clearAllData=clearAllData; window.openViewModal=openViewModal; window.openAddEditModal=openAddEditModal; window.openSettings=openSettings; window.confirmClearData=confirmClearData; window.closeModal=closeModal; window.googleSignIn=googleSignIn; window.continueAsGuest=continueAsGuest; window.handleLogout=handleLogout; window.importGuestToCloud=importGuestToCloud; window.skipImport=skipImport; window.openLoginModal=openLoginModal;
-    setTimeout(()=>{ lucide.createIcons(); switchTab('reminders'); if(!currentUser && !localStorage.getItem(LOCAL_KEY)) openLoginModal(); }, 200);
+    
+    onAuthStateChanged(auth, async (user) => { if(user) { currentUser = user; const localNotes = loadLocalReactions(); if(localNotes.length > 0 && !pendingImport) { pendingImport = true; openModal('import-modal'); } else { subscribeToFirestore(); await loadUserSubjects(); } updateSidebar(); } else { if(unsubscribeReactions) unsubscribeReactions(); currentUser = null; reactionsArray = loadLocalReactions(); renderUI(); updateSidebar(); renderSubjectDropdown(); renderSubjectsList(); } if(document.getElementById('login-modal').style.display === 'flex') closeModal('login-modal'); });
+    window.switchTab=switchTab; window.filterReactions=filterReactions; window.saveReaction=saveReaction; window.markCompleted=markCompleted; window.deleteReaction=deleteReaction; window.clearAllData=clearAllData; window.openViewModal=openViewModal; window.openAddEditModal=openAddEditModal; window.openSettings=openSettings; window.confirmClearData=confirmClearData; window.closeModal=closeModal; window.googleSignIn=googleSignIn; window.continueAsGuest=continueAsGuest; window.handleLogout=handleLogout; window.importGuestToCloud=importGuestToCloud; window.skipImport=skipImport; window.openLoginModal=openLoginModal; window.addNewSubject=addNewSubject; window.removeSubject=removeSubject; window.setPrimaryColor=setPrimaryColor; window.toggleDarkMode=toggleDarkMode;
+    loadTheme(); renderSubjectDropdown(); setTimeout(()=>{ lucide.createIcons(); switchTab('reminders'); if(!currentUser && !localStorage.getItem(LOCAL_KEY)) openLoginModal(); }, 200);
 </script>
 </body>
 </html>
-```
