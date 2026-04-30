@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>ChemNotes - Fixed White Theme</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>ChemNotes - Sinhala Font Fixed</title>
+    <!-- Fonts: Plus Jakarta Sans for English, Noto Sans Sinhala for Sinhala -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -59,6 +59,14 @@
         body.dark {
             background-color: #0f172a;
             color: #f1f5f9;
+        }
+        /* Sinhala font class - applied to all Sinhala text elements */
+        .sinhala-font {
+            font-family: 'Noto Sans Sinhala', 'Plus Jakarta Sans', sans-serif;
+        }
+        /* Ensure content area uses Sinhala-friendly font */
+        .prose-content, .sinhala-content {
+            font-family: 'Noto Sans Sinhala', 'Plus Jakarta Sans', sans-serif;
         }
         .bg-primary { background-color: var(--primary); }
         .bg-primary-light { background-color: var(--primary-light); }
@@ -132,10 +140,15 @@
             border-color: #475569;
             color: #e2e8f0;
         }
-        .prose-content { color: #0f172a; line-height: 1.6; }
-        body.dark .prose-content { color: #e2e8f0; }
-        .prose-content h1, .prose-content h2, .prose-content h3 { font-weight: 700; }
-        .prose-content a { color: var(--primary); }
+        .prose-content {
+            line-height: 1.6;
+        }
+        .prose-content h1, .prose-content h2, .prose-content h3 {
+            font-weight: 700;
+        }
+        .prose-content a {
+            color: var(--primary);
+        }
         input, textarea, select {
             background-color: white;
             border-color: #e2e8f0;
@@ -197,7 +210,7 @@
         <button onclick="openSettings()" class="text-slate-400" id="m-nav-settings"><i data-lucide="settings"></i></button>
     </nav>
 
-    <!-- Login Modal - solid white background -->
+    <!-- Login Modal -->
     <div id="login-modal" class="fixed inset-0 z-[150] hidden items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5); backdrop-filter: blur(8px);">
         <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 animate-slide">
             <div class="text-center mb-6"><div class="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-3"><i data-lucide="flask-conical" class="text-primary w-7 h-7"></i></div><h2 class="text-2xl font-bold text-slate-800 dark:text-white">ChemNotes</h2><p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Sign in to sync or continue as guest</p></div>
@@ -205,7 +218,7 @@
         </div>
     </div>
 
-    <!-- Settings Modal - solid white -->
+    <!-- Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 z-[120] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('settings-modal')"></div>
         <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl overflow-hidden max-h-[85vh] overflow-y-auto">
@@ -240,20 +253,20 @@
         </div>
     </div>
 
-    <!-- View Modal - solid white -->
+    <!-- View Modal - with sinhala font on title and content -->
     <div id="view-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('view-modal')"></div>
         <div class="relative w-full max-w-2xl bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl overflow-hidden">
             <div class="p-8 border-b border-slate-200 dark:border-slate-700 flex justify-between">
-                <div><span id="view-category-badge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Category</span><h3 id="view-title" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white"></h3></div>
+                <div><span id="view-category-badge" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Category</span><h3 id="view-title" class="text-2xl font-bold mt-2 text-slate-800 dark:text-white sinhala-font"></h3></div>
                 <button onclick="closeModal('view-modal')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full"><i data-lucide="x" size="20"></i></button>
             </div>
-            <div id="view-content" class="p-8 max-h-[60vh] overflow-y-auto prose-content"></div>
+            <div id="view-content" class="p-8 max-h-[60vh] overflow-y-auto prose-content sinhala-font"></div>
             <div id="view-footer" class="p-6 border-t border-slate-200 dark:border-slate-700 flex gap-3 bg-slate-50 dark:bg-slate-900/50"></div>
         </div>
     </div>
 
-    <!-- Edit Modal - solid white -->
+    <!-- Edit Modal - sinhala font on title input -->
     <div id="edit-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('edit-modal')"></div>
         <div class="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-[32px] shadow-2xl overflow-hidden">
@@ -263,17 +276,17 @@
             </div>
             <div class="p-8 space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><input id="edit-title" placeholder="Title" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl"></div>
+                    <div><input id="edit-title" placeholder="Title (Sinhala or English)" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl sinhala-font"></div>
                     <div><select id="edit-category" class="w-full p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl"></select></div>
                 </div>
-                <textarea id="direct-editor" class="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl min-h-[250px]" placeholder="Markdown + $$ LaTeX $$"></textarea>
+                <textarea id="direct-editor" class="w-full p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl min-h-[250px] sinhala-font" placeholder="Markdown + $$ LaTeX $$ (Sinhala supported)"></textarea>
             </div>
             <div class="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-end"><button onclick="saveReaction()" class="px-10 py-3 bg-primary text-white font-bold rounded-2xl">Save</button></div>
             <input type="hidden" id="edit-id">
         </div>
     </div>
 
-    <!-- Confirm Modal - solid white -->
+    <!-- Confirm Modal -->
     <div id="confirm-modal" class="fixed inset-0 z-[200] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
         <div class="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-[32px] p-8 text-center">
@@ -285,7 +298,7 @@
         </div>
     </div>
 
-    <!-- Import Modal - solid white -->
+    <!-- Import Modal -->
     <div id="import-modal" class="fixed inset-0 z-[210] hidden items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         <div class="relative w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl p-6">
