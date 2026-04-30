@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Formula Pro</title>
+    <!-- Google Fonts: Noto Sans Sinhala added for perfect Sinhala rendering -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS with Custom Config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        accent: 'rgb(var(--accent-rgb) / <alpha-value>)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$'], ['\\[', '\\]']], processEscapes: true },
+            options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea'] }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Marked.js for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <style>
+        :root {
+            --accent-rgb: 56, 189, 248; 
+        }
+
+        body {
+            /* Fallback to Noto Sans Sinhala for any Sinhala characters globally */
+            font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .dark body {
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(var(--accent-rgb), 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(var(--accent-rgb), 0.05), transparent 25%);
+        }
+
+        /* Specific class for components using Sinhala */
+        .sinhala-font {
+            font-family: 'Noto Sans Sinhala', sans-serif;
+            line-height: 1.6;
+        }
+
+        .card-physics {
+            backdrop-filter: blur(12px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-physics:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.05);
+            border-color: rgba(var(--accent-rgb), 0.4); 
+        }
+
+        .nav-link {
+            transition: all 0.2s ease;
+        }
+
+        .nav-link.active {
+            background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.15) 0%, transparent 100%);
+            color: rgb(var(--accent-rgb));
+            border-left: 3px solid rgb(var(--accent-rgb));
+            font-weight: 600;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-slide { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 10px; }
+
+        .prose-content ul { list-style-type: none; padding-left: 0; }
+        .prose-content li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+        .prose-content li::before {
+            content: '›';
+            position: absolute;
+            left: 0;
+            color: rgb(var(--accent-rgb));
+            font-weight: bold;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        
+        .equation-display {
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .dark .equation-display {
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .modal-overlay {
+            background-color: rgba(2, 6, 23, 0.4);
+            backdrop-filter: blur(8px);
+        }
+        .dark .modal-overlay {
+            background-color: rgba(2, 6, 23, 0.8);
+        }
+        
+        /* Input and Textarea focus adjustments for better Sinhala view */
+        input, textarea, select {
+            font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-[#0b1121] dark:text-slate-200 antialiased selection:bg-accent/30">
+
+    <div id="app" class="flex flex-col md:flex-row min-h-screen">
+        
+        <!-- Sidebar -->
+        <aside class="hidden md:flex flex-col w-72 fixed h-full p-6 lg:p-8 border-r border-slate-200 bg-white/90 dark:border-slate-800 dark:bg-[#0b1121]/90 backdrop-blur-xl z-30">
+            <div class="flex items-center gap-3 mb-12">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-accent/70 flex items-center justify-center shadow-[0_0_20px_rgba(var(--accent-rgb),0.3)]">
+                    <i data-lucide="atom" class="text-white w-7 h-7"></i>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Phys<span class="text-accent">Flow</span></h1>
+            </div>
+
+            <nav class="space-y-2 flex-1">
+                <button onclick="switchTab('home')" id="nav-home" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400">
+                    <i data-lucide="layout-dashboard" size="20"></i> Dashboard
+                </button>
+                <button onclick="switchTab('library')" id="nav-library" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl active text-slate-600 dark:text-slate-400">
+                    <i data-lucide="book-open" size="20"></i> Equations Library
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400">
+                    <i data-lucide="settings" size="20"></i> Settings
+                </button>
+                <button onclick="openAddEditModal()" class="w-full flex items-center gap-4 p-3.5 rounded-xl text-accent hover:bg-accent/10 transition-all mt-4 border border-accent/30 border-dashed font-medium">
+                    <i data-lucide="plus-circle" size="20"></i> Add Equation
+                </button>
+            </nav>
+
+            <div class="p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/50 mt-auto border border-slate-200 dark:border-slate-700/50 flex items-center gap-3">
+                <img id="sidebar-user-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Anon" class="w-10 h-10 rounded-full bg-slate-300 dark:bg-slate-700" alt="Avatar">
+                <div class="overflow-hidden">
+                    <p class="text-[10px] font-bold text-accent uppercase tracking-widest" id="sidebar-user-status">Guest</p>
+                    <p class="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" id="sidebar-user-name">Not Signed In</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 md:ml-72 p-4 sm:p-8 lg:p-12 pb-32">
+            
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10">
+                <div>
+                    <h2 id="page-title" class="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">Equations Library</h2>
+                    <p id="page-subtitle" class="text-slate-500 dark:text-slate-400 mt-1.5 font-medium">Your personal collection of physics formulas.</p>
+                </div>
+            </header>
+
+            <div id="search-container" class="mb-10 max-w-2xl relative group">
+                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="text-slate-400 group-focus-within:text-accent transition-colors" size="20"></i>
+                </div>
+                <input type="text" id="search-input" onkeyup="filterReactions()" placeholder="Search equations, symbols, or categories..." class="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm">
+            </div>
+
+            <!-- Tab: Home Stats -->
+            <div id="tab-home" class="tab-content hidden animate-slide">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2 p-8 rounded-[2rem] bg-white dark:bg-gradient-to-br dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 relative overflow-hidden shadow-sm">
+                        <div class="relative z-10">
+                            <h3 class="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Welcome back to the Lab! 🔬</h3>
+                            <p class="text-slate-600 dark:text-slate-300">You have saved <span id="reaction-count" class="font-bold text-accent text-lg mx-1">0</span> equations in your library.</p>
+                            <button onclick="switchTab('library')" class="mt-6 px-6 py-3 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-800 dark:text-white rounded-xl transition-all text-sm font-semibold flex items-center gap-2 border border-slate-200 dark:border-white/5">
+                                Browse Library <i data-lucide="arrow-right" size="16"></i>
+                            </button>
+                        </div>
+                        <i data-lucide="rocket" class="absolute -right-4 -bottom-4 text-slate-100 dark:text-white/5 w-48 h-48 -rotate-12"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab: Equations Grid -->
+            <div id="cards-container" class="tab-content grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-slide">
+                <div class="col-span-full text-center py-10 text-slate-500"><i data-lucide="loader-2" class="animate-spin mx-auto mb-2"></i> Loading from Cloud...</div>
+            </div>
+
+            <!-- Tab: Settings -->
+            <div id="tab-settings" class="tab-content hidden animate-slide max-w-4xl space-y-8">
+                
+                <!-- Account Section -->
+                <div class="bg-white dark:bg-slate-800/50 p-6 sm:p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white"><i data-lucide="user-circle" class="text-accent"></i> Account</h3>
+                    
+                    <div id="auth-signed-out" class="text-center py-6 hidden">
+                        <p class="text-slate-500 dark:text-slate-400 mb-4">Sign in to save your data securely in the cloud and sync across devices.</p>
+                        <button onclick="signInWithGoogle()" class="inline-flex items-center justify-center gap-3 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl font-bold shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                            Sign in with Google
+                        </button>
+                    </div>
+
+                    <div id="auth-signed-in" class="flex flex-col sm:flex-row items-center sm:justify-between gap-4 hidden">
+                        <div class="flex items-center gap-4">
+                            <img id="settings-avatar" src="" class="w-16 h-16 rounded-full shadow-md" alt="Profile">
+                            <div>
+                                <h4 id="settings-name" class="font-bold text-lg text-slate-900 dark:text-white">Name</h4>
+                                <p id="settings-email" class="text-sm text-slate-500 dark:text-slate-400">Email</p>
+                            </div>
+                        </div>
+                        <button onclick="signOutUser()" class="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-xl transition-colors border border-slate-300 dark:border-slate-600">Sign Out</button>
+                    </div>
+                </div>
+
+                <!-- Appearance Section -->
+                <div class="bg-white dark:bg-slate-800/50 p-6 sm:p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white"><i data-lucide="palette" class="text-accent"></i> Appearance</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center pb-6 border-b border-slate-200 dark:border-slate-700">
+                            <div>
+                                <p class="font-bold text-slate-800 dark:text-white">Dark Mode</p>
+                                <p class="text-xs text-slate-500">Switch to a dark blueprint theme.</p>
+                            </div>
+                            <button onclick="toggleTheme()" class="w-14 h-8 bg-slate-200 dark:bg-accent rounded-full p-1 relative transition-colors shadow-inner">
+                                <div id="theme-toggle-dot" class="w-6 h-6 bg-white rounded-full transition-transform shadow-md"></div>
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <p class="font-bold text-slate-800 dark:text-white mb-4">Accent Color</p>
+                            <div class="flex gap-4">
+                                <button onclick="setAccent('56, 189, 248', true)" class="w-10 h-10 rounded-full bg-[#38bdf8] ring-4 ring-transparent hover:ring-[#38bdf8]/50 focus:ring-[#38bdf8] transition-all"></button>
+                                <button onclick="setAccent('168, 85, 247', true)" class="w-10 h-10 rounded-full bg-[#a855f7] ring-4 ring-transparent hover:ring-[#a855f7]/50 focus:ring-[#a855f7] transition-all"></button>
+                                <button onclick="setAccent('52, 211, 153', true)" class="w-10 h-10 rounded-full bg-[#34d399] ring-4 ring-transparent hover:ring-[#34d399]/50 focus:ring-[#34d399] transition-all"></button>
+                                <button onclick="setAccent('251, 113, 133', true)" class="w-10 h-10 rounded-full bg-[#fb7185] ring-4 ring-transparent hover:ring-[#fb7185]/50 focus:ring-[#fb7185] transition-all"></button>
+                                <button onclick="setAccent('59, 130, 246', true)" class="w-10 h-10 rounded-full bg-[#3b82f6] ring-4 ring-transparent hover:ring-[#3b82f6]/50 focus:ring-[#3b82f6] transition-all"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subjects Section -->
+                <div class="bg-white dark:bg-slate-800/50 p-6 sm:p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white"><i data-lucide="tags" class="text-accent"></i> Manage Subjects</h3>
+                    
+                    <div class="flex gap-3 mb-6">
+                        <input type="text" id="new-subject-input" placeholder="Add new subject..." class="flex-1 p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-accent transition-all text-slate-900 dark:text-white text-sm">
+                        <button onclick="addSubject()" class="px-5 bg-accent text-white font-bold rounded-xl hover:opacity-90 transition-opacity">Add</button>
+                    </div>
+
+                    <div id="subjects-list" class="flex flex-wrap gap-3">
+                    </div>
+                </div>
+
+                <!-- Danger Zone -->
+                <div class="bg-red-50 dark:bg-red-950/20 p-6 sm:p-8 rounded-[2rem] border border-red-200 dark:border-red-900/50 shadow-sm">
+                    <h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-red-600 dark:text-red-500"><i data-lucide="alert-triangle"></i> Danger Zone</h3>
+                    <p class="text-sm text-red-500/80 dark:text-red-400/80 mb-6">Permanently delete all your equations from the cloud. This cannot be undone.</p>
+                    <button onclick="clearAllDataConfirm()" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors shadow-md">Clear All Data</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Mobile Nav -->
+        <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-[#0b1121]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-3 px-6 flex justify-between items-center z-50">
+            <button onclick="switchTab('home')" class="text-slate-400 hover:text-accent transition-colors" id="m-nav-home"><i data-lucide="layout-dashboard" size="24"></i></button>
+            <button onclick="switchTab('library')" class="text-accent transition-colors" id="m-nav-library"><i data-lucide="book-open" size="24"></i></button>
+            <button onclick="openAddEditModal()" class="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white shadow-lg shadow-accent/40 active:scale-95 transition-transform"><i data-lucide="plus" size="24" stroke-width="3"></i></button>
+            <button onclick="switchTab('settings')" class="text-slate-400 hover:text-accent transition-colors" id="m-nav-settings"><i data-lucide="settings" size="24"></i></button>
+        </nav>
+
+        <!-- View Modal -->
+        <div id="view-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 modal-overlay" onclick="closeModal('view-modal')"></div>
+            <div class="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] shadow-2xl overflow-hidden animate-slide flex flex-col max-h-[90vh]">
+                
+                <div class="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start bg-slate-50 dark:bg-slate-800/30">
+                    <div>
+                        <span id="view-category-badge" class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-accent/10 text-accent border border-accent/20 mb-3 inline-block">Category</span>
+                        <h3 id="view-title" class="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white sinhala-font">Equation Title</h3>
+                    </div>
+                    <button onclick="closeModal('view-modal')" class="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="x" size="24"></i></button>
+                </div>
+                
+                <div class="p-6 md:p-8 overflow-y-auto sinhala-font text-slate-700 dark:text-slate-300 space-y-8 flex-1">
+                    <div class="equation-display bg-slate-50 dark:bg-[rgba(15,23,42,0.8)] border border-slate-200 dark:border-accent/20 p-6 md:p-10 rounded-2xl text-center flex justify-center items-center min-h-[120px] overflow-x-auto text-xl md:text-2xl text-slate-900 dark:text-cyan-300">
+                        <div id="view-equation"></div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-accent uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="list-collapse" size="16"></i> Variables & Units</h4>
+                        <div id="view-variables" class="prose-content bg-slate-50 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50"></div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="alert-circle" size="16"></i> Validity Conditions</h4>
+                        <div id="view-conditions" class="prose-content bg-amber-50 dark:bg-amber-500/5 p-5 rounded-2xl border border-amber-200 dark:border-amber-500/10 text-amber-900 dark:text-amber-100"></div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2"><i data-lucide="lightbulb" size="16"></i> Important Notes</h4>
+                        <div id="view-notes" class="prose-content bg-purple-50 dark:bg-purple-500/5 p-5 rounded-2xl border border-purple-200 dark:border-purple-500/10 text-purple-900 dark:text-purple-100"></div>
+                    </div>
+                </div>
+                
+                <div class="p-5 border-t border-slate-100 dark:border-slate-800 flex gap-3 bg-slate-50 dark:bg-slate-800/30">
+                    <button onclick="openAddEditModal(document.getElementById('view-id').value)" class="flex-1 py-3.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-xl font-bold text-sm transition-colors border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-2">
+                        <i data-lucide="edit-3" size="18"></i> Edit
+                    </button>
+                    <button onclick="deleteReaction(document.getElementById('view-id').value)" class="px-6 py-3.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-transparent hover:bg-red-100 dark:hover:bg-red-500/10 rounded-xl font-bold text-sm transition-colors flex items-center justify-center gap-2 border border-red-200 dark:border-transparent">
+                        <i data-lucide="trash-2" size="18"></i> Delete
+                    </button>
+                </div>
+                <input type="hidden" id="view-id">
+            </div>
+        </div>
+
+        <!-- Add/Edit Modal -->
+        <div id="edit-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
+            <div class="absolute inset-0 modal-overlay" onclick="closeModal('edit-modal')"></div>
+            <div class="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] shadow-2xl overflow-hidden animate-slide flex flex-col max-h-[95vh]">
+                
+                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2" id="edit-modal-title"><i data-lucide="plus-circle" class="text-accent"></i> New Equation</h3>
+                    <button onclick="closeModal('edit-modal')" class="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="x" size="24"></i></button>
+                </div>
+                
+                <div class="p-6 md:p-8 overflow-y-auto space-y-6 flex-1">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Equation Name / Title</label>
+                            <input type="text" id="edit-title" placeholder="e.g. Ohm's Law (ඕම්ගේ නියමය)" class="w-full p-4 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all sinhala-font text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Physics Category</label>
+                            <select id="edit-category" class="w-full p-4 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-slate-900 dark:text-white cursor-pointer appearance-none">
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-accent uppercase tracking-widest ml-1 flex justify-between">
+                            <span>Main Equation (LaTeX)</span>
+                            <span class="text-slate-500 normal-case tracking-normal">e.g. V = I \cdot R</span>
+                        </label>
+                        <textarea id="edit-equation" rows="2" class="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-accent/40 dark:border-accent/30 rounded-xl outline-none focus:border-accent transition-all text-slate-900 dark:text-cyan-300 font-mono text-lg placeholder-slate-400 dark:placeholder-slate-700" placeholder="Type LaTeX without $$ symbols..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Variables & Units (Markdown)</label>
+                            <textarea id="edit-variables" rows="4" class="w-full p-4 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-accent transition-all sinhala-font text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600" placeholder="- V: Voltage (V)&#10;- I: Current (A)"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Validity Conditions</label>
+                            <textarea id="edit-conditions" rows="4" class="w-full p-4 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-accent transition-all sinhala-font text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600" placeholder="When is this equation valid?"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Important Notes</label>
+                        <textarea id="edit-notes" rows="3" class="w-full p-4 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-accent transition-all sinhala-font text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600" placeholder="Any special tricks or details to remember..."></textarea>
+                    </div>
+
+                </div>
+                
+                <!-- Magic Paste Area (Hidden by default) -->
+                <div id="magic-paste-container" class="hidden p-6 pb-2 pt-4 border-t border-slate-100 dark:border-slate-800 bg-purple-50/50 dark:bg-purple-900/10">
+                    <label class="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest ml-1 mb-2 block">Paste AI Content Here (Text or JSON)</label>
+                    <textarea id="magic-paste-input" rows="3" class="w-full p-4 bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800/50 rounded-xl outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all text-sm font-mono text-slate-700 dark:text-slate-300 placeholder-slate-400" placeholder="e.g.&#10;Title: Ohm's Law&#10;Equation: V = IR&#10;Variables: - V: Voltage (V)..."></textarea>
+                    <div class="flex justify-end mt-3">
+                        <button onclick="processMagicText()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors text-sm flex items-center gap-2 shadow-sm">
+                            <i data-lucide="sparkles" size="16"></i> Auto-Fill Fields
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 flex justify-between items-center">
+                    <button onclick="toggleMagicPaste()" class="px-5 py-3.5 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-bold rounded-xl hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors flex items-center gap-2 border border-purple-200 dark:border-purple-800/50">
+                        <i data-lucide="wand-2" size="18"></i> Magic Paste ✨
+                    </button>
+                    <button onclick="saveReaction()" class="px-10 py-3.5 bg-accent text-white font-bold rounded-xl hover:opacity-90 transition-opacity active:scale-95 shadow-lg flex items-center gap-2">
+                        <i data-lucide="save" size="18"></i> Save Equation
+                    </button>
+                </div>
+                <input type="hidden" id="edit-id">
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+            measurementId: "G-CWQB2330GF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let equations = [];
+        let subjects = ["Mechanics", "Current Electricity", "Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"];
+        let currentTab = 'library';
+        let unsubEquations = null;
+        let unsubSettings = null;
+
+        marked.setOptions({ breaks: true, gfm: true });
+        
+        window.switchTab = (tab) => {
+            currentTab = tab;
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tab === 'all' ? 'library' : tab}`)?.classList.remove('hidden');
+
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + tab)?.classList.add('active');
+            
+            document.querySelectorAll('nav button').forEach(el => {
+                el.classList.remove('text-accent');
+                if(!el.querySelector('.bg-accent')) el.classList.add('text-slate-400');
+            });
+            document.getElementById('m-nav-' + tab)?.classList.replace('text-slate-400', 'text-accent');
+
+            const titles = { 'home': 'Dashboard', 'library': 'Equations Library', 'settings': 'Settings' };
+            const subtitles = { 'home': 'Your physics learning overview.', 'library': 'Your cloud-synced formulas.', 'settings': 'Manage account & appearance.' };
+            
+            document.getElementById('page-title').innerText = titles[tab] || '';
+            document.getElementById('page-subtitle').innerText = subtitles[tab] || '';
+            document.getElementById('search-container').style.display = (tab === 'library') ? 'block' : 'none';
+
+            if(tab === 'library') window.renderReactions();
+        };
+
+        window.openModal = (id) => { document.getElementById(id).style.display = 'flex'; };
+        window.closeModal = (id) => { document.getElementById(id).style.display = 'none'; };
+
+        window.openAddEditModal = (id = null) => {
+            if(id) window.closeModal('view-modal'); 
+            window.openModal('edit-modal');
+            
+            // Hide magic paste on open
+            document.getElementById('magic-paste-container').classList.add('hidden');
+            document.getElementById('magic-paste-input').value = '';
+
+            if (id) {
+                const eq = equations.find(rx => String(rx.id) === String(id));
+                document.getElementById('edit-id').value = eq.id;
+                document.getElementById('edit-title').value = eq.title;
+                document.getElementById('edit-category').value = eq.category;
+                document.getElementById('edit-equation').value = eq.equation;
+                document.getElementById('edit-variables').value = eq.variables || '';
+                document.getElementById('edit-conditions').value = eq.conditions || '';
+                document.getElementById('edit-notes').value = eq.notes || '';
+                document.getElementById('edit-modal-title').innerHTML = `<i data-lucide="edit-3" class="text-accent"></i> Edit Equation`;
+            } else {
+                document.getElementById('edit-id').value = '';
+                document.getElementById('edit-title').value = '';
+                document.getElementById('edit-category').value = subjects[0] || '';
+                document.getElementById('edit-equation').value = '';
+                document.getElementById('edit-variables').value = '';
+                document.getElementById('edit-conditions').value = '';
+                document.getElementById('edit-notes').value = '';
+                document.getElementById('edit-modal-title').innerHTML = `<i data-lucide="plus-circle" class="text-accent"></i> New Equation`;
+            }
+            lucide.createIcons();
+        };
+
+        window.openViewModal = (id) => {
+            const eq = equations.find(x => String(x.id) === String(id));
+            if (!eq) return;
+
+            document.getElementById('view-id').value = eq.id;
+            document.getElementById('view-title').innerText = eq.title;
+            document.getElementById('view-category-badge').innerText = eq.category;
+            
+            const eqContainer = document.getElementById('view-equation');
+            const varContainer = document.getElementById('view-variables');
+            const condContainer = document.getElementById('view-conditions');
+            const notesContainer = document.getElementById('view-notes');
+
+            eqContainer.innerHTML = `$$ ${eq.equation} $$`;
+            varContainer.innerHTML = parseMarkdownWithMath(eq.variables) || "<p class='opacity-50 italic'>No variables defined.</p>";
+            condContainer.innerHTML = parseMarkdownWithMath(eq.conditions) || "<p class='opacity-50 italic'>No specific conditions.</p>";
+            notesContainer.innerHTML = parseMarkdownWithMath(eq.notes) || "<p class='opacity-50 italic'>No additional notes.</p>";
+
+            window.openModal('view-modal');
+            
+            setTimeout(() => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise([eqContainer, varContainer, condContainer, notesContainer]).catch(err => console.log('MathJax Error:', err));
+                }
+            }, 50);
+            lucide.createIcons();
+        };
+
+        function parseMarkdownWithMath(text) {
+            if (!text) return "";
+            let mathBlocks = [];
+            let contentText = text.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => {
+                mathBlocks.push(match);
+                return `__MATH_PLACEHOLDER_${mathBlocks.length - 1}__`;
+            });
+            let parsedHtml = marked.parse(contentText);
+            mathBlocks.forEach((block, i) => {
+                parsedHtml = parsedHtml.replace(`__MATH_PLACEHOLDER_${i}__`, block);
+            });
+            return parsedHtml;
+        }
+
+        window.renderReactions = () => {
+            const container = document.getElementById('cards-container');
+            container.innerHTML = '';
+            
+            if (equations.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 flex flex-col items-center gap-3"><div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2"><i data-lucide="ghost" size="32"></i></div><p class="text-lg">Your library is empty.</p><p class="text-sm">Click 'Add Equation' to save to the cloud!</p></div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            equations.forEach(eq => {
+                const card = document.createElement('div');
+                card.className = "card-physics bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm";
+                card.onclick = () => window.openViewModal(eq.id);
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10">
+                                ${eq.category}
+                            </span>
+                            <i data-lucide="arrow-up-right" class="text-slate-400 group-hover:text-accent transition-colors" size="18"></i>
+                        </div>
+                        <h4 class="font-bold text-lg text-slate-900 dark:text-white sinhala-font mb-4 leading-tight">${eq.title}</h4>
+                    </div>
+                    <div class="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 text-center overflow-hidden flex items-center justify-center min-h-[80px]">
+                        <span class="text-slate-800 dark:text-cyan-300 font-mono text-lg">$$ ${eq.equation} $$</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            
+            if (window.MathJax) MathJax.typesetPromise([container]).catch(err => console.log('MathJax', err));
+            lucide.createIcons();
+        };
+
+        window.filterReactions = () => {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            document.querySelectorAll('#cards-container > div').forEach(card => {
+                card.style.display = card.innerText.toLowerCase().includes(q) ? 'flex' : 'none';
+            });
+        };
+
+        window.saveReaction = async () => {
+            if (!auth.currentUser) return;
+            const id = document.getElementById('edit-id').value || Date.now().toString();
+            const title = document.getElementById('edit-title').value;
+            const category = document.getElementById('edit-category').value;
+            const equation = document.getElementById('edit-equation').value;
+            const variables = document.getElementById('edit-variables').value;
+            const conditions = document.getElementById('edit-conditions').value;
+            const notes = document.getElementById('edit-notes').value;
+
+            if (!title || !equation.trim()) return;
+
+            const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', id);
+            await setDoc(docRef, { title, category, equation, variables, conditions, notes, id });
+            window.closeModal('edit-modal');
+        };
+
+        window.deleteReaction = async (id) => {
+            if(!auth.currentUser) return;
+            if(!confirm('Are you sure you want to permanently delete this equation?')) return;
+            const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(id));
+            await deleteDoc(docRef);
+            window.closeModal('view-modal');
+        };
+
+        window.clearAllDataConfirm = async () => {
+            if(!auth.currentUser) return;
+            if(confirm('🚨 DANGER: This will delete ALL cloud saved equations! Are you completely sure?')) {
+                for(let eq of equations) {
+                    const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(eq.id));
+                    await deleteDoc(docRef);
+                }
+            }
+        };
+
+        // Walima ka AI kalanw kalan (Process Magic Paste Logic)
+        window.toggleMagicPaste = () => {
+            const container = document.getElementById('magic-paste-container');
+            container.classList.toggle('hidden');
+            if(!container.classList.contains('hidden')) {
+                document.getElementById('magic-paste-input').focus();
+            }
+        };
+
+        window.processMagicText = () => {
+            const text = document.getElementById('magic-paste-input').value;
+            if(!text.trim()) return;
+
+            try {
+                // Try JSON first
+                const data = JSON.parse(text);
+                if (data.title) document.getElementById('edit-title').value = data.title;
+                if (data.category) document.getElementById('edit-category').value = data.category;
+                if (data.equation) document.getElementById('edit-equation').value = data.equation;
+                if (data.variables) document.getElementById('edit-variables').value = Array.isArray(data.variables) ? data.variables.join('\n') : data.variables;
+                if (data.conditions) document.getElementById('edit-conditions').value = Array.isArray(data.conditions) ? data.conditions.join('\n') : data.conditions;
+                if (data.notes) document.getElementById('edit-notes').value = Array.isArray(data.notes) ? data.notes.join('\n') : data.notes;
+            } catch (e) {
+                // Fallback: regex parsing for markdown/text
+                const extract = (key) => {
+                    const regex = new RegExp(`(?:\\*\\*|###\\s*)?${key}(?:\\*\\*)?\\s*:\\s*([\\s\\S]*?)(?:\\n(?:\\*\\*|###\\s*)?[A-Z][a-z]+(?:\\s*&\\s*[A-Z][a-z]+)*\\s*:|$)`, 'i');
+                    const match = text.match(regex);
+                    return match ? match[1].trim() : null;
+                };
+
+                const title = extract('Title') || extract('Name') || extract('Equation Name');
+                const category = extract('Category') || extract('Physics Category') || extract('Subject');
+                const equation = extract('Equation') || extract('Main Equation') || extract('Formula');
+                const variables = extract('Variables') || extract('Variables & Units') || extract('Parameters');
+                const conditions = extract('Conditions') || extract('Validity Conditions');
+                const notes = extract('Notes') || extract('Important Notes');
+
+                if (title) document.getElementById('edit-title').value = title;
+                if (category) {
+                    const select = document.getElementById('edit-category');
+                    let exists = false;
+                    for(let i=0; i<select.options.length; i++) {
+                        if(select.options[i].value.toLowerCase() === category.toLowerCase()) {
+                            select.value = select.options[i].value;
+                            exists = true; break;
+                        }
+                    }
+                    if(!exists && category) {
+                        if(!subjects.includes(category)) {
+                            subjects.push(category);
+                            updateSubjectUI();
+                        }
+                        select.value = category;
+                    }
+                }
+                if (equation) {
+                    let cleanEq = equation.replace(/^\$\$?|\$\$?$/g, '').trim(); 
+                    document.getElementById('edit-equation').value = cleanEq;
+                }
+                if (variables) document.getElementById('edit-variables').value = variables;
+                if (conditions) document.getElementById('edit-conditions').value = conditions;
+                if (notes) document.getElementById('edit-notes').value = notes;
+            }
+            
+            document.getElementById('magic-paste-container').classList.add('hidden');
+            document.getElementById('magic-paste-input').value = '';
+            lucide.createIcons();
+        };
+
+        window.toggleTheme = () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            applyTheme(newTheme);
+            saveSettings({ theme: newTheme });
+        };
+
+        function applyTheme(theme) {
+            const dot = document.getElementById('theme-toggle-dot');
+            if(theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                if(dot) dot.classList.add('translate-x-6');
+            } else {
+                document.documentElement.classList.remove('dark');
+                if(dot) dot.classList.remove('translate-x-6');
+            }
+        }
+
+        window.setAccent = (rgb, save = false) => {
+            document.documentElement.style.setProperty('--accent-rgb', rgb);
+            if(save) saveSettings({ accent: rgb });
+        };
+
+        window.addSubject = () => {
+            const val = document.getElementById('new-subject-input').value.trim();
+            if(val && !subjects.includes(val)) {
+                subjects.push(val);
+                document.getElementById('new-subject-input').value = '';
+                saveSettings({ subjects: subjects });
+                updateSubjectUI();
+            }
+        };
+
+        window.removeSubject = (sub) => {
+            subjects = subjects.filter(s => s !== sub);
+            saveSettings({ subjects: subjects });
+            updateSubjectUI();
+        };
+
+        function updateSubjectUI() {
+            const list = document.getElementById('subjects-list');
+            if(list) {
+                list.innerHTML = subjects.map(s => `
+                    <div class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                        ${s} <button onclick="removeSubject('${s}')" class="text-red-500 hover:text-red-700 font-bold ml-1">&times;</button>
+                    </div>
+                `).join('');
+            }
+            const select = document.getElementById('edit-category');
+            if(select) {
+                select.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+            }
+        }
+
+        async function saveSettings(updates) {
+            if(!auth.currentUser) return;
+            const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'settings', 'prefs');
+            await setDoc(ref, updates, { merge: true });
+        }
+
+        window.signInWithGoogle = async () => {
+            const provider = new GoogleAuthProvider();
+            try { await signInWithPopup(auth, provider); } 
+            catch(err) { console.error("Login failed:", err); }
+        };
+
+        window.signOutUser = async () => {
+            await signOut(auth);
+        };
+
+        function setupCloudListeners(uid) {
+            if (unsubEquations) unsubEquations();
+            if (unsubSettings) unsubSettings();
+
+            const eqRef = collection(db, 'artifacts', 'studyflow-pro', 'users', uid, 'equations');
+            unsubEquations = onSnapshot(eqRef, (snapshot) => {
+                equations = snapshot.docs.map(doc => doc.data());
+                equations.sort((a,b) => b.id - a.id); 
+                document.getElementById('reaction-count').innerText = equations.length;
+                if(currentTab === 'library') window.renderReactions();
+            }, (error) => console.error("Sync Error:", error));
+
+            const setRef = doc(db, 'artifacts', 'studyflow-pro', 'users', uid, 'settings', 'prefs');
+            unsubSettings = onSnapshot(setRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.theme) applyTheme(data.theme);
+                    if(data.accent) window.setAccent(data.accent, false);
+                    if(data.subjects) {
+                        subjects = data.subjects;
+                        updateSubjectUI();
+                    }
+                } else {
+                    saveSettings({ theme: 'light', accent: '56, 189, 248', subjects });
+                }
+            }, (error) => console.error("Settings Error:", error));
+        }
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                if(user.isAnonymous) {
+                    document.getElementById('auth-signed-out').classList.remove('hidden');
+                    document.getElementById('auth-signed-in').classList.add('hidden');
+                    document.getElementById('sidebar-user-name').innerText = "Guest User";
+                    document.getElementById('sidebar-user-status').innerText = "Temporary";
+                    document.getElementById('sidebar-user-avatar').src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Anon";
+                } else {
+                    document.getElementById('auth-signed-out').classList.add('hidden');
+                    document.getElementById('auth-signed-in').classList.remove('hidden');
+                    document.getElementById('sidebar-user-name').innerText = user.displayName || "Scholar";
+                    document.getElementById('sidebar-user-status').innerText = "Pro User";
+                    document.getElementById('settings-name').innerText = user.displayName || "Physics Scholar";
+                    document.getElementById('settings-email').innerText = user.email || "";
+                    const avatar = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`;
+                    document.getElementById('sidebar-user-avatar').src = avatar;
+                    document.getElementById('settings-avatar').src = avatar;
+                }
+                setupCloudListeners(user.uid);
+            } else {
+                try { await signInAnonymously(auth); } 
+                catch(e) { console.error("Anon login failed", e); }
+            }
+        });
+
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+            updateSubjectUI();
+            if(document.documentElement.classList.contains('dark')) {
+                const dot = document.getElementById('theme-toggle-dot');
+                if(dot) dot.classList.add('translate-x-6');
+            }
+            window.switchTab('library');
+        });
+    </script>
+</body>
+</html>
