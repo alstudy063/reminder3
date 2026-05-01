@@ -83,6 +83,23 @@
         }
         .animate-slide { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
+        @keyframes scaleIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+
+        .stagger-card {
+            opacity: 0;
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 10px; }
@@ -171,7 +188,7 @@
                     <i data-lucide="search" class="text-slate-400 group-focus-within:text-accent transition-colors" size="20"></i>
                 </div>
                 <!-- Filtering logic fixed properly -->
-                <input type="text" id="search-input" onkeyup="window.AppUI.filterEquations()" placeholder="Search equations, symbols, or categories..." class="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm">
+                <input type="text" id="search-input" onkeyup="window.AppUI.handleSearch()" placeholder="Search equations, symbols, or categories..." class="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm">
             </div>
 
             <!-- Tab: Home Stats -->
@@ -190,10 +207,22 @@
                 </div>
             </div>
 
-            <!-- Tab: Equations Grid -->
-            <div id="cards-container" class="tab-content grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-slide">
-                <div class="col-span-full text-center py-10 text-slate-500">
-                    <i data-lucide="loader-2" class="animate-spin mx-auto mb-2"></i> Loading from Cloud...
+            <!-- Tab: Equations Grid / Subject Cards -->
+            <div id="tab-library" class="tab-content hidden animate-slide">
+                <div id="subject-header" class="mb-6 hidden items-center gap-4">
+                    <button onclick="window.AppUI.clearSubject()" class="p-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-xl transition-colors text-slate-700 dark:text-slate-300">
+                        <i data-lucide="arrow-left" size="20"></i>
+                    </button>
+                    <div>
+                        <h3 id="selected-subject-title" class="text-2xl font-bold text-slate-900 dark:text-white sinhala-font">පාඩමේ නම</h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">මෙම පාඩමට අදාළ සමීකරණ</p>
+                    </div>
+                </div>
+                
+                <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div class="col-span-full text-center py-10 text-slate-500">
+                        <i data-lucide="loader-2" class="animate-spin mx-auto mb-2"></i> Loading from Cloud...
+                    </div>
                 </div>
             </div>
 
@@ -278,8 +307,8 @@
 
         <!-- View Modal -->
         <div id="view-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
-            <div class="absolute inset-0 modal-overlay" onclick="window.AppUI.closeModal('view-modal', event)"></div>
-            <div class="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] shadow-2xl overflow-hidden animate-slide flex flex-col max-h-[90vh]">
+            <div class="absolute inset-0 modal-overlay animate-fade-in" onclick="window.AppUI.closeModal('view-modal', event)"></div>
+            <div class="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
                 <div class="p-6 md:p-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-start bg-slate-50 dark:bg-slate-800/30">
                     <div>
                         <span id="view-category-badge" class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-accent/10 text-accent border border-accent/20 mb-3 inline-block">Category</span>
@@ -318,8 +347,8 @@
 
         <!-- Add/Edit Modal -->
         <div id="edit-modal" class="fixed inset-0 z-[110] hidden items-center justify-center p-4">
-            <div class="absolute inset-0 modal-overlay" onclick="window.AppUI.closeModal('edit-modal', event)"></div>
-            <div class="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] shadow-2xl overflow-hidden animate-slide flex flex-col max-h-[95vh]">
+            <div class="absolute inset-0 modal-overlay animate-fade-in" onclick="window.AppUI.closeModal('edit-modal', event)"></div>
+            <div class="relative w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[95vh]">
                 <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/30">
                     <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2" id="edit-modal-title"><i data-lucide="plus-circle" class="text-accent"></i> New Equation</h3>
                     <button onclick="window.AppUI.closeModal('edit-modal')" class="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"><i data-lucide="x" size="24"></i></button>
@@ -410,6 +439,8 @@
             equations: [],
             subjects: ["Mechanics", "Current Electricity", "Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"],
             currentTab: 'library',
+            selectedSubject: null,
+            isSearching: false,
             unsubEquations: null,
             unsubSettings: null
         };
@@ -461,8 +492,7 @@
                 AppState.currentTab = tab;
                 document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
                 
-                // FIXED: Mapping 'library' tab to correct 'cards-container' ID
-                const targetId = tab === 'library' ? 'cards-container' : `tab-${tab}`;
+                const targetId = `tab-${tab}`;
                 document.getElementById(targetId)?.classList.remove('hidden');
                 
                 document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
@@ -556,23 +586,84 @@
                 return parsedHtml;
             },
 
+            selectSubject(subject) {
+                AppState.selectedSubject = subject;
+                document.getElementById('search-input').value = '';
+                AppState.isSearching = false;
+                this.renderEquations();
+            },
+
+            clearSubject() {
+                AppState.selectedSubject = null;
+                document.getElementById('search-input').value = '';
+                AppState.isSearching = false;
+                this.renderEquations();
+            },
+
             renderEquations() {
                 const container = document.getElementById('cards-container');
+                const header = document.getElementById('subject-header');
                 container.innerHTML = '';
                 
-                if (AppState.equations.length === 0) {
-                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 flex flex-col items-center gap-3"><div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2"><i data-lucide="ghost" size="32"></i></div><p class="text-lg">Your library is empty.</p><p class="text-sm">Click 'Add Equation' to save to the cloud!</p></div>`;
+                if (AppState.equations.length === 0 && !AppState.isSearching) {
+                    header.classList.add('hidden');
+                    header.classList.remove('flex', 'animate-fade-in');
+                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 flex flex-col items-center gap-3 animate-fade-in"><div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2"><i data-lucide="ghost" size="32"></i></div><p class="text-lg">Your library is empty.</p><p class="text-sm">Click 'Add Equation' to save to the cloud!</p></div>`;
                     lucide.createIcons();
                     return;
                 }
 
+                let equationsToRender = [];
+
+                if (AppState.isSearching) {
+                    header.classList.add('hidden');
+                    header.classList.remove('flex', 'animate-fade-in');
+                    equationsToRender = AppState.equations;
+                } else if (!AppState.selectedSubject) {
+                    header.classList.add('hidden');
+                    header.classList.remove('flex', 'animate-fade-in');
+                    // Render Subjects Cards
+                    let htmlStr = '';
+                    AppState.subjects.forEach((sub, index) => {
+                        const count = AppState.equations.filter(eq => eq.category === sub).length;
+                        htmlStr += `
+                            <div class="card-physics stagger-card bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
+                                 onclick="window.AppUI.selectSubject('${sub}')" style="animation-delay: ${index * 40}ms">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 text-accent flex items-center justify-center border border-accent/20">
+                                        <i data-lucide="folder-open" size="28"></i>
+                                    </div>
+                                    <i data-lucide="chevron-right" class="text-slate-300 group-hover:text-accent transition-all group-hover:translate-x-1" size="24"></i>
+                                </div>
+                                <h4 class="font-bold text-xl text-slate-900 dark:text-white sinhala-font mb-1">${sub}</h4>
+                                <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">${count} සමීකරණ</p>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = htmlStr;
+                    lucide.createIcons();
+                    return;
+                } else {
+                    header.classList.remove('hidden');
+                    header.classList.add('flex', 'animate-fade-in');
+                    document.getElementById('selected-subject-title').innerText = AppState.selectedSubject;
+                    equationsToRender = AppState.equations.filter(eq => eq.category === AppState.selectedSubject);
+                    
+                    if(equationsToRender.length === 0) {
+                        container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500 animate-fade-in">මෙම පාඩම සඳහා තවමත් සමීකරණ එකතු කර නොමැත.</div>`;
+                        lucide.createIcons();
+                        return;
+                    }
+                }
+
+                // Render Equation Cards
                 let htmlStr = '';
-                AppState.equations.forEach(eq => {
+                equationsToRender.forEach((eq, index) => {
                     const searchString = `${eq.title} ${eq.category} ${eq.equation}`.toLowerCase();
                     htmlStr += `
-                        <div class="card-physics bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
+                        <div class="card-physics eq-card stagger-card bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
                              onclick="window.AppUI.openViewModal('${eq.id}')"
-                             data-search="${searchString}">
+                             data-search="${searchString}" style="animation-delay: ${index * 40}ms">
                             <div>
                                 <div class="flex items-center justify-between mb-4">
                                     <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10">
@@ -592,20 +683,37 @@
                 
                 MathManager.add([container]);
                 lucide.createIcons();
-                this.filterEquations(); 
+                
+                if (AppState.isSearching) {
+                    const q = document.getElementById('search-input').value.toLowerCase().trim();
+                    const cards = document.querySelectorAll('#cards-container > .eq-card');
+                    cards.forEach(card => {
+                        const searchData = card.getAttribute('data-search');
+                        card.style.display = (searchData && searchData.includes(q)) ? 'flex' : 'none';
+                    });
+                }
             },
 
-            filterEquations() {
+            handleSearch() {
                 const q = document.getElementById('search-input').value.toLowerCase().trim();
-                const cards = document.querySelectorAll('#cards-container > .card-physics');
-                cards.forEach(card => {
-                    const searchData = card.getAttribute('data-search');
-                    if (searchData && searchData.includes(q)) {
-                        card.style.display = 'flex';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
+                
+                if (q.length > 0 && !AppState.isSearching) {
+                    AppState.isSearching = true;
+                    this.renderEquations();
+                } else if (q.length === 0 && AppState.isSearching) {
+                    AppState.isSearching = false;
+                    this.renderEquations();
+                } else if (AppState.isSearching || AppState.selectedSubject) {
+                    const cards = document.querySelectorAll('#cards-container > .eq-card');
+                    cards.forEach(card => {
+                        const searchData = card.getAttribute('data-search');
+                        if (searchData && searchData.includes(q)) {
+                            card.style.display = 'flex';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                }
             },
 
             toggleTheme() {
