@@ -122,7 +122,7 @@
         }
     </style>
 </head>
-<body class="h-screen w-full flex items-center justify-center overflow-hidden p-0 md:p-6 lg:p-8 relative">
+<body class="h-[100dvh] w-full flex items-center justify-center overflow-hidden p-0 md:p-6 lg:p-8 relative">
 
     <div id="app-wrapper" class="w-full h-full flex justify-center items-center relative">
         <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
@@ -134,7 +134,7 @@
         <div class="w-full h-full max-w-[1600px] flex md:rounded-[2.5rem] glass-panel shadow-2xl shadow-indigo-900/10 overflow-hidden relative border-white/10 md:border">
             
             <!-- Sidebar -->
-            <div class="w-80 md:w-96 border-r border-white/5 flex-col hidden md:flex bg-slate-900/30">
+            <div id="sidebar-area" class="w-full md:w-96 border-r border-white/5 flex flex-col shrink-0 bg-slate-900/30 transition-all duration-300">
                 <div class="p-8 pb-6 flex flex-col h-full">
                     <!-- User Profile (Clickable for settings) -->
                     <div class="flex items-center justify-between mb-10 cursor-pointer group" onclick="toggleModal('profile-modal')">
@@ -176,10 +176,13 @@
             </div>
 
             <!-- Main Chat Area -->
-            <div class="flex-1 flex flex-col relative z-10 bg-gradient-to-b from-slate-900/10 to-slate-900/40">
+            <div id="main-chat-area" class="flex-1 hidden md:flex flex-col relative z-10 bg-gradient-to-b from-slate-900/10 to-slate-900/40 w-full transition-all duration-300">
                 <!-- Header -->
                 <header class="h-24 border-b border-white/5 flex items-center justify-between px-6 md:px-10 glass-panel !rounded-none">
-                    <div class="flex items-center gap-5">
+                    <div class="flex items-center gap-3 md:gap-5">
+                        <button onclick="closeMobileChat()" class="md:hidden p-2 -ml-2 text-slate-400 hover:text-white transition-colors">
+                            <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                        </button>
                         <div class="relative">
                             <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 overflow-hidden shadow-xl p-0.5">
                                 <div class="w-full h-full bg-slate-900 rounded-[14px] overflow-hidden">
@@ -326,10 +329,17 @@
         </div>
     </div>
 
+    <!-- Context Menu -->
+    <div id="context-menu" class="hidden fixed z-[100] bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-1.5 min-w-[160px] transform scale-95 opacity-0 transition-all duration-200 origin-top-left">
+        <button id="cm-delete-btn" class="w-full text-left px-3 py-2.5 text-rose-400 hover:bg-rose-500/10 rounded-lg text-sm font-medium flex items-center gap-3 transition-colors">
+            <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
+        </button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
@@ -432,7 +442,20 @@
         document.getElementById('google-login-btn').onclick = async () => {
             const provider = new GoogleAuthProvider();
             try {
-                const result = await signInWithPopup(auth, provider);
+                let result;
+                if (currentUser && currentUser.isAnonymous) {
+                    try {
+                        result = await linkWithPopup(currentUser, provider);
+                    } catch (linkError) {
+                        if (linkError.code === 'auth/credential-already-in-use') {
+                            result = await signInWithPopup(auth, provider);
+                        } else {
+                            throw linkError;
+                        }
+                    }
+                } else {
+                    result = await signInWithPopup(auth, provider);
+                }
                 myProfile.name = result.user.displayName || "My Account";
                 myProfile.photo = result.user.photoURL || myProfile.photo;
                 saveProfile();
@@ -448,7 +471,7 @@
             const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
             
             unsubscribeGlobal = onSnapshot(msgRef, (snapshot) => {
-                allMessages = snapshot.docs.map(doc => doc.data())
+                allMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(m => m.senderId === currentUser.uid || m.receiverId === currentUser.uid)
                     .sort((a, b) => a.createdAt - b.createdAt);
                 
@@ -470,13 +493,16 @@
                         id: partnerId,
                         name: "Secure Link",
                         photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${partnerId}&backgroundColor=transparent`,
-                        msgCount: 0,
+                        unreadCount: 0,
                         lastTime: 0
                     };
                 }
                 
-                localContacts[partnerId].msgCount++;
-                localContacts[partnerId].lastTime = m.createdAt;
+                localContacts[partnerId].lastTime = Math.max(localContacts[partnerId].lastTime, m.createdAt);
+                
+                if (m.receiverId === currentUser.uid && !m.read) {
+                    localContacts[partnerId].unreadCount++;
+                }
                 
                 // If message is FROM them, grab their profile info embedded in message
                 if (m.senderId === partnerId) {
@@ -500,9 +526,13 @@
                 const isActive = c.id === currentTargetId;
                 const bgClass = isActive ? 'bg-white/5 border-white/10 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100 hover:bg-white/5';
                 const indicator = isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-slate-600';
+                
+                const badge = c.unreadCount > 0 
+                    ? `<span class="bg-rose-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 animate-pulse">${c.unreadCount} New</span>` 
+                    : '';
 
                 return `
-                    <div onclick="selectContact('${c.id}')" class="flex items-center gap-4 p-3 rounded-2xl transition-all duration-300 cursor-pointer border ${bgClass}">
+                    <div onclick="selectContact('${c.id}')" data-id="${c.id}" class="contact-item flex items-center gap-4 p-3 rounded-2xl transition-all duration-300 cursor-pointer border ${bgClass}">
                         <div class="relative shrink-0">
                             <div class="w-10 h-10 rounded-2xl glass-input flex items-center justify-center overflow-hidden">
                                 <img src="${c.photo}" class="w-full h-full object-cover reverse-hue" />
@@ -512,7 +542,7 @@
                         <div class="flex-1 overflow-hidden">
                             <div class="flex justify-between items-center">
                                 <h3 class="text-xs font-semibold text-slate-200 tracking-wide truncate pr-2">${c.name}</h3>
-                                <span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full shrink-0">${c.msgCount} msg</span>
+                                ${badge}
                             </div>
                             <p class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">${c.id.substring(0,8)}...</p>
                         </div>
@@ -524,7 +554,34 @@
         window.selectContact = (id) => {
             targetInput.value = id;
             handleTargetChange();
+            if (window.innerWidth < 768) {
+                openMobileChat();
+            }
         };
+
+        window.openMobileChat = () => {
+            document.getElementById('sidebar-area').classList.add('hidden');
+            document.getElementById('sidebar-area').classList.remove('flex');
+            document.getElementById('main-chat-area').classList.remove('hidden');
+            document.getElementById('main-chat-area').classList.add('flex');
+            history.pushState({ chatOpen: true }, "");
+        };
+
+        window.closeMobileChat = () => {
+            document.getElementById('sidebar-area').classList.remove('hidden');
+            document.getElementById('sidebar-area').classList.add('flex');
+            document.getElementById('main-chat-area').classList.add('hidden');
+            document.getElementById('main-chat-area').classList.remove('flex');
+            currentTargetId = "";
+            targetInput.value = "";
+            handleTargetChange();
+        };
+
+        window.addEventListener('popstate', (e) => {
+            if (!e.state || !e.state.chatOpen) {
+                closeMobileChat();
+            }
+        });
 
         function handleTargetChange() {
             currentTargetId = targetInput.value.trim();
@@ -567,9 +624,28 @@
             document.getElementById('info-avatar').src = contact.photo;
             document.getElementById('info-id').textContent = currentTargetId;
 
+            markAsRead(currentTargetId);
             updateActiveChatUI();
             renderSidebarContacts(); // update active state classes
             lucide.createIcons();
+        }
+
+        async function markAsRead(partnerId) {
+            if (!currentUser) return;
+            const unreadMsgs = allMessages.filter(m => m.receiverId === currentUser.uid && m.senderId === partnerId && !m.read);
+            
+            // Limit batch to a reasonable number to avoid errors
+            const batch = writeBatch(db);
+            let count = 0;
+            unreadMsgs.forEach(m => {
+                if (count < 400) {
+                    batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', m.id), { read: true });
+                    count++;
+                }
+            });
+            if (count > 0) {
+                await batch.commit();
+            }
         }
 
         function updateActiveChatUI() {
@@ -580,6 +656,7 @@
                 (m.senderId === currentTargetId && m.receiverId === currentUser.uid)
             );
             
+            markAsRead(currentTargetId);
             renderMessages(activeMsgs);
         }
 
@@ -626,7 +703,7 @@
                 if (isEmojiMsg) {
                     const hex = getEmojiHex(text);
                     return `
-                        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full">
+                        <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
                             <div class="${isMe ? 'my-message' : 'their-message'} !bg-transparent !border-none !shadow-none !p-0">
                                 <div class="emoji-msg-container" data-hex="${hex}" data-raw="${text}">
                                     <span class="text-6xl drop-shadow-lg">${text}</span>
@@ -638,7 +715,7 @@
                 }
 
                 return `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full">
+                    <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
                         <div class="message-bubble ${isMe ? 'my-message' : 'their-message'}">
                             ${escapeHTML(m.text)}
                         </div>
@@ -706,6 +783,7 @@
                     senderId: currentUser.uid,
                     receiverId: currentTargetId,
                     createdAt: Date.now(),
+                    read: false,
                     // Attach profile info so receiver knows who we are
                     senderName: myProfile.name,
                     senderPhoto: myProfile.photo
@@ -734,6 +812,122 @@
                 }, 2000);
             }
         };
+
+        // Context Menu Logic (Delete)
+        const contextMenu = document.getElementById('context-menu');
+        const cmDeleteBtn = document.getElementById('cm-delete-btn');
+        let currentContextMenuTarget = null;
+        let currentContextMenuAction = null;
+
+        function showContextMenu(x, y, action, targetId) {
+            currentContextMenuAction = action;
+            currentContextMenuTarget = targetId;
+            
+            contextMenu.classList.remove('hidden');
+            
+            // Adjust position so it doesn't overflow
+            const menuWidth = 160;
+            const menuHeight = 50;
+            const safeX = Math.min(x, window.innerWidth - menuWidth - 10);
+            const safeY = Math.min(y, window.innerHeight - menuHeight - 10);
+            
+            contextMenu.style.left = `${safeX}px`;
+            contextMenu.style.top = `${safeY}px`;
+            
+            setTimeout(() => {
+                contextMenu.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function hideContextMenu() {
+            contextMenu.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => contextMenu.classList.add('hidden'), 200);
+            currentContextMenuTarget = null;
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!contextMenu.contains(e.target)) {
+                hideContextMenu();
+            }
+        });
+
+        // Long press & Right Click Events for Messages
+        let touchTimer;
+        
+        msgContainer.addEventListener('contextmenu', (e) => {
+            const msgEl = e.target.closest('.message-wrapper');
+            if (msgEl) {
+                e.preventDefault();
+                showContextMenu(e.clientX, e.clientY, 'delete_msg', msgEl.dataset.id);
+            }
+        });
+
+        msgContainer.addEventListener('touchstart', (e) => {
+            const msgEl = e.target.closest('.message-wrapper');
+            if (msgEl) {
+                touchTimer = setTimeout(() => {
+                    showContextMenu(e.touches[0].clientX, e.touches[0].clientY, 'delete_msg', msgEl.dataset.id);
+                }, 600);
+            }
+        }, {passive: true});
+
+        msgContainer.addEventListener('touchend', () => clearTimeout(touchTimer));
+        msgContainer.addEventListener('touchmove', () => clearTimeout(touchTimer));
+
+        // Long press & Right Click Events for Contacts
+        contactsList.addEventListener('contextmenu', (e) => {
+            const contactEl = e.target.closest('.contact-item');
+            if (contactEl) {
+                e.preventDefault();
+                showContextMenu(e.clientX, e.clientY, 'delete_chat', contactEl.dataset.id);
+            }
+        });
+
+        contactsList.addEventListener('touchstart', (e) => {
+            const contactEl = e.target.closest('.contact-item');
+            if (contactEl) {
+                touchTimer = setTimeout(() => {
+                    showContextMenu(e.touches[0].clientX, e.touches[0].clientY, 'delete_chat', contactEl.dataset.id);
+                }, 600);
+            }
+        }, {passive: true});
+
+        contactsList.addEventListener('touchend', () => clearTimeout(touchTimer));
+        contactsList.addEventListener('touchmove', () => clearTimeout(touchTimer));
+
+        // Handle Deletion
+        cmDeleteBtn.addEventListener('click', async () => {
+            if (!currentContextMenuTarget) return;
+            
+            try {
+                if (currentContextMenuAction === 'delete_msg') {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', currentContextMenuTarget));
+                } else if (currentContextMenuAction === 'delete_chat') {
+                    const partnerId = currentContextMenuTarget;
+                    const msgsToDelete = allMessages.filter(m => 
+                        (m.senderId === currentUser.uid && m.receiverId === partnerId) || 
+                        (m.senderId === partnerId && m.receiverId === currentUser.uid)
+                    );
+                    
+                    const batch = writeBatch(db);
+                    let count = 0;
+                    msgsToDelete.forEach(m => {
+                        if(count < 400) {
+                            batch.delete(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', m.id));
+                            count++;
+                        }
+                    });
+                    if(count > 0) await batch.commit();
+                    
+                    if (currentTargetId === partnerId) {
+                        closeMobileChat();
+                    }
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+            }
+            hideContextMenu();
+        });
 
         // Init
         updateMyProfileUI();
