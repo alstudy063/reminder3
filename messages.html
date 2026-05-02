@@ -252,8 +252,10 @@
         </div>
     </div>
 
+    <!-- Modals without pointer-events classes, using strict display:none to fix freeze bugs -->
+    
     <!-- Profile Modal -->
-    <div id="profile-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 pointer-events-none">
+    <div id="profile-modal" style="display: none; opacity: 0;" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300">
         <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="toggleModal('profile-modal', false)"></div>
         <div class="glass-panel w-full max-w-sm mx-4 p-8 rounded-[2rem] relative z-10 scale-95 transition-transform duration-300 shadow-2xl flex flex-col gap-6" id="profile-modal-content">
             <div class="flex justify-between items-center">
@@ -304,7 +306,7 @@
     </div>
 
     <!-- Info Modal -->
-    <div id="target-info-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 pointer-events-none">
+    <div id="target-info-modal" style="display: none; opacity: 0;" class="fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-300">
         <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="toggleModal('target-info-modal', false)"></div>
         <div class="glass-panel w-full max-w-sm mx-4 p-8 rounded-[2rem] relative z-10 scale-95 transition-transform duration-300 shadow-2xl flex flex-col items-center gap-4 text-center" id="target-info-content">
             <button onclick="toggleModal('target-info-modal', false)" class="absolute top-6 right-6 text-slate-400 hover:text-white bg-white/5 hover:bg-white/10 p-2 rounded-full transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
@@ -328,7 +330,7 @@
     </div>
 
     <!-- Context Menu -->
-    <div id="context-menu" class="hidden fixed z-[100] bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-1.5 min-w-[160px] transform scale-95 opacity-0 transition-all duration-200 origin-top-left pointer-events-none">
+    <div id="context-menu" style="display: none; opacity: 0;" class="fixed z-[100] bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-1.5 min-w-[160px] transform scale-95 transition-all duration-200 origin-top-left">
         <button id="cm-delete-btn" class="w-full text-left px-3 py-2.5 text-rose-400 hover:bg-rose-500/10 rounded-lg text-sm font-medium flex items-center gap-3 transition-colors">
             <i data-lucide="trash-2" class="w-4 h-4"></i> Delete
         </button>
@@ -337,9 +339,10 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, writeBatch, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, writeBatch, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        // Nyanja: Yambitsani zosintha za Firebase (Initialize Firebase config)
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
             authDomain: "messages-9bc85.firebaseapp.com",
             projectId: "messages-9bc85",
@@ -351,7 +354,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = 'studyflow-pro';
+        // Nyanja: Dziwani ID ya app molondola (Determine correct app ID)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'studyflow-pro';
 
         let currentUser = null;
         let unsubscribeGlobal = null;
@@ -359,6 +363,7 @@
         let allMessages = [];
         let localContacts = {}; 
         let currentTargetId = "";
+        let isInitialLoad = true; // Nyanja: Kutsegula koyamba kwa zidziwitso (Initial load for notifications)
 
         let myProfile = JSON.parse(localStorage.getItem('chatpro_profile')) || {
             name: "My Account",
@@ -378,25 +383,25 @@
         const chatAvatar = document.getElementById('chat-avatar');
         const statusDot = document.getElementById('status-dot');
 
-        // Setup Notifications
+        // Nyanja: Funsani chilolezo cha zidziwitso (Request notification permission)
         if ('Notification' in window) {
             Notification.requestPermission();
         }
 
+        // Nyanja: Tsegulani kapena kutseka modal popanda kuzizira (Toggle modal without freezing)
         window.toggleModal = (id, show = true) => {
             const modal = document.getElementById(id);
             const content = document.getElementById(id + '-content');
             if (show) {
-                modal.classList.remove('hidden', 'pointer-events-none');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    content.classList.remove('scale-95');
-                }, 10);
+                modal.style.display = 'flex';
+                void modal.offsetWidth; // Nyanja: Kakamizani kukonzanso (Force reflow)
+                modal.style.opacity = '1';
+                content.classList.remove('scale-95');
             } else {
-                modal.classList.add('opacity-0');
+                modal.style.opacity = '0';
                 content.classList.add('scale-95');
                 setTimeout(() => {
-                    modal.classList.add('hidden', 'pointer-events-none');
+                    modal.style.display = 'none';
                 }, 300);
             }
         };
@@ -425,13 +430,13 @@
             changeHue(myProfile.hue);
         }
 
-        // Presence System
+        // Nyanja: Sinthani kupezeka (Update presence)
         function updatePresenceStatus() {
             if (!currentUser) return;
             setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_presence', currentUser.uid), {
                 isOnline: true,
                 lastSeen: Date.now()
-            }, { merge: true }).catch(() => {});
+            }, { merge: true }).catch(err => console.error(err));
         }
 
         function setOfflineStatus() {
@@ -452,7 +457,6 @@
                 updateMyProfileUI();
                 startGlobalListener();
 
-                // Setup presence ping
                 updatePresenceStatus();
                 setInterval(updatePresenceStatus, 30000);
                 window.addEventListener('beforeunload', setOfflineStatus);
@@ -510,7 +514,7 @@
             unsubscribePresence = onSnapshot(presenceRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    const isOnline = data.isOnline && (Date.now() - data.lastSeen < 60000); // within 1 min
+                    const isOnline = data.isOnline && (Date.now() - data.lastSeen < 60000);
                     
                     if (isOnline) {
                         chatSubtitle.textContent = "Online";
@@ -535,6 +539,7 @@
             });
         }
 
+        // Nyanja: Mvetserani mauthenga onse (Listen to all messages)
         function startGlobalListener() {
             if (unsubscribeGlobal) unsubscribeGlobal();
             const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
@@ -542,22 +547,24 @@
             unsubscribeGlobal = onSnapshot(msgRef, (snapshot) => {
                 const newDocs = snapshot.docChanges();
                 
-                // Notifications logic
-                newDocs.forEach(change => {
-                    if (change.type === 'added') {
-                        const m = change.doc.data();
-                        if (m.receiverId === currentUser.uid && !m.read && !m.isSystem) {
-                            if (currentTargetId !== m.senderId || document.visibilityState !== 'visible') {
-                                if ('Notification' in window && Notification.permission === 'granted') {
-                                    new Notification(m.senderName || 'New Message', {
-                                        body: m.text.substring(0, 50),
-                                        icon: m.senderPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=bell'
-                                    });
+                // Nyanja: Tumizani zidziwitso pauthenga watsopano wokha (Send notification only on truly new message)
+                if (!isInitialLoad) {
+                    newDocs.forEach(change => {
+                        if (change.type === 'added') {
+                            const m = change.doc.data();
+                            if (m.receiverId === currentUser.uid && !m.read && !m.isSystem) {
+                                if (currentTargetId !== m.senderId || document.visibilityState !== 'visible') {
+                                    if ('Notification' in window && Notification.permission === 'granted') {
+                                        new Notification(m.senderName || 'New Message', {
+                                            body: m.text.substring(0, 50),
+                                            icon: m.senderPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=bell'
+                                        });
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                }
 
                 allMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(m => m.senderId === currentUser.uid || m.receiverId === currentUser.uid)
@@ -566,6 +573,7 @@
                 
                 processContacts();
                 updateActiveChatUI();
+                isInitialLoad = false;
             }, (error) => {
                 console.error("Error:", error);
             });
@@ -592,7 +600,6 @@
                 localContacts[partnerId].lastTime = Math.max(localContacts[partnerId].lastTime, m.createdAt);
                 
                 if (m.receiverId === currentUser.uid && !m.read && !m.isSystem) {
-                    // Suppress badge if we are currently looking at this chat actively
                     if (!(currentTargetId === partnerId && document.visibilityState === 'visible')) {
                         localContacts[partnerId].unreadCount++;
                     }
@@ -620,7 +627,6 @@
                 emptyMsg.remove();
             }
 
-            // DOM diffing update to prevent shaking/reloading images
             arr.forEach((c, index) => {
                 let el = document.getElementById(`contact-${c.id}`);
                 const isActive = c.id === currentTargetId;
@@ -662,13 +668,11 @@
                     if(badge) badge.outerHTML = badgeHTML;
                 }
                 
-                // Reorder
                 if(contactsList.children[index] !== el) {
                     contactsList.insertBefore(el, contactsList.children[index]);
                 }
             });
             
-            // Remove deleted ones
             Array.from(contactsList.children).forEach(child => {
                 if (child.id && child.id.startsWith('contact-')) {
                     const id = child.id.replace('contact-', '');
@@ -745,7 +749,6 @@
             markAsRead(currentTargetId);
             updateActiveChatUI();
             
-            // Re-render to clear badge instantly
             if (localContacts[currentTargetId]) {
                 localContacts[currentTargetId].unreadCount = 0;
                 renderSidebarContacts();
@@ -753,6 +756,7 @@
             lucide.createIcons();
         }
 
+        // Nyanja: Chongani mauthenga omwe awerengedwa (Mark messages as read properly)
         async function markAsRead(partnerId) {
             if (!currentUser) return;
             const unreadMsgs = allMessages.filter(m => m.receiverId === currentUser.uid && m.senderId === partnerId && !m.read && !m.isSystem);
@@ -768,7 +772,11 @@
                 }
             });
             if (count > 0) {
-                await batch.commit();
+                try {
+                    await batch.commit();
+                } catch(e) {
+                    console.error("Batch error:", e);
+                }
             }
         }
 
@@ -822,8 +830,8 @@
                     <div class="message-wrapper w-full flex justify-center my-4" data-id="${m.id}">
                         <div class="bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs px-4 py-3 rounded-xl text-center max-w-sm backdrop-blur-md">
                             <i data-lucide="alert-circle" class="w-5 h-5 mx-auto mb-2 opacity-80"></i>
-                            <p>${escapeHTML(m.senderName)} has deleted this chat on their side. Do you want to delete it too?</p>
-                            <button onclick="deleteChatWith('${m.senderId}')" class="mt-3 bg-rose-500/20 hover:bg-rose-500/40 px-4 py-1.5 rounded-lg transition-colors font-semibold shadow-sm">Delete Chat</button>
+                            <p>${escapeHTML(m.senderName)} has deleted this chat on their side. Do you want to process it?</p>
+                            <button onclick="deleteChatWith('${m.senderId}')" class="mt-3 bg-rose-500/20 hover:bg-rose-500/40 px-4 py-1.5 rounded-lg transition-colors font-semibold shadow-sm">Process</button>
                         </div>
                     </div>
                 `;
@@ -982,7 +990,7 @@
                 });
                 msgInput.value = '';
                 sendBtn.disabled = true;
-                updatePresenceStatus(); // keep online status fresh
+                updatePresenceStatus(); 
                 
                 setTimeout(() => {
                     msgContainer.scrollTo({ top: msgContainer.scrollHeight, behavior: 'smooth' });
@@ -1026,6 +1034,7 @@
             }
         };
 
+        // Nyanja: Mndandanda wosankha pochotsa (Context Menu Logic)
         const contextMenu = document.getElementById('context-menu');
         const cmDeleteBtn = document.getElementById('cm-delete-btn');
         let currentContextMenuTarget = null;
@@ -1035,7 +1044,7 @@
             currentContextMenuAction = action;
             currentContextMenuTarget = targetId;
             
-            contextMenu.classList.remove('hidden', 'pointer-events-none');
+            contextMenu.style.display = 'block';
             
             const menuWidth = 160;
             const menuHeight = 50;
@@ -1046,13 +1055,17 @@
             contextMenu.style.top = `${safeY}px`;
             
             setTimeout(() => {
-                contextMenu.classList.remove('scale-95', 'opacity-0');
+                contextMenu.style.opacity = '1';
+                contextMenu.classList.remove('scale-95');
             }, 10);
         }
 
         function hideContextMenu() {
-            contextMenu.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => contextMenu.classList.add('hidden', 'pointer-events-none'), 200);
+            contextMenu.style.opacity = '0';
+            contextMenu.classList.add('scale-95');
+            setTimeout(() => {
+                contextMenu.style.display = 'none';
+            }, 200);
             currentContextMenuTarget = null;
         }
 
@@ -1110,6 +1123,7 @@
         contactsList.addEventListener('touchend', () => clearTimeout(touchTimer));
         contactsList.addEventListener('touchmove', () => clearTimeout(touchTimer));
 
+        // Nyanja: Chotsani Aruskipawi motetezedwa (Securely delete chat)
         async function performChatDeletion(partnerId, triggerSystemMsg) {
             const msgsToDelete = allMessages.filter(m => 
                 (m.senderId === currentUser.uid && m.receiverId === partnerId) || 
@@ -1120,12 +1134,10 @@
             let count = 0;
             msgsToDelete.forEach(m => {
                 if (count < 400) {
-                    const deletedFor = m.deletedFor || [];
-                    if (!deletedFor.includes(currentUser.uid)) {
-                        deletedFor.push(currentUser.uid);
-                        batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', m.id), { deletedFor });
-                        count++;
-                    }
+                    batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', m.id), { 
+                        deletedFor: arrayUnion(currentUser.uid) 
+                    });
+                    count++;
                 }
             });
 
@@ -1143,7 +1155,11 @@
             }
 
             if (count > 0 || triggerSystemMsg) {
-                await batch.commit();
+                try {
+                    await batch.commit();
+                } catch(e) {
+                    console.error("Batch error on delete:", e);
+                }
             }
             
             if (currentTargetId === partnerId) {
@@ -1171,7 +1187,7 @@
             hideContextMenu();
         });
 
-        // Init
+        // Nyanja: Yambitsani (Init)
         updateMyProfileUI();
         lucide.createIcons();
     </script>
