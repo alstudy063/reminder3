@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatPro - Private Messenger</title>
+    <title>ChatPro - Secured Messenger</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,11 +36,24 @@
             border-bottom-left-radius: 4px;
             align-self: flex-start;
         }
+        .pin-input {
+            width: 45px;
+            height: 55px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .pin-input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
     </style>
 </head>
 <body class="bg-[#F8F9FD] h-screen flex overflow-hidden">
 
-    <!-- Sidebar: පින්තූරයේ තිබූ වම්පස කොටස -->
+    <!-- Sidebar -->
     <div class="w-80 bg-white border-r border-gray-100 flex flex-col hidden md:flex">
         <div class="p-6">
             <div class="flex items-center justify-between mb-8">
@@ -59,68 +72,94 @@
             </div>
 
             <div class="relative mb-6">
-                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
+                <i data-lucide="user-search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
                 <input 
                     type="text" 
                     id="target-user-id" 
-                    placeholder="මිතුරාගේ ID එක මෙතැනට..." 
+                    placeholder="Friend's ID here..." 
                     class="w-full bg-gray-50 border-none p-2.5 pl-10 rounded-xl text-xs outline-none ring-1 ring-gray-100 focus:ring-blue-500/20"
                 />
             </div>
 
-            <div class="space-y-2 overflow-y-auto no-scrollbar flex-1">
-                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">සම්බන්ධතා</p>
-                <div id="contact-item" class="flex items-center gap-3 p-3 rounded-2xl transition-all cursor-pointer bg-gray-50 opacity-50">
-                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
-                    </div>
-                    <div class="flex-1 overflow-hidden">
-                        <h3 class="text-xs font-bold text-gray-800">No Active Chat</h3>
-                        <p class="text-[10px] text-gray-400 truncate">ID එක ඇතුළත් කරන්න</p>
-                    </div>
+            <div class="p-4 bg-amber-50 border border-amber-100 rounded-2xl mb-4">
+                <div class="flex items-center gap-2 text-amber-700 mb-1">
+                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
+                    <span class="text-[10px] font-bold uppercase tracking-wider">Passcode Security</span>
                 </div>
+                <p class="text-[10px] text-amber-600 leading-relaxed">පණිවිඩ බැලීමට දෙදෙනාම එකම අංක 4ක Passcode එක භාවිතා කළ යුතුය.</p>
             </div>
         </div>
     </div>
 
-    <!-- Main Chat Area: මැද පණිවිඩ පෙන්වන කොටස -->
-    <div class="flex-1 flex flex-col bg-white">
+    <!-- Main Chat Area -->
+    <div class="flex-1 flex flex-col bg-white relative">
+        
+        <!-- Passcode Overlay -->
+        <div id="passcode-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+            <div class="max-w-xs w-full text-center p-8">
+                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-200">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800 mb-2">Access Locked</h2>
+                <p class="text-xs text-gray-400 mb-8">Enter the 4-digit passcode agreed with your friend to view messages.</p>
+                
+                <div class="flex justify-center gap-3 mb-8" id="pin-container">
+                    <input type="text" maxlength="1" class="pin-input" />
+                    <input type="text" maxlength="1" class="pin-input" />
+                    <input type="text" maxlength="1" class="pin-input" />
+                    <input type="text" maxlength="1" class="pin-input" />
+                </div>
+                
+                <button id="unlock-btn" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition-all">Unlock Conversation</button>
+            </div>
+        </div>
+
         <!-- Header -->
-        <header class="h-20 border-b border-gray-50 flex items-center justify-between px-8 bg-white/80 backdrop-blur-md">
+        <header class="h-20 border-b border-gray-50 flex items-center justify-between px-8 bg-white">
             <div class="flex items-center gap-4">
                 <div class="relative">
                     <div class="w-11 h-11 rounded-full bg-gray-100 border border-gray-100 overflow-hidden">
-                        <img id="chat-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Dianne" />
+                        <img id="chat-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Friend" />
                     </div>
-                    <div id="status-dot" class="w-3 h-3 bg-gray-300 rounded-full border-2 border-white absolute bottom-0 right-0 transition-colors"></div>
+                    <div id="status-dot" class="w-3 h-3 bg-gray-300 rounded-full border-2 border-white absolute bottom-0 right-0"></div>
                 </div>
                 <div>
-                    <h2 id="chat-title" class="font-bold text-gray-800">Private Session</h2>
-                    <p id="chat-subtitle" class="text-[11px] text-gray-400">Waiting for valid Friend ID...</p>
+                    <h2 id="chat-title" class="font-bold text-gray-800">Secure Messaging</h2>
+                    <p id="chat-subtitle" class="text-[11px] text-gray-400">Waiting for Friend's ID</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
-                <button class="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl transition-all"><i data-lucide="phone" class="w-5 h-5"></i></button>
-                <button class="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl transition-all"><i data-lucide="video" class="w-5 h-5"></i></button>
-                <button class="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl transition-all"><i data-lucide="more-vertical" class="w-5 h-5"></i></button>
+            <div class="flex items-center gap-3">
+                <button id="lock-chat-btn" class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Change Passcode">
+                    <i data-lucide="key-round" class="w-5 h-5"></i>
+                </button>
+                <div class="w-px h-6 bg-gray-100"></div>
+                <button class="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl"><i data-lucide="more-vertical" class="w-5 h-5"></i></button>
             </div>
         </header>
 
         <!-- Messages Container -->
         <div id="messages-container" class="flex-1 overflow-y-auto p-8 flex flex-col gap-4 no-scrollbar bg-[#FCFDFF]">
-            <div class="flex flex-col items-center justify-center h-full text-gray-300">
-                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                    <i data-lucide="lock" class="w-8 h-8 opacity-20"></i>
+            <!-- Error Alert -->
+            <div id="auth-error-alert" class="hidden bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-xs mb-4">
+                <div class="flex items-center gap-2 font-bold mb-1">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <span>Authentication Error</span>
                 </div>
-                <p class="text-sm font-medium">මෙම චැට් එක සම්පූර්ණයෙන් ආරක්ෂිතයි.</p>
-                <p class="text-[11px] mt-1 text-gray-400">ID එකක් ලබාදී පණිවිඩ යැවීම අරඹන්න.</p>
+                <p>කරුණාකර ඔබගේ Firebase Console හි <strong>Anonymous Authentication</strong> සක්‍රිය (Enable) කර ඇති බව පරීක්ෂා කරන්න.</p>
+            </div>
+
+            <div class="flex flex-col items-center justify-center h-full text-gray-300">
+                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-200">
+                    <i data-lucide="user-plus" class="w-8 h-8"></i>
+                </div>
+                <p class="text-sm font-medium">මිතුරාගේ ID එක ඇතුළත් කරන්න</p>
             </div>
         </div>
 
         <!-- Input Area -->
         <div class="p-6 border-t border-gray-50 bg-white">
-            <form id="chat-form" class="max-w-4xl mx-auto flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100 transition-all focus-within:ring-2 focus-within:ring-blue-500/10">
-                <button type="button" class="p-2 text-gray-400 hover:text-blue-500"><i data-lucide="paperclip" class="w-5 h-5"></i></button>
+            <form id="chat-form" class="max-w-4xl mx-auto flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
+                <button type="button" class="p-2 text-gray-400 hover:text-blue-500"><i data-lucide="plus" class="w-5 h-5"></i></button>
                 <input 
                     id="message-input" 
                     type="text" 
@@ -129,17 +168,14 @@
                     autocomplete="off"
                     disabled
                 />
-                <div class="flex items-center gap-1">
-                    <button type="button" class="p-2 text-gray-400 hover:text-blue-500 hidden sm:block"><i data-lucide="smile" class="w-5 h-5"></i></button>
-                    <button 
-                        type="submit" 
-                        id="send-btn" 
-                        disabled 
-                        class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-200 disabled:opacity-30 disabled:shadow-none transition-all active:scale-95"
-                    >
-                        <i data-lucide="send" class="w-5 h-5"></i>
-                    </button>
-                </div>
+                <button 
+                    type="submit" 
+                    id="send-btn" 
+                    disabled 
+                    class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-200 disabled:opacity-30 transition-all"
+                >
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
             </form>
         </div>
     </div>
@@ -149,14 +185,15 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Configuration (Using studymaster)
+        // නව Firebase Configuration
         const firebaseConfig = {
-            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
-            authDomain: "studymaster-919ba.firebaseapp.com",
-            projectId: "studymaster-919ba",
-            storageBucket: "studymaster-919ba.firebasestorage.app",
-            messagingSenderId: "426684063256",
-            appId: "1:426684063256:web:52c17625a9450ea9662d6d"
+            apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
+            authDomain: "messages-9bc85.firebaseapp.com",
+            projectId: "messages-9bc85",
+            storageBucket: "messages-9bc85.firebasestorage.app",
+            messagingSenderId: "781930969359",
+            appId: "1:781930969359:web:ce557881c2092197a0a67a",
+            measurementId: "G-L7WD587DCG"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -166,8 +203,8 @@
 
         let currentUser = null;
         let unsubscribe = null;
+        let currentPasscode = "";
 
-        // UI Elements
         const targetInput = document.getElementById('target-user-id');
         const msgContainer = document.getElementById('messages-container');
         const msgInput = document.getElementById('message-input');
@@ -175,68 +212,109 @@
         const chatForm = document.getElementById('chat-form');
         const statusDot = document.getElementById('status-dot');
         const chatSubtitle = document.getElementById('chat-subtitle');
-        const contactItem = document.getElementById('contact-item');
+        const passcodeOverlay = document.getElementById('passcode-overlay');
+        const pinInputs = document.querySelectorAll('.pin-input');
+        const errorAlert = document.getElementById('auth-error-alert');
 
-        // 1. Auth Setup
+        pinInputs.forEach((input, index) => {
+            input.oninput = (e) => {
+                if (e.target.value && index < pinInputs.length - 1) {
+                    pinInputs[index + 1].focus();
+                }
+            };
+            input.onkeydown = (e) => {
+                if (e.key === "Backspace" && !e.target.value && index > 0) {
+                    pinInputs[index - 1].focus();
+                }
+            };
+        });
+
+        document.getElementById('unlock-btn').onclick = () => {
+            const pin = Array.from(pinInputs).map(i => i.value).join('');
+            if (pin.length === 4) {
+                currentPasscode = pin;
+                passcodeOverlay.classList.add('hidden');
+                initChatListener();
+            } else {
+                alert("අංක 4ක Passcode එකක් ඇතුළත් කරන්න.");
+            }
+        };
+
+        document.getElementById('lock-chat-btn').onclick = () => {
+            passcodeOverlay.classList.remove('hidden');
+            pinInputs.forEach(i => i.value = "");
+            pinInputs[0].focus();
+        };
+
+        // Auth management with Error handling
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
+                errorAlert.classList.add('hidden');
                 document.getElementById('my-id-display').textContent = `ID: ${user.uid}`;
                 document.getElementById('my-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`;
-                initChatListener();
+                if (targetInput.value.length >= 10) {
+                    passcodeOverlay.classList.remove('hidden');
+                }
             } else {
-                signInAnonymously(auth);
+                signInAnonymously(auth).catch(err => {
+                    console.error("Auth Error:", err.code);
+                    if (err.code === 'auth/configuration-not-found') {
+                        errorAlert.classList.remove('hidden');
+                        document.getElementById('my-id-display').textContent = "ID: Auth Error";
+                    }
+                });
             }
         });
 
-        // 2. Chat Logic (Rule වලට අනුකූලව)
         function initChatListener() {
             const targetId = targetInput.value.trim();
-            
             if (unsubscribe) unsubscribe();
 
-            // ID එකේ දිග පරීක්ෂාව
             if (targetId.length < 10) {
                 msgInput.disabled = true;
                 sendBtn.disabled = true;
                 statusDot.className = "w-3 h-3 bg-gray-300 rounded-full border-2 border-white absolute bottom-0 right-0";
-                chatSubtitle.textContent = "Waiting for valid Friend ID...";
-                contactItem.classList.add('opacity-50');
-                contactItem.classList.remove('bg-blue-50', 'border-blue-100');
+                chatSubtitle.textContent = "Waiting for Friend ID...";
                 return;
             }
 
-            // UI එක Update කිරීම
+            if (!currentPasscode) {
+                passcodeOverlay.classList.remove('hidden');
+                return;
+            }
+
             msgInput.disabled = false;
             statusDot.className = "w-3 h-3 bg-green-500 rounded-full border-2 border-white absolute bottom-0 right-0 animate-pulse";
-            chatSubtitle.textContent = `Connected: ${targetId.substring(0, 15)}...`;
-            contactItem.classList.remove('opacity-50');
-            contactItem.classList.add('bg-blue-50', 'border-blue-100');
+            chatSubtitle.textContent = `Active Session (PIN: ${currentPasscode})`;
+            document.getElementById('chat-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetId}`;
 
-            // Firestore Path: artifacts/studyflow-pro/public/data/private_messages
             const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
             
             unsubscribe = onSnapshot(msgRef, (snapshot) => {
-                // Rule එකට අනුව: අපිට කියවිය හැක්කේ අප sender හෝ receiver වන දත්ත පමණි
-                const msgs = snapshot.docs.map(doc => doc.data())
-                    .filter(m => (m.senderId === currentUser.uid && m.receiverId === targetId) || 
-                                 (m.senderId === targetId && m.receiverId === currentUser.uid))
-                    .sort((a, b) => a.createdAt - b.createdAt);
-                
-                renderMessages(msgs);
-            }, (error) => {
-                console.error("Rule Denial:", error);
-                msgContainer.innerHTML = `<p class="text-red-500 text-center text-xs">Permission Denied. Please update Firestore Rules.</p>`;
+                try {
+                    const msgs = snapshot.docs.map(doc => doc.data())
+                        .filter(m => (m.senderId === currentUser.uid && m.receiverId === targetId) || 
+                                     (m.senderId === targetId && m.receiverId === currentUser.uid))
+                        .filter(m => m.passcode === currentPasscode)
+                        .sort((a, b) => a.createdAt - b.createdAt);
+                    
+                    renderMessages(msgs);
+                } catch (e) {
+                    console.error("Data error:", e);
+                }
+            }, (err) => {
+                console.error("Firestore error:", err);
             });
         }
 
-        // 3. UI Rendering
         function renderMessages(msgs) {
             if (msgs.length === 0) {
                 msgContainer.innerHTML = `
                     <div class="flex-1 flex flex-col items-center justify-center text-gray-300">
-                        <i data-lucide="message-circle" class="w-10 h-10 mb-2 opacity-20"></i>
-                        <p class="text-sm">හලෝ කියන්න!</p>
+                        <i data-lucide="shield-lock" class="w-10 h-10 mb-2 opacity-20"></i>
+                        <p class="text-sm">පණිවිඩ කිසිවක් නැත.</p>
+                        <p class="text-[10px] mt-1">දෙදෙනාම එකම PIN එක භාවිතා කරන බව සහතික කරගන්න.</p>
                     </div>`;
                 lucide.createIcons();
                 return;
@@ -264,45 +342,42 @@
             return p.innerHTML;
         }
 
-        // 4. Events
-        targetInput.addEventListener('input', initChatListener);
+        targetInput.addEventListener('input', () => {
+            if (targetInput.value.trim().length >= 10) {
+                passcodeOverlay.classList.remove('hidden');
+            } else {
+                initChatListener();
+            }
+        });
 
         chatForm.onsubmit = async (e) => {
             e.preventDefault();
             const text = msgInput.value.trim();
             const targetId = targetInput.value.trim();
 
-            if (!text || !targetId || !currentUser) return;
+            if (!text || !targetId || !currentUser || !currentPasscode) return;
 
             try {
-                // Rule එකට අනුව: artifacts/studyflow-pro/public/data/private_messages වෙත ලිවීම
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'private_messages'), {
                     text,
                     senderId: currentUser.uid,
                     receiverId: targetId,
+                    passcode: currentPasscode,
                     createdAt: Date.now()
                 });
                 msgInput.value = '';
                 sendBtn.disabled = true;
             } catch (err) {
-                alert("Permission Denied: Firestore Rules පරීක්ෂා කරන්න.");
+                console.error("Send error:", err);
             }
         };
 
-        msgInput.addEventListener('input', () => {
-            sendBtn.disabled = !msgInput.value.trim();
-        });
+        msgInput.addEventListener('input', () => sendBtn.disabled = !msgInput.value.trim());
 
         document.getElementById('copy-id-btn').onclick = () => {
             if (currentUser) {
                 navigator.clipboard.writeText(currentUser.uid);
-                const originalHTML = document.getElementById('copy-id-btn').innerHTML;
-                document.getElementById('copy-id-btn').innerHTML = '<i data-lucide="check" class="w-4 h-4 text-green-500"></i>';
-                lucide.createIcons();
-                setTimeout(() => {
-                    document.getElementById('copy-id-btn').innerHTML = originalHTML;
-                    lucide.createIcons();
-                }, 2000);
+                alert("ඔබේ ID එක Copy කළා!");
             }
         };
 
