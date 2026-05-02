@@ -45,40 +45,34 @@
             <p class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Start Private Chat</p>
             <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-200">
                 <input type="text" id="target-user-id" placeholder="Paste Friend's ID here..." class="w-full text-sm outline-none border-b border-gray-100 pb-2 mb-2" />
-                <p class="text-[9px] text-gray-400 italic">* Paste the ID of the person you want to message.</p>
+                <p class="text-[9px] text-gray-400 italic">* Note: With current rules, only you can see your data.</p>
             </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 pt-0">
             <div class="bg-blue-500 rounded-2xl p-4 text-white shadow-lg shadow-blue-200">
-                <h3 class="font-bold text-sm mb-1">Private Mode On</h3>
-                <p class="text-[11px] opacity-90">Messages are only visible to you and the receiver. No login required.</p>
+                <h3 class="font-bold text-sm mb-1">Secure Mode Active</h3>
+                <p class="text-[11px] opacity-90">Data is stored under your private UID path as per Firestore rules.</p>
             </div>
         </div>
     </div>
 
     <!-- Main Chat Area -->
     <div class="flex-1 bg-white flex flex-col relative">
-        <!-- Chat Header -->
         <div class="h-20 border-b flex items-center justify-between px-6 bg-white shrink-0">
             <div class="flex items-center gap-4">
-                <div id="chat-status-dot" class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                <div id="chat-status-dot" class="w-3 h-3 bg-blue-500 rounded-full"></div>
                 <div>
-                    <h2 id="chat-with-label" class="text-lg font-semibold text-gray-700">Select or Enter an ID to Chat</h2>
+                    <h2 id="chat-with-label" class="text-lg font-semibold text-gray-700">My Private Notes / Chat</h2>
                     <p id="chat-with-id" class="text-[10px] text-gray-400 font-mono"></p>
                 </div>
             </div>
         </div>
 
-        <!-- Messages Display -->
         <div id="messages-container" class="flex-1 overflow-y-auto p-6 flex flex-col space-y-4">
-            <div class="flex flex-col items-center justify-center h-full text-gray-400 opacity-50">
-                <i data-lucide="message-circle" class="w-12 h-12 mb-2"></i>
-                <p class="text-sm">Enter a Friend's ID on the left to start talking.</p>
-            </div>
+            <!-- Messages will load here -->
         </div>
 
-        <!-- Message Input Area -->
         <div class="p-4 bg-gray-50 border-t flex items-center shrink-0">
             <form id="chat-form" class="w-full bg-white rounded-2xl px-4 py-3 flex items-center shadow-md border border-gray-200">
                 <input 
@@ -102,32 +96,38 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Firebase Config parsing
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'anonymous-private-chat';
+        
+        // Rule එකට අනුකූල වීම සඳහා App ID එක 'studyflow-pro' ලෙස ස්ථිරව සකසන ලදී.
+        const appId = 'studyflow-pro';
 
         let currentUser = null;
         let unsubscribeMessages = null;
-        const myNameStr = `User_${Math.floor(Math.random() * 9000 + 1000)}`;
-        const myAvatarStr = `https://i.pravatar.cc/150?u=${Math.random()}`;
+
+        let myProfile = JSON.parse(localStorage.getItem('chat_profile'));
+        if (!myProfile) {
+            myProfile = {
+                name: `User_${Math.floor(Math.random() * 9000 + 1000)}`,
+                avatar: `https://i.pravatar.cc/150?u=${Math.random()}`
+            };
+            localStorage.setItem('chat_profile', JSON.stringify(myProfile));
+        }
 
         const myNameEl = document.getElementById('my-name');
         const myAvatarEl = document.getElementById('my-avatar');
         const myIdDisplay = document.getElementById('my-id-display');
-        const targetUserInput = document.getElementById('target-user-id');
         const messagesContainer = document.getElementById('messages-container');
         const chatForm = document.getElementById('chat-form');
         const messageInput = document.getElementById('message-input');
-        const chatWithLabel = document.getElementById('chat-with-label');
-        const chatWithIdDisplay = document.getElementById('chat-with-id');
-        const chatStatusDot = document.getElementById('chat-status-dot');
 
-        // Authentication logic with proper order
+        myNameEl.textContent = myProfile.name;
+        myAvatarEl.src = myProfile.avatar;
+
         const initAuth = async () => {
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -143,75 +143,58 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                myNameEl.textContent = myNameStr;
-                myAvatarEl.src = myAvatarStr;
                 myIdDisplay.textContent = `ID: ${user.uid}`;
-                // Only start listening AFTER we have a user
                 startListeningForMessages();
             } else {
                 initAuth();
             }
         });
 
-        // Copy ID logic
         document.getElementById('copy-id-btn').onclick = () => {
             if (currentUser) {
-                const el = document.createElement('textarea');
-                el.value = currentUser.uid;
-                document.body.appendChild(el);
-                el.select();
+                const text = currentUser.uid;
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
                 document.execCommand('copy');
-                document.body.removeChild(el);
-                alert("Your ID copied! Send this to your friend.");
+                document.body.removeChild(textArea);
+                alert("Your Private ID copied!");
             }
         };
 
         function startListeningForMessages() {
             if (!currentUser) return;
-            
-            // Clean up old listener if exists
             if (unsubscribeMessages) unsubscribeMessages();
 
-            const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
+            // Rule එකට අනුව නිවැරදි Path එක: /artifacts/studyflow-pro/users/{userId}/messages
+            const messagesRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'messages');
             
             unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
-                const targetId = targetUserInput.value.trim();
                 const allMessages = snapshot.docs.map(doc => doc.data());
-                
-                // Filter locally to avoid index errors and permissions issues with complex queries
-                const filtered = allMessages.filter(m => {
-                    return (m.senderId === currentUser.uid && m.receiverId === targetId) ||
-                           (m.senderId === targetId && m.receiverId === currentUser.uid);
-                }).sort((a, b) => a.createdAt - b.createdAt);
-
-                renderMessages(filtered);
+                const sorted = allMessages.sort((a, b) => a.createdAt - b.createdAt);
+                renderMessages(sorted);
             }, (error) => {
-                // Silently handle or log non-critical permission errors during init
-                if (error.code !== 'permission-denied') {
-                    console.error("Snapshot error:", error);
-                }
+                console.error("Permission/Snapshot Error:", error);
             });
         }
 
         function renderMessages(messages) {
-            const targetId = targetUserInput.value.trim();
-            if (targetId === "") {
+            messagesContainer.innerHTML = '';
+            if (messages.length === 0) {
                 messagesContainer.innerHTML = `
                     <div class="flex flex-col items-center justify-center h-full text-gray-400 opacity-50">
-                        <i data-lucide="message-circle" class="w-12 h-12 mb-2"></i>
-                        <p class="text-sm">Enter a Friend's ID on the left to start talking.</p>
+                        <i data-lucide="shield-check" class="w-12 h-12 mb-2 text-blue-500"></i>
+                        <p class="text-sm">Your private storage is ready.</p>
                     </div>`;
                 lucide.createIcons();
-                return;
             }
-            
-            messagesContainer.innerHTML = '';
+
             messages.forEach(msg => {
-                const isMe = msg.senderId === currentUser.uid;
                 const div = document.createElement('div');
-                div.className = `flex ${isMe ? 'justify-end' : 'justify-start'}`;
+                div.className = `flex justify-end`;
                 div.innerHTML = `
-                    <div class="max-w-[80%] p-3 rounded-2xl shadow-sm ${isMe ? 'bg-blue-600 text-white rounded-br-none' : 'bg-gray-200 text-gray-800 rounded-bl-none'}">
+                    <div class="max-w-[80%] p-3 rounded-2xl shadow-sm bg-blue-600 text-white rounded-br-none">
                         <p class="text-sm">${msg.text}</p>
                         <p class="text-[8px] opacity-50 mt-1 text-right">${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                     </div>
@@ -221,43 +204,23 @@
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        // Handle target ID input
-        targetUserInput.addEventListener('input', () => {
-            const val = targetUserInput.value.trim();
-            if (val.length > 5) {
-                chatWithLabel.textContent = "Chatting with Friend";
-                chatWithIdDisplay.textContent = `ID: ${val}`;
-                chatStatusDot.classList.remove('bg-gray-300');
-                chatStatusDot.classList.add('bg-green-500');
-            } else {
-                chatWithLabel.textContent = "Enter an ID to Chat";
-                chatWithIdDisplay.textContent = "";
-                chatStatusDot.classList.remove('bg-green-500');
-                chatStatusDot.classList.add('bg-gray-300');
-            }
-            // Re-filter messages for the new target
-            startListeningForMessages();
-        });
-
-        // Send Message
         chatForm.onsubmit = async (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
-            const receiverId = targetUserInput.value.trim();
 
-            if (!text || !receiverId || !currentUser) return;
+            if (!text || !currentUser) return;
 
             try {
-                // Ensure auth before write
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'private_messages'), {
+                // Rule එකට අනුව ලිවීමට අවසර ඇත්තේ තම UID එක යටතේ ඇති path එකට පමණි
+                const messagesRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'messages');
+                await addDoc(messagesRef, {
                     text: text,
                     senderId: currentUser.uid,
-                    receiverId: receiverId,
                     createdAt: Date.now()
                 });
                 messageInput.value = '';
             } catch (err) {
-                console.error("Send error:", err);
+                console.error("Send error (Check Rules):", err);
             }
         };
 
