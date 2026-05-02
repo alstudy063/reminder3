@@ -22,7 +22,6 @@
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: #030712;
             color: #f8fafc;
-            /* Disable text selection everywhere except inputs */
             user-select: none;
             -webkit-user-select: none;
         }
@@ -32,13 +31,11 @@
             -webkit-user-select: auto;
         }
 
-        /* Dynamically change app color */
         #app-wrapper {
             filter: hue-rotate(var(--app-hue));
             transition: filter 0.5s ease;
         }
 
-        /* Reverse hue for images so avatars stay normal color */
         .reverse-hue {
             filter: hue-rotate(calc(-1 * var(--app-hue)));
             transition: filter 0.5s ease;
@@ -134,7 +131,7 @@
         <div class="w-full h-full max-w-[1600px] flex md:rounded-[2.5rem] glass-panel shadow-2xl shadow-indigo-900/10 overflow-hidden relative border-white/10 md:border">
             
             <!-- Sidebar -->
-            <div class="w-80 md:w-96 border-r border-white/5 flex flex-col hidden md:flex bg-slate-900/30">
+            <div class="w-80 md:w-96 border-r border-white/5 flex-col hidden md:flex bg-slate-900/30">
                 <div class="p-8 pb-6 flex flex-col h-full">
                     <!-- User Profile (Clickable for settings) -->
                     <div class="flex items-center justify-between mb-10 cursor-pointer group" onclick="toggleModal('profile-modal')">
@@ -169,7 +166,6 @@
 
                     <!-- Active Connections List -->
                     <div class="flex-1 overflow-y-auto pr-2 mt-2 flex flex-col gap-2" id="contacts-list">
-                        <!-- Contacts rendered dynamically -->
                         <div class="text-center text-slate-500 mt-10 text-xs">No active chats</div>
                     </div>
                 </div>
@@ -189,7 +185,6 @@
                             <div id="status-dot" class="w-3.5 h-3.5 bg-slate-600 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500"></div>
                         </div>
                         <div>
-                            <!-- Changed to show Partner Name -->
                             <h2 id="chat-title" class="text-sm font-bold tracking-wide text-slate-100 flex items-center gap-2">
                                 Encrypted Stream <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
                             </h2>
@@ -200,7 +195,6 @@
                         <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="phone" class="w-5 h-5"></i></button>
                         <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="video" class="w-5 h-5"></i></button>
                         <div class="w-px h-6 bg-white/10 mx-2"></div>
-                        <!-- 3-dot menu opens Target Info Modal -->
                         <button onclick="toggleModal('target-info-modal')" class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
                     </div>
                 </header>
@@ -328,8 +322,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, setDoc, updateDoc, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
@@ -348,14 +342,16 @@
         let currentUser = null;
         let unsubscribeGlobal = null;
         let allMessages = [];
-        let localContacts = {}; // { id: { name, photo, msgCount, lastMsgTime } }
+        let localContacts = {}; // { id: { name, photo, unreadCount, lastMsgTime, profileListener } }
+        let profileUnsubscribes = new Map();
         let currentTargetId = "";
 
         // Profile State
         let myProfile = JSON.parse(localStorage.getItem('chatpro_profile')) || {
             name: "My Account",
-            photo: "", // will be generated dynamically if empty
-            hue: 0
+            photo: "",
+            hue: 0,
+            email: ""
         };
 
         // UI Elements
@@ -392,13 +388,27 @@
         window.changeHue = (deg) => {
             document.documentElement.style.setProperty('--app-hue', `${deg}deg`);
             myProfile.hue = deg;
+            localStorage.setItem('chatpro_profile', JSON.stringify(myProfile));
         };
 
-        window.saveProfile = () => {
-            myProfile.name = document.getElementById('setting-name').value || "My Account";
-            myProfile.photo = document.getElementById('setting-photo').value || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}&backgroundColor=transparent`;
+        window.saveProfile = async () => {
+            const newName = document.getElementById('setting-name').value || "My Account";
+            const newPhoto = document.getElementById('setting-photo').value || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}&backgroundColor=transparent`;
+            
+            myProfile.name = newName;
+            myProfile.photo = newPhoto;
             localStorage.setItem('chatpro_profile', JSON.stringify(myProfile));
             updateMyProfileUI();
+            
+            if (currentUser) {
+                const userRef = doc(db, 'users', currentUser.uid);
+                await setDoc(userRef, {
+                    name: newName,
+                    photo: newPhoto,
+                    email: currentUser.email || myProfile.email || "",
+                    lastUpdated: Date.now()
+                }, { merge: true });
+            }
             toggleModal('profile-modal', false);
         };
 
@@ -413,42 +423,120 @@
             changeHue(myProfile.hue);
         }
 
-        // Initialize App
-        onAuthStateChanged(auth, (user) => {
+        async function ensureUserProfile(uid, name, photo, email = "") {
+            const userRef = doc(db, 'users', uid);
+            const docSnap = await getDoc(userRef);
+            if (!docSnap.exists()) {
+                await setDoc(userRef, {
+                    name: name || "Secure Link",
+                    photo: photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${uid}&backgroundColor=transparent`,
+                    email: email,
+                    lastUpdated: Date.now()
+                });
+            }
+        }
+
+        function listenToContactProfile(contactId) {
+            if (profileUnsubscribes.has(contactId)) return;
+            
+            const userRef = doc(db, 'users', contactId);
+            const unsubscribe = onSnapshot(userRef, (docSnap) => {
+                if (docSnap.exists() && localContacts[contactId]) {
+                    const data = docSnap.data();
+                    localContacts[contactId].name = data.name || "Secure Link";
+                    localContacts[contactId].photo = data.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${contactId}&backgroundColor=transparent`;
+                    renderSidebarContacts();
+                    
+                    if (currentTargetId === contactId) {
+                        chatTitle.innerHTML = `${localContacts[contactId].name} <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>`;
+                        chatAvatar.src = localContacts[contactId].photo;
+                        document.getElementById('info-name').textContent = localContacts[contactId].name;
+                        document.getElementById('info-avatar').src = localContacts[contactId].photo;
+                        lucide.createIcons();
+                    }
+                }
+            }, (error) => {
+                console.warn(`Profile listener error for ${contactId}:`, error);
+            });
+            profileUnsubscribes.set(contactId, unsubscribe);
+        }
+
+        async function initOwnProfile() {
+            if (!currentUser) return;
+            const defaultPhoto = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}&backgroundColor=transparent`;
+            const email = currentUser.email || "";
+            await ensureUserProfile(currentUser.uid, myProfile.name, myProfile.photo || defaultPhoto, email);
+            
+            const userRef = doc(db, 'users', currentUser.uid);
+            const docSnap = await getDoc(userRef);
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                myProfile.name = data.name;
+                myProfile.photo = data.photo;
+                myProfile.email = data.email || "";
+                localStorage.setItem('chatpro_profile', JSON.stringify(myProfile));
+                updateMyProfileUI();
+                // Show email in the ID field if available
+                const displayId = currentUser.email ? `${currentUser.uid} (${currentUser.email})` : currentUser.uid;
+                document.getElementById('setting-id').value = displayId;
+            }
+        }
+
+        // Google Login with account linking (preserves anonymous UID)
+        async function handleGoogleLogin() {
+            const provider = new GoogleAuthProvider();
+            try {
+                if (currentUser && currentUser.isAnonymous) {
+                    // Link Google account to existing anonymous account
+                    const result = await linkWithPopup(currentUser, provider);
+                    currentUser = result.user;
+                    myProfile.name = result.user.displayName || "My Account";
+                    myProfile.photo = result.user.photoURL || myProfile.photo;
+                    myProfile.email = result.user.email || "";
+                    await saveProfile();
+                    // Reload messages with same UID
+                    startGlobalListener();
+                } else {
+                    // Normal sign in (if already Google or new)
+                    const result = await signInWithPopup(auth, provider);
+                    // onAuthStateChanged will handle
+                }
+            } catch (error) {
+                console.error("Google Login/Link Error:", error);
+                if (error.code === 'auth/credential-already-in-use') {
+                    alert("This Google account is already linked to another user. Please sign in with that account first.");
+                } else {
+                    alert("Login failed: " + error.message);
+                }
+            }
+        }
+
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 if (!myProfile.photo) {
                     myProfile.photo = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&backgroundColor=transparent`;
                 }
-                document.getElementById('setting-id').value = user.uid;
+                if (user.email) myProfile.email = user.email;
+                const displayId = user.email ? `${user.uid} (${user.email})` : user.uid;
+                document.getElementById('setting-id').value = displayId;
                 updateMyProfileUI();
+                await initOwnProfile();
                 startGlobalListener();
             } else {
                 signInAnonymously(auth);
             }
         });
 
-        // Google Login
-        document.getElementById('google-login-btn').onclick = async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                const result = await signInWithPopup(auth, provider);
-                myProfile.name = result.user.displayName || "My Account";
-                myProfile.photo = result.user.photoURL || myProfile.photo;
-                saveProfile();
-            } catch (error) {
-                console.error("Google Login Error:", error);
-            }
-        };
+        document.getElementById('google-login-btn').onclick = handleGoogleLogin;
 
-        // Global Listener - Fetches all my messages to build contacts
         function startGlobalListener() {
             if (unsubscribeGlobal) unsubscribeGlobal();
             
             const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
             
             unsubscribeGlobal = onSnapshot(msgRef, (snapshot) => {
-                allMessages = snapshot.docs.map(doc => doc.data())
+                allMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
                     .filter(m => m.senderId === currentUser.uid || m.receiverId === currentUser.uid)
                     .sort((a, b) => a.createdAt - b.createdAt);
                 
@@ -459,32 +547,71 @@
             });
         }
 
+        async function markMessagesAsRead(partnerId) {
+            if (!currentUser) return;
+            const unreadMessages = allMessages.filter(m => 
+                m.senderId === partnerId && 
+                m.receiverId === currentUser.uid && 
+                m.read !== true
+            );
+            if (unreadMessages.length === 0) return;
+            
+            const batch = writeBatch(db);
+            const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
+            unreadMessages.forEach(msg => {
+                const docRef = doc(msgRef, msg.id);
+                batch.update(docRef, { read: true });
+            });
+            await batch.commit();
+            // Update local cache
+            allMessages.forEach(m => {
+                if (m.senderId === partnerId && m.receiverId === currentUser.uid) m.read = true;
+            });
+        }
+
         function processContacts() {
-            localContacts = {};
+            const newContactIds = new Set();
+            // Reset unread counts
+            for (let id in localContacts) {
+                localContacts[id].unreadCount = 0;
+            }
             
             allMessages.forEach(m => {
                 const partnerId = m.senderId === currentUser.uid ? m.receiverId : m.senderId;
+                newContactIds.add(partnerId);
                 
                 if (!localContacts[partnerId]) {
+                    let name = "Secure Link";
+                    let photo = `https://api.dicebear.com/7.x/avataaars/svg?seed=${partnerId}&backgroundColor=transparent`;
+                    if (m.senderId === partnerId) {
+                        if (m.senderName) name = m.senderName;
+                        if (m.senderPhoto) photo = m.senderPhoto;
+                    }
                     localContacts[partnerId] = {
                         id: partnerId,
-                        name: "Secure Link",
-                        photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${partnerId}&backgroundColor=transparent`,
-                        msgCount: 0,
+                        name: name,
+                        photo: photo,
+                        unreadCount: 0,
                         lastTime: 0
                     };
+                    listenToContactProfile(partnerId);
                 }
                 
-                localContacts[partnerId].msgCount++;
-                localContacts[partnerId].lastTime = m.createdAt;
-                
-                // If message is FROM them, grab their profile info embedded in message
-                if (m.senderId === partnerId) {
-                    if (m.senderName) localContacts[partnerId].name = m.senderName;
-                    if (m.senderPhoto) localContacts[partnerId].photo = m.senderPhoto;
+                // Update unread count: messages sent TO current user that are not read
+                if (m.receiverId === currentUser.uid && !m.read) {
+                    localContacts[partnerId].unreadCount++;
                 }
+                localContacts[partnerId].lastTime = Math.max(localContacts[partnerId].lastTime, m.createdAt);
             });
-
+            
+            for (let [id, unsubscribe] of profileUnsubscribes.entries()) {
+                if (!newContactIds.has(id)) {
+                    unsubscribe();
+                    profileUnsubscribes.delete(id);
+                    delete localContacts[id];
+                }
+            }
+            
             renderSidebarContacts();
         }
 
@@ -500,6 +627,7 @@
                 const isActive = c.id === currentTargetId;
                 const bgClass = isActive ? 'bg-white/5 border-white/10 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100 hover:bg-white/5';
                 const indicator = isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-slate-600';
+                const unreadBadge = c.unreadCount > 0 ? `<span class="bg-indigo-500 text-white text-[9px] px-2 py-0.5 rounded-full shrink-0">${c.unreadCount}</span>` : `<span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full shrink-0">${c.unreadCount} msg</span>`;
 
                 return `
                     <div onclick="selectContact('${c.id}')" class="flex items-center gap-4 p-3 rounded-2xl transition-all duration-300 cursor-pointer border ${bgClass}">
@@ -511,8 +639,8 @@
                         </div>
                         <div class="flex-1 overflow-hidden">
                             <div class="flex justify-between items-center">
-                                <h3 class="text-xs font-semibold text-slate-200 tracking-wide truncate pr-2">${c.name}</h3>
-                                <span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full shrink-0">${c.msgCount} msg</span>
+                                <h3 class="text-xs font-semibold text-slate-200 tracking-wide truncate pr-2">${escapeHTML(c.name)}</h3>
+                                ${unreadBadge}
                             </div>
                             <p class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">${c.id.substring(0,8)}...</p>
                         </div>
@@ -521,38 +649,37 @@
             }).join('');
         }
 
-        window.selectContact = (id) => {
+        window.selectContact = async (id) => {
             targetInput.value = id;
-            handleTargetChange();
+            await handleTargetChange();
+            // Mark messages as read for this contact
+            await markMessagesAsRead(id);
+            // Refresh unread counts
+            processContacts();
         };
 
-        function handleTargetChange() {
+        async function handleTargetChange() {
             currentTargetId = targetInput.value.trim();
             
             if (currentTargetId.length < 10) {
                 msgInput.disabled = true;
                 sendBtn.disabled = true;
-                
                 statusDot.className = "w-3.5 h-3.5 bg-slate-600 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500";
                 chatTitle.innerHTML = `Encrypted Stream <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>`;
                 chatSubtitle.textContent = "Status: Disconnected";
                 chatSubtitle.classList.replace('text-emerald-400', 'text-slate-400');
-                
                 chatAvatar.classList.add('opacity-50', 'grayscale');
                 chatAvatar.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost&backgroundColor=transparent";
-                
-                renderMessages([]); // empty
+                renderMessages([]);
                 lucide.createIcons();
                 return;
             }
 
-            // Connected State
             msgInput.disabled = false;
             statusDot.className = "w-3.5 h-3.5 bg-emerald-400 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 shadow-[0_0_12px_rgba(52,211,153,0.6)] animate-pulse transition-all duration-500";
             chatSubtitle.textContent = `Connected Securely`;
             chatSubtitle.classList.replace('text-slate-400', 'text-emerald-400');
             
-            // Set Target Info from localContacts if available
             const contact = localContacts[currentTargetId] || { 
                 name: "Secure Link", 
                 photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentTargetId}&backgroundColor=transparent` 
@@ -562,13 +689,12 @@
             chatAvatar.classList.remove('opacity-50', 'grayscale');
             chatAvatar.src = contact.photo;
 
-            // Update Info Modal Data
             document.getElementById('info-name').textContent = contact.name;
             document.getElementById('info-avatar').src = contact.photo;
             document.getElementById('info-id').textContent = currentTargetId;
 
             updateActiveChatUI();
-            renderSidebarContacts(); // update active state classes
+            renderSidebarContacts();
             lucide.createIcons();
         }
 
@@ -583,7 +709,6 @@
             renderMessages(activeMsgs);
         }
 
-        // Emoji & Msg Render Logic
         function isSingleEmoji(text) {
             if (!text) return false;
             const t = text.trim();
@@ -692,7 +817,6 @@
             return p.innerHTML;
         }
 
-        // Events
         targetInput.addEventListener('input', handleTargetChange);
 
         chatForm.onsubmit = async (e) => {
@@ -706,9 +830,9 @@
                     senderId: currentUser.uid,
                     receiverId: currentTargetId,
                     createdAt: Date.now(),
-                    // Attach profile info so receiver knows who we are
                     senderName: myProfile.name,
-                    senderPhoto: myProfile.photo
+                    senderPhoto: myProfile.photo,
+                    read: false
                 });
                 msgInput.value = '';
                 sendBtn.disabled = true;
@@ -723,7 +847,8 @@
 
         document.getElementById('copy-id-btn').onclick = () => {
             if (currentUser) {
-                navigator.clipboard.writeText(currentUser.uid);
+                const copyText = currentUser.email ? `${currentUser.uid} (${currentUser.email})` : currentUser.uid;
+                navigator.clipboard.writeText(copyText);
                 const btn = document.getElementById('copy-id-btn');
                 const originalHTML = btn.innerHTML;
                 btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Copied!';
@@ -735,7 +860,6 @@
             }
         };
 
-        // Init
         updateMyProfileUI();
         lucide.createIcons();
     </script>
