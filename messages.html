@@ -7,19 +7,43 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <style>
-        body { 
-            font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif; 
-            background-color: #030712; /* Deep slate/black */
-            color: #f8fafc;
+        :root {
+            --app-hue: 0deg;
         }
 
-        /* Ambient Animated Background */
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #030712;
+            color: #f8fafc;
+            /* Disable text selection everywhere except inputs */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        input, textarea, [contenteditable] {
+            user-select: auto;
+            -webkit-user-select: auto;
+        }
+
+        /* Dynamically change app color */
+        #app-wrapper {
+            filter: hue-rotate(var(--app-hue));
+            transition: filter 0.5s ease;
+        }
+
+        /* Reverse hue for images so avatars stay normal color */
+        .reverse-hue {
+            filter: hue-rotate(calc(-1 * var(--app-hue)));
+            transition: filter 0.5s ease;
+        }
+
         .ambient-orb {
             position: absolute;
             border-radius: 50%;
@@ -33,7 +57,6 @@
             100% { transform: translate(-5%, -5%) scale(0.9); }
         }
 
-        /* Glassmorphism Utilities */
         .glass-panel {
             background: rgba(17, 24, 39, 0.4);
             backdrop-filter: blur(24px);
@@ -46,7 +69,6 @@
             backdrop-filter: blur(12px);
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { 
@@ -55,9 +77,8 @@
         }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
-        /* Modern Message Bubbles */
         .message-bubble {
-            max-width: 75%;
+            max-width: 65%;
             padding: 14px 20px;
             border-radius: 24px;
             font-size: 14px;
@@ -89,157 +110,227 @@
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Glow effects */
         .glow-text { text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
         .glow-icon { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); }
+
+        .emoji-msg-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            min-height: 60px;
+        }
     </style>
 </head>
-<body class="h-screen w-full flex items-center justify-center overflow-hidden p-0 md:p-6 lg:p-8">
+<body class="h-screen w-full flex items-center justify-center overflow-hidden p-0 md:p-6 lg:p-8 relative">
 
-    <!-- Ambient Glowing Orbs -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
-        <div class="ambient-orb w-[60vw] h-[60vw] bg-indigo-600/10 top-[-20%] left-[-10%]"></div>
-        <div class="ambient-orb w-[50vw] h-[50vw] bg-fuchsia-600/10 bottom-[-20%] right-[-10%]" style="animation-delay: -5s;"></div>
-        <div class="ambient-orb w-[40vw] h-[40vw] bg-blue-600/10 top-[20%] right-[20%]" style="animation-delay: -10s;"></div>
-    </div>
+    <div id="app-wrapper" class="w-full h-full flex justify-center items-center relative">
+        <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+            <div class="ambient-orb w-[60vw] h-[60vw] bg-indigo-600/10 top-[-20%] left-[-10%]"></div>
+            <div class="ambient-orb w-[50vw] h-[50vw] bg-fuchsia-600/10 bottom-[-20%] right-[-10%]" style="animation-delay: -5s;"></div>
+            <div class="ambient-orb w-[40vw] h-[40vw] bg-blue-600/10 top-[20%] right-[20%]" style="animation-delay: -10s;"></div>
+        </div>
 
-    <!-- Main Application Container (Floating Panel) -->
-    <div class="w-full h-full max-w-[1600px] flex md:rounded-[2.5rem] glass-panel shadow-2xl shadow-indigo-900/10 overflow-hidden relative border-white/10 md:border">
-        
-        <!-- Sidebar -->
-        <div class="w-80 md:w-96 border-r border-white/5 flex flex-col hidden md:flex bg-slate-900/30">
-            <div class="p-8 pb-6">
-                <!-- User Profile -->
-                <div class="flex items-center justify-between mb-10">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/30">
-                            <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center overflow-hidden">
-                                <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full" />
+        <div class="w-full h-full max-w-[1600px] flex md:rounded-[2.5rem] glass-panel shadow-2xl shadow-indigo-900/10 overflow-hidden relative border-white/10 md:border">
+            
+            <!-- Sidebar -->
+            <div class="w-80 md:w-96 border-r border-white/5 flex flex-col hidden md:flex bg-slate-900/30">
+                <div class="p-8 pb-6 flex flex-col h-full">
+                    <!-- User Profile (Clickable for settings) -->
+                    <div class="flex items-center justify-between mb-10 cursor-pointer group" onclick="toggleModal('profile-modal')">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/30 group-hover:scale-105 transition-transform">
+                                <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center overflow-hidden">
+                                    <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover reverse-hue" />
+                                </div>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h2 id="my-name" class="text-sm font-semibold text-slate-100 glow-text truncate">My Account</h2>
+                                <p class="text-[10px] text-indigo-300/80 tracking-wider truncate flex items-center gap-1">
+                                    <i data-lucide="settings" class="w-3 h-3"></i> Profile & Settings
+                                </p>
                             </div>
                         </div>
-                        <div class="overflow-hidden">
-                            <h2 id="my-name" class="text-sm font-semibold text-slate-100 glow-text truncate">මගේ ගිණුම</h2>
-                            <p id="my-id-display" class="text-[10px] text-indigo-300/80 font-mono tracking-wider truncate">ID: Loading...</p>
+                    </div>
+
+                    <!-- Search/Connect Box -->
+                    <div class="relative mb-6 group shrink-0">
+                        <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-2xl blur opacity-20 group-focus-within:opacity-40 transition-opacity duration-500"></div>
+                        <div class="relative flex items-center glass-input rounded-2xl p-1 shadow-inner">
+                            <i data-lucide="search" class="w-4 h-4 ml-4 text-slate-400"></i>
+                            <input 
+                                type="text" 
+                                id="target-user-id" 
+                                placeholder="Enter Friend's ID..." 
+                                class="w-full bg-transparent border-none p-3 pl-3 text-xs text-slate-200 placeholder-slate-500 outline-none"
+                            />
                         </div>
                     </div>
-                    <button id="copy-id-btn" class="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all border border-white/5" title="Copy ID">
-                        <i data-lucide="copy" class="w-4 h-4"></i>
-                    </button>
-                </div>
 
-                <!-- Search/Connect Box -->
-                <div class="relative mb-8 group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-2xl blur opacity-20 group-focus-within:opacity-40 transition-opacity duration-500"></div>
-                    <div class="relative flex items-center glass-input rounded-2xl p-1 shadow-inner">
-                        <i data-lucide="search" class="w-4 h-4 ml-4 text-slate-400"></i>
-                        <input 
-                            type="text" 
-                            id="target-user-id" 
-                            placeholder="මිතුරාගේ ID එක මෙතැනට..." 
-                            class="w-full bg-transparent border-none p-3 pl-3 text-xs text-slate-200 placeholder-slate-500 outline-none"
-                        />
+                    <!-- Active Connections List -->
+                    <div class="flex-1 overflow-y-auto pr-2 mt-2 flex flex-col gap-2" id="contacts-list">
+                        <!-- Contacts rendered dynamically -->
+                        <div class="text-center text-slate-500 mt-10 text-xs">No active chats</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Active Connections -->
-                <div class="space-y-3 overflow-y-auto h-full pr-2">
-                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mb-4 pl-2">Active Session</p>
-                    <div id="contact-item" class="flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 cursor-pointer border border-transparent opacity-40">
+            <!-- Main Chat Area -->
+            <div class="flex-1 flex flex-col relative z-10 bg-gradient-to-b from-slate-900/10 to-slate-900/40">
+                <!-- Header -->
+                <header class="h-24 border-b border-white/5 flex items-center justify-between px-6 md:px-10 glass-panel !rounded-none">
+                    <div class="flex items-center gap-5">
                         <div class="relative">
-                            <div class="w-12 h-12 rounded-2xl glass-input flex items-center justify-center rotate-3 transition-transform duration-300 group-hover:rotate-0">
-                                <i data-lucide="zap" class="w-5 h-5 text-slate-400"></i>
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 overflow-hidden shadow-xl p-0.5">
+                                <div class="w-full h-full bg-slate-900 rounded-[14px] overflow-hidden">
+                                    <img id="chat-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost" class="w-full h-full opacity-50 grayscale transition-all duration-500 reverse-hue object-cover" />
+                                </div>
                             </div>
-                            <div id="contact-status-indicator" class="w-3 h-3 bg-slate-600 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1"></div>
+                            <div id="status-dot" class="w-3.5 h-3.5 bg-slate-600 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500"></div>
                         </div>
-                        <div class="flex-1 overflow-hidden">
-                            <h3 class="text-xs font-semibold text-slate-200 tracking-wide">Secure Link</h3>
-                            <p id="contact-subtitle" class="text-[10px] text-slate-500 truncate mt-0.5">Awaiting ID...</p>
+                        <div>
+                            <!-- Changed to show Partner Name -->
+                            <h2 id="chat-title" class="text-sm font-bold tracking-wide text-slate-100 flex items-center gap-2">
+                                Encrypted Stream <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
+                            </h2>
+                            <p id="chat-subtitle" class="text-[11px] text-slate-400 mt-1 font-mono">Status: Disconnected</p>
                         </div>
                     </div>
+                    <div class="flex items-center gap-2">
+                        <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                        <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="video" class="w-5 h-5"></i></button>
+                        <div class="w-px h-6 bg-white/10 mx-2"></div>
+                        <!-- 3-dot menu opens Target Info Modal -->
+                        <button onclick="toggleModal('target-info-modal')" class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                    </div>
+                </header>
+
+                <!-- Messages Container -->
+                <div id="messages-container" class="flex-1 overflow-y-auto px-8 md:px-16 py-8 flex flex-col gap-6 relative scroll-smooth">
+                    <div class="flex flex-col items-center justify-center h-full text-slate-500">
+                        <div class="w-20 h-20 rounded-full glass-input flex items-center justify-center mb-6 shadow-2xl relative">
+                            <div class="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl animate-pulse"></div>
+                            <i data-lucide="fingerprint" class="w-10 h-10 text-indigo-400/50"></i>
+                        </div>
+                        <p class="text-sm font-medium text-slate-300 tracking-wide">End-to-End Encrypted</p>
+                        <p class="text-[11px] mt-2 text-slate-500 text-center max-w-xs leading-relaxed">Enter a valid ID in the panel to establish a secure connection.</p>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-6 md:p-8 pt-0 relative z-20">
+                    <form id="chat-form" class="max-w-4xl mx-auto flex items-center gap-3 bg-slate-900/60 backdrop-blur-2xl p-2.5 rounded-full border border-white/10 shadow-2xl shadow-black/50 transition-all duration-300 focus-within:bg-slate-800/80 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10">
+                        
+                        <button type="button" class="p-3 text-slate-400 hover:text-indigo-400 transition-colors ml-1">
+                            <i data-lucide="paperclip" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <input 
+                            id="message-input" 
+                            type="text" 
+                            placeholder="Type a message..." 
+                            class="flex-1 bg-transparent border-none outline-none text-sm text-slate-200 placeholder-slate-500 px-2 tracking-wide"
+                            autocomplete="off"
+                            disabled
+                        />
+                        
+                        <button type="button" class="p-3 text-slate-400 hover:text-fuchsia-400 transition-colors hidden sm:block">
+                            <i data-lucide="smile" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <button 
+                            type="submit" 
+                            id="send-btn" 
+                            disabled 
+                            class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:opacity-30 disabled:shadow-none disabled:from-slate-700 disabled:to-slate-700 transition-all duration-300 active:scale-90 group"
+                        >
+                            <i data-lucide="send" class="w-5 h-5 ml-1 group-disabled:ml-0 transition-all"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Main Chat Area -->
-        <div class="flex-1 flex flex-col relative z-10 bg-gradient-to-b from-slate-900/10 to-slate-900/40">
-            <!-- Header -->
-            <header class="h-24 border-b border-white/5 flex items-center justify-between px-6 md:px-10 glass-panel !rounded-none">
-                <div class="flex items-center gap-5">
-                    <div class="relative">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 overflow-hidden shadow-xl p-0.5">
-                            <div class="w-full h-full bg-slate-900 rounded-[14px] overflow-hidden">
-                                <img id="chat-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost" class="w-full h-full opacity-50 grayscale transition-all duration-500" />
-                            </div>
-                        </div>
-                        <div id="status-dot" class="w-3.5 h-3.5 bg-slate-600 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500"></div>
-                    </div>
-                    <div>
-                        <h2 id="chat-title" class="text-sm font-bold tracking-wide text-slate-100 flex items-center gap-2">
-                            Encrypted Stream <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
-                        </h2>
-                        <p id="chat-subtitle" class="text-[11px] text-slate-400 mt-1 font-mono">Status: Disconnected</p>
+    <!-- Modals -->
+    
+    <!-- Profile & Settings Modal -->
+    <div id="profile-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="toggleModal('profile-modal', false)"></div>
+        <div class="glass-panel w-full max-w-sm p-8 rounded-[2rem] relative z-10 scale-95 transition-transform duration-300 shadow-2xl flex flex-col gap-6" id="profile-modal-content">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Profile Settings</h3>
+                <button onclick="toggleModal('profile-modal', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2 block">Display Name</label>
+                    <input type="text" id="setting-name" class="w-full glass-input p-3 rounded-xl text-sm text-white outline-none focus:border-indigo-500" placeholder="Enter name">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2 block">Profile Photo URL</label>
+                    <input type="text" id="setting-photo" class="w-full glass-input p-3 rounded-xl text-sm text-white outline-none focus:border-indigo-500" placeholder="https://...">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2 block">Theme Color</label>
+                    <div class="flex gap-3">
+                        <button onclick="changeHue(0)" class="w-8 h-8 rounded-full bg-indigo-500 border-2 border-transparent hover:border-white"></button>
+                        <button onclick="changeHue(120)" class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent hover:border-white"></button>
+                        <button onclick="changeHue(300)" class="w-8 h-8 rounded-full bg-rose-500 border-2 border-transparent hover:border-white"></button>
+                        <button onclick="changeHue(45)" class="w-8 h-8 rounded-full bg-amber-500 border-2 border-transparent hover:border-white"></button>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="phone" class="w-5 h-5"></i></button>
-                    <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="video" class="w-5 h-5"></i></button>
-                    <div class="w-px h-6 bg-white/10 mx-2"></div>
-                    <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
-                </div>
-            </header>
-
-            <!-- Messages Container -->
-            <div id="messages-container" class="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col gap-6 relative scroll-smooth">
-                <div class="flex flex-col items-center justify-center h-full text-slate-500">
-                    <div class="w-20 h-20 rounded-full glass-input flex items-center justify-center mb-6 shadow-2xl relative">
-                        <div class="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl animate-pulse"></div>
-                        <i data-lucide="fingerprint" class="w-10 h-10 text-indigo-400/50"></i>
+                <div class="pt-2 border-t border-white/10">
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-2 block">Your Unique ID</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="setting-id" readonly class="flex-1 glass-input p-3 rounded-xl text-xs text-indigo-300 font-mono outline-none" value="Loading...">
+                        <button id="copy-id-btn" class="p-3 bg-indigo-600 hover:bg-indigo-500 rounded-xl text-white transition-colors">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <p class="text-sm font-medium text-slate-300 tracking-wide">End-to-End Encrypted</p>
-                    <p class="text-[11px] mt-2 text-slate-500 text-center max-w-xs leading-relaxed">Enter a valid ID in the panel to establish a secure, anonymous connection.</p>
+                </div>
+                <div class="pt-2">
+                    <button id="google-login-btn" class="w-full glass-input hover:bg-white/10 p-3 rounded-xl text-sm text-white flex items-center justify-center gap-2 transition-all">
+                        <i data-lucide="chrome" class="w-4 h-4"></i> Login with Google (Optional)
+                    </button>
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-gradient-to-r from-indigo-500 to-fuchsia-500 p-3 rounded-xl text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 hover:scale-[0.98] transition-transform">
+                    Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Target User Info Modal -->
+    <div id="target-info-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-md" onclick="toggleModal('target-info-modal', false)"></div>
+        <div class="glass-panel w-full max-w-sm p-8 rounded-[2rem] relative z-10 scale-95 transition-transform duration-300 shadow-2xl flex flex-col items-center gap-4 text-center" id="target-info-content">
+            <button onclick="toggleModal('target-info-modal', false)" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            
+            <div class="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-fuchsia-500 shadow-xl shadow-indigo-500/20 mt-4">
+                <div class="w-full h-full bg-slate-900 rounded-full overflow-hidden">
+                    <img id="info-avatar" src="" class="w-full h-full object-cover reverse-hue" />
                 </div>
             </div>
-
-            <!-- Floating Input Area -->
-            <div class="p-6 md:p-8 pt-0 relative z-20">
-                <form id="chat-form" class="max-w-4xl mx-auto flex items-center gap-3 bg-slate-900/60 backdrop-blur-2xl p-2.5 rounded-full border border-white/10 shadow-2xl shadow-black/50 transition-all duration-300 focus-within:bg-slate-800/80 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10">
-                    
-                    <button type="button" class="p-3 text-slate-400 hover:text-indigo-400 transition-colors ml-1">
-                        <i data-lucide="paperclip" class="w-5 h-5"></i>
-                    </button>
-                    
-                    <input 
-                        id="message-input" 
-                        type="text" 
-                        placeholder="පණිවිඩය මෙතැන ලියන්න..." 
-                        class="flex-1 bg-transparent border-none outline-none text-sm text-slate-200 placeholder-slate-500 px-2 tracking-wide"
-                        autocomplete="off"
-                        disabled
-                    />
-                    
-                    <button type="button" class="p-3 text-slate-400 hover:text-fuchsia-400 transition-colors hidden sm:block">
-                        <i data-lucide="smile" class="w-5 h-5"></i>
-                    </button>
-                    
-                    <button 
-                        type="submit" 
-                        id="send-btn" 
-                        disabled 
-                        class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:opacity-30 disabled:shadow-none disabled:from-slate-700 disabled:to-slate-700 transition-all duration-300 active:scale-90 group"
-                    >
-                        <i data-lucide="send" class="w-5 h-5 ml-1 group-disabled:ml-0 transition-all"></i>
-                    </button>
-                </form>
+            
+            <div>
+                <h3 id="info-name" class="text-xl font-bold text-white glow-text">User Name</h3>
+                <p class="text-xs text-emerald-400 mt-1 flex items-center justify-center gap-1"><div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse inline-block"></div> Active Connection</p>
+            </div>
+            
+            <div class="w-full bg-slate-900/50 p-4 rounded-xl border border-white/5 mt-2">
+                <p class="text-[10px] uppercase tracking-wider text-slate-400 mb-1">User ID</p>
+                <p id="info-id" class="text-xs text-indigo-300 font-mono break-all"></p>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // යාවත්කාලීන කළ Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
             authDomain: "messages-9bc85.firebaseapp.com",
@@ -255,7 +346,17 @@
         const appId = 'studyflow-pro';
 
         let currentUser = null;
-        let unsubscribe = null;
+        let unsubscribeGlobal = null;
+        let allMessages = [];
+        let localContacts = {}; // { id: { name, photo, msgCount, lastMsgTime } }
+        let currentTargetId = "";
+
+        // Profile State
+        let myProfile = JSON.parse(localStorage.getItem('chatpro_profile')) || {
+            name: "My Account",
+            photo: "", // will be generated dynamically if empty
+            hue: 0
+        };
 
         // UI Elements
         const targetInput = document.getElementById('target-user-id');
@@ -263,79 +364,245 @@
         const msgInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
         const chatForm = document.getElementById('chat-form');
-        const statusDot = document.getElementById('status-dot');
+        const contactsList = document.getElementById('contacts-list');
+        
+        // Header Elements
+        const chatTitle = document.getElementById('chat-title');
         const chatSubtitle = document.getElementById('chat-subtitle');
-        const contactItem = document.getElementById('contact-item');
-        const contactSubtitle = document.getElementById('contact-subtitle');
-        const contactStatusIndicator = document.getElementById('contact-status-indicator');
         const chatAvatar = document.getElementById('chat-avatar');
+        const statusDot = document.getElementById('status-dot');
 
-        // 1. Auth Setup
+        // Modals
+        window.toggleModal = (id, show = true) => {
+            const modal = document.getElementById(id);
+            const content = document.getElementById(id + '-content');
+            if (show) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        };
+
+        window.changeHue = (deg) => {
+            document.documentElement.style.setProperty('--app-hue', `${deg}deg`);
+            myProfile.hue = deg;
+        };
+
+        window.saveProfile = () => {
+            myProfile.name = document.getElementById('setting-name').value || "My Account";
+            myProfile.photo = document.getElementById('setting-photo').value || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}&backgroundColor=transparent`;
+            localStorage.setItem('chatpro_profile', JSON.stringify(myProfile));
+            updateMyProfileUI();
+            toggleModal('profile-modal', false);
+        };
+
+        function updateMyProfileUI() {
+            document.getElementById('my-name').textContent = myProfile.name;
+            document.getElementById('setting-name').value = myProfile.name;
+            
+            const avatarSrc = myProfile.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.uid}&backgroundColor=transparent`;
+            document.getElementById('my-avatar').src = avatarSrc;
+            document.getElementById('setting-photo').value = avatarSrc;
+            
+            changeHue(myProfile.hue);
+        }
+
+        // Initialize App
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                document.getElementById('my-id-display').textContent = `ID: ${user.uid}`;
-                document.getElementById('my-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&backgroundColor=transparent`;
-                initChatListener();
+                if (!myProfile.photo) {
+                    myProfile.photo = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&backgroundColor=transparent`;
+                }
+                document.getElementById('setting-id').value = user.uid;
+                updateMyProfileUI();
+                startGlobalListener();
             } else {
                 signInAnonymously(auth);
             }
         });
 
-        // 2. Chat Logic
-        function initChatListener() {
-            const targetId = targetInput.value.trim();
-            
-            if (unsubscribe) unsubscribe();
+        // Google Login
+        document.getElementById('google-login-btn').onclick = async () => {
+            const provider = new GoogleAuthProvider();
+            try {
+                const result = await signInWithPopup(auth, provider);
+                myProfile.name = result.user.displayName || "My Account";
+                myProfile.photo = result.user.photoURL || myProfile.photo;
+                saveProfile();
+            } catch (error) {
+                console.error("Google Login Error:", error);
+            }
+        };
 
-            if (targetId.length < 10) {
+        // Global Listener - Fetches all my messages to build contacts
+        function startGlobalListener() {
+            if (unsubscribeGlobal) unsubscribeGlobal();
+            
+            const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
+            
+            unsubscribeGlobal = onSnapshot(msgRef, (snapshot) => {
+                allMessages = snapshot.docs.map(doc => doc.data())
+                    .filter(m => m.senderId === currentUser.uid || m.receiverId === currentUser.uid)
+                    .sort((a, b) => a.createdAt - b.createdAt);
+                
+                processContacts();
+                updateActiveChatUI();
+            }, (error) => {
+                console.error("Rule Denial:", error);
+            });
+        }
+
+        function processContacts() {
+            localContacts = {};
+            
+            allMessages.forEach(m => {
+                const partnerId = m.senderId === currentUser.uid ? m.receiverId : m.senderId;
+                
+                if (!localContacts[partnerId]) {
+                    localContacts[partnerId] = {
+                        id: partnerId,
+                        name: "Secure Link",
+                        photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${partnerId}&backgroundColor=transparent`,
+                        msgCount: 0,
+                        lastTime: 0
+                    };
+                }
+                
+                localContacts[partnerId].msgCount++;
+                localContacts[partnerId].lastTime = m.createdAt;
+                
+                // If message is FROM them, grab their profile info embedded in message
+                if (m.senderId === partnerId) {
+                    if (m.senderName) localContacts[partnerId].name = m.senderName;
+                    if (m.senderPhoto) localContacts[partnerId].photo = m.senderPhoto;
+                }
+            });
+
+            renderSidebarContacts();
+        }
+
+        function renderSidebarContacts() {
+            const arr = Object.values(localContacts).sort((a, b) => b.lastTime - a.lastTime);
+            
+            if (arr.length === 0) {
+                contactsList.innerHTML = `<div class="text-center text-slate-500 mt-10 text-xs">No active chats</div>`;
+                return;
+            }
+
+            contactsList.innerHTML = arr.map(c => {
+                const isActive = c.id === currentTargetId;
+                const bgClass = isActive ? 'bg-white/5 border-white/10 shadow-lg' : 'border-transparent opacity-60 hover:opacity-100 hover:bg-white/5';
+                const indicator = isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]' : 'bg-slate-600';
+
+                return `
+                    <div onclick="selectContact('${c.id}')" class="flex items-center gap-4 p-3 rounded-2xl transition-all duration-300 cursor-pointer border ${bgClass}">
+                        <div class="relative shrink-0">
+                            <div class="w-10 h-10 rounded-2xl glass-input flex items-center justify-center overflow-hidden">
+                                <img src="${c.photo}" class="w-full h-full object-cover reverse-hue" />
+                            </div>
+                            <div class="w-2.5 h-2.5 ${indicator} rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1"></div>
+                        </div>
+                        <div class="flex-1 overflow-hidden">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xs font-semibold text-slate-200 tracking-wide truncate pr-2">${c.name}</h3>
+                                <span class="bg-indigo-500/20 text-indigo-300 text-[9px] px-2 py-0.5 rounded-full shrink-0">${c.msgCount} msg</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">${c.id.substring(0,8)}...</p>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        window.selectContact = (id) => {
+            targetInput.value = id;
+            handleTargetChange();
+        };
+
+        function handleTargetChange() {
+            currentTargetId = targetInput.value.trim();
+            
+            if (currentTargetId.length < 10) {
                 msgInput.disabled = true;
                 sendBtn.disabled = true;
                 
                 statusDot.className = "w-3.5 h-3.5 bg-slate-600 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500";
+                chatTitle.innerHTML = `Encrypted Stream <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>`;
                 chatSubtitle.textContent = "Status: Disconnected";
                 chatSubtitle.classList.replace('text-emerald-400', 'text-slate-400');
                 
-                contactItem.className = "flex items-center gap-4 p-4 rounded-2xl transition-all duration-500 cursor-pointer border border-transparent opacity-40";
-                contactStatusIndicator.className = "w-3 h-3 bg-slate-600 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1";
-                contactSubtitle.textContent = "Awaiting ID...";
-                
                 chatAvatar.classList.add('opacity-50', 'grayscale');
                 chatAvatar.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost&backgroundColor=transparent";
+                
+                renderMessages([]); // empty
+                lucide.createIcons();
                 return;
             }
 
+            // Connected State
             msgInput.disabled = false;
-            
             statusDot.className = "w-3.5 h-3.5 bg-emerald-400 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 shadow-[0_0_12px_rgba(52,211,153,0.6)] animate-pulse transition-all duration-500";
-            chatSubtitle.textContent = `Connected: ${targetId.substring(0, 10)}...`;
+            chatSubtitle.textContent = `Connected Securely`;
             chatSubtitle.classList.replace('text-slate-400', 'text-emerald-400');
             
-            contactItem.className = "flex items-center gap-4 p-4 rounded-2xl transition-all duration-500 cursor-pointer bg-white/5 border border-white/10 shadow-lg backdrop-blur-md opacity-100";
-            contactStatusIndicator.className = "w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1 shadow-[0_0_8px_rgba(52,211,153,0.6)]";
-            contactSubtitle.textContent = "Live Session Active";
+            // Set Target Info from localContacts if available
+            const contact = localContacts[currentTargetId] || { 
+                name: "Secure Link", 
+                photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentTargetId}&backgroundColor=transparent` 
+            };
             
+            chatTitle.innerHTML = `${contact.name} <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>`;
             chatAvatar.classList.remove('opacity-50', 'grayscale');
-            chatAvatar.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetId}&backgroundColor=transparent`;
+            chatAvatar.src = contact.photo;
 
-            // ඔබ ලබාදුන් path එකට අනුව collection එක ලබා ගැනීම
-            const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
-            
-            unsubscribe = onSnapshot(msgRef, (snapshot) => {
-                // ඔබගේ නීති (Rules) වලට අනුව කියවිය හැකි පණිවිඩ පෙරීම
-                const msgs = snapshot.docs.map(doc => doc.data())
-                    .filter(m => (m.senderId === currentUser.uid && m.receiverId === targetId) || 
-                                 (m.senderId === targetId && m.receiverId === currentUser.uid))
-                    .sort((a, b) => a.createdAt - b.createdAt);
-                
-                renderMessages(msgs);
-            }, (error) => {
-                console.error("Rule Denial:", error);
-                msgContainer.innerHTML = `<div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl mx-auto"><p class="text-red-400 text-center text-xs">Permission denied: කරුණාකර Firestore Rules නිවැරදිව සකසා ඇත්දැයි බලන්න.</p></div>`;
-            });
+            // Update Info Modal Data
+            document.getElementById('info-name').textContent = contact.name;
+            document.getElementById('info-avatar').src = contact.photo;
+            document.getElementById('info-id').textContent = currentTargetId;
+
+            updateActiveChatUI();
+            renderSidebarContacts(); // update active state classes
+            lucide.createIcons();
         }
 
-        // 3. UI Rendering
+        function updateActiveChatUI() {
+            if (!currentTargetId || currentTargetId.length < 10) return;
+
+            const activeMsgs = allMessages.filter(m => 
+                (m.senderId === currentUser.uid && m.receiverId === currentTargetId) || 
+                (m.senderId === currentTargetId && m.receiverId === currentUser.uid)
+            );
+            
+            renderMessages(activeMsgs);
+        }
+
+        // Emoji & Msg Render Logic
+        function isSingleEmoji(text) {
+            if (!text) return false;
+            const t = text.trim();
+            if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+                const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+                const segments = Array.from(segmenter.segment(t));
+                if (segments.length !== 1) return false;
+                return /^[\p{Emoji_Presentation}\p{Extended_Pictographic}]+$/u.test(segments[0].segment);
+            }
+            return /^[\p{Emoji_Presentation}\p{Extended_Pictographic}]+$/u.test(t);
+        }
+
+        function getEmojiHex(emoji) {
+            return Array.from(emoji)
+                .map(char => char.codePointAt(0).toString(16))
+                .filter(hex => hex !== 'fe0f')
+                .join('_');
+        }
+
         function renderMessages(msgs) {
             if (msgs.length === 0) {
                 msgContainer.innerHTML = `
@@ -350,20 +617,67 @@
                 return;
             }
 
-            msgContainer.innerHTML = msgs.map(m => {
+            const messageHTML = msgs.map(m => {
                 const isMe = m.senderId === currentUser.uid;
+                const text = m.text.trim();
+                const isEmojiMsg = isSingleEmoji(text);
+                const timeStr = new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                if (isEmojiMsg) {
+                    const hex = getEmojiHex(text);
+                    return `
+                        <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full">
+                            <div class="${isMe ? 'my-message' : 'their-message'} !bg-transparent !border-none !shadow-none !p-0">
+                                <div class="emoji-msg-container" data-hex="${hex}" data-raw="${text}">
+                                    <span class="text-6xl drop-shadow-lg">${text}</span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] text-slate-500 mt-1 px-3 font-mono tracking-wider">${timeStr}</span>
+                        </div>
+                    `;
+                }
+
                 return `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full">
                         <div class="message-bubble ${isMe ? 'my-message' : 'their-message'}">
                             ${escapeHTML(m.text)}
                         </div>
-                        <span class="text-[10px] text-slate-500 mt-2 px-3 font-mono tracking-wider">
-                            ${new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </span>
+                        <span class="text-[10px] text-slate-500 mt-1 px-3 font-mono tracking-wider">${timeStr}</span>
                     </div>
                 `;
             }).join('');
             
+            msgContainer.innerHTML = `
+                <div class="max-w-3xl mx-auto w-full flex flex-col gap-6">
+                    ${messageHTML}
+                </div>
+            `;
+            
+            document.querySelectorAll('.emoji-msg-container').forEach(container => {
+                const hex = container.dataset.hex;
+                const url = `https://fonts.gstatic.com/s/e/notoemoji/latest/${hex}/lottie.json`;
+
+                const lottiePlayer = document.createElement('lottie-player');
+                lottiePlayer.src = url;
+                lottiePlayer.autoplay = true;
+                lottiePlayer.loop = true;
+                lottiePlayer.style.width = '120px';
+                lottiePlayer.style.height = '120px';
+                lottiePlayer.style.display = 'none';
+
+                lottiePlayer.addEventListener('ready', () => {
+                    container.innerHTML = '';
+                    lottiePlayer.style.display = 'block';
+                    container.appendChild(lottiePlayer);
+                });
+
+                lottiePlayer.addEventListener('error', () => {
+                    lottiePlayer.remove();
+                });
+
+                container.appendChild(lottiePlayer);
+            });
+
             setTimeout(() => {
                 msgContainer.scrollTo({
                     top: msgContainer.scrollHeight,
@@ -378,23 +692,23 @@
             return p.innerHTML;
         }
 
-        // 4. Events
-        targetInput.addEventListener('input', initChatListener);
+        // Events
+        targetInput.addEventListener('input', handleTargetChange);
 
         chatForm.onsubmit = async (e) => {
             e.preventDefault();
             const text = msgInput.value.trim();
-            const targetId = targetInput.value.trim();
-
-            if (!text || !targetId || !currentUser) return;
+            if (!text || !currentTargetId || !currentUser) return;
 
             try {
-                // පණිවිඩය Firestore වෙත එකතු කිරීම
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'private_messages'), {
                     text,
                     senderId: currentUser.uid,
-                    receiverId: targetId,
-                    createdAt: Date.now()
+                    receiverId: currentTargetId,
+                    createdAt: Date.now(),
+                    // Attach profile info so receiver knows who we are
+                    senderName: myProfile.name,
+                    senderPhoto: myProfile.photo
                 });
                 msgInput.value = '';
                 sendBtn.disabled = true;
@@ -412,7 +726,7 @@
                 navigator.clipboard.writeText(currentUser.uid);
                 const btn = document.getElementById('copy-id-btn');
                 const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>';
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Copied!';
                 lucide.createIcons();
                 setTimeout(() => {
                     btn.innerHTML = originalHTML;
@@ -421,6 +735,8 @@
             }
         };
 
+        // Init
+        updateMyProfileUI();
         lucide.createIcons();
     </script>
 </body>
