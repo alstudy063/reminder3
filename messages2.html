@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anonymous Chat App</title>
+    
+    <!-- Google Fonts: Inter for English, Noto Sans Sinhala for Sinhala -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Apply fonts: Inter as primary, Noto Sans Sinhala as fallback for Sinhala text */
+        body {
+            font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+        }
+
+        /* Custom Scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 h-screen w-full overflow-hidden flex">
+
+    <!-- Left Sidebar -->
+    <div class="w-[320px] bg-gray-100 flex flex-col border-r border-gray-200 shrink-0">
+        <!-- User Profile Header -->
+        <div class="p-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <img id="my-avatar" src="https://i.pravatar.cc/150?u=temp" alt="Profile" class="w-12 h-12 rounded-full shadow-sm" />
+                <div>
+                    <h2 id="my-name" class="text-blue-500 font-semibold truncate w-32">Loading...</h2>
+                    <p class="text-xs text-gray-500">Senior Developer</p>
+                </div>
+            </div>
+            <i data-lucide="edit-2" class="text-gray-400 cursor-pointer w-4 h-4"></i>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="px-4 pb-4">
+            <div class="bg-white rounded-full flex items-center px-4 py-2 shadow-sm">
+                <i data-lucide="search" class="text-gray-400 mr-2 w-4 h-4"></i>
+                <input type="text" placeholder="Search Here..." class="bg-transparent outline-none w-full text-sm placeholder-gray-400" />
+            </div>
+        </div>
+
+        <!-- Contacts List (Static Dummy Data) -->
+        <div class="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
+            <!-- Contact 1 -->
+            <div class="flex items-center gap-3 p-3 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                <img src="https://i.pravatar.cc/150?u=lisa" class="w-10 h-10 rounded-full" />
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-medium text-sm text-blue-500 truncate">Lisa Roy</h3>
+                        <span class="text-[10px] text-gray-400">10:35 AM</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-xs text-gray-500 truncate pr-2">Hi, are you Available Tomorrow?</p>
+                        <span class="bg-blue-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">1</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Contact 2 -->
+            <div class="flex items-center gap-3 p-3 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                <img src="https://i.pravatar.cc/150?u=jamie" class="w-10 h-10 rounded-full" />
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-medium text-sm text-blue-500 truncate">Jamie Taylor</h3>
+                        <span class="text-[10px] text-gray-400">10:35 AM</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-xs text-gray-500 truncate pr-2">Nice One. Will Do it tommorow</p>
+                        <span class="bg-blue-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">3</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Contact 3 -->
+            <div class="flex items-center gap-3 p-3 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                <img src="https://i.pravatar.cc/150?u=jason" class="w-10 h-10 rounded-full" />
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-medium text-sm text-blue-500 truncate">Jason Roy</h3>
+                        <span class="text-[10px] text-gray-400">10:35 AM</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-xs text-gray-500 truncate pr-2">That's Great. I am Looking forward to having a great start.</p>
+                        <i data-lucide="check-check" class="text-blue-400 w-3 h-3"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Contact 4 -->
+            <div class="flex items-center gap-3 p-3 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                <img src="https://i.pravatar.cc/150?u=amy" class="w-10 h-10 rounded-full" />
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-medium text-sm text-blue-500 truncate">Amy Frost</h3>
+                        <span class="text-[10px] text-gray-400">10:35 AM</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-xs text-gray-500 truncate pr-2">Hi, will you start working on the chat app right now?</p>
+                        <i data-lucide="check-check" class="text-blue-400 w-3 h-3"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Contact 5 -->
+            <div class="flex items-center gap-3 p-3 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                <img src="https://i.pravatar.cc/150?u=paul" class="w-10 h-10 rounded-full" />
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-medium text-sm text-blue-500 truncate">Paul Wilson</h3>
+                        <span class="text-[10px] text-gray-400">10:35 AM</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-xs text-gray-500 truncate pr-2">See you tommorow champ</p>
+                        <i data-lucide="check-check" class="text-blue-400 w-3 h-3"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Contact 6 -->
+            <div class="flex items-center gap-3 p-3 hover:bg-gray-200 rounded-xl cursor-pointer transition-colors">
+                <img src="https://i.pravatar.cc/150?u=ana" class="w-10 h-10 rounded-full" />
+                <div class="flex-1 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-medium text-sm text-blue-500 truncate">Ana Wlliams</h3>
+                        <span class="text-[10px] text-gray-400">10:35 AM</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <p class="text-xs text-gray-500 truncate pr-2">??</p>
+                        <span class="bg-blue-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">1</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="flex-1 bg-white flex flex-col relative min-w-[400px]">
+        <!-- Chat Header -->
+        <div class="h-20 border-b flex items-center justify-between px-6 bg-white shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <img src="https://i.pravatar.cc/150?u=dianne" alt="Dianne" class="w-12 h-12 rounded-full" />
+                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <h2 class="text-lg font-semibold text-blue-500">Dianne Jhonson</h2>
+            </div>
+            <div class="flex items-center gap-6 text-gray-300">
+                <i data-lucide="search" class="cursor-pointer hover:text-gray-500 transition-colors"></i>
+                <i data-lucide="heart" class="cursor-pointer hover:text-red-400 transition-colors"></i>
+                <i data-lucide="bell" class="cursor-pointer hover:text-yellow-400 transition-colors"></i>
+            </div>
+        </div>
+
+        <!-- Messages Display -->
+        <div id="messages-container" class="flex-1 overflow-y-auto p-6 flex flex-col">
+            <!-- Messages will be injected here via JavaScript -->
+        </div>
+
+        <!-- Message Input Area -->
+        <div class="p-4 bg-blue-50/50 h-24 flex items-center shrink-0">
+            <form id="chat-form" class="w-full bg-white rounded-full px-4 py-3 flex items-center shadow-sm border border-gray-100">
+                <i data-lucide="mic" class="text-blue-400 mr-3 cursor-pointer w-5 h-5"></i>
+                <input 
+                    type="text" 
+                    id="message-input"
+                    placeholder="Write Something..." 
+                    class="flex-1 outline-none text-sm bg-transparent placeholder-gray-400"
+                    autocomplete="off"
+                />
+                <div class="flex items-center gap-3 text-blue-400 mr-4">
+                    <i data-lucide="paperclip" class="cursor-pointer hover:text-blue-600 w-5 h-5"></i>
+                    <i data-lucide="camera" class="cursor-pointer hover:text-blue-600 w-5 h-5"></i>
+                    <i data-lucide="smile" class="cursor-pointer hover:text-blue-600 w-5 h-5"></i>
+                </div>
+                <button 
+                    type="submit" 
+                    id="send-btn"
+                    disabled
+                    class="bg-blue-500 text-white w-9 h-9 flex items-center justify-center rounded-full hover:bg-blue-600 transition-colors disabled:bg-blue-300 disabled:cursor-not-allowed shadow-md"
+                >
+                    <i data-lucide="send" class="w-4 h-4 ml-0.5"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Sidebar (Profile Details) -->
+    <div class="w-[300px] bg-[#f8f9fc] flex flex-col items-center py-6 px-4 border-l border-gray-200 shrink-0">
+        <!-- Right Search -->
+        <div class="w-full bg-white rounded-full flex items-center px-4 py-2 mb-8 shadow-sm">
+            <i data-lucide="search" class="text-gray-400 mr-2 w-4 h-4"></i>
+            <input type="text" placeholder="Search..." class="bg-transparent outline-none w-full text-sm placeholder-gray-400" />
+        </div>
+
+        <!-- Large Profile Image -->
+        <img src="https://i.pravatar.cc/250?u=dianne" alt="Dianne Jhonson" class="w-32 h-32 rounded-full mb-4 shadow-lg border-4 border-white" />
+        <h2 class="text-lg font-bold text-gray-800">Dianne Jhonson</h2>
+        <p class="text-xs text-gray-500 mb-8">Junior Developer</p>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-8 mb-8 w-full justify-center">
+            <div class="flex flex-col items-center gap-2 cursor-pointer group">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                    <i data-lucide="message-square" class="text-blue-500 w-5 h-5"></i>
+                </div>
+                <span class="text-xs text-gray-600 font-medium">Chat</span>
+            </div>
+            <div class="flex flex-col items-center gap-2 cursor-pointer group">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                    <i data-lucide="video" class="text-blue-500 w-5 h-5"></i>
+                </div>
+                <span class="text-xs text-gray-600 font-medium">Video Call</span>
+            </div>
+        </div>
+
+        <!-- Links -->
+        <div class="w-full flex justify-between px-2 mb-8 border-b border-gray-200 pb-6">
+            <button class="flex items-center text-xs text-gray-600 hover:text-blue-500 transition-colors font-medium">
+                <i data-lucide="user" class="w-3.5 h-3.5 mr-1.5"></i> View Friends
+            </button>
+            <button class="flex items-center text-xs text-gray-600 hover:text-red-500 transition-colors font-medium">
+                <i data-lucide="heart" class="w-3.5 h-3.5 mr-1.5"></i> Add to Favorites
+            </button>
+        </div>
+
+        <!-- Attachments -->
+        <div class="w-full">
+            <h3 class="text-xs font-bold text-gray-800 mb-4">Attachments</h3>
+            <div class="grid grid-cols-4 gap-2 mb-4">
+                <div class="bg-blue-50 p-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors aspect-square">
+                    <i data-lucide="file-text" class="text-blue-500 w-4 h-4 mb-1"></i>
+                    <span class="text-[9px] font-bold text-blue-500">PDF</span>
+                </div>
+                <div class="bg-blue-50 p-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors aspect-square">
+                    <i data-lucide="film" class="text-blue-500 w-4 h-4 mb-1"></i>
+                    <span class="text-[9px] font-bold text-blue-500">VIDEO</span>
+                </div>
+                <div class="bg-blue-50 p-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors aspect-square">
+                    <i data-lucide="music" class="text-blue-500 w-4 h-4 mb-1"></i>
+                    <span class="text-[9px] font-bold text-blue-500">MP3</span>
+                </div>
+                <div class="bg-blue-50 p-2 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-blue-100 transition-colors aspect-square">
+                    <i data-lucide="image" class="text-blue-500 w-4 h-4 mb-1"></i>
+                    <span class="text-[9px] font-bold text-blue-500">IMAGE</span>
+                </div>
+            </div>
+            <button class="w-full border border-blue-400 text-blue-500 text-xs py-2 rounded-full font-medium hover:bg-blue-50 transition-colors">
+                View All
+            </button>
+        </div>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+
+    <!-- Firebase and Application Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Configuration
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            // Use user's provided default config for local
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'anonymous-chat-html';
+
+        // State & DOM Elements
+        let currentUser = null;
+        const myNameStr = `User ${Math.floor(Math.random() * 1000)}`;
+        const myAvatarStr = `https://i.pravatar.cc/150?u=${Math.random()}`;
+        
+        const myNameEl = document.getElementById('my-name');
+        const myAvatarEl = document.getElementById('my-avatar');
+        const messagesContainer = document.getElementById('messages-container');
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // Set local profile UI
+        myNameEl.textContent = myNameStr;
+        myAvatarEl.src = myAvatarStr;
+
+        // Input button state listener
+        messageInput.addEventListener('input', (e) => {
+            sendBtn.disabled = e.target.value.trim() === '';
+        });
+
+        // Escaping HTML to prevent XSS
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.innerText = str;
+            return div.innerHTML;
+        }
+
+        // Render Messages
+        function renderMessages(messages) {
+            messagesContainer.innerHTML = ''; // Clear container
+
+            // Date Divider
+            const divider = document.createElement('div');
+            divider.className = "flex items-center justify-center space-x-4 mb-6 mt-4";
+            divider.innerHTML = `
+                <div class="h-px bg-gray-200 flex-1"></div>
+                <span class="text-xs text-gray-400 font-medium bg-gray-50 px-3 rounded-full py-1">Today</span>
+                <div class="h-px bg-gray-200 flex-1"></div>
+            `;
+            messagesContainer.appendChild(divider);
+
+            messages.forEach(msg => {
+                const isMe = msg.uid === currentUser?.uid;
+                const msgWrapper = document.createElement('div');
+                msgWrapper.className = `flex gap-3 mb-6 ${isMe ? 'flex-row-reverse' : 'flex-row'}`;
+                
+                const bubbleClass = isMe 
+                    ? 'bg-blue-500 text-white rounded-br-none' 
+                    : 'bg-blue-50 text-gray-700 rounded-bl-none border border-blue-100';
+
+                msgWrapper.innerHTML = `
+                    <img src="${msg.avatar || 'https://i.pravatar.cc/150'}" alt="Avatar" class="w-8 h-8 rounded-full mt-auto shrink-0" />
+                    <div class="max-w-[70%] p-4 rounded-2xl ${bubbleClass}">
+                        <p class="text-sm leading-relaxed whitespace-pre-wrap">${escapeHTML(msg.text)}</p>
+                    </div>
+                `;
+                messagesContainer.appendChild(msgWrapper);
+            });
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Authentication Init
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth Error:", error);
+            }
+        };
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                // Subscribe to messages when authenticated
+                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'global_chat');
+                
+                onSnapshot(messagesRef, (snapshot) => {
+                    const fetchedMessages = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    
+                    fetchedMessages.sort((a, b) => a.createdAt - b.createdAt);
+                    renderMessages(fetchedMessages);
+                }, (error) => {
+                    console.error("Error fetching messages:", error);
+                });
+            }
+        });
+
+        // Start Auth
+        initAuth();
+
+        // Send Message Handler
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            
+            if (!text || !currentUser) return;
+
+            try {
+                // Optimistically clear input to avoid waiting
+                messageInput.value = '';
+                sendBtn.disabled = true;
+
+                const messagesRef = collection(db, 'artifacts', appId, 'public', 'data', 'global_chat');
+                await addDoc(messagesRef, {
+                    text: text,
+                    uid: currentUser.uid,
+                    name: myNameStr,
+                    avatar: myAvatarStr,
+                    createdAt: Date.now()
+                });
+            } catch (error) {
+                console.error("Error sending message:", error);
+                // Optionally restore text if failed
+            }
+        });
+
+    </script>
+</body>
+</html>
