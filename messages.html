@@ -3,224 +3,421 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anonymous Private Chat</title>
+    <title>ChatPro - Ultra Modern</title>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body {
-            font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+        body { 
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif; 
+            background-color: #030712; /* Deep slate/black */
+            color: #f8fafc;
         }
+
+        /* Ambient Animated Background */
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(5%, 10%) scale(1.1); }
+            100% { transform: translate(-5%, -5%) scale(0.9); }
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .glass-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+        }
+
+        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* Modern Message Bubbles */
+        .message-bubble {
+            max-width: 75%;
+            padding: 14px 20px;
+            border-radius: 24px;
+            font-size: 14px;
+            line-height: 1.6;
+            position: relative;
+            animation: message-slide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            word-wrap: break-word;
+        }
+        .my-message {
+            background: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+            color: white;
+            border-bottom-right-radius: 6px;
+            align-self: flex-end;
+            box-shadow: 0 10px 25px -5px rgba(147, 51, 234, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .their-message {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            color: #e2e8f0;
+            border-bottom-left-radius: 6px;
+            align-self: flex-start;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes message-slide {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Glow effects */
+        .glow-text { text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
+        .glow-icon { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 h-screen w-full overflow-hidden flex">
+<body class="h-screen w-full flex items-center justify-center overflow-hidden p-0 md:p-6 lg:p-8">
 
-    <!-- Left Sidebar -->
-    <div class="w-[350px] bg-gray-100 flex flex-col border-r border-gray-200 shrink-0">
-        <div class="p-6 bg-white border-b">
-            <div class="flex items-center gap-4 mb-4">
-                <img id="my-avatar" src="https://i.pravatar.cc/150?u=temp" class="w-14 h-14 rounded-full shadow-md border-2 border-blue-500" />
-                <div class="overflow-hidden">
-                    <h2 id="my-name" class="text-blue-600 font-bold truncate">Loading...</h2>
-                    <p class="text-[10px] text-gray-400 font-mono" id="my-id-display">ID: ...</p>
-                </div>
-            </div>
-            <button id="copy-id-btn" class="w-full bg-blue-50 text-blue-600 text-xs py-2 rounded-lg font-semibold hover:bg-blue-100 transition-all flex items-center justify-center gap-2">
-                <i data-lucide="copy" class="w-3 h-3"></i> Copy My ID for Friends
-            </button>
-        </div>
-
-        <div class="p-4">
-            <p class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider">Start Private Chat</p>
-            <div class="bg-white rounded-xl p-3 shadow-sm border border-gray-200">
-                <input type="text" id="target-user-id" placeholder="Paste Friend's ID here..." class="w-full text-sm outline-none border-b border-gray-100 pb-2 mb-2" />
-                <p class="text-[9px] text-gray-400 italic">* Note: With current rules, only you can see your data.</p>
-            </div>
-        </div>
-
-        <div class="flex-1 overflow-y-auto p-4 pt-0">
-            <div class="bg-blue-500 rounded-2xl p-4 text-white shadow-lg shadow-blue-200">
-                <h3 class="font-bold text-sm mb-1">Secure Mode Active</h3>
-                <p class="text-[11px] opacity-90">Data is stored under your private UID path as per Firestore rules.</p>
-            </div>
-        </div>
+    <!-- Ambient Glowing Orbs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1]">
+        <div class="ambient-orb w-[60vw] h-[60vw] bg-indigo-600/10 top-[-20%] left-[-10%]"></div>
+        <div class="ambient-orb w-[50vw] h-[50vw] bg-fuchsia-600/10 bottom-[-20%] right-[-10%]" style="animation-delay: -5s;"></div>
+        <div class="ambient-orb w-[40vw] h-[40vw] bg-blue-600/10 top-[20%] right-[20%]" style="animation-delay: -10s;"></div>
     </div>
 
-    <!-- Main Chat Area -->
-    <div class="flex-1 bg-white flex flex-col relative">
-        <div class="h-20 border-b flex items-center justify-between px-6 bg-white shrink-0">
-            <div class="flex items-center gap-4">
-                <div id="chat-status-dot" class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <div>
-                    <h2 id="chat-with-label" class="text-lg font-semibold text-gray-700">My Private Notes / Chat</h2>
-                    <p id="chat-with-id" class="text-[10px] text-gray-400 font-mono"></p>
+    <!-- Main Application Container (Floating Panel) -->
+    <div class="w-full h-full max-w-[1600px] flex md:rounded-[2.5rem] glass-panel shadow-2xl shadow-indigo-900/10 overflow-hidden relative border-white/10 md:border">
+        
+        <!-- Sidebar -->
+        <div class="w-80 md:w-96 border-r border-white/5 flex flex-col hidden md:flex bg-slate-900/30">
+            <div class="p-8 pb-6">
+                <!-- User Profile -->
+                <div class="flex items-center justify-between mb-10">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full p-[2px] bg-gradient-to-tr from-indigo-500 to-fuchsia-500 shadow-lg shadow-indigo-500/30">
+                            <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center overflow-hidden">
+                                <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full" />
+                            </div>
+                        </div>
+                        <div class="overflow-hidden">
+                            <h2 id="my-name" class="text-sm font-semibold text-slate-100 glow-text truncate">මගේ ගිණුම</h2>
+                            <p id="my-id-display" class="text-[10px] text-indigo-300/80 font-mono tracking-wider truncate">ID: Loading...</p>
+                        </div>
+                    </div>
+                    <button id="copy-id-btn" class="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-all border border-white/5" title="Copy ID">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Search/Connect Box -->
+                <div class="relative mb-8 group">
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-fuchsia-500 rounded-2xl blur opacity-20 group-focus-within:opacity-40 transition-opacity duration-500"></div>
+                    <div class="relative flex items-center glass-input rounded-2xl p-1 shadow-inner">
+                        <i data-lucide="search" class="w-4 h-4 ml-4 text-slate-400"></i>
+                        <input 
+                            type="text" 
+                            id="target-user-id" 
+                            placeholder="මිතුරාගේ ID එක මෙතැනට..." 
+                            class="w-full bg-transparent border-none p-3 pl-3 text-xs text-slate-200 placeholder-slate-500 outline-none"
+                        />
+                    </div>
+                </div>
+
+                <!-- Active Connections -->
+                <div class="space-y-3 overflow-y-auto h-full pr-2">
+                    <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-[0.2em] mb-4 pl-2">Active Session</p>
+                    <div id="contact-item" class="flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 cursor-pointer border border-transparent opacity-40">
+                        <div class="relative">
+                            <div class="w-12 h-12 rounded-2xl glass-input flex items-center justify-center rotate-3 transition-transform duration-300 group-hover:rotate-0">
+                                <i data-lucide="zap" class="w-5 h-5 text-slate-400"></i>
+                            </div>
+                            <div id="contact-status-indicator" class="w-3 h-3 bg-slate-600 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1"></div>
+                        </div>
+                        <div class="flex-1 overflow-hidden">
+                            <h3 class="text-xs font-semibold text-slate-200 tracking-wide">Secure Link</h3>
+                            <p id="contact-subtitle" class="text-[10px] text-slate-500 truncate mt-0.5">Awaiting ID...</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div id="messages-container" class="flex-1 overflow-y-auto p-6 flex flex-col space-y-4">
-            <!-- Messages will load here -->
-        </div>
+        <!-- Main Chat Area -->
+        <div class="flex-1 flex flex-col relative z-10 bg-gradient-to-b from-slate-900/10 to-slate-900/40">
+            <!-- Header -->
+            <header class="h-24 border-b border-white/5 flex items-center justify-between px-6 md:px-10 glass-panel !rounded-none">
+                <div class="flex items-center gap-5">
+                    <div class="relative">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 overflow-hidden shadow-xl p-0.5">
+                            <div class="w-full h-full bg-slate-900 rounded-[14px] overflow-hidden">
+                                <img id="chat-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost" class="w-full h-full opacity-50 grayscale transition-all duration-500" />
+                            </div>
+                        </div>
+                        <div id="status-dot" class="w-3.5 h-3.5 bg-slate-600 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500"></div>
+                    </div>
+                    <div>
+                        <h2 id="chat-title" class="text-sm font-bold tracking-wide text-slate-100 flex items-center gap-2">
+                            Encrypted Stream <i data-lucide="shield-check" class="w-4 h-4 text-indigo-400"></i>
+                        </h2>
+                        <p id="chat-subtitle" class="text-[11px] text-slate-400 mt-1 font-mono">Status: Disconnected</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                    <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="video" class="w-5 h-5"></i></button>
+                    <div class="w-px h-6 bg-white/10 mx-2"></div>
+                    <button class="p-3 text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-transparent hover:border-white/5"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                </div>
+            </header>
 
-        <div class="p-4 bg-gray-50 border-t flex items-center shrink-0">
-            <form id="chat-form" class="w-full bg-white rounded-2xl px-4 py-3 flex items-center shadow-md border border-gray-200">
-                <input 
-                    type="text" 
-                    id="message-input"
-                    placeholder="Type your message..." 
-                    class="flex-1 outline-none text-sm bg-transparent"
-                    autocomplete="off"
-                />
-                <button 
-                    type="submit" 
-                    id="send-btn"
-                    class="bg-blue-600 text-white w-10 h-10 flex items-center justify-center rounded-xl hover:bg-blue-700 transition-all shadow-lg disabled:opacity-50"
-                >
-                    <i data-lucide="send" class="w-5 h-5"></i>
-                </button>
-            </form>
+            <!-- Messages Container -->
+            <div id="messages-container" class="flex-1 overflow-y-auto p-6 md:p-10 flex flex-col gap-6 relative scroll-smooth">
+                <div class="flex flex-col items-center justify-center h-full text-slate-500">
+                    <div class="w-20 h-20 rounded-full glass-input flex items-center justify-center mb-6 shadow-2xl relative">
+                        <div class="absolute inset-0 bg-indigo-500/20 rounded-full blur-xl animate-pulse"></div>
+                        <i data-lucide="fingerprint" class="w-10 h-10 text-indigo-400/50"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-300 tracking-wide">End-to-End Encrypted</p>
+                    <p class="text-[11px] mt-2 text-slate-500 text-center max-w-xs leading-relaxed">Enter a valid ID in the panel to establish a secure, anonymous connection.</p>
+                </div>
+            </div>
+
+            <!-- Floating Input Area -->
+            <div class="p-6 md:p-8 pt-0 relative z-20">
+                <form id="chat-form" class="max-w-4xl mx-auto flex items-center gap-3 bg-slate-900/60 backdrop-blur-2xl p-2.5 rounded-full border border-white/10 shadow-2xl shadow-black/50 transition-all duration-300 focus-within:bg-slate-800/80 focus-within:border-indigo-500/50 focus-within:ring-4 focus-within:ring-indigo-500/10">
+                    
+                    <button type="button" class="p-3 text-slate-400 hover:text-indigo-400 transition-colors ml-1">
+                        <i data-lucide="paperclip" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <input 
+                        id="message-input" 
+                        type="text" 
+                        placeholder="පණිවිඩය මෙතැන ලියන්න..." 
+                        class="flex-1 bg-transparent border-none outline-none text-sm text-slate-200 placeholder-slate-500 px-2 tracking-wide"
+                        autocomplete="off"
+                        disabled
+                    />
+                    
+                    <button type="button" class="p-3 text-slate-400 hover:text-fuchsia-400 transition-colors hidden sm:block">
+                        <i data-lucide="smile" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <button 
+                        type="submit" 
+                        id="send-btn" 
+                        disabled 
+                        class="w-12 h-12 bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] disabled:opacity-30 disabled:shadow-none disabled:from-slate-700 disabled:to-slate-700 transition-all duration-300 active:scale-90 group"
+                    >
+                        <i data-lucide="send" class="w-5 h-5 ml-1 group-disabled:ml-0 transition-all"></i>
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
+        // යාවත්කාලීන කළ Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
+            authDomain: "messages-9bc85.firebaseapp.com",
+            projectId: "messages-9bc85",
+            storageBucket: "messages-9bc85.firebasestorage.app",
+            messagingSenderId: "781930969359",
+            appId: "1:781930969359:web:ce557881c2092197a0a67a"
+        };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        // Rule එකට අනුකූල වීම සඳහා App ID එක 'studyflow-pro' ලෙස ස්ථිරව සකසන ලදී.
         const appId = 'studyflow-pro';
 
         let currentUser = null;
-        let unsubscribeMessages = null;
+        let unsubscribe = null;
 
-        let myProfile = JSON.parse(localStorage.getItem('chat_profile'));
-        if (!myProfile) {
-            myProfile = {
-                name: `User_${Math.floor(Math.random() * 9000 + 1000)}`,
-                avatar: `https://i.pravatar.cc/150?u=${Math.random()}`
-            };
-            localStorage.setItem('chat_profile', JSON.stringify(myProfile));
-        }
-
-        const myNameEl = document.getElementById('my-name');
-        const myAvatarEl = document.getElementById('my-avatar');
-        const myIdDisplay = document.getElementById('my-id-display');
-        const messagesContainer = document.getElementById('messages-container');
+        // UI Elements
+        const targetInput = document.getElementById('target-user-id');
+        const msgContainer = document.getElementById('messages-container');
+        const msgInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
         const chatForm = document.getElementById('chat-form');
-        const messageInput = document.getElementById('message-input');
+        const statusDot = document.getElementById('status-dot');
+        const chatSubtitle = document.getElementById('chat-subtitle');
+        const contactItem = document.getElementById('contact-item');
+        const contactSubtitle = document.getElementById('contact-subtitle');
+        const contactStatusIndicator = document.getElementById('contact-status-indicator');
+        const chatAvatar = document.getElementById('chat-avatar');
 
-        myNameEl.textContent = myProfile.name;
-        myAvatarEl.src = myProfile.avatar;
-
-        const initAuth = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Auth Error:", error);
-            }
-        };
-
+        // 1. Auth Setup
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                myIdDisplay.textContent = `ID: ${user.uid}`;
-                startListeningForMessages();
+                document.getElementById('my-id-display').textContent = `ID: ${user.uid}`;
+                document.getElementById('my-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&backgroundColor=transparent`;
+                initChatListener();
             } else {
-                initAuth();
+                signInAnonymously(auth);
             }
+        });
+
+        // 2. Chat Logic
+        function initChatListener() {
+            const targetId = targetInput.value.trim();
+            
+            if (unsubscribe) unsubscribe();
+
+            if (targetId.length < 10) {
+                msgInput.disabled = true;
+                sendBtn.disabled = true;
+                
+                statusDot.className = "w-3.5 h-3.5 bg-slate-600 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500";
+                chatSubtitle.textContent = "Status: Disconnected";
+                chatSubtitle.classList.replace('text-emerald-400', 'text-slate-400');
+                
+                contactItem.className = "flex items-center gap-4 p-4 rounded-2xl transition-all duration-500 cursor-pointer border border-transparent opacity-40";
+                contactStatusIndicator.className = "w-3 h-3 bg-slate-600 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1";
+                contactSubtitle.textContent = "Awaiting ID...";
+                
+                chatAvatar.classList.add('opacity-50', 'grayscale');
+                chatAvatar.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost&backgroundColor=transparent";
+                return;
+            }
+
+            msgInput.disabled = false;
+            
+            statusDot.className = "w-3.5 h-3.5 bg-emerald-400 rounded-full border-[2.5px] border-slate-900 absolute -bottom-1 -right-1 shadow-[0_0_12px_rgba(52,211,153,0.6)] animate-pulse transition-all duration-500";
+            chatSubtitle.textContent = `Connected: ${targetId.substring(0, 10)}...`;
+            chatSubtitle.classList.replace('text-slate-400', 'text-emerald-400');
+            
+            contactItem.className = "flex items-center gap-4 p-4 rounded-2xl transition-all duration-500 cursor-pointer bg-white/5 border border-white/10 shadow-lg backdrop-blur-md opacity-100";
+            contactStatusIndicator.className = "w-3 h-3 bg-emerald-400 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1 shadow-[0_0_8px_rgba(52,211,153,0.6)]";
+            contactSubtitle.textContent = "Live Session Active";
+            
+            chatAvatar.classList.remove('opacity-50', 'grayscale');
+            chatAvatar.src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetId}&backgroundColor=transparent`;
+
+            // ඔබ ලබාදුන් path එකට අනුව collection එක ලබා ගැනීම
+            const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
+            
+            unsubscribe = onSnapshot(msgRef, (snapshot) => {
+                // ඔබගේ නීති (Rules) වලට අනුව කියවිය හැකි පණිවිඩ පෙරීම
+                const msgs = snapshot.docs.map(doc => doc.data())
+                    .filter(m => (m.senderId === currentUser.uid && m.receiverId === targetId) || 
+                                 (m.senderId === targetId && m.receiverId === currentUser.uid))
+                    .sort((a, b) => a.createdAt - b.createdAt);
+                
+                renderMessages(msgs);
+            }, (error) => {
+                console.error("Rule Denial:", error);
+                msgContainer.innerHTML = `<div class="p-4 bg-red-500/10 border border-red-500/20 rounded-2xl mx-auto"><p class="text-red-400 text-center text-xs">Permission denied: කරුණාකර Firestore Rules නිවැරදිව සකසා ඇත්දැයි බලන්න.</p></div>`;
+            });
+        }
+
+        // 3. UI Rendering
+        function renderMessages(msgs) {
+            if (msgs.length === 0) {
+                msgContainer.innerHTML = `
+                    <div class="flex-1 flex flex-col items-center justify-center text-slate-500">
+                        <div class="w-16 h-16 rounded-full glass-input flex items-center justify-center mb-4">
+                            <i data-lucide="zap" class="w-8 h-8 text-indigo-400/80 glow-icon"></i>
+                        </div>
+                        <p class="text-sm text-slate-300 font-medium">Connection Established</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Send a message to initialize the stream.</p>
+                    </div>`;
+                lucide.createIcons();
+                return;
+            }
+
+            msgContainer.innerHTML = msgs.map(m => {
+                const isMe = m.senderId === currentUser.uid;
+                return `
+                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
+                        <div class="message-bubble ${isMe ? 'my-message' : 'their-message'}">
+                            ${escapeHTML(m.text)}
+                        </div>
+                        <span class="text-[10px] text-slate-500 mt-2 px-3 font-mono tracking-wider">
+                            ${new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            
+            setTimeout(() => {
+                msgContainer.scrollTo({
+                    top: msgContainer.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 50);
+        }
+
+        function escapeHTML(str) {
+            const p = document.createElement('p');
+            p.textContent = str;
+            return p.innerHTML;
+        }
+
+        // 4. Events
+        targetInput.addEventListener('input', initChatListener);
+
+        chatForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const text = msgInput.value.trim();
+            const targetId = targetInput.value.trim();
+
+            if (!text || !targetId || !currentUser) return;
+
+            try {
+                // පණිවිඩය Firestore වෙත එකතු කිරීම
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'private_messages'), {
+                    text,
+                    senderId: currentUser.uid,
+                    receiverId: targetId,
+                    createdAt: Date.now()
+                });
+                msgInput.value = '';
+                sendBtn.disabled = true;
+            } catch (err) {
+                console.error("Error adding document: ", err);
+            }
+        };
+
+        msgInput.addEventListener('input', () => {
+            sendBtn.disabled = !msgInput.value.trim();
         });
 
         document.getElementById('copy-id-btn').onclick = () => {
             if (currentUser) {
-                const text = currentUser.uid;
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                alert("Your Private ID copied!");
-            }
-        };
-
-        function startListeningForMessages() {
-            if (!currentUser) return;
-            if (unsubscribeMessages) unsubscribeMessages();
-
-            // Rule එකට අනුව නිවැරදි Path එක: /artifacts/studyflow-pro/users/{userId}/messages
-            const messagesRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'messages');
-            
-            unsubscribeMessages = onSnapshot(messagesRef, (snapshot) => {
-                const allMessages = snapshot.docs.map(doc => doc.data());
-                const sorted = allMessages.sort((a, b) => a.createdAt - b.createdAt);
-                renderMessages(sorted);
-            }, (error) => {
-                console.error("Permission/Snapshot Error:", error);
-            });
-        }
-
-        function renderMessages(messages) {
-            messagesContainer.innerHTML = '';
-            if (messages.length === 0) {
-                messagesContainer.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-full text-gray-400 opacity-50">
-                        <i data-lucide="shield-check" class="w-12 h-12 mb-2 text-blue-500"></i>
-                        <p class="text-sm">Your private storage is ready.</p>
-                    </div>`;
+                navigator.clipboard.writeText(currentUser.uid);
+                const btn = document.getElementById('copy-id-btn');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i>';
                 lucide.createIcons();
-            }
-
-            messages.forEach(msg => {
-                const div = document.createElement('div');
-                div.className = `flex justify-end`;
-                div.innerHTML = `
-                    <div class="max-w-[80%] p-3 rounded-2xl shadow-sm bg-blue-600 text-white rounded-br-none">
-                        <p class="text-sm">${msg.text}</p>
-                        <p class="text-[8px] opacity-50 mt-1 text-right">${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                    </div>
-                `;
-                messagesContainer.appendChild(div);
-            });
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-
-        chatForm.onsubmit = async (e) => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-
-            if (!text || !currentUser) return;
-
-            try {
-                // Rule එකට අනුව ලිවීමට අවසර ඇත්තේ තම UID එක යටතේ ඇති path එකට පමණි
-                const messagesRef = collection(db, 'artifacts', appId, 'users', currentUser.uid, 'messages');
-                await addDoc(messagesRef, {
-                    text: text,
-                    senderId: currentUser.uid,
-                    createdAt: Date.now()
-                });
-                messageInput.value = '';
-            } catch (err) {
-                console.error("Send error (Check Rules):", err);
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    lucide.createIcons();
+                }, 2000);
             }
         };
 
