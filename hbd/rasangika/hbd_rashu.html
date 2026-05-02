@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>yo sis</title>
+  <title>හීහි🙄</title>
   
   <!-- Modern Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,10 +115,17 @@
       transform-style: preserve-3d;
       perspective: 1000px;
       transition: transform 0.3s;
+      animation: envelopePulse 3s infinite ease-in-out;
+    }
+
+    @keyframes envelopePulse {
+      0%, 100% { transform: translateY(0) scale(1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+      50% { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 50px rgba(212, 163, 115, 0.4); }
     }
 
     .envelope-wrapper:hover {
-        transform: translateY(-5px);
+        animation: none;
+        transform: translateY(-5px) scale(1.05);
     }
 
     .envelope-flap {
@@ -170,6 +177,30 @@
       animation: float 6s ease-in-out infinite;
       visibility: hidden; /* Hidden until envelope opens */
       opacity: 0;
+      z-index: 10;
+      position: relative;
+    }
+
+    /* Canvas Effects Styles */
+    #fx-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    #fluid-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9998;
+      pointer-events: none;
+      mix-blend-mode: screen;
     }
 
     .card {
@@ -418,7 +449,45 @@
 
     .hi-claudia { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--primary); }
     .quote { font-size: 0.8rem; color: var(--accent); margin-bottom: 5px; max-width: 250px; margin-left: auto; line-height: 1.5; font-weight: 500;}
-    .happy-birthday-main { font-family: 'Playfair Display', serif; font-size: 2.8rem; color: var(--primary); margin-bottom: 10px; }
+    
+    @keyframes shine {
+        0% { background-position: -200% center; }
+        100% { background-position: 200% center; }
+    }
+    
+    .happy-birthday-main { 
+        font-family: 'Playfair Display', serif; 
+        font-size: 2.8rem; 
+        margin-bottom: 10px; 
+        background: linear-gradient(90deg, var(--primary) 0%, #ff8fab 30%, var(--accent) 50%, #ff8fab 70%, var(--primary) 100%);
+        background-size: 200% auto;
+        color: transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+        animation: shine 4s linear infinite;
+    }
+
+    /* Floating Particles Container */
+    #particles-container {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 5;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+    .floating-particle {
+        position: absolute;
+        bottom: -30px;
+        font-size: 20px;
+        animation: floatUp 4s ease-in forwards;
+        opacity: 0;
+    }
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 0; }
+        20% { opacity: 0.9; }
+        100% { transform: translateY(-600px) scale(1.5) rotate(360deg); opacity: 0; }
+    }
 
     /* Photo Frame Animation */
     .photo-frame-wrapper {
@@ -552,6 +621,11 @@
   </style>
 </head>
 <body>
+
+  <!-- Background FX Canvas (Fireflies & Fireworks) -->
+  <canvas id="fx-canvas"></canvas>
+  <!-- Fluid Trail Canvas -->
+  <canvas id="fluid-canvas"></canvas>
 
   <!-- Custom Cursor -->
   <div id="custom-cursor"></div>
@@ -749,6 +823,9 @@
 
       <!-- INSIDE RIGHT (Glassmorphism & Interactive Features) -->
       <div class="card-face inside-right">
+        <!-- Particles container for floating hearts -->
+        <div id="particles-container"></div>
+        
         <!-- Glassmorphism Blobs -->
         <div class="blob" style="width: 200px; height: 200px; top: -50px; left: -50px; background: rgba(233, 220, 201, 0.5);"></div>
         <div class="blob" style="width: 150px; height: 150px; bottom: 50px; right: -30px; background: rgba(222, 200, 174, 0.5);"></div>
@@ -886,10 +963,34 @@
           document.getElementById('bizcocho_1').beginElement();
         }, 500); 
         
+        // Trigger Confetti and Particles
+        setTimeout(() => {
+            triggerConfetti();
+            spawnParticles();
+        }, 800);
+
         // Initialize Scratchpad (Needs to be visible to get correct dimensions)
         setTimeout(initScratchPad, 1500);
       }
     });
+
+    function spawnParticles() {
+        const container = document.getElementById('particles-container');
+        if(!container) return;
+        const emojis = ['❤️', '✨', '🎉', '🌸', '🎈'];
+        for(let i = 0; i < 25; i++) {
+            setTimeout(() => {
+                const particle = document.createElement('div');
+                particle.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+                particle.className = 'floating-particle';
+                particle.style.left = Math.random() * 90 + 5 + '%';
+                particle.style.fontSize = (Math.random() * 15 + 12) + 'px';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                container.appendChild(particle);
+                setTimeout(() => particle.remove(), 6000); // cleanup
+            }, i * 150);
+        }
+    }
 
     const slides = document.querySelectorAll('.photo-img .slide');
     let currentSlide = 0;
@@ -985,6 +1086,138 @@
         canvas.addEventListener('mousemove', scratch);
         canvas.addEventListener('touchmove', scratch, {passive: false});
     }
+
+    // --- Background Effects (Fireflies & Fireworks) ---
+    const fxCanvas = document.getElementById('fx-canvas');
+    const fxCtx = fxCanvas.getContext('2d');
+    
+    // --- Fluid Cursor Trail ---
+    const fluidCanvas = document.getElementById('fluid-canvas');
+    const fctx = fluidCanvas.getContext('2d');
+    
+    function resizeCanvases() {
+        fxCanvas.width = window.innerWidth;
+        fxCanvas.height = window.innerHeight;
+        fluidCanvas.width = window.innerWidth;
+        fluidCanvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvases);
+    resizeCanvases(); // Initial size
+    
+    // Fireflies Setup
+    let fireflies = [];
+    for (let i = 0; i < 60; i++) {
+        fireflies.push({
+            x: Math.random() * fxCanvas.width,
+            y: Math.random() * fxCanvas.height,
+            s: Math.random() * 2.5 + 1, // size
+            vx: (Math.random() - 0.5) * 0.8,
+            vy: (Math.random() - 0.5) * 0.8 - 0.5
+        });
+    }
+    
+    // Fireworks Setup
+    let fireworks = [];
+    function createFirework() {
+        let x = Math.random() * fxCanvas.width;
+        let y = Math.random() * (fxCanvas.height * 0.6); // Burst in the upper half
+        let color = `hsl(${Math.random() * 360}, 100%, 65%)`;
+        let particleCount = Math.random() * 50 + 40;
+        for (let i = 0; i < particleCount; i++) {
+            let angle = Math.random() * Math.PI * 2;
+            let speed = Math.random() * 5 + 1;
+            fireworks.push({
+                x: x, y: y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                color: color,
+                life: 1,
+                size: Math.random() * 2 + 1.5
+            });
+        }
+    }
+    setInterval(createFirework, 2500); // Firework every 2.5 seconds
+    
+    function animateFX() {
+        fxCtx.clearRect(0, 0, fxCanvas.width, fxCanvas.height);
+        
+        // Draw Fireflies
+        fxCtx.fillStyle = 'rgba(212, 255, 100, 0.8)';
+        fxCtx.shadowBlur = 8;
+        fxCtx.shadowColor = 'rgba(212, 255, 100, 1)';
+        for (let f of fireflies) {
+            fxCtx.beginPath();
+            fxCtx.arc(f.x, f.y, f.s, 0, Math.PI * 2);
+            fxCtx.fill();
+            f.x += f.vx;
+            f.y += f.vy;
+            
+            // Wrap around edges
+            if (f.x < -10) f.x = fxCanvas.width + 10;
+            if (f.x > fxCanvas.width + 10) f.x = -10;
+            if (f.y < -10) f.y = fxCanvas.height + 10;
+            if (f.y > fxCanvas.height + 10) f.y = -10;
+        }
+        fxCtx.shadowBlur = 0; // Reset shadow for fireworks
+        
+        // Draw Fireworks
+        for (let i = 0; i < fireworks.length; i++) {
+            let fw = fireworks[i];
+            fxCtx.beginPath();
+            fxCtx.arc(fw.x, fw.y, fw.size, 0, Math.PI * 2);
+            fxCtx.fillStyle = fw.color.replace(')', `, ${fw.life})`).replace('hsl', 'hsla');
+            fxCtx.fill();
+            fw.x += fw.vx;
+            fw.y += fw.vy;
+            fw.vy += 0.08; // Gravity effect
+            fw.life -= 0.012; // Fade out
+        }
+        fireworks = fireworks.filter(fw => fw.life > 0);
+        
+        requestAnimationFrame(animateFX);
+    }
+    animateFX();
+    
+    // Fluid Smoke Trail Setup
+    let trails = [];
+    let fluidHue = 0;
+    
+    function addFluidTrail(x, y) {
+        trails.push({
+            x: x, y: y,
+            size: Math.random() * 8 + 5, // Starts smaller (was 25 + 15)
+            color: `hsl(${fluidHue}, 100%, 65%)`,
+            life: 1,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: (Math.random() - 0.5) * 1.5 - 0.5 // Drifts upwards slightly like smoke
+        });
+        fluidHue += 3; // Shift color over time
+    }
+    
+    document.addEventListener('mousemove', (e) => addFluidTrail(e.clientX, e.clientY));
+    document.addEventListener('touchmove', (e) => {
+        if(e.touches.length > 0) addFluidTrail(e.touches[0].clientX, e.touches[0].clientY);
+    });
+    
+    function animateFluid() {
+        fctx.clearRect(0, 0, fluidCanvas.width, fluidCanvas.height);
+        for (let i = 0; i < trails.length; i++) {
+            let p = trails[i];
+            fctx.beginPath();
+            fctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            // Draw with low opacity for a soft, smoke-like overlay
+            fctx.fillStyle = p.color.replace(')', `, ${p.life * 0.4})`).replace('hsl', 'hsla');
+            fctx.fill();
+            
+            p.x += p.vx;
+            p.y += p.vy;
+            p.size += 0.2; // Expand slower (was 0.8)
+            p.life -= 0.03; // Fade
+        }
+        trails = trails.filter(p => p.life > 0);
+        requestAnimationFrame(animateFluid);
+    }
+    animateFluid();
   </script>
 </body>
 </html>
