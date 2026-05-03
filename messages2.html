@@ -3,337 +3,1101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChatPro - Secured Messenger</title>
+    <title>ChatPro - Nirapod Stream</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 
     <style>
-        body { font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+        :root {
+            --app-hue: 0deg;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: #0b141a; /* WhatsApp Web Dark Theme Base */
+            color: #f8fafc;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        input, textarea, [contenteditable] {
+            user-select: auto;
+            -webkit-user-select: auto;
+        }
+
+        #app-wrapper {
+            filter: hue-rotate(var(--app-hue));
+            transition: filter 0.5s ease;
+        }
+
+        .reverse-hue {
+            filter: hue-rotate(calc(-1 * var(--app-hue)));
+            transition: filter 0.5s ease;
+        }
+
+        .ambient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -1;
+            animation: float 20s infinite ease-in-out alternate;
+        }
         
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(5%, 10%) scale(1.1); }
+            100% { transform: translate(-5%, -5%) scale(0.9); }
+        }
+
+        /* Desktop Glassmorphism kept, Mobile stripped for WhatsApp native feel */
+        @media (min-width: 768px) {
+            .glass-panel {
+                background: rgba(17, 24, 39, 0.4);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border: 1px solid rgba(255, 255, 255, 0.05);
+            }
+        }
+        
+        .glass-input {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { 
+            background: rgba(255,255,255,0.1); 
+            border-radius: 10px; 
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
         .message-bubble {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 20px;
+            max-width: 80%;
+            padding: 8px 12px;
+            border-radius: 12px;
             font-size: 14px;
             line-height: 1.5;
             position: relative;
+            animation: message-slide 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            word-wrap: break-word;
+            will-change: transform, opacity;
+            box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.2);
         }
+        
+        /* WhatsApp Style Message Bubbles */
         .my-message {
-            background: #3b82f6;
-            color: white;
-            border-bottom-right-radius: 4px;
+            background: #005c4b;
+            color: #e9edef;
+            border-top-right-radius: 0px;
             align-self: flex-end;
         }
         .their-message {
-            background: #f1f5f9;
-            color: #1e293b;
-            border-bottom-left-radius: 4px;
+            background: #202c33;
+            color: #e9edef;
+            border-top-left-radius: 0px;
             align-self: flex-start;
         }
-        .pin-input {
-            width: 45px;
-            height: 55px;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            outline: none;
-            transition: all 0.2s;
+
+        @keyframes message-slide {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
-        .pin-input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+        .glow-text { text-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
+        .glow-icon { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.6)); }
+
+        .emoji-msg-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            min-height: 60px;
+        }
+
+        /* Mobile WhatsApp background pattern simulation */
+        .mobile-chat-bg {
+            background-color: #0b141a;
+            background-image: radial-gradient(#202c33 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
     </style>
 </head>
-<body class="bg-[#F8F9FD] h-screen flex overflow-hidden">
+<body class="h-[100dvh] w-full flex items-center justify-center overflow-hidden p-0 md:p-6 lg:p-8 relative">
 
-    <!-- Sidebar -->
-    <div class="w-80 bg-white border-r border-gray-100 flex flex-col hidden md:flex">
-        <div class="p-6">
-            <div class="flex items-center justify-between mb-8">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center border border-blue-200">
-                        <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full rounded-full" />
+    <div id="app-wrapper" class="w-full h-full flex justify-center items-center relative">
+        <div class="fixed inset-0 overflow-hidden pointer-events-none z-[-1] hidden md:block">
+            <div class="ambient-orb w-[60vw] h-[60vw] bg-emerald-600/10 top-[-20%] left-[-10%]"></div>
+            <div class="ambient-orb w-[50vw] h-[50vw] bg-teal-600/10 bottom-[-20%] right-[-10%]" style="animation-delay: -5s;"></div>
+        </div>
+
+        <div class="w-full h-full max-w-[1600px] flex md:rounded-[2.5rem] glass-panel md:shadow-2xl md:shadow-black/50 overflow-hidden relative border-none md:border border-white/10">
+            
+            <!-- Sidebar (Bam Diker List) -->
+            <div id="sidebar-area" class="w-full md:w-96 h-full absolute md:relative z-10 border-r border-white/5 flex flex-col shrink-0 bg-[#111b21] md:bg-slate-900/40 transition-transform duration-300 max-md:translate-x-0">
+                
+                <!-- Sidebar Header -->
+                <div class="p-4 md:p-6 pb-4 flex flex-col bg-[#202c33] md:bg-transparent border-b md:border-none border-white/5">
+                    <div class="flex items-center justify-between mb-4 cursor-pointer group" onclick="toggleModal('profile-modal')">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-emerald-500 to-teal-500 shadow-md group-hover:scale-105 transition-transform duration-300">
+                                <div class="w-full h-full bg-slate-900 rounded-full flex items-center justify-center overflow-hidden relative">
+                                    <img id="my-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover reverse-hue absolute inset-0" />
+                                </div>
+                            </div>
+                            <div class="overflow-hidden flex items-center gap-1.5">
+                                <h2 id="my-name" class="text-[15px] font-semibold text-slate-100 truncate">Amar Account</h2>
+                                <i id="my-verified-badge" data-lucide="badge-check" class="w-4 h-4 text-blue-400 hidden shrink-0"></i>
+                            </div>
+                        </div>
+                        <button class="text-slate-400 hover:text-white p-2"><i data-lucide="settings" class="w-5 h-5"></i></button>
                     </div>
-                    <div class="overflow-hidden">
-                        <h2 id="my-name" class="text-sm font-bold text-gray-900 truncate">මගේ ගිණුම</h2>
-                        <p id="my-id-display" class="text-[9px] text-gray-400 font-mono truncate">ID: Loading...</p>
+
+                    <div class="relative group shrink-0">
+                        <div class="relative flex items-center bg-[#202c33] md:glass-input rounded-xl p-1 shadow-sm md:shadow-inner border border-white/5 md:border-transparent">
+                            <i data-lucide="search" class="w-4 h-4 ml-3 text-slate-400"></i>
+                            <input 
+                                type="text" 
+                                id="target-user-id" 
+                                placeholder="Bondhur ID din..." 
+                                class="w-full bg-transparent border-none p-2 pl-3 text-[13px] text-slate-200 placeholder-slate-400 outline-none transition-all"
+                            />
+                        </div>
                     </div>
                 </div>
-                <button id="copy-id-btn" class="p-2 hover:bg-gray-50 rounded-lg text-gray-400" title="Copy ID">
-                    <i data-lucide="copy" class="w-4 h-4"></i>
+
+                <!-- Contacts List -->
+                <div class="flex-1 overflow-y-auto flex flex-col relative bg-[#111b21] md:bg-transparent" id="contacts-list">
+                    <div class="text-center text-slate-500 mt-10 text-xs empty-contacts">Kono sokriyo chat nei</div>
+                </div>
+            </div>
+
+            <!-- Main Chat Area (Prodhan Chat Onsho) -->
+            <div id="main-chat-area" class="w-full h-full absolute md:relative z-20 flex flex-1 flex-col mobile-chat-bg md:bg-slate-900/20 md:bg-none transition-transform duration-300 max-md:translate-x-full overflow-hidden">
+                
+                <!-- Chat Header (WhatsApp Mobile Style) -->
+                <header class="h-[60px] md:h-[72px] bg-[#202c33] md:bg-slate-900/80 md:backdrop-blur-xl border-b border-white/5 flex items-center px-2 md:px-8 shrink-0 shadow-sm z-30">
+                    <div class="flex items-center gap-1 md:gap-4 flex-1 min-w-0 h-full">
+                        <button onclick="closeMobileChat()" class="md:hidden p-2 -ml-1 text-slate-300 hover:text-white transition-colors rounded-full shrink-0">
+                            <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <!-- Nam ba chobi te click korle info sidebar asbe -->
+                        <div class="flex flex-1 items-center gap-3 cursor-pointer p-1.5 rounded-xl hover:bg-white/5 transition-colors h-full" onclick="toggleInfoPanel(true)">
+                            <div class="relative shrink-0">
+                                <img id="chat-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost" class="w-10 h-10 rounded-full opacity-50 grayscale transition-all duration-500 reverse-hue object-cover bg-slate-800" />
+                                <div id="status-dot" class="w-3 h-3 bg-slate-600 rounded-full border-2 border-[#202c33] md:border-slate-900 absolute -bottom-0.5 -right-0.5 transition-all duration-500"></div>
+                            </div>
+                            <div class="min-w-0 flex-1 flex flex-col justify-center">
+                                <h2 id="chat-title" class="text-[15px] font-semibold text-slate-100 flex items-center gap-1.5 truncate">
+                                    Nirapod Stream <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                                </h2>
+                                <p id="chat-subtitle" class="text-[12px] text-slate-400 mt-[1px] truncate">Bichhinno</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-0.5 md:gap-2 shrink-0 pr-1">
+                        <button class="p-2.5 text-slate-300 hover:text-white rounded-full transition-all"><i data-lucide="video" class="w-5 h-5"></i></button>
+                        <button class="p-2.5 text-slate-300 hover:text-white rounded-full transition-all"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                    </div>
+                </header>
+
+                <!-- Messages Container -->
+                <div id="messages-container" class="flex-1 overflow-y-auto px-3 md:px-16 py-4 flex flex-col relative scroll-smooth">
+                    <div class="empty-state flex flex-col items-center justify-center h-full text-slate-500 w-full absolute inset-0">
+                        <div class="w-16 h-16 rounded-full bg-[#202c33] md:glass-input flex items-center justify-center mb-4 shadow-lg relative">
+                            <i data-lucide="lock" class="w-7 h-7 text-emerald-400/70"></i>
+                        </div>
+                        <p class="text-[13px] font-medium text-slate-300">End-to-End Encrypted</p>
+                        <p class="text-[11px] mt-1 text-slate-500 text-center">Stream shuru korte sothik ID din.</p>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-2 md:p-6 bg-[#0b141a] md:bg-transparent relative z-20 shrink-0">
+                    <form id="chat-form" class="max-w-4xl mx-auto flex items-end gap-2">
+                        
+                        <div class="flex-1 bg-[#202c33] md:bg-slate-800/80 rounded-[24px] flex items-end min-h-[44px] shadow-sm md:shadow-lg transition-all px-1">
+                            <button type="button" class="p-3 text-slate-400 hover:text-emerald-400 transition-colors shrink-0">
+                                <i data-lucide="smile" class="w-6 h-6"></i>
+                            </button>
+                            
+                            <input 
+                                id="message-input" 
+                                type="text" 
+                                placeholder="Barta likhun..." 
+                                class="flex-1 bg-transparent border-none outline-none text-[15px] text-slate-100 placeholder-slate-400 py-3 w-full"
+                                autocomplete="off"
+                                disabled
+                            />
+                            
+                            <button type="button" class="p-3 text-slate-400 hover:text-emerald-400 transition-colors shrink-0">
+                                <i data-lucide="paperclip" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                        
+                        <button 
+                            type="submit" 
+                            id="send-btn" 
+                            disabled 
+                            class="w-11 h-11 rounded-full bg-[#00a884] text-white flex items-center justify-center shadow-md disabled:opacity-40 disabled:bg-[#202c33] transition-all duration-200 active:scale-95 group shrink-0 mb-[1px]"
+                        >
+                            <i data-lucide="send" class="w-5 h-5 ml-1 group-disabled:ml-0 transition-all"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Notun: Info Sidebar Panel (Mobile e full tab, Desktop e dan diker sidebar) -->
+                <div id="info-panel" class="absolute right-0 top-0 h-full w-full md:w-[350px] bg-[#0b141a] md:bg-slate-900/95 md:backdrop-blur-xl md:border-l border-white/5 z-[60] transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col shadow-2xl">
+                    <div class="h-[60px] md:h-[72px] bg-[#202c33] md:bg-transparent flex items-center px-4 border-b border-white/5 shrink-0">
+                        <button onclick="toggleInfoPanel(false)" class="p-2 -ml-2 text-slate-300 hover:text-white transition-colors rounded-full">
+                            <i data-lucide="arrow-left" class="w-5 h-5 md:hidden"></i>
+                            <i data-lucide="x" class="w-5 h-5 hidden md:block"></i>
+                        </button>
+                        <h2 class="ml-3 font-semibold text-white">Contact Info</h2>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto pb-8">
+                        <div class="bg-[#111b21] md:bg-transparent p-6 flex flex-col items-center text-center border-b md:border-none border-white/5">
+                            <div class="w-36 h-36 rounded-full p-1 bg-gradient-to-tr from-emerald-500 to-teal-500 shadow-xl relative mb-5">
+                                <div class="w-full h-full bg-slate-900 rounded-full overflow-hidden">
+                                    <img id="info-avatar" src="" class="w-full h-full object-cover reverse-hue bg-slate-800" />
+                                </div>
+                            </div>
+                            <h3 id="info-name" class="text-2xl font-bold text-white flex items-center gap-2 justify-center">
+                                Nam
+                                <i id="info-verified" data-lucide="badge-check" class="w-6 h-6 text-blue-400 hidden"></i>
+                            </h3>
+                            <p class="text-sm text-[#00a884] mt-2 flex items-center justify-center gap-1.5 font-medium">
+                                <div class="w-2.5 h-2.5 bg-[#00a884] rounded-full animate-pulse inline-block"></div> Sokriyo Songjog
+                            </p>
+                        </div>
+                        
+                        <div class="w-full bg-[#111b21] md:bg-slate-800/50 p-5 mt-3 border-y md:border md:mx-4 md:w-auto md:rounded-2xl border-white/5 text-left">
+                            <p class="text-[11px] uppercase tracking-wider text-emerald-500 mb-2 font-bold">User ID</p>
+                            <p id="info-id" class="text-[13px] text-slate-300 font-mono break-all"></p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    
+    <!-- Profile Modal (Settings) -->
+    <div id="profile-modal" class="hidden opacity-0 fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-300">
+        <!-- Click kalama wahanawa (Click to close overlay) -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="toggleModal('profile-modal', false)"></div>
+        <div class="bg-[#202c33] md:glass-panel w-full max-w-sm mx-4 p-8 rounded-[2rem] relative z-10 scale-95 transition-transform duration-300 shadow-2xl border border-white/5 flex flex-col gap-5" id="profile-modal-content">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Profile Seting</h3>
+                <button onclick="toggleModal('profile-modal', false)" class="text-slate-400 hover:text-white bg-white/5 p-2 rounded-full transition-all"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5 block">Prodarshito Nam</label>
+                    <input type="text" id="setting-name" class="w-full bg-[#111b21] border border-white/5 p-3 rounded-xl text-sm text-white outline-none focus:border-emerald-500 transition-colors" placeholder="Nam">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5 block">Profile Chhobir URL</label>
+                    <input type="text" id="setting-photo" class="w-full bg-[#111b21] border border-white/5 p-3 rounded-xl text-sm text-white outline-none focus:border-emerald-500 transition-colors" placeholder="https://...">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5 block">Theme Rong</label>
+                    <div class="flex gap-3">
+                        <button onclick="changeHue(0)" class="w-8 h-8 rounded-full bg-emerald-500 border-2 border-transparent hover:border-white transition-all"></button>
+                        <button onclick="changeHue(220)" class="w-8 h-8 rounded-full bg-indigo-500 border-2 border-transparent hover:border-white transition-all"></button>
+                        <button onclick="changeHue(300)" class="w-8 h-8 rounded-full bg-rose-500 border-2 border-transparent hover:border-white transition-all"></button>
+                        <button onclick="changeHue(45)" class="w-8 h-8 rounded-full bg-amber-500 border-2 border-transparent hover:border-white transition-all"></button>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-white/10">
+                    <label class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5 block">Apnar Unique ID</label>
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="text" id="setting-id" readonly class="flex-1 bg-[#111b21] border border-white/5 p-3 rounded-xl text-xs text-emerald-400 font-mono outline-none" value="Loading...">
+                        <button id="copy-id-btn" class="p-3 bg-[#00a884] hover:bg-[#008f6f] rounded-xl text-white transition-colors">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <button id="copy-link-btn" class="w-full border border-[#00a884]/30 hover:bg-[#00a884]/10 p-2.5 rounded-xl text-sm text-[#00a884] flex items-center justify-center gap-2 transition-all">
+                        <i data-lucide="link" class="w-4 h-4"></i> Chat Link Kopi Korun
+                    </button>
+                </div>
+                
+                <!-- Notun: Auth Status Container -->
+                <div id="auth-status-container" class="pt-1">
+                    <button id="google-login-btn" class="w-full bg-white/5 hover:bg-white/10 p-3 rounded-xl text-sm text-white flex items-center justify-center gap-2 transition-all group">
+                        <i data-lucide="log-in" class="w-4 h-4 text-slate-300 group-hover:text-white transition-colors"></i> Google diye Login Korun
+                    </button>
+                    
+                    <div id="logged-in-info" class="hidden flex-col items-center gap-2 w-full mt-2">
+                        <div class="flex items-center justify-center gap-1.5 w-full bg-blue-500/10 border border-blue-500/20 p-2 rounded-xl text-blue-400 text-xs font-semibold">
+                            <i data-lucide="badge-check" class="w-4 h-4"></i> Verified Account
+                        </div>
+                        <button id="logout-btn" class="w-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 p-2.5 rounded-xl text-sm text-rose-400 flex items-center justify-center gap-2 transition-all">
+                            <i data-lucide="log-out" class="w-4 h-4"></i> Log aout
+                        </button>
+                    </div>
+                </div>
+
+                <button onclick="saveProfile()" class="w-full bg-[#00a884] hover:bg-[#008f6f] p-3 rounded-xl text-sm font-semibold text-white shadow-lg shadow-emerald-900/20 active:scale-[0.98] transition-transform">
+                    Poriborton Srokhkhon Korun
                 </button>
-            </div>
-
-            <div class="relative mb-6">
-                <i data-lucide="user-search" class="w-4 h-4 absolute left-3 top-3 text-gray-400"></i>
-                <input 
-                    type="text" 
-                    id="target-user-id" 
-                    placeholder="Friend's ID here..." 
-                    class="w-full bg-gray-50 border-none p-2.5 pl-10 rounded-xl text-xs outline-none ring-1 ring-gray-100 focus:ring-blue-500/20"
-                />
-            </div>
-
-            <div class="p-4 bg-amber-50 border border-amber-100 rounded-2xl mb-4">
-                <div class="flex items-center gap-2 text-amber-700 mb-1">
-                    <i data-lucide="shield-alert" class="w-4 h-4"></i>
-                    <span class="text-[10px] font-bold uppercase tracking-wider">Passcode Security</span>
-                </div>
-                <p class="text-[10px] text-amber-600 leading-relaxed">පණිවිඩ බැලීමට දෙදෙනාම එකම අංක 4ක Passcode එක භාවිතා කළ යුතුය.</p>
             </div>
         </div>
     </div>
 
-    <!-- Main Chat Area -->
-    <div class="flex-1 flex flex-col bg-white relative">
-        
-        <!-- Passcode Overlay -->
-        <div id="passcode-overlay" class="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-            <div class="max-w-xs w-full text-center p-8">
-                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-200">
-                    <i data-lucide="lock" class="w-8 h-8"></i>
-                </div>
-                <h2 class="text-xl font-bold text-gray-800 mb-2">Access Locked</h2>
-                <p class="text-xs text-gray-400 mb-8">Enter the 4-digit passcode agreed with your friend to view messages.</p>
-                
-                <div class="flex justify-center gap-3 mb-8" id="pin-container">
-                    <input type="text" maxlength="1" class="pin-input" />
-                    <input type="text" maxlength="1" class="pin-input" />
-                    <input type="text" maxlength="1" class="pin-input" />
-                    <input type="text" maxlength="1" class="pin-input" />
-                </div>
-                
-                <button id="unlock-btn" class="w-full bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition-all">Unlock Conversation</button>
-            </div>
-        </div>
-
-        <!-- Header -->
-        <header class="h-20 border-b border-gray-50 flex items-center justify-between px-8 bg-white">
-            <div class="flex items-center gap-4">
-                <div class="relative">
-                    <div class="w-11 h-11 rounded-full bg-gray-100 border border-gray-100 overflow-hidden">
-                        <img id="chat-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Friend" />
-                    </div>
-                    <div id="status-dot" class="w-3 h-3 bg-gray-300 rounded-full border-2 border-white absolute bottom-0 right-0"></div>
-                </div>
-                <div>
-                    <h2 id="chat-title" class="font-bold text-gray-800">Secure Messaging</h2>
-                    <p id="chat-subtitle" class="text-[11px] text-gray-400">Waiting for Friend's ID</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3">
-                <button id="lock-chat-btn" class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Change Passcode">
-                    <i data-lucide="key-round" class="w-5 h-5"></i>
-                </button>
-                <div class="w-px h-6 bg-gray-100"></div>
-                <button class="p-2.5 text-gray-400 hover:bg-gray-50 rounded-xl"><i data-lucide="more-vertical" class="w-5 h-5"></i></button>
-            </div>
-        </header>
-
-        <!-- Messages Container -->
-        <div id="messages-container" class="flex-1 overflow-y-auto p-8 flex flex-col gap-4 no-scrollbar bg-[#FCFDFF]">
-            <!-- Error Alert -->
-            <div id="auth-error-alert" class="hidden bg-red-50 border border-red-200 text-red-600 p-4 rounded-xl text-xs mb-4">
-                <div class="flex items-center gap-2 font-bold mb-1">
-                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                    <span>Authentication Error</span>
-                </div>
-                <p>කරුණාකර ඔබගේ Firebase Console හි <strong>Anonymous Authentication</strong> සක්‍රිය (Enable) කර ඇති බව පරීක්ෂා කරන්න.</p>
-            </div>
-
-            <div class="flex flex-col items-center justify-center h-full text-gray-300">
-                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-200">
-                    <i data-lucide="user-plus" class="w-8 h-8"></i>
-                </div>
-                <p class="text-sm font-medium">මිතුරාගේ ID එක ඇතුළත් කරන්න</p>
-            </div>
-        </div>
-
-        <!-- Input Area -->
-        <div class="p-6 border-t border-gray-50 bg-white">
-            <form id="chat-form" class="max-w-4xl mx-auto flex items-center gap-3 bg-gray-50 p-2 rounded-2xl border border-gray-100">
-                <button type="button" class="p-2 text-gray-400 hover:text-blue-500"><i data-lucide="plus" class="w-5 h-5"></i></button>
-                <input 
-                    id="message-input" 
-                    type="text" 
-                    placeholder="පණිවිඩය මෙතැන ලියන්න..." 
-                    class="flex-1 bg-transparent border-none outline-none text-sm p-2"
-                    autocomplete="off"
-                    disabled
-                />
-                <button 
-                    type="submit" 
-                    id="send-btn" 
-                    disabled 
-                    class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-200 disabled:opacity-30 transition-all"
-                >
-                    <i data-lucide="send" class="w-5 h-5"></i>
-                </button>
-            </form>
-        </div>
+    <!-- Context Menu -->
+    <div id="context-menu" class="hidden opacity-0 fixed z-[110] bg-[#202c33] md:bg-slate-800/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl p-1.5 min-w-[160px] transform scale-95 transition-all duration-200 origin-top-left">
+        <button id="cm-delete-btn" class="w-full text-left px-3 py-2.5 text-rose-400 hover:bg-rose-500/10 rounded-lg text-sm font-medium flex items-center gap-3 transition-colors">
+            <i data-lucide="trash-2" class="w-4 h-4"></i> Muchhe Felun
+        </button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // Notun (New): updateProfile ebong signOut import kora hoyeche
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, linkWithPopup, signInWithCredential, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, writeBatch, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // නව Firebase Configuration
-        const firebaseConfig = {
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
             authDomain: "messages-9bc85.firebaseapp.com",
             projectId: "messages-9bc85",
             storageBucket: "messages-9bc85.firebasestorage.app",
             messagingSenderId: "781930969359",
-            appId: "1:781930969359:web:ce557881c2092197a0a67a",
-            measurementId: "G-L7WD587DCG"
+            appId: "1:781930969359:web:ce557881c2092197a0a67a"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = 'studyflow-pro';
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'studyflow-pro';
 
         let currentUser = null;
-        let unsubscribe = null;
-        let currentPasscode = "";
+        let unsubscribeGlobal = null;
+        let unsubscribePresence = null;
+        let allMessages = [];
+        let localContacts = {}; 
+        let currentTargetId = "";
+        let isInitialLoad = true;
+
+        let myProfile = JSON.parse(localStorage.getItem('chatpro_profile')) || {
+            name: "Amar Account",
+            photo: "", 
+            hue: 0,
+            isVerified: false
+        };
 
         const targetInput = document.getElementById('target-user-id');
         const msgContainer = document.getElementById('messages-container');
         const msgInput = document.getElementById('message-input');
         const sendBtn = document.getElementById('send-btn');
         const chatForm = document.getElementById('chat-form');
-        const statusDot = document.getElementById('status-dot');
+        const contactsList = document.getElementById('contacts-list');
+        
+        const chatTitle = document.getElementById('chat-title');
         const chatSubtitle = document.getElementById('chat-subtitle');
-        const passcodeOverlay = document.getElementById('passcode-overlay');
-        const pinInputs = document.querySelectorAll('.pin-input');
-        const errorAlert = document.getElementById('auth-error-alert');
+        const chatAvatar = document.getElementById('chat-avatar');
+        const statusDot = document.getElementById('status-dot');
 
-        pinInputs.forEach((input, index) => {
-            input.oninput = (e) => {
-                if (e.target.value && index < pinInputs.length - 1) {
-                    pinInputs[index + 1].focus();
-                }
-            };
-            input.onkeydown = (e) => {
-                if (e.key === "Backspace" && !e.target.value && index > 0) {
-                    pinInputs[index - 1].focus();
-                }
-            };
-        });
+        if ('Notification' in window) {
+            Notification.requestPermission();
+        }
 
-        document.getElementById('unlock-btn').onclick = () => {
-            const pin = Array.from(pinInputs).map(i => i.value).join('');
-            if (pin.length === 4) {
-                currentPasscode = pin;
-                passcodeOverlay.classList.add('hidden');
-                initChatListener();
+        // Modal kholar function
+        window.toggleModal = (id, show = true) => {
+            const modal = document.getElementById(id);
+            const content = document.getElementById(id + '-content');
+            if (show) {
+                modal.classList.remove('hidden');
+                void modal.offsetWidth; 
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
             } else {
-                alert("අංක 4ක Passcode එකක් ඇතුළත් කරන්න.");
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300); 
             }
         };
 
-        document.getElementById('lock-chat-btn').onclick = () => {
-            passcodeOverlay.classList.remove('hidden');
-            pinInputs.forEach(i => i.value = "");
-            pinInputs[0].focus();
+        // Info Sidebar Toggle (Dan diker sidebar)
+        window.toggleInfoPanel = (show) => {
+            const panel = document.getElementById('info-panel');
+            if (show) {
+                panel.classList.remove('translate-x-full');
+                panel.classList.add('translate-x-0');
+            } else {
+                panel.classList.remove('translate-x-0');
+                panel.classList.add('translate-x-full');
+            }
         };
 
-        // Auth management with Error handling
+        window.changeHue = (deg) => {
+            document.documentElement.style.setProperty('--app-hue', `${deg}deg`);
+            myProfile.hue = deg;
+        };
+
+        // Profile save korle Google account update korbe jodi sign in thake
+        window.saveProfile = async () => {
+            myProfile.name = document.getElementById('setting-name').value || "Amar Account";
+            myProfile.photo = document.getElementById('setting-photo').value || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}&backgroundColor=transparent`;
+            
+            localStorage.setItem('chatpro_profile', JSON.stringify(myProfile));
+            updateMyProfileUI();
+            toggleModal('profile-modal', false);
+
+            if (currentUser && !currentUser.isAnonymous) {
+                try {
+                    await updateProfile(currentUser, {
+                        displayName: myProfile.name,
+                        photoURL: myProfile.photo
+                    });
+                } catch(e) { console.error("Update profile error:", e); }
+            }
+        };
+
+        function updateMyProfileUI() {
+            document.getElementById('my-name').textContent = myProfile.name;
+            document.getElementById('setting-name').value = myProfile.name;
+            
+            const avatarSrc = myProfile.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.uid}&backgroundColor=transparent`;
+            document.getElementById('my-avatar').src = avatarSrc;
+            document.getElementById('setting-photo').value = avatarSrc;
+            
+            changeHue(myProfile.hue);
+
+            const verifiedBadge = document.getElementById('my-verified-badge');
+            if (myProfile.isVerified) {
+                verifiedBadge.classList.remove('hidden');
+            } else {
+                verifiedBadge.classList.add('hidden');
+            }
+        }
+
+        function updatePresenceStatus() {
+            if (!currentUser) return;
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_presence', currentUser.uid), {
+                isOnline: true,
+                lastSeen: Date.now(),
+                isVerified: myProfile.isVerified || false // Notun flag
+            }, { merge: true }).catch(err => console.error(err));
+        }
+
+        function setOfflineStatus() {
+            if (!currentUser) return;
+            setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_presence', currentUser.uid), {
+                isOnline: false,
+                lastSeen: Date.now()
+            }, { merge: true }).catch(() => {});
+        }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                errorAlert.classList.add('hidden');
-                document.getElementById('my-id-display').textContent = `ID: ${user.uid}`;
-                document.getElementById('my-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`;
-                if (targetInput.value.length >= 10) {
-                    passcodeOverlay.classList.remove('hidden');
+                
+                const isAnon = user.isAnonymous;
+                myProfile.isVerified = !isAnon;
+
+                // Sync UI based on auth state
+                if (!isAnon) {
+                    if (user.displayName) myProfile.name = user.displayName;
+                    if (user.photoURL) myProfile.photo = user.photoURL;
+                    
+                    document.getElementById('google-login-btn').classList.add('hidden');
+                    document.getElementById('logged-in-info').classList.remove('hidden');
+                    document.getElementById('logged-in-info').classList.add('flex');
+                } else {
+                    if (!myProfile.photo) {
+                        myProfile.photo = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}&backgroundColor=transparent`;
+                    }
+                    document.getElementById('google-login-btn').classList.remove('hidden');
+                    document.getElementById('logged-in-info').classList.add('hidden');
+                    document.getElementById('logged-in-info').classList.remove('flex');
+                }
+
+                document.getElementById('setting-id').value = user.uid;
+                updateMyProfileUI();
+                startGlobalListener();
+
+                updatePresenceStatus();
+                setInterval(updatePresenceStatus, 30000);
+                window.addEventListener('beforeunload', setOfflineStatus);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') updatePresenceStatus();
+                });
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const chatParam = urlParams.get('chat');
+                if (chatParam && chatParam !== user.uid) {
+                    setTimeout(() => {
+                        targetInput.value = chatParam;
+                        handleTargetChange();
+                        if (window.innerWidth < 768) {
+                            openMobileChat();
+                        }
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }, 500);
                 }
             } else {
-                signInAnonymously(auth).catch(err => {
-                    console.error("Auth Error:", err.code);
-                    if (err.code === 'auth/configuration-not-found') {
-                        errorAlert.classList.remove('hidden');
-                        document.getElementById('my-id-display').textContent = "ID: Auth Error";
-                    }
-                });
+                signInAnonymously(auth);
             }
         });
 
-        function initChatListener() {
-            const targetId = targetInput.value.trim();
-            if (unsubscribe) unsubscribe();
+        async function mergeAnonymousData(oldUid, newUid) {
+            if (!oldUid || !newUid || oldUid === newUid) return;
+            
+            const msgsToUpdate = allMessages.filter(m => m.senderId === oldUid || m.receiverId === oldUid);
+            if(msgsToUpdate.length === 0) return;
 
-            if (targetId.length < 10) {
-                msgInput.disabled = true;
-                sendBtn.disabled = true;
-                statusDot.className = "w-3 h-3 bg-gray-300 rounded-full border-2 border-white absolute bottom-0 right-0";
-                chatSubtitle.textContent = "Waiting for Friend ID...";
+            const batch = writeBatch(db);
+            let count = 0;
+            
+            msgsToUpdate.forEach(m => {
+                if(count < 450) { 
+                    const msgRef = doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', m.id);
+                    const updateData = {};
+                    if(m.senderId === oldUid) updateData.senderId = newUid;
+                    if(m.receiverId === oldUid) updateData.receiverId = newUid;
+                    batch.update(msgRef, updateData);
+                    count++;
+                }
+            });
+            
+            if(count > 0) {
+                try {
+                    await batch.commit();
+                } catch(e) {
+                    console.error("Merge error:", e);
+                }
+            }
+        }
+
+        // Login Korar System
+        document.getElementById('google-login-btn').onclick = async () => {
+            const provider = new GoogleAuthProvider();
+            const oldUid = currentUser?.uid;
+            const wasAnonymous = currentUser?.isAnonymous;
+
+            try {
+                let result;
+                if (wasAnonymous) {
+                    try {
+                        result = await linkWithPopup(auth.currentUser, provider);
+                    } catch (error) {
+                        if (error.code === 'auth/credential-already-in-use') {
+                            const credential = GoogleAuthProvider.credentialFromError(error);
+                            result = await signInWithCredential(auth, credential);
+                            const newUid = result.user.uid;
+                            await mergeAnonymousData(oldUid, newUid);
+                        } else {
+                            throw error;
+                        }
+                    }
+                } else {
+                    result = await signInWithPopup(auth, provider);
+                }
+
+                myProfile.name = result.user.displayName || myProfile.name;
+                myProfile.photo = result.user.photoURL || myProfile.photo;
+                myProfile.isVerified = true;
+                
+                await updateProfile(result.user, {
+                    displayName: myProfile.name,
+                    photoURL: myProfile.photo
+                });
+
+                saveProfile();
+
+            } catch (error) {
+                console.error("Login Error:", error);
+            }
+        };
+
+        // Logout Korar System
+        document.getElementById('logout-btn').onclick = async () => {
+            try {
+                await signOut(auth);
+                toggleModal('profile-modal', false);
+            } catch(e) {
+                console.error("Logout error", e);
+            }
+        };
+
+        function listenToPartnerPresence(partnerId) {
+            if (unsubscribePresence) unsubscribePresence();
+            if (!partnerId) return;
+            
+            const presenceRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_presence', partnerId);
+            unsubscribePresence = onSnapshot(presenceRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const isOnline = data.isOnline && (Date.now() - data.lastSeen < 60000);
+                    
+                    if (isOnline) {
+                        chatSubtitle.textContent = "Online";
+                        chatSubtitle.classList.replace('text-slate-400', 'text-[#00a884]');
+                        statusDot.className = "w-3 h-3 md:w-3.5 md:h-3.5 bg-[#00a884] rounded-full border-2 border-[#202c33] md:border-slate-900 absolute -bottom-0.5 -right-0.5 shadow-[0_0_8px_rgba(0,168,132,0.6)] animate-pulse transition-all duration-500";
+                    } else {
+                        const date = new Date(data.lastSeen);
+                        const now = new Date();
+                        let timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        if (date.toDateString() !== now.toDateString()) {
+                            timeStr = date.toLocaleDateString() + " " + timeStr;
+                        }
+                        chatSubtitle.textContent = `Sesh dekha: ${timeStr}`;
+                        chatSubtitle.classList.replace('text-[#00a884]', 'text-slate-400');
+                        statusDot.className = "w-3 h-3 md:w-3.5 md:h-3.5 bg-slate-600 rounded-full border-2 border-[#202c33] md:border-slate-900 absolute -bottom-0.5 -right-0.5 transition-all duration-500";
+                    }
+                } else {
+                    chatSubtitle.textContent = "Offline";
+                    chatSubtitle.classList.replace('text-[#00a884]', 'text-slate-400');
+                    statusDot.className = "w-3 h-3 md:w-3.5 md:h-3.5 bg-slate-600 rounded-full border-2 border-[#202c33] md:border-slate-900 absolute -bottom-0.5 -right-0.5 transition-all duration-500";
+                }
+            });
+        }
+
+        function startGlobalListener() {
+            if (unsubscribeGlobal) unsubscribeGlobal();
+            const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
+            
+            unsubscribeGlobal = onSnapshot(msgRef, (snapshot) => {
+                const newDocs = snapshot.docChanges();
+                
+                if (!isInitialLoad) {
+                    newDocs.forEach(change => {
+                        if (change.type === 'added') {
+                            const m = change.doc.data();
+                            if (m.receiverId === currentUser.uid && !m.read && !m.isSystem) {
+                                if (currentTargetId !== m.senderId || document.visibilityState !== 'visible') {
+                                    if ('Notification' in window && Notification.permission === 'granted') {
+                                        new Notification(m.senderName || 'Notun Barta', {
+                                            body: m.text.substring(0, 50),
+                                            icon: m.senderPhoto || 'https://api.dicebear.com/7.x/avataaars/svg?seed=bell'
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                allMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+                    .filter(m => m.senderId === currentUser.uid || m.receiverId === currentUser.uid)
+                    .filter(m => !(m.deletedFor && m.deletedFor.includes(currentUser.uid))) 
+                    .sort((a, b) => a.createdAt - b.createdAt);
+                
+                processContacts();
+                updateActiveChatUI();
+                isInitialLoad = false;
+            }, (error) => {
+                console.error("Error:", error);
+            });
+        }
+
+        function processContacts() {
+            localContacts = {};
+            
+            allMessages.forEach(m => {
+                if (m.isSystem && m.systemType === 'chat_deleted') return; 
+
+                const partnerId = m.senderId === currentUser.uid ? m.receiverId : m.senderId;
+                
+                if (!localContacts[partnerId]) {
+                    localContacts[partnerId] = {
+                        id: partnerId,
+                        name: "Secure Link",
+                        photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${partnerId}&backgroundColor=transparent`,
+                        unreadCount: 0,
+                        lastTime: 0,
+                        isVerified: false
+                    };
+                }
+                
+                localContacts[partnerId].lastTime = Math.max(localContacts[partnerId].lastTime, m.createdAt);
+                
+                if (m.receiverId === currentUser.uid && !m.read && !m.isSystem) {
+                    if (!(currentTargetId === partnerId && document.visibilityState === 'visible')) {
+                        localContacts[partnerId].unreadCount++;
+                    }
+                }
+                
+                if (m.senderId === partnerId && m.senderName) {
+                    localContacts[partnerId].name = m.senderName;
+                    localContacts[partnerId].photo = m.senderPhoto || localContacts[partnerId].photo;
+                    if (m.isVerified) localContacts[partnerId].isVerified = true;
+                }
+            });
+
+            renderSidebarContacts();
+        }
+
+        function renderSidebarContacts() {
+            const arr = Object.values(localContacts).sort((a, b) => b.lastTime - a.lastTime);
+            
+            const emptyMsg = contactsList.querySelector('.empty-contacts');
+            if (arr.length === 0) {
+                if (!emptyMsg) {
+                    contactsList.innerHTML = `<div class="text-center text-slate-500 mt-10 text-xs empty-contacts">Kono sokriyo chat nei</div>`;
+                }
                 return;
+            } else if (emptyMsg) {
+                emptyMsg.remove();
             }
 
-            if (!currentPasscode) {
-                passcodeOverlay.classList.remove('hidden');
+            arr.forEach((c, index) => {
+                let el = document.getElementById(`contact-${c.id}`);
+                const isActive = c.id === currentTargetId;
+                const bgClass = isActive ? 'bg-[#2a3942] md:bg-white/10' : 'border-transparent hover:bg-[#202c33] md:hover:bg-white/5';
+                const indicator = isActive ? 'bg-[#00a884] shadow-[0_0_8px_rgba(0,168,132,0.6)]' : 'bg-slate-600';
+                const badgeHTML = c.unreadCount > 0 
+                    ? `<span class="bg-[#00a884] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0 contact-badge">${c.unreadCount}</span>` 
+                    : `<span class="contact-badge hidden"></span>`;
+                const verifiedBadge = c.isVerified ? `<i data-lucide="badge-check" class="w-4 h-4 text-blue-400 ml-1.5 inline-block"></i>` : '';
+
+                if (!el) {
+                    const html = `
+                        <div id="contact-${c.id}" onclick="selectContact('${c.id}')" data-id="${c.id}" class="contact-item flex items-center gap-3 px-4 py-3 md:p-3 md:rounded-2xl transition-all cursor-pointer border-b border-white/5 md:border md:mb-2 ${bgClass}">
+                            <div class="relative shrink-0">
+                                <div class="w-12 h-12 md:w-11 md:h-11 rounded-full md:rounded-2xl flex items-center justify-center overflow-hidden shadow-sm">
+                                    <img src="${c.photo}" class="w-full h-full object-cover reverse-hue contact-img bg-[#202c33]" />
+                                </div>
+                                <div class="contact-indicator w-3 h-3 ${indicator} rounded-full border-2 border-[#111b21] md:border-slate-900 absolute -bottom-0.5 -right-0.5 transition-all"></div>
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <h3 class="contact-name flex items-center text-[15px] md:text-[13px] font-semibold text-slate-200 truncate pr-2">${c.name} ${verifiedBadge}</h3>
+                                    ${badgeHTML}
+                                </div>
+                                <p class="text-[12px] md:text-[10px] text-slate-400 truncate font-mono">${c.id.substring(0,8)}...</p>
+                            </div>
+                        </div>
+                    `;
+                    contactsList.insertAdjacentHTML('beforeend', html);
+                    el = document.getElementById(`contact-${c.id}`);
+                } else {
+                    el.className = `contact-item flex items-center gap-3 px-4 py-3 md:p-3 md:rounded-2xl transition-all cursor-pointer border-b border-white/5 md:border md:mb-2 ${bgClass}`;
+                    el.querySelector('.contact-indicator').className = `contact-indicator w-3 h-3 ${indicator} rounded-full border-2 border-[#111b21] md:border-slate-900 absolute -bottom-0.5 -right-0.5 transition-all`;
+                    el.querySelector('.contact-name').innerHTML = `${c.name} ${verifiedBadge}`;
+                    
+                    const img = el.querySelector('.contact-img');
+                    if(img.src !== c.photo) img.src = c.photo;
+
+                    let badge = el.querySelector('.contact-badge');
+                    if(badge) badge.outerHTML = badgeHTML;
+                }
+                
+                if(contactsList.children[index] !== el) {
+                    contactsList.insertBefore(el, contactsList.children[index]);
+                }
+            });
+            
+            Array.from(contactsList.children).forEach(child => {
+                if (child.id && child.id.startsWith('contact-')) {
+                    const id = child.id.replace('contact-', '');
+                    if (!localContacts[id]) child.remove();
+                }
+            });
+            lucide.createIcons();
+        }
+
+        window.selectContact = (id) => {
+            targetInput.value = id;
+            handleTargetChange();
+            if (window.innerWidth < 768) {
+                openMobileChat();
+            }
+        };
+
+        window.openMobileChat = () => {
+            document.getElementById('sidebar-area').classList.add('max-md:-translate-x-full');
+            document.getElementById('main-chat-area').classList.remove('max-md:translate-x-full');
+            history.pushState({ chatOpen: true }, "");
+        };
+
+        window.closeMobileChat = () => {
+            document.getElementById('sidebar-area').classList.remove('max-md:-translate-x-full');
+            document.getElementById('main-chat-area').classList.add('max-md:translate-x-full');
+            currentTargetId = "";
+            targetInput.value = "";
+            toggleInfoPanel(false); // Make sure sidebar is closed
+            handleTargetChange();
+        };
+
+        window.addEventListener('popstate', (e) => {
+            if (!e.state || !e.state.chatOpen) {
+                closeMobileChat();
+            }
+        });
+
+        function handleTargetChange() {
+            currentTargetId = targetInput.value.trim();
+            
+            if (currentTargetId.length < 10) {
+                msgInput.disabled = true;
+                sendBtn.disabled = true;
+                if (unsubscribePresence) { unsubscribePresence(); unsubscribePresence = null; }
+                
+                statusDot.className = "w-3 h-3 md:w-3.5 md:h-3.5 bg-slate-600 rounded-full border-2 border-[#202c33] md:border-slate-900 absolute -bottom-0.5 -right-0.5 transition-all duration-500";
+                chatTitle.innerHTML = `Nirapod Stream <i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#00a884] shrink-0"></i>`;
+                chatSubtitle.textContent = "Bichhinno";
+                chatSubtitle.classList.replace('text-[#00a884]', 'text-slate-400');
+                
+                chatAvatar.classList.add('opacity-50', 'grayscale');
+                chatAvatar.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Ghost&backgroundColor=transparent";
+                
+                renderMessages([]); 
+                lucide.createIcons();
                 return;
             }
 
             msgInput.disabled = false;
-            statusDot.className = "w-3 h-3 bg-green-500 rounded-full border-2 border-white absolute bottom-0 right-0 animate-pulse";
-            chatSubtitle.textContent = `Active Session (PIN: ${currentPasscode})`;
-            document.getElementById('chat-avatar').src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${targetId}`;
-
-            const msgRef = collection(db, 'artifacts', appId, 'public', 'data', 'private_messages');
             
-            unsubscribe = onSnapshot(msgRef, (snapshot) => {
-                try {
-                    const msgs = snapshot.docs.map(doc => doc.data())
-                        .filter(m => (m.senderId === currentUser.uid && m.receiverId === targetId) || 
-                                     (m.senderId === targetId && m.receiverId === currentUser.uid))
-                        .filter(m => m.passcode === currentPasscode)
-                        .sort((a, b) => a.createdAt - b.createdAt);
-                    
-                    renderMessages(msgs);
-                } catch (e) {
-                    console.error("Data error:", e);
+            const contact = localContacts[currentTargetId] || { 
+                name: "Secure Link", 
+                photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentTargetId}&backgroundColor=transparent`,
+                isVerified: false
+            };
+            
+            const verifiedIcon = contact.isVerified ? `<i data-lucide="badge-check" class="w-4 h-4 text-blue-400 ml-1"></i>` : `<i data-lucide="shield-check" class="w-3.5 h-3.5 text-[#00a884] shrink-0"></i>`;
+            
+            chatTitle.innerHTML = `${contact.name} ${verifiedIcon}`;
+            chatAvatar.classList.remove('opacity-50', 'grayscale');
+            chatAvatar.src = contact.photo;
+
+            // Info Panel UI Update
+            document.getElementById('info-name').innerHTML = `${contact.name} ${contact.isVerified ? '<i data-lucide="badge-check" class="w-6 h-6 text-blue-400"></i>' : ''}`;
+            document.getElementById('info-avatar').src = contact.photo;
+            document.getElementById('info-id').textContent = currentTargetId;
+
+            listenToPartnerPresence(currentTargetId);
+            markAsRead(currentTargetId);
+            updateActiveChatUI();
+            
+            if (localContacts[currentTargetId]) {
+                localContacts[currentTargetId].unreadCount = 0;
+                renderSidebarContacts();
+            }
+            lucide.createIcons();
+        }
+
+        async function markAsRead(partnerId) {
+            if (!currentUser) return;
+            const unreadMsgs = allMessages.filter(m => m.receiverId === currentUser.uid && m.senderId === partnerId && !m.read && !m.isSystem);
+            
+            if (unreadMsgs.length === 0) return;
+
+            const batch = writeBatch(db);
+            let count = 0;
+            unreadMsgs.forEach(m => {
+                if (count < 400) {
+                    batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', m.id), { read: true });
+                    count++;
                 }
-            }, (err) => {
-                console.error("Firestore error:", err);
             });
+            if (count > 0) {
+                try {
+                    await batch.commit();
+                } catch(e) {
+                    console.error("Batch error:", e);
+                }
+            }
+        }
+
+        function updateActiveChatUI() {
+            if (!currentTargetId || currentTargetId.length < 10) return;
+
+            const activeMsgs = allMessages.filter(m => 
+                (m.senderId === currentUser.uid && m.receiverId === currentTargetId) || 
+                (m.senderId === currentTargetId && m.receiverId === currentUser.uid)
+            );
+            
+            if (document.visibilityState === 'visible') {
+                markAsRead(currentTargetId);
+            }
+            renderMessages(activeMsgs);
+        }
+
+        function isSingleEmoji(text) {
+            if (!text) return false;
+            const t = text.trim();
+            if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+                const segmenter = new Intl.Segmenter('en', { granularity: 'grapheme' });
+                const segments = Array.from(segmenter.segment(t));
+                if (segments.length !== 1) return false;
+                return /^[\p{Emoji_Presentation}\p{Extended_Pictographic}]+$/u.test(segments[0].segment);
+            }
+            return /^[\p{Emoji_Presentation}\p{Extended_Pictographic}]+$/u.test(t);
+        }
+
+        function getEmojiHex(emoji) {
+            return Array.from(emoji)
+                .map(char => char.codePointAt(0).toString(16))
+                .filter(hex => hex !== 'fe0f')
+                .join('_');
+        }
+
+        function formatMessageContent(text) {
+            const t = text.trim();
+            if (t.match(/\.(jpeg|jpg|gif|png|webp)$/i) && t.startsWith('http')) {
+                return `<img src="${t}" class="w-full max-w-[240px] rounded-lg mt-1 mb-1 object-cover hover:scale-[1.02] transition-transform cursor-pointer" onerror="this.outerHTML='<a href=&quot;${t}&quot; target=&quot;_blank&quot; class=&quot;underline text-indigo-300&quot;>${t}</a>'" />`;
+            }
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            return escapeHTML(t).replace(urlRegex, function(url) {
+                return `<a href="${url}" target="_blank" class="underline text-emerald-300 hover:text-white transition-colors">${url}</a>`;
+            });
+        }
+
+        function createMessageHTML(m) {
+            if (m.isSystem && m.systemType === 'chat_deleted') {
+                return `
+                    <div class="message-wrapper w-full flex justify-center my-3" data-id="${m.id}">
+                        <div class="bg-[#202c33] border border-white/5 text-slate-300 text-xs px-4 py-2 rounded-xl text-center max-w-xs shadow-sm">
+                            <i data-lucide="alert-circle" class="w-4 h-4 mx-auto mb-1 opacity-70"></i>
+                            <p>${escapeHTML(m.senderName)} chat ti muchhe feleshen.</p>
+                            <button onclick="deleteChatWith('${m.senderId}')" class="mt-2 text-[#00a884] font-semibold hover:underline">Amar dik thekeo muchhun</button>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const isMe = m.senderId === currentUser.uid;
+            const timeStr = new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const ticks = isMe ? `<i data-lucide="check-check" class="w-3.5 h-3.5 ml-1 read-ticks transition-colors duration-300 ${m.read ? 'text-[#53bdeb]' : 'text-slate-400 opacity-70'}"></i>` : '';
+
+            if (m.deleted) {
+                return `
+                    <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
+                        <div class="message-bubble ${isMe ? 'my-message' : 'their-message'} is-deleted italic opacity-70 flex items-end gap-2">
+                            <span><i data-lucide="ban" class="w-3.5 h-3.5 inline mr-1 opacity-70"></i> Barta ti muchhe fela hoyeche</span>
+                            <div class="flex items-center shrink-0 mb-[-2px] opacity-70">
+                                <span class="text-[10px] font-mono">${timeStr}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const text = m.text.trim();
+            if (isSingleEmoji(text)) {
+                const hex = getEmojiHex(text);
+                return `
+                    <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
+                        <div class="${isMe ? 'my-message' : 'their-message'} inner-bubble !bg-transparent !border-none !shadow-none !p-0">
+                            <div class="emoji-msg-container transform hover:scale-110 transition-transform" data-hex="${hex}" data-raw="${text}">
+                                <span class="text-6xl drop-shadow-lg">${text}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center mt-1 px-1">
+                            <span class="text-[10px] text-slate-500 font-mono tracking-wider">${timeStr}</span>
+                            ${ticks}
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
+                    <div class="message-bubble inner-bubble ${isMe ? 'my-message' : 'their-message'}">
+                        <div class="flex items-end gap-3 flex-wrap justify-between">
+                            <span class="mb-0.5">${formatMessageContent(text)}</span>
+                            <div class="flex items-center shrink-0 mb-[-2px] opacity-70 float-right">
+                                <span class="text-[10px] text-slate-300 font-mono mt-1">${timeStr}</span>
+                                ${ticks}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateMessageElement(el, m) {
+            const tickIcon = el.querySelector('.read-ticks');
+            if (tickIcon && m.read && tickIcon.classList.contains('text-slate-400')) {
+                tickIcon.classList.remove('text-slate-400', 'opacity-70');
+                tickIcon.classList.add('text-[#53bdeb]');
+            }
+
+            if (m.deleted) {
+                const inner = el.querySelector('.inner-bubble, .message-bubble');
+                if (inner && !inner.classList.contains('is-deleted')) {
+                    const timeStr = new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    inner.className = `message-bubble ${m.senderId === currentUser.uid ? 'my-message' : 'their-message'} is-deleted italic opacity-70 flex items-end gap-2`;
+                    inner.innerHTML = `<span><i data-lucide="ban" class="w-3.5 h-3.5 inline mr-1 opacity-70"></i> Barta ti muchhe fela hoyeche</span>
+                            <div class="flex items-center shrink-0 mb-[-2px] opacity-70">
+                                <span class="text-[10px] font-mono">${timeStr}</span>
+                            </div>`;
+                    lucide.createIcons({root: inner});
+                }
+            }
         }
 
         function renderMessages(msgs) {
             if (msgs.length === 0) {
                 msgContainer.innerHTML = `
-                    <div class="flex-1 flex flex-col items-center justify-center text-gray-300">
-                        <i data-lucide="shield-lock" class="w-10 h-10 mb-2 opacity-20"></i>
-                        <p class="text-sm">පණිවිඩ කිසිවක් නැත.</p>
-                        <p class="text-[10px] mt-1">දෙදෙනාම එකම PIN එක භාවිතා කරන බව සහතික කරගන්න.</p>
+                    <div class="empty-state flex flex-col items-center justify-center h-full text-slate-500 w-full absolute inset-0 transition-opacity duration-500">
+                        <div class="w-14 h-14 rounded-full bg-[#202c33] flex items-center justify-center mb-3">
+                            <i data-lucide="zap" class="w-6 h-6 text-[#00a884]"></i>
+                        </div>
+                        <p class="text-[13px] text-slate-300 font-medium">Songjog Sthapito</p>
+                        <p class="text-[11px] text-slate-500 mt-1">Barta pathiye shuru korun.</p>
                     </div>`;
                 lucide.createIcons();
                 return;
             }
 
-            msgContainer.innerHTML = msgs.map(m => {
-                const isMe = m.senderId === currentUser.uid;
-                return `
-                    <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'}">
-                        <div class="message-bubble ${isMe ? 'my-message' : 'their-message'}">
-                            ${escapeHTML(m.text)}
-                        </div>
-                        <span class="text-[9px] text-gray-400 mt-1 px-2">
-                            ${new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </span>
-                    </div>
-                `;
-            }).join('');
-            msgContainer.scrollTop = msgContainer.scrollHeight;
+            let wrapper = msgContainer.querySelector('.messages-wrapper');
+            if (!wrapper) {
+                msgContainer.innerHTML = `<div class="max-w-3xl mx-auto w-full flex flex-col gap-2 pb-2 pt-2 messages-wrapper"></div>`;
+                wrapper = msgContainer.querySelector('.messages-wrapper');
+            } else {
+                const empty = msgContainer.querySelector('.empty-state');
+                if (empty) empty.remove();
+            }
+
+            const isScrolledToBottom = msgContainer.scrollHeight - msgContainer.clientHeight <= msgContainer.scrollTop + 80;
+
+            msgs.forEach(m => {
+                let el = wrapper.querySelector(`[data-id="${m.id}"]`);
+                if (!el) {
+                    wrapper.insertAdjacentHTML('beforeend', createMessageHTML(m));
+                    const newEl = wrapper.lastElementChild;
+                    if (isSingleEmoji(m.text) && !m.deleted && !m.isSystem) {
+                        const container = newEl.querySelector('.emoji-msg-container');
+                        if(container) {
+                            const url = `https://fonts.gstatic.com/s/e/notoemoji/latest/${container.dataset.hex}/lottie.json`;
+                            const lottiePlayer = document.createElement('lottie-player');
+                            lottiePlayer.src = url; lottiePlayer.autoplay = true; lottiePlayer.loop = true;
+                            lottiePlayer.style.width = '120px'; lottiePlayer.style.height = '120px';
+                            container.innerHTML = ''; container.appendChild(lottiePlayer);
+                        }
+                    }
+                    lucide.createIcons({root: newEl});
+                } else {
+                    updateMessageElement(el, m);
+                }
+            });
+
+            Array.from(wrapper.children).forEach(child => {
+                if (!msgs.find(m => m.id === child.dataset.id)) {
+                    child.remove();
+                }
+            });
+
+            if (isScrolledToBottom) {
+                msgContainer.scrollTo({ top: msgContainer.scrollHeight, behavior: 'smooth' });
+            }
         }
 
         function escapeHTML(str) {
@@ -342,45 +1106,227 @@
             return p.innerHTML;
         }
 
-        targetInput.addEventListener('input', () => {
-            if (targetInput.value.trim().length >= 10) {
-                passcodeOverlay.classList.remove('hidden');
-            } else {
-                initChatListener();
-            }
-        });
+        targetInput.addEventListener('input', handleTargetChange);
 
         chatForm.onsubmit = async (e) => {
             e.preventDefault();
             const text = msgInput.value.trim();
-            const targetId = targetInput.value.trim();
+            if (!text || !currentTargetId || !currentUser) return;
 
-            if (!text || !targetId || !currentUser || !currentPasscode) return;
+            const iconBtn = sendBtn.innerHTML;
+            sendBtn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
+            lucide.createIcons();
 
             try {
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'private_messages'), {
                     text,
                     senderId: currentUser.uid,
-                    receiverId: targetId,
-                    passcode: currentPasscode,
-                    createdAt: Date.now()
+                    receiverId: currentTargetId,
+                    createdAt: Date.now(),
+                    read: false,
+                    deleted: false,
+                    senderName: myProfile.name,
+                    senderPhoto: myProfile.photo,
+                    isVerified: myProfile.isVerified // Notun: Barta te verified onsho jukto kora holo
                 });
                 msgInput.value = '';
                 sendBtn.disabled = true;
+                updatePresenceStatus(); 
+                
+                setTimeout(() => {
+                    msgContainer.scrollTo({ top: msgContainer.scrollHeight, behavior: 'smooth' });
+                }, 100);
             } catch (err) {
-                console.error("Send error:", err);
+                console.error("Error: ", err);
             }
+            sendBtn.innerHTML = iconBtn;
         };
 
-        msgInput.addEventListener('input', () => sendBtn.disabled = !msgInput.value.trim());
+        msgInput.addEventListener('input', () => {
+            sendBtn.disabled = !msgInput.value.trim();
+        });
 
         document.getElementById('copy-id-btn').onclick = () => {
             if (currentUser) {
                 navigator.clipboard.writeText(currentUser.uid);
-                alert("ඔබේ ID එක Copy කළා!");
+                const btn = document.getElementById('copy-id-btn');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i>';
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    lucide.createIcons();
+                }, 2000);
             }
         };
 
+        document.getElementById('copy-link-btn').onclick = () => {
+            if (currentUser) {
+                const link = `${window.location.origin}${window.location.pathname}?chat=${currentUser.uid}`;
+                navigator.clipboard.writeText(link);
+                const btn = document.getElementById('copy-link-btn');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Copied!';
+                lucide.createIcons();
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    lucide.createIcons();
+                }, 2000);
+            }
+        };
+
+        const contextMenu = document.getElementById('context-menu');
+        const cmDeleteBtn = document.getElementById('cm-delete-btn');
+        let currentContextMenuTarget = null;
+        let currentContextMenuAction = null;
+
+        function showContextMenu(x, y, action, targetId) {
+            currentContextMenuAction = action;
+            currentContextMenuTarget = targetId;
+            
+            contextMenu.classList.remove('hidden');
+            
+            const menuWidth = 160;
+            const menuHeight = 50;
+            const safeX = Math.min(x, window.innerWidth - menuWidth - 10);
+            const safeY = Math.min(y, window.innerHeight - menuHeight - 10);
+            
+            contextMenu.style.left = `${safeX}px`;
+            contextMenu.style.top = `${safeY}px`;
+            
+            setTimeout(() => {
+                contextMenu.classList.remove('opacity-0');
+                contextMenu.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function hideContextMenu() {
+            contextMenu.classList.add('opacity-0');
+            contextMenu.classList.add('scale-95');
+            setTimeout(() => {
+                contextMenu.classList.add('hidden');
+            }, 200);
+            currentContextMenuTarget = null;
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!contextMenu.contains(e.target)) hideContextMenu();
+        });
+
+        let touchTimer;
+        
+        msgContainer.addEventListener('contextmenu', (e) => {
+            const msgEl = e.target.closest('.message-wrapper');
+            if (msgEl) {
+                e.preventDefault();
+                const msgId = msgEl.dataset.id;
+                const msg = allMessages.find(m => m.id === msgId);
+                if (msg && msg.senderId === currentUser.uid && !msg.deleted && !msg.isSystem) {
+                    showContextMenu(e.clientX, e.clientY, 'delete_msg', msgId);
+                }
+            }
+        });
+
+        msgContainer.addEventListener('touchstart', (e) => {
+            const msgEl = e.target.closest('.message-wrapper');
+            if (msgEl) {
+                touchTimer = setTimeout(() => {
+                    const msgId = msgEl.dataset.id;
+                    const msg = allMessages.find(m => m.id === msgId);
+                    if (msg && msg.senderId === currentUser.uid && !msg.deleted && !msg.isSystem) {
+                        showContextMenu(e.touches[0].clientX, e.touches[0].clientY, 'delete_msg', msgId);
+                    }
+                }, 600);
+            }
+        }, {passive: true});
+
+        msgContainer.addEventListener('touchend', () => clearTimeout(touchTimer));
+        msgContainer.addEventListener('touchmove', () => clearTimeout(touchTimer));
+
+        contactsList.addEventListener('contextmenu', (e) => {
+            const contactEl = e.target.closest('.contact-item');
+            if (contactEl) {
+                e.preventDefault();
+                showContextMenu(e.clientX, e.clientY, 'delete_chat', contactEl.dataset.id);
+            }
+        });
+
+        contactsList.addEventListener('touchstart', (e) => {
+            const contactEl = e.target.closest('.contact-item');
+            if (contactEl) {
+                touchTimer = setTimeout(() => {
+                    showContextMenu(e.touches[0].clientX, e.touches[0].clientY, 'delete_chat', contactEl.dataset.id);
+                }, 600);
+            }
+        }, {passive: true});
+
+        contactsList.addEventListener('touchend', () => clearTimeout(touchTimer));
+        contactsList.addEventListener('touchmove', () => clearTimeout(touchTimer));
+
+        async function performChatDeletion(partnerId, triggerSystemMsg) {
+            const msgsToDelete = allMessages.filter(m => 
+                (m.senderId === currentUser.uid && m.receiverId === partnerId) || 
+                (m.senderId === partnerId && m.receiverId === currentUser.uid)
+            );
+            
+            const batch = writeBatch(db);
+            let count = 0;
+            msgsToDelete.forEach(m => {
+                if (count < 400) {
+                    batch.update(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', m.id), { 
+                        deletedFor: arrayUnion(currentUser.uid) 
+                    });
+                    count++;
+                }
+            });
+
+            if (triggerSystemMsg) {
+                const sysMsgRef = doc(collection(db, 'artifacts', appId, 'public', 'data', 'private_messages'));
+                batch.set(sysMsgRef, {
+                    isSystem: true,
+                    systemType: 'chat_deleted',
+                    senderId: currentUser.uid,
+                    receiverId: partnerId,
+                    senderName: myProfile.name,
+                    createdAt: Date.now(),
+                    deletedFor: [currentUser.uid] 
+                });
+            }
+
+            if (count > 0 || triggerSystemMsg) {
+                try {
+                    await batch.commit();
+                } catch(e) {
+                    console.error("Batch error on delete:", e);
+                }
+            }
+            
+            if (currentTargetId === partnerId) {
+                closeMobileChat();
+            }
+        }
+
+        window.deleteChatWith = (partnerId) => performChatDeletion(partnerId, false);
+
+        cmDeleteBtn.addEventListener('click', async () => {
+            if (!currentContextMenuTarget) return;
+            
+            try {
+                if (currentContextMenuAction === 'delete_msg') {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', currentContextMenuTarget), {
+                        deleted: true,
+                        text: '' 
+                    });
+                } else if (currentContextMenuAction === 'delete_chat') {
+                    await performChatDeletion(currentContextMenuTarget, true);
+                }
+            } catch (err) {
+                console.error("Delete error:", err);
+            }
+            hideContextMenu();
+        });
+
+        updateMyProfileUI();
         lucide.createIcons();
     </script>
 </body>
