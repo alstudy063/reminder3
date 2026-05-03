@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Subject Units and Sub Units</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts - Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Combined styles from subj (copy 1).html and login.html */
+
+    /* Base body font from login.html, also considering Sinhala fonts */
+    body {
+      font-family: 'Inter', "Segoe UI", "Iskoola Pota", sans-serif;
+    }
+
+    /* Spinner styles from login.html (more complete) */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .spinner {
+      animation: spin 1s linear infinite;
+      border: 4px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #3b82f6; /* Blue color for spinner from subj.html */
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+    }
+
+    /* Subtopics within the unit are now always hidden as they are shown in a modal */
+    .subtopics {
+      display: none; /* Hide the original subtopics */
+    }
+
+    /* Modal overlay animation styles (fade in/out) from subj.html */
+    #subtopicModal {
+      transition: opacity 0.3s ease-out;
+      opacity: 0;
+    }
+    #subtopicModal.is-active {
+      opacity: 1;
+    }
+
+    /* Keyframe animations for the modal content from subj.html */
+    @keyframes modal-pop-in {
+      0% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+      75% {
+        opacity: 1;
+        transform: scale(1.05); /* Slight overshoot for a "pop" effect */
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes modal-pop-out {
+      0% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.8);
+      }
+    }
+
+    /* Modal content animation styles from subj.html */
+    #subtopicModal > div {
+      opacity: 0;
+      transform: scale(0.8);
+      transition: none;
+    }
+
+    #subtopicModal.is-active > div {
+      animation: modal-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    #subtopicModal.is-closing > div {
+      animation: modal-pop-out 0.3s ease-in forwards;
+    }
+
+    /* Styles for the custom tick circle from subj.html */
+    .tick-circle {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      border: 2px solid #cbd5e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+      flex-shrink: 0;
+    }
+
+    .tick-circle.checked {
+      background-color: #3b82f6;
+      border-color: #3b82f6;
+      color: #ffffff;
+    }
+
+    /* Reminder message styles from subj.html */
+    #reminderMessage {
+      position: absolute;
+      top: calc(100% + 15px);
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ef4444;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1001;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+      visibility: hidden;
+      pointer-events: none;
+      font-size: 0.875rem;
+      text-align: center;
+      max-width: 90%;
+      box-sizing: border-box;
+    }
+    @media (min-width: 768px) {
+      #reminderMessage {
+        font-size: 1rem;
+        max-width: 300px;
+      }
+    }
+    #reminderMessage.show {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    /* Custom toggle switch styling from login.html */
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+    }
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 34px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #4b4bfa;
+    }
+    input:focus + .slider {
+        box-shadow: 0 0 1px #4b4bfa;
+    }
+    input:checked + .slider:before {
+        -webkit-transform: translateX(20px);
+        -ms-transform: translateX(20px);
+        transform: translateX(20px);
+    }
+
+    /* Styling for error messages from login.html */
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+
+    /* Styling for success message from login.html */
+    .success-message {
+        color: #22c55e;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        text-align: center;
+        display: none;
+    }
+
+    /* Password toggle icon styling from login.html */
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        cursor: pointer;
+        color: #9ca3af;
+    }
+  </style>
+</head>
+<body class="flex min-h-screen bg-gray-50 relative">
+
+<!-- Loading Spinner -->
+<div id="loading-spinner" class="fixed inset-0 flex items-center justify-center bg-gray-100 z-50">
+  <div class="spinner"></div>
+</div>
+
+<!-- New Login Section -->
+<div id="new-login-section" class="absolute inset-0 w-full h-full flex items-center justify-center p-8 sm:p-12 lg:p-16">
+    <!-- Full-screen Background Image Container -->
+    <div class="absolute inset-0 w-full h-full bg-cover bg-center" style="background-image: url('https://i.ibb.co/Q7gb06jk/Picsart-25-07-13-07-54-23-391.jpg');">
+        <!-- Optional: Add an overlay for better contrast if needed -->
+        <div class="absolute inset-0 bg-black opacity-30"></div>
+    </div>
+
+    <!-- Centered Login/Sign Up Forms Container -->
+    <div class="relative z-10 w-full max-w-md p-8 rounded-3xl shadow-2xl" style="background: radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.75) 70%, rgba(255, 255, 255, 0.4) 100%);">
+        <h2 id="formTitle" class="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
+        <p id="formDescription" class="text-gray-600 mb-8">Log in to add and manage your reminders effortlessly.</p>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="space-y-6">
+            <div>
+                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" id="loginEmail" name="email" value="" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter your email">
+                <span id="loginEmailError" class="error-message"></span>
+            </div>
+
+            <div>
+                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div class="relative flex items-center">
+                    <input type="password" id="loginPassword" name="password" value="" class="block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-[#4b4bfa] focus:border-[#4b4bfa] sm:text-sm pr-10" placeholder="Enter your password">
+                    <span class="password-toggle" id="toggleLoginPassword">
+                        <svg fill="#000000" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;" class="w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect id="Icons" x="-960" y="-256" width="1280" height="800" style="fill:none;"></rect> <g id="Icons1" serif:id="Icons"> <g id="Strike"> </g> <g id="H1"> </g> <g id="H2"> </g> <g id="H3"> </g> <g id="list-ul"> </g> <g id="hamburger-1"> </g> <g id="hamburger-2"> </g> <g id="list-ol"> </g> <g id="list-task"> </g> <g id="trash"> </g> <g id="vertical-menu"> </g> <g id="horizontal-menu"> </g> <g id="sidebar-2"> </g> <g id="Pen"> </g> <g id="Pen1" serif:id="Pen"> </g> <g id="clock"> </g> <g id="external-link"> </g> <g id="hr"> </g> <g id="info"> </g> <g id="warning"> </g> <g id="plus-circle"> </g> <g id="minus-circle"> </g> <g id="vue"> </g> <g id="cog"> </g> <g id="logo"> </g> <g id="radio-check"> </g> <g id="eye-slash"> <path d="M13.673,10.345l-3.097,3.096l39.853,39.854l3.097,-3.097l-39.853,-39.853Z"></path> <path d="M17.119,19.984l2.915,2.915c-3.191,2.717 -5.732,6.099 -7.374,9.058l-0.005,0.01c4.573,7.646 11.829,14.872 20.987,13.776c2.472,-0.296 4.778,-1.141 6.885,-2.35l2.951,2.95c-4.107,2.636 -8.815,4.032 -13.916,3.342c-9.198,-1.244 -16.719,-8.788 -21.46,-17.648c2.226,-4.479 5.271,-8.764 9.017,-12.053Zm6.63,-4.32c2.572,-1.146 5.355,-1.82 8.327,-1.868c0.165,-0.001 2.124,0.092 3.012,0.238c0.557,0.092 1.112,0.207 1.659,0.35c8.725,2.273 15.189,10.054 19.253,17.653c-1.705,3.443 -3.938,6.398 -6.601,9.277l-2.827,-2.827c1.967,-2.12 3.622,-4.161 4.885,-6.45c0,0 -1.285,-2.361 -2.248,-3.643c-0.619,-0.824 -1.27,-1.624 -1.954,-2.395c-0.54,-0.608 -2.637,-2.673 -3.136,-3.103c-3.348,-2.879 -7.279,-5.138 -11.994,-5.1c-1.826,0.029 -3.582,0.389 -5.249,0.995l-3.127,-3.127Z" style="fill-rule:nonzero;"></path> <path d="M25.054,27.92l2.399,2.398c-0.157,0.477 -0.243,0.987 -0.243,1.516c0,2.672 2.169,4.841 4.841,4.841c0.529,0 1.039,-0.085 1.516,-0.243l2.399,2.399c-1.158,0.65 -2.494,1.02 -3.915,1.02c-4.425,0 -8.017,-3.592 -8.017,-8.017c0,-1.421 0.371,-2.756 1.02,-3.914Zm6.849,-4.101c0.049,-0.001 0.099,-0.002 0.148,-0.002c4.425,0 8.017,3.593 8.017,8.017c0,0.05 0,0.099 -0.001,0.148l-8.164,-8.163Z"></path> </g> <g id="eye"> </g> <g id="toggle-off"> </g> <g id="shredder"> </g> <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g> <g id="react"> </g> <g id="check-selected"> </g> <g id="turn-off"> </g> <g id="code-block"> </g> <g id="user"> </g> <g id="coffee-bean"> </g> <g id="coffee-beans"> <g id="coffee-bean1" serif:id="coffee-bean"> </g> </g> <g id="coffee-bean-filled"> </g> <g id="coffee-beans-filled"> <g id="coffee-bean2" serif:id="coffee-bean"> </g> </g> <g id="clipboard"> </g> <g id="clipboard-paste"> </g> <g id="clipboard-copy"> </g> <g id="Layer1"> </g> </g> </g></svg>
+                    </span>
+                </div>
+                <span id="loginPasswordError" class="error-message"></span>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <a href="#" class="text-sm font-medium text-[#4b4bfa] hover:text-blue-700 rounded-xl">Forgot password?</a>
+                <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-700 mr-3">Remember sign in details</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-lg font-medium text-white bg-[#4b4bfa] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4b4bfa]">
+                    Log in
+                </button>
+            </div>
+        </form>
+
+        <!-- Sign Up Form -->
+        <form id="signupForm" class="space-y-6 hidden">
+            <div>
+                <label for="signupEmail" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" id="signupEmail" name="email" value="" class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="Enter your email">
+                <span id="signupEmailError" class="error-message"></span>
+            </div>
+
+            <div>
+                <label for="signupPassword" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div class="relative flex items-center">
+                    <input type="password" id="signupPassword" name="password" value="" class="block w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:ring-[#4b4bfa] focus:border-[#4b4bfa] sm:text-sm pr-10" placeholder="Create a password">
+                    <span class="password-toggle" id="toggleSignupPassword">
+                        <svg fill="#000000" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;" class="w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect id="Icons" x="-960" y="-256" width="1280" height="800" style="fill:none;"></rect> <g id="Icons1" serif:id="Icons"> <g id="Strike"> </g> <g id="H1"> </g> <g id="H2"> </g> <g id="H3"> </g> <g id="list-ul"> </g> <g id="hamburger-1"> </g> <g id="hamburger-2"> </g> <g id="list-ol"> </g> <g id="list-task"> </g> <g id="trash"> </g> <g id="vertical-menu"> </g> <g id="horizontal-menu"> </g> <g id="sidebar-2"> </g> <g id="Pen"> </g> <g id="Pen1" serif:id="Pen"> </g> <g id="clock"> </g> <g id="external-link"> </g> <g id="hr"> </g> <g id="info"> </g> <g id="warning"> </g> <g id="plus-circle"> </g> <g id="minus-circle"> </g> <g id="vue"> </g> <g id="cog"> </g> <g id="logo"> </g> <g id="radio-check"> </g> <g id="eye-slash"> <path d="M13.673,10.345l-3.097,3.096l39.853,39.854l3.097,-3.097l-39.853,-39.853Z"></path> <path d="M17.119,19.984l2.915,2.915c-3.191,2.717 -5.732,6.099 -7.374,9.058l-0.005,0.01c4.573,7.646 11.829,14.872 20.987,13.776c2.472,-0.296 4.778,-1.141 6.885,-2.35l2.951,2.95c-4.107,2.636 -8.815,4.032 -13.916,3.342c-9.198,-1.244 -16.719,-8.788 -21.46,-17.648c2.226,-4.479 5.271,-8.764 9.017,-12.053Zm6.63,-4.32c2.572,-1.146 5.355,-1.82 8.327,-1.868c0.165,-0.001 2.124,0.092 3.012,0.238c0.557,0.092 1.112,0.207 1.659,0.35c8.725,2.273 15.189,10.054 19.253,17.653c-1.705,3.443 -3.938,6.398 -6.601,9.277l-2.827,-2.827c1.967,-2.12 3.622,-4.161 4.885,-6.45c0,0 -1.285,-2.361 -2.248,-3.643c-0.619,-0.824 -1.27,-1.624 -1.954,-2.395c-0.54,-0.608 -2.637,-2.673 -3.136,-3.103c-3.348,-2.879 -7.279,-5.138 -11.994,-5.1c-1.826,0.029 -3.582,0.389 -5.249,0.995l-3.127,-3.127Z" style="fill-rule:nonzero;"></path> <path d="M25.054,27.92l2.399,2.398c-0.157,0.477 -0.243,0.987 -0.243,1.516c0,2.672 2.169,4.841 4.841,4.841c0.529,0 1.039,-0.085 1.516,-0.243l2.399,2.399c-1.158,0.65 -2.494,1.02 -3.915,1.02c-4.425,0 -8.017,-3.592 -8.017,-8.017c0,-1.421 0.371,-2.756 1.02,-3.914Zm6.849,-4.101c0.049,-0.001 0.099,-0.002 0.148,-0.002c4.425,0 8.017,3.593 8.017,8.017c0,0.05 0,0.099 -0.001,0.148l-8.164,-8.163Z"></path> </g> <g id="eye"> </g> <g id="toggle-off"> </g> <g id="shredder"> </g> <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g> <g id="react"> </g> <g id="check-selected"> </g> <g id="turn-off"> </g> <g id="code-block"> </g> <g id="user"> </g> <g id="coffee-bean"> </g> <g id="coffee-beans"> <g id="coffee-bean1" serif:id="coffee-bean"> </g> </g> <g id="coffee-bean-filled"> </g> <g id="coffee-beans-filled"> <g id="coffee-bean2" serif:id="coffee-bean"> </g> </g> <g id="clipboard"> </g> <g id="clipboard-paste"> </g> <g id="clipboard-copy"> </g> <g id="Layer1"> </g> </g> </g></svg>
+                    </span>
+                </div>
+                <span id="signupPasswordError" class="error-message"></span>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <a href="#" class="text-sm font-medium text-[#4b4bfa] hover:text-blue-700 rounded-xl">Forgot password?</a>
+                <div class="flex items-center">
+                    <span class="text-sm font-medium text-gray-700 mr-3">Remember sign in details</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-lg font-medium text-white bg-[#4b4bfa] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4b4bfa]">
+                    Sign Up
+                </button>
+            </div>
+        </form>
+
+        <!-- Or Divider -->
+        <div class="relative flex py-5 items-center">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="flex-shrink mx-4 text-gray-500">Or</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
+
+        <!-- Social Login Buttons -->
+        <div class="mt-4">
+            <button id="google-signin-btn" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-xl shadow-sm text-lg font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <svg class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.0003 4.75C14.0003 4.75 15.6373 5.49 16.9083 6.749L19.2003 4.479C17.2193 2.509 14.7303 1.5 12.0003 1.5C7.72831 1.5 4.05831 3.976 2.37831 7.555L5.05231 9.675C5.99631 7.279 8.71831 5.75 12.0003 5.75V4.75Z" fill="#EA4335"/>
+                    <path d="M21.5 12.25C21.5 11.49 21.43 10.73 21.31 10H12V14.5H17.75C17.51 15.76 16.71 16.76 15.64 17.44L18.32 19.56C19.86 18.29 20.81 16.53 21.31 14.55C21.43 14.07 21.5 13.19 21.5 12.25Z" fill="#4285F4"/>
+                    <path d="M5.05231 9.675L2.37831 7.555C1.84831 8.847 1.5 10.428 1.5 12C1.5 13.572 1.84831 15.153 2.37831 16.445L5.05231 14.325C4.05831 12.721 3.99631 10.232 5.05231 9.675Z" fill="#FBBC04"/>
+                    <path d="M12.0003 22.5C14.7303 22.5 17.2193 21.491 19.2003 19.521L16.9083 17.251C15.6373 18.51 14.0003 19.25 12.0003 19.25C8.71831 19.25 5.99631 17.721 5.05231 15.325L2.37831 17.445C4.05831 21.024 7.72831 23.5 12.0003 23.5C12.0003 23.5 12.0003 22.5 12.0003 22.5Z" fill="#34A853"/>
+                </svg>
+                Sign in with Google
+            </button>
+        </div>
+
+        <div class="text-center mt-6">
+            <p class="text-sm text-gray-600">
+                <span id="toggleText">Don't have an account?</span>
+                <button id="toggleFormBtn" class="text-[#4b4bfa] hover:text-blue-700 font-medium ml-1">Sign Up</button>
+            </p>
+        </div>
+        <div id="authSuccessMessage" class="success-message mt-4"></div>
+    </div>
+</div>
+
+
+<!-- Main Application Content -->
+<div id="main-content" class="bg-gray-100 p-4 md:p-8 max-w-4xl mx-auto text-gray-800 rounded-lg shadow-lg hidden">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 px-4 md:px-0">
+        <h2 class="text-2xl md:text-4xl font-extrabold text-blue-800 text-center md:text-left mb-4 md:mb-0">📘 Subject Units and Sub Units</h2>
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <span id="user-id-display" class="text-gray-600 text-xs md:text-sm"></span>
+            <button id="logout-btn" class="bg-gray-300 text-gray-800 p-2 rounded-lg font-semibold hover:bg-gray-400 transition-colors duration-200 text-sm md:text-base">Logout</button>
+        </div>
+    </div>
+
+    <!-- Subject Selection Buttons -->
+    <div class="mb-6 px-4 md:px-0 flex flex-wrap justify-center gap-3">
+        <button id="biology-btn" class="subject-button px-5 py-2 rounded-full font-semibold text-lg transition-all duration-200 ease-in-out bg-blue-600 text-white shadow-md hover:bg-blue-700">Biology</button>
+        <button id="physics-btn" class="subject-button px-5 py-2 rounded-full font-semibold text-lg transition-all duration-200 ease-in-out bg-gray-200 text-gray-700 shadow-md hover:bg-gray-300">Physics</button>
+        <button id="chemistry-btn" class="subject-button px-5 py-2 rounded-full font-semibold text-lg transition-all duration-200 ease-in-out bg-gray-200 text-gray-700 shadow-md hover:bg-gray-300">Chemistry</button>
+    </div>
+
+    <!-- Units Container -->
+    <div id="units-container">
+        <!-- Biology Units (Initially displayed) -->
+        <div id="biology-units" class="subject-units">
+            <!-- Unit 01: Introduction to Biology -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">01. ජීව විද්‍යාව හඳුන්වා දීම</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(2)</span>
+              </div>
+              <ul class="subtopics">
+                <li>මිනිසා මුහුණ දෙන අභියෝග හා ජීව විද්‍යාවේ ස්වභාවය</li>
+                <li>ජෛව ලෝකයේ ස්වභාවය හා සංවිධාන රටා</li>
+              </ul>
+            </div>
+
+            <!-- Unit 02: Chemical and Cellular Basis of Life -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">02. ජීවයේ රසායනික හා සෛලීය පදනම</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(9)</span>
+              </div>
+              <ul class="subtopics">
+                <li>මූලද්‍රව්‍යමය සංයුතිය</li>
+                <li>ජලයේ ගුණ</li>
+                <li>කාබනික සංයෝග</li>
+                <li>සෛල ව්‍යූහය</li>
+                <li>සෛල චක්‍රය</li>
+                <li>ශක්ති සම්බන්ධතා</li>
+                <li>එන්සයිම</li>
+                <li>ප්‍රභාසංශ්ලේෂණය</li>
+                <li>සෛලීය ශ්වසනය</li>
+              </ul>
+            </div>
+
+            <!-- Unit 03: Evolution and Diversity of Organisms -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">03. පරිණාමය හා ජීවීන්ගේ විවිධත්වය</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(8)</span>
+              </div>
+              <ul class="subtopics">
+                <li>පරිණාම ක්‍රියාවලිය</li>
+                <li>තක්සෝන විද්‍යාව</li>
+                <li>බැක්ටීරියා</li>
+                <li>ප්‍රෝටිස්ටා</li>
+                <li>ශාක රාජධානිය</li>
+                <li>දිලීර රාජධානිය</li>
+                <li>ඇනිමාලියා</li>
+                <li>කෝඩේටා වංශය</li>
+              </ul>
+            </div>
+
+            <!-- Unit 04: Plant Form and Function -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">04. ශාක ආකාරය හා ක්‍රියාකාරිත්වය</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(13)</span>
+              </div>
+              <ul class="subtopics">
+                <li>ශාක වර්ධනය හා විකසනය</li>
+                <li>පටක පද්ධති</li>
+                <li>ආලෝකය අධිග්‍රහණය</li>
+                <li>වායු හුවමාරුව</li>
+                <li>ජල හා ඛනිජ අවශ්‍යතා</li>
+                <li>ද්‍රව්‍ය පරිවහනය</li>
+                <li>ජලය ඉවත් කිරීම</li>
+                <li>පෝෂණ ක්‍රියාවලි</li>
+                <li>පෝෂණ අවශ්‍යතා</li>
+                <li>ජීවන චක්‍රය</li>
+                <li>ප්‍රජනනය</li>
+                <li>උත්තේජ වලට ප්‍රතිචාර</li>
+                <li>ආතති වලට ප්‍රතිචාර</li>
+              </ul>
+            </div>
+
+            <!-- Unit 05: Animal Form and Function -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">05. සත්ත්ව ආකාරය හා ක්‍රියාකාරිත්වය</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(14)</span>
+              </div>
+              <ul class="subtopics">
+                <li>සන්ධාරණය</li>
+                <li>ස්නායු පද්ධතිය</li>
+                <li>සංවේදක පද්ධතිය</li>
+                <li>සම</li>
+                <li>අන්තරාසර්ග පද්ධතිය</li>
+                <li>අභ්‍යන්තර පරිසරය</li>
+                <li>පුරුෂ ප්‍රජනක පද්ධතිය</li>
+                <li>ස්ත්‍රී ප්‍රජනක පද්ධතිය</li>
+                <li>ප්‍රජනක චක්‍රය</li>
+                <li>උපත් පාලන ක්‍රම</li>
+                <li>මානව සැකිල්ල</li>
+                <li>ගාත්‍රා සැකිල්ල</li>
+                <li>කංකාල පේශි</li>
+                <li>සංකෝචන යන්ත්‍රණය</li>
+              </ul>
+            </div>
+
+            <!-- Unit 06: Genetics -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">06. ප්‍රවේණිය</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(9)</span>
+              </div>
+              <ul class="subtopics">
+                <li>ප්‍රවේණි වාග්මාලව</li>
+                <li>මුහුම</li>
+                <li>මෙන්ඩල්ගේ පරීක්ෂණ</li>
+                <li>සම්භාවිතා නියම</li>
+                <li>මානව ලක්ෂණ</li>
+                <li>නොවන ආවේණිය</li>
+                <li>බහු ඇලීලතාව</li>
+                <li>ගහන ප්‍රවේණිය</li>
+                <li>අභිජනනය</li>
+              </ul>
+            </div>
+
+            <!-- Unit 07: Molecular Biology and Recombinant DNA Technology -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">07. අණුක ජීව විද්‍යාව හා ප්‍රතිසංයෝජිත DNA තාක්ෂණය</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(...
+              </ul>
+            </div>
+            <!-- ... more units ... -->
+        </div>
+
+        <div id="physics-units" class="subject-units hidden">
+            <!-- Physics Units Content -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">01. ඒකක හා මාන</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(3)</span>
+              </div>
+              <ul class="subtopics">
+                <li>භෞතික රාශි</li>
+                <li>ඒකක</li>
+                <li>මාන</li>
+              </ul>
+            </div>
+        </div>
+
+        <div id="chemistry-units" class="subject-units hidden">
+            <!-- Chemistry Units Content -->
+            <div class="unit bg-white rounded-xl shadow-md mb-4 p-4 cursor-pointer hover:bg-blue-50 transition-all duration-300 ease-in-out" onclick="openSubtopicsModal(this)">
+              <div class="unit-title flex justify-between items-center text-xl md:text-2xl font-semibold text-blue-700 border-b border-dotted border-gray-300 pb-2 mb-2">
+                <span class="flex-grow min-w-0">01. පරමාණුවේ ව්‍යුහය</span>
+                <span class="text-green-600 text-base md:text-lg w-12 text-right flex-shrink-0">(4)</span>
+              </div>
+              <ul class="subtopics">
+                <li>ඩෝල්ටන්ගේ පරමාණුක වාදය</li>
+                <li>රදෆෝඩ්ගේ පරමාණුක වාදය</li>
+                <li>බෝර්ගේ පරමාණුක වාදය</li>
+                <li>ක්වොන්ටම් යාන්ත්‍ර විද්‍යාව</li>
+              </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Subtopics -->
+    <div id="subtopicModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="bg-white rounded-lg p-6 w-full max-w-xl shadow-lg relative flex flex-col max-h-full">
+        <h3 id="modal-title" class="text-2xl font-bold mb-4 text-blue-800 border-b-2 pb-2"></h3>
+        <ul id="modal-subtopics-list" class="space-y-3 overflow-y-auto flex-grow pr-2 -mr-2"></ul>
+        <div id="reminderMessage"></div>
+        <button id="closeModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-3xl font-bold">&times;</button>
+      </div>
+    </div>
+</div>
+
+<!-- Firebase and application specific scripts -->
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, signInAnonymously, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+  // Your web app's Firebase configuration (provided by user)
+  const firebaseConfig = {
+    apiKey: "AIzaSyApLfVQ6hv0IAAN5ZkFlOQ-y5KXK-x1Q_M",
+    authDomain: "reminderapp-d84e9.firebaseapp.com",
+    databaseURL: "https://reminderapp-d84e9-default-rtdb.firebaseio.com",
+    projectId: "reminderapp-d84e9",
+    storageBucket: "reminderapp-d84e9.firebasestorage.app",
+    messagingSenderId: "312145339940",
+    appId: "1:312145339940:web:ade59de4d6de6cec221ab1"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // DOM Elements
+  const loadingSpinner = document.getElementById('loading-spinner');
+  const newLoginSection = document.getElementById('new-login-section');
+  const mainContent = document.getElementById('main-content');
+  const userIdDisplay = document.getElementById('user-id-display');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  // Login/Sign Up Form Elements
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  const toggleFormBtn = document.getElementById('toggleFormBtn');
+  const formTitle = document.getElementById('formTitle');
+  const formDescription = document.getElementById('formDescription');
+  const toggleText = document.getElementById('toggleText');
+  const authSuccessMessage = document.getElementById('authSuccessMessage');
+  const googleSignInBtn = document.getElementById('google-signin-btn');
+
+  const loginEmailInput = document.getElementById('loginEmail');
+  const loginPasswordInput = document.getElementById('loginPassword');
+  const signupEmailInput = document.getElementById('signupEmail');
+  const signupPasswordInput = document.getElementById('signupPassword');
+
+  const loginEmailError = document.getElementById('loginEmailError');
+  const loginPasswordError = document.getElementById('loginPasswordError');
+  const signupEmailError = document.getElementById('signupEmailError');
+  const signupPasswordError = document.getElementById('signupPasswordError');
+
+  const toggleLoginPassword = document.getElementById('toggleLoginPassword');
+  const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+
+
+  // Current active subject and user ID
+  let currentSubject = 'biology';
+  let currentUserId = null;
+  let unsubscribeSnapshot = null; // To store the Firestore snapshot unsubscriber
+
+  // Auth state ready flag
+  let isAuthReady = false;
+
+  // Helper function to show/hide sections
+  function showSection(sectionToShow) {
+    loadingSpinner.classList.add('hidden');
+    newLoginSection.classList.add('hidden');
+    mainContent.classList.add('hidden');
+
+    if (sectionToShow === 'login') {
+      newLoginSection.classList.remove('hidden');
+      document.body.className = 'flex min-h-screen bg-gray-50 relative'; // Apply login body styles
+    } else if (sectionToShow === 'main') {
+      mainContent.classList.remove('hidden');
+      // Revert to main content body styles if needed, or keep the login body style for full-screen.
+      document.body.className = 'bg-gray-100 p-4 md:p-8 max-w-4xl mx-auto text-gray-800 rounded-lg shadow-lg';
+    }
+  }
+
+  // Function to display errors
+  function displayError(element, message) {
+      element.textContent = message;
+      element.style.display = 'block';
+      setTimeout(() => { // Auto-hide errors after a few seconds
+          hideError(element);
+      }, 5000);
+  }
+
+  // Function to hide errors
+  function hideError(element) {
+      element.textContent = '';
+      element.style.display = 'none';
+  }
+
+  // Function to display success message
+  function displaySuccess(message) {
+      authSuccessMessage.textContent = message;
+      authSuccessMessage.style.display = 'block';
+      setTimeout(() => {
+          authSuccessMessage.style.display = 'none';
+          authSuccessMessage.textContent = '';
+      }, 3000); // Hide after 3 seconds
+  }
+
+  // Password visibility toggle
+  function setupPasswordToggle(toggleBtn, passwordInput) {
+      toggleBtn.addEventListener('click', () => {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+          // Toggle eye icon (assuming simple SVG toggle, you'd need two SVGs or change fill/stroke)
+          if (type === 'password') {
+            toggleBtn.innerHTML = `<svg fill="#000000" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;" class="w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect id="Icons" x="-960" y="-256" width="1280" height="800" style="fill:none;"></rect> <g id="Icons1" serif:id="Icons"> <g id="Strike"> </g> <g id="H1"> </g> <g id="H2"> </g> <g id="H3"> </g> <g id="list-ul"> </g> <g id="hamburger-1"> </g> <g id="hamburger-2"> </g> <g id="list-ol"> </g> <g id="list-task"> </g> <g id="trash"> </g> <g id="vertical-menu"> </g> <g id="horizontal-menu"> </g> <g id="sidebar-2"> </g> <g id="Pen"> </g> <g id="Pen1" serif:id="Pen"> </g> <g id="clock"> </g> <g id="external-link"> </g> <g id="hr"> </g> <g id="info"> </g> <g id="warning"> </g> <g id="plus-circle"> </g> <g id="minus-circle"> </g> <g id="vue"> </g> <g id="cog"> </g> <g id="logo"> </g> <g id="radio-check"> </g> <g id="eye-slash"> <path d="M13.673,10.345l-3.097,3.096l39.853,39.854l3.097,-3.097l-39.853,-39.853Z"></path> <path d="M17.119,19.984l2.915,2.915c-3.191,2.717 -5.732,6.099 -7.374,9.058l-0.005,0.01c4.573,7.646 11.829,14.872 20.987,13.776c2.472,-0.296 4.778,-1.141 6.885,-2.35l2.951,2.95c-4.107,2.636 -8.815,4.032 -13.916,3.342c-9.198,-1.244 -16.719,-8.788 -21.46,-17.648c2.226,-4.479 5.271,-8.764 9.017,-12.053Zm6.63,-4.32c2.572,-1.146 5.355,-1.82 8.327,-1.868c0.165,-0.001 2.124,0.092 3.012,0.238c0.557,0.092 1.112,0.207 1.659,0.35c8.725,2.273 15.189,10.054 19.253,17.653c-1.705,3.443 -3.938,6.398 -6.601,9.277l-2.827,-2.827c1.967,-2.12 3.622,-4.161 4.885,-6.45c0,0 -1.285,-2.361 -2.248,-3.643c-0.619,-0.824 -1.27,-1.624 -1.954,-2.395c-0.54,-0.608 -2.637,-2.673 -3.136,-3.103c-3.348,-2.879 -7.279,-5.138 -11.994,-5.1c-1.826,0.029 -3.582,0.389 -5.249,0.995l-3.127,-3.127Z" style="fill-rule:nonzero;"></path> <path d="M25.054,27.92l2.399,2.398c-0.157,0.477 -0.243,0.987 -0.243,1.516c0,2.672 2.169,4.841 4.841,4.841c0.529,0 1.039,-0.085 1.516,-0.243l2.399,2.399c-1.158,0.65 -2.494,1.02 -3.915,1.02c-4.425,0 -8.017,-3.592 -8.017,-8.017c0,-1.421 0.371,-2.756 1.02,-3.914Zm6.849,-4.101c0.049,-0.001 0.099,-0.002 0.148,-0.002c4.425,0 8.017,3.593 8.017,8.017c0,0.05 0,0.099 -0.001,0.148l-8.164,-8.163Z"></path> </g> <g id="eye"> </g> <g id="toggle-off"> </g> <g id="shredder"> </g> <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g> <g id="react"> </g> <g id="check-selected"> </g> <g id="turn-off"> </g> <g id="code-block"> </g> <g id="user"> </g> <g id="coffee-bean"> </g> <g id="coffee-beans"> <g id="coffee-bean1" serif:id="coffee-bean"> </g> </g> <g id="coffee-bean-filled"> </g> <g id="coffee-beans-filled"> <g id="coffee-bean2" serif:id="coffee-bean"> </g> </g> <g id="clipboard"> </g> <g id="clipboard-paste"> </g> <g id="clipboard-copy"> </g> <g id="Layer1"> </g> </g> </g></svg>`; // Eye-slash (closed)
+          } else {
+            toggleBtn.innerHTML = `<svg fill="#000000" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;" class="w-5 h-5"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <rect id="Icons" x="-960" y="-256" width="1280" height="800" style="fill:none;"></rect> <g id="Icons1" serif:id="Icons"> <g id="Strike"> </g> <g id="H1"> </g> <g id="H2"> </g> <g id="H3"> </g> <g id="list-ul"> </g> <g id="hamburger-1"> </g> <g id="hamburger-2"> </g> <g id="list-ol"> </g> <g id="list-task"> </g> <g id="trash"> </g> <g id="vertical-menu"> </g> <g id="horizontal-menu"> </g> <g id="sidebar-2"> </g> <g id="Pen"> </g> <g id="Pen1" serif:id="Pen"> </g> <g id="clock"> </g> <g id="external-link"> </g> <g id="hr"> </g> <g id="info"> </g> <g id="warning"> </g> <g id="plus-circle"> </g> <g id="minus-circle"> </g> <g id="vue"> </g> <g id="cog"> </g> <g id="logo"> </g> <g id="radio-check"> </g> <g id="eye"> <path d="M32,15.75c-10.428,0 -19.497,8.22 -23.011,16.25c3.514,8.03 12.583,16.25 23.011,16.25c10.429,0 19.498,-8.22 23.011,-16.25c-3.513,-8.03 -12.582,-16.25 -23.011,-16.25Zm0,7.917c4.502,0 8.167,3.664 8.167,8.166c0,4.503 -3.665,8.167 -8.167,8.167c-4.502,0 -8.167,-3.664 -8.167,-8.167c0,-4.502 3.665,-8.166 8.167,-8.166Zm0,3.333c2.628,0 4.834,2.206 4.834,4.833c0,2.628 -2.206,4.834 -4.834,4.834c-2.627,0 -4.833,-2.206 -4.833,-4.833c0,-2.627 2.206,-4.833 4.833,-4.833Z"></path> </g> <g id="toggle-off"> </g> <g id="shredder"> </g> <g id="spinner--loading--dots-" serif:id="spinner [loading, dots]"> </g> <g id="react"> </g> <g id="check-selected"> </g> <g id="turn-off"> </g> <g id="code-block"> </g> <g id="user"> </g> <g id="coffee-bean"> </g> <g id="coffee-beans"> <g id="coffee-bean1" serif:id="coffee-bean"> </g> </g> <g id="coffee-bean-filled"> </g> <g id="coffee-beans-filled"> <g id="coffee-bean2" serif:id="coffee-bean"> </g> </g> <g id="clipboard"> </g> <g id="clipboard-paste"> </g> <g id="clipboard-copy"> </g> <g id="Layer1"> </g> </g> </g></svg>`; // Eye (open)
+          }
+      });
+  }
+
+  setupPasswordToggle(toggleLoginPassword, loginPasswordInput);
+  setupPasswordToggle(toggleSignupPassword, signupPasswordInput);
+
+  // Toggle between login and signup forms
+  toggleFormBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (loginForm.classList.contains('hidden')) {
+          loginForm.classList.remove('hidden');
+          signupForm.classList.add('hidden');
+          formTitle.textContent = 'Welcome back';
+          formDescription.textContent = 'Log in to add and manage your reminders effortlessly.';
+          toggleText.textContent = "Don't have an account?";
+          toggleFormBtn.textContent = 'Sign Up';
+      } else {
+          loginForm.classList.add('hidden');
+          signupForm.classList.remove('hidden');
+          formTitle.textContent = 'Join Us';
+          formDescription.textContent = 'Create your account to start managing your subjects.';
+          toggleText.textContent = 'Already have an account?';
+          toggleFormBtn.textContent = 'Log In';
+      }
+      // Clear any previous errors or success messages
+      hideError(loginEmailError);
+      hideError(loginPasswordError);
+      hideError(signupEmailError);
+      hideError(signupPasswordError);
+      authSuccessMessage.style.display = 'none';
+  });
+
+  // Handle Login Form Submission
+  loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = loginEmailInput.value;
+      const password = loginPasswordInput.value;
+
+      hideError(loginEmailError);
+      hideError(loginPasswordError);
+      authSuccessMessage.style.display = 'none';
+      loadingSpinner.classList.remove('hidden'); // Show spinner
+
+      try {
+          await signInWithEmailAndPassword(auth, email, password);
+          displaySuccess('Login successful!');
+      } catch (error) {
+          console.error("Login failed:", error);
+          if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+              displayError(loginPasswordError, 'Invalid email or password.');
+          } else if (error.code === 'auth/invalid-email') {
+              displayError(loginEmailError, 'Please enter a valid email address.');
+          } else {
+              displayError(loginPasswordError, error.message);
+          }
+      } finally {
+          loadingSpinner.classList.add('hidden'); // Hide spinner
+      }
+  });
+
+  // Handle Sign Up Form Submission
+  signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = signupEmailInput.value;
+      const password = signupPasswordInput.value;
+
+      hideError(signupEmailError);
+      hideError(signupPasswordError);
+      authSuccessMessage.style.display = 'none';
+      loadingSpinner.classList.remove('hidden'); // Show spinner
+
+      try {
+          await createUserWithEmailAndPassword(auth, email, password);
+          displaySuccess('Sign up successful! You are now logged in.');
+      } catch (error) {
+          console.error("Sign up failed:", error);
+          if (error.code === 'auth/email-already-in-use') {
+              displayError(signupEmailError, 'This email is already in use.');
+          } else if (error.code === 'auth/weak-password') {
+              displayError(signupPasswordError, 'Password should be at least 6 characters.');
+          } else if (error.code === 'auth/invalid-email') {
+              displayError(signupEmailError, 'Please enter a valid email address.');
+          } else {
+              displayError(signupPasswordError, error.message);
+          }
+      } finally {
+          loadingSpinner.classList.add('hidden'); // Hide spinner
+      }
+  });
+
+  // Firebase Google Auth Provider
+  const googleProvider = new GoogleAuthProvider();
+
+  // Handle Google Sign-in
+  googleSignInBtn.addEventListener('click', async () => {
+      loadingSpinner.classList.remove('hidden'); // Show spinner
+      hideError(authSuccessMessage); // Clear previous messages
+      try {
+          await signInWithPopup(auth, googleProvider);
+          displaySuccess('Google sign-in successful!');
+      } catch (error) {
+          console.error("Google sign-in failed:", error);
+          if (error.code === 'auth/popup-closed-by-user') {
+              displayError(authSuccessMessage, 'Google sign-in cancelled.');
+          } else if (error.code === 'auth/cancelled-popup-request') {
+              displayError(authSuccessMessage, 'Popup already opened. Please complete the sign-in.');
+          } else {
+              displayError(authSuccessMessage, `Google sign-in error: ${error.message}`);
+          }
+      } finally {
+          loadingSpinner.classList.add('hidden'); // Hide spinner
+      }
+  });
+
+
+  // Firebase Auth State Change Listener
+  onAuthStateChanged(auth, async (user) => {
+    console.log("Auth state changed. User:", user); // Debugging log
+
+    if (user) {
+      currentUserId = user.uid;
+      userIdDisplay.textContent = `Logged in as: ${user.email || 'Anonymous'}`;
+      showSection('main');
+
+      // Unsubscribe from previous snapshot listener if exists
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+      }
+
+      // Set up real-time listener for user data in Firestore
+      const userDocRef = doc(db, 'users', currentUserId); // Use modular doc
+      unsubscribeSnapshot = onSnapshot(userDocRef, async (docSnap) => { // Use modular onSnapshot
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          // Update UI based on user's saved subject progress
+          updateSubjectButtons(userData.subjects || {});
+          updateUnitCompletionCounts(userData.subjects || {});
+        } else {
+          // If user document doesn't exist, create it with default data
+          await setDoc(userDocRef, { subjects: {} }); // Use modular setDoc
+          updateSubjectButtons({});
+          updateUnitCompletionCounts({});
+        }
+        isAuthReady = true; // Mark auth as ready after data is loaded
+        loadingSpinner.classList.add('hidden'); // Hide spinner after content is loaded
+        console.log("isAuthReady set to true after data load."); // Debugging log
+      }, (error) => {
+        console.error("Error fetching user data:", error);
+        isAuthReady = true; // Mark ready even on error to unblock UI
+        loadingSpinner.classList.add('hidden');
+      });
+
+    } else {
+      currentUserId = null;
+      userIdDisplay.textContent = '';
+      showSection('login');
+      // Reset subject completion counts to 0 for current subject
+      isAuthReady = false; // Reset flag when logged out
+      console.log("isAuthReady set to false after logout."); // Debugging log
+
+      // Unsubscribe from snapshot listener when user logs out
+      if (unsubscribeSnapshot) {
+        unsubscribeSnapshot();
+        unsubscribeSnapshot = null;
+      }
+      loadingSpinner.classList.add('hidden'); // Hide spinner if no user
+    }
+  });
+
+  // Initial anonymous sign-in or custom token sign-in
+  document.addEventListener('DOMContentLoaded', async () => {
+    loadingSpinner.classList.remove('hidden'); // Show spinner immediately on DOMContentLoaded
+    // The onAuthStateChanged listener will handle hiding the spinner and showing content
+    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        // Firebase automatically handles custom token sign-in.
+        // onAuthStateChanged will reflect the result.
+        // If you intend to use custom tokens, ensure signInWithCustomToken is called.
+        // For this context, signInAnonymously is a fallback if no custom token is present.
+        try {
+            // Assuming __initial_auth_token is handled by the environment or directly used here
+            // If it's a custom token, you'd use: await signInWithCustomToken(auth, __initial_auth_token);
+            // For now, keeping signInAnonymously as a general fallback for initial load if no user is signed in.
+            await signInAnonymously(auth); // Use modular signInAnonymously
+            console.log("Attempted anonymous sign-in on DOMContentLoaded.");
+        } catch (error) {
+            console.error("Anonymous sign-in failed on DOMContentLoaded:", error);
+        }
+    } else {
+        // If no initial token, attempt anonymous sign-in.
+        try {
+            await signInAnonymously(auth); // Use modular signInAnonymously
+            console.log("Attempted anonymous sign-in on DOMContentLoaded.");
+        } catch (error) {
+            console.error("Anonymous sign-in failed on DOMContentLoaded:", error);
+        }
+    }
+  });
+
+
+  // Logout functionality
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await signOut(auth); // Use modular signOut
+      console.log("User signed out.");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  });
+
+
+  // Subject selection logic
+  document.querySelectorAll('.subject-button').forEach(button => {
+    button.addEventListener('click', () => {
+      // Remove active styles from all buttons
+      document.querySelectorAll('.subject-button').forEach(btn => {
+        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.add('bg-gray-200', 'text-gray-700');
+      });
+
+      // Add active styles to the clicked button
+      button.classList.add('bg-blue-600', 'text-white');
+      button.classList.remove('bg-gray-200', 'text-gray-700');
+
+      // Hide all subject units containers
+      document.querySelectorAll('.subject-units').forEach(container => {
+        container.classList.add('hidden');
+      });
+
+      // Show the selected subject's units
+      const subjectId = button.id.replace('-btn', '-units');
+      document.getElementById(subjectId).classList.remove('hidden');
+      currentSubject = button.id.replace('-btn', ''); // Update current subject
+
+      // Recalculate and update completion counts for the newly selected subject
+      updateUnitCompletionCounts(userProgressData); // Assuming userProgressData is globally accessible or passed
+    });
+  });
+
+  // Modal related elements
+  const subtopicModal = document.getElementById('subtopicModal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalSubtopicsList = document.getElementById('modal-subtopics-list');
+  const closeModalBtn = document.getElementById('closeModal');
+  const reminderMessage = document.getElementById('reminderMessage');
+
+  let currentUnitElement = null; // Store the currently opened unit DOM element
+  let userProgressData = {}; // Global variable to store fetched user progress
+
+  // Open subtopics modal
+  window.openSubtopicsModal = (unitElement) => {
+    if (!isAuthReady) {
+      console.log("Auth not ready, cannot open modal.");
+      return;
+    }
+
+    currentUnitElement = unitElement;
+    const unitTitleText = unitElement.querySelector('.unit-title span:first-child').textContent.trim();
+    modalTitle.textContent = unitTitleText;
+    modalSubtopicsList.innerHTML = ''; // Clear previous subtopics
+
+    const subtopics = Array.from(unitElement.querySelectorAll('.subtopics li')).map(li => li.textContent.trim());
+
+    // Get the unit's ID to store progress (e.g., "biology-unit-01")
+    const unitIndex = Array.from(document.querySelectorAll('.subject-units .unit')).indexOf(unitElement) + 1;
+    const unitId = `${currentSubject}-unit-${String(unitIndex).padStart(2, '0')}`;
+
+    // Retrieve the user's progress for this unit
+    const unitProgress = (userProgressData.subjects && userProgressData.subjects[currentSubject] && userProgressData.subjects[currentSubject][unitId]) || {};
+
+    subtopics.forEach((subtopic, index) => {
+      const li = document.createElement('li');
+      li.className = 'flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50';
+      li.innerHTML = `
+        <div class="tick-circle flex-shrink-0">
+          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <span class="flex-grow text-gray-800 text-lg">${subtopic}</span>
+      `;
+
+      const tickCircle = li.querySelector('.tick-circle');
+      const subtopicKey = `subtopic-${index}`; // Unique key for subtopic
+
+      if (unitProgress[subtopicKey]) {
+        tickCircle.classList.add('checked');
+      }
+
+      tickCircle.addEventListener('click', () => {
+        if (!currentUserId) {
+          showReminderMessage("Please sign in to save your progress.");
+          return;
+        }
+
+        tickCircle.classList.toggle('checked');
+        const isChecked = tickCircle.classList.contains('checked');
+
+        // Update Firestore
+        const userDocRef = doc(db, 'users', currentUserId); // Use modular doc
+        updateDoc(userDocRef, { // Use modular updateDoc
+          [`subjects.${currentSubject}.${unitId}.${subtopicKey}`]: isChecked
+        })
+        .then(() => {
+          console.log("Progress updated successfully!");
+          // Locally update userProgressData and then the UI
+          if (!userProgressData.subjects) userProgressData.subjects = {};
+          if (!userProgressData.subjects[currentSubject]) userProgressData.subjects[currentSubject] = {};
+          if (!userProgressData.subjects[currentSubject][unitId]) userProgressData.subjects[currentSubject][unitId] = {};
+          userProgressData.subjects[currentSubject][unitId][subtopicKey] = isChecked;
+          updateUnitCompletionCounts(userProgressData.subjects || {});
+        })
+        .catch(error => {
+          console.error("Error updating progress:", error);
+          showReminderMessage("Failed to save progress. Please try again.");
+          // Revert UI if update fails
+          tickCircle.classList.toggle('checked');
+        });
+      });
+      modalSubtopicsList.appendChild(li);
+    });
+
+    subtopicModal.classList.add('is-active');
+    subtopicModal.classList.remove('hidden');
+    // For smooth animation, force reflow after adding 'is-active'
+    void subtopicModal.offsetWidth;
+  };
+
+  // Close modal functionality
+  closeModalBtn.addEventListener('click', () => {
+    subtopicModal.classList.add('is-closing'); // Trigger pop-out animation
+    subtopicModal.addEventListener('animationend', function handler() {
+      subtopicModal.classList.remove('is-active', 'is-closing');
+      subtopicModal.classList.add('hidden');
+      subtopicModal.removeEventListener('animationend', handler);
+      reminderMessage.classList.remove('show'); // Hide reminder message when modal closes
+    });
+  });
+
+  // Hide modal if clicked outside
+  subtopicModal.addEventListener('click', (e) => {
+    if (e.target === subtopicModal) {
+      closeModalBtn.click(); // Use the close button's click handler
+    }
+  });
+
+  // Show reminder message
+  function showReminderMessage(message) {
+    reminderMessage.textContent = message;
+    reminderMessage.classList.add('show');
+    setTimeout(() => {
+      reminderMessage.classList.remove('show');
+    }, 3000); // Hide after 3 seconds
+  }
+
+  // Update subject buttons
+  function updateSubjectButtons(subjectsProgress) {
+    userProgressData.subjects = subjectsProgress; // Update global progress data
+    document.querySelectorAll('.subject-button').forEach(button => {
+      const subjectName = button.id.replace('-btn', '');
+      if (subjectName === currentSubject) {
+        button.classList.add('bg-blue-600', 'text-white');
+        button.classList.remove('bg-gray-200', 'text-gray-700');
+        // Also show the correct units container
+        document.getElementById(`${subjectName}-units`).classList.remove('hidden');
+      } else {
+        button.classList.add('bg-gray-200', 'text-gray-700');
+        button.classList.remove('bg-blue-600', 'text-white');
+        document.getElementById(`${subjectName}-units`).classList.add('hidden');
+      }
+    });
+  }
+
+  // Function to update completion counts displayed on each unit
+  function updateUnitCompletionCounts(subjectsProgress) {
+    document.querySelectorAll('.unit').forEach(unitElement => {
+      const unitTitleText = unitElement.querySelector('.unit-title span:first-child').textContent.trim();
+      const subtopics = Array.from(unitElement.querySelectorAll('.subtopics li')).map(li => li.textContent.trim());
+      const totalSubtopics = subtopics.length;
+
+      const unitIndex = Array.from(document.querySelectorAll('.subject-units .unit')).indexOf(unitElement) + 1;
+      const unitId = `${currentSubject}-unit-${String(unitIndex).padStart(2, '0')}`;
+
+      const unitProgress = (subjectsProgress[currentSubject] && subjectsProgress[currentSubject][unitId]) || {};
+      let completedSubtopics = 0;
+      for (let i = 0; i < totalSubtopics; i++) {
+        const subtopicKey = `subtopic-${i}`;
+        if (unitProgress[subtopicKey]) {
+          completedSubtopics++;
+        }
+      }
+      const completionSpan = unitElement.querySelector('.unit-title span:last-child');
+      completionSpan.textContent = `(${completedSubtopics}/${totalSubtopics})`;
+
+      // Change color based on completion status
+      if (completedSubtopics === totalSubtopics && totalSubtopics > 0) {
+        completionSpan.classList.remove('text-green-600');
+        completionSpan.classList.add('text-blue-600'); // Completed units are blue
+      } else {
+        completionSpan.classList.remove('text-blue-600');
+        completionSpan.classList.add('text-green-600'); // In-progress units are green
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
