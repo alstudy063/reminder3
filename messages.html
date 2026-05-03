@@ -152,6 +152,24 @@
         .verified-glow {
             filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
         }
+
+        /* Loading Skeletons & Animations */
+        .skeleton {
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="h-[100dvh] w-full flex items-center justify-center p-0 md:p-6 lg:p-8 relative">
@@ -206,7 +224,30 @@
 
                 <!-- Contacts List -->
                 <div class="flex-1 overflow-y-auto flex flex-col relative px-3 py-2 gap-1" id="contacts-list">
-                    <div class="text-center text-slate-500 mt-10 text-[13px] font-medium empty-contacts">No active chats</div>
+                    <div id="sidebar-skeleton" class="w-full flex flex-col gap-2">
+                        <div class="flex items-center gap-3 px-3 py-3 rounded-2xl border border-transparent">
+                            <div class="w-11 h-11 rounded-[14px] skeleton shrink-0"></div>
+                            <div class="flex-1 overflow-hidden space-y-2">
+                                <div class="h-4 w-24 skeleton rounded-md"></div>
+                                <div class="h-3 w-16 skeleton rounded-md"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 px-3 py-3 rounded-2xl border border-transparent">
+                            <div class="w-11 h-11 rounded-[14px] skeleton shrink-0"></div>
+                            <div class="flex-1 overflow-hidden space-y-2">
+                                <div class="h-4 w-32 skeleton rounded-md"></div>
+                                <div class="h-3 w-20 skeleton rounded-md"></div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 px-3 py-3 rounded-2xl border border-transparent">
+                            <div class="w-11 h-11 rounded-[14px] skeleton shrink-0"></div>
+                            <div class="flex-1 overflow-hidden space-y-2">
+                                <div class="h-4 w-20 skeleton rounded-md"></div>
+                                <div class="h-3 w-12 skeleton rounded-md"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center text-slate-500 mt-10 text-[13px] font-medium empty-contacts hidden">No active chats</div>
                 </div>
             </div>
 
@@ -315,13 +356,33 @@
                                 Name
                                 <i id="info-verified" data-lucide="badge-check" class="w-6 h-6 text-sky-400 hidden verified-glow"></i>
                             </h3>
-                            <p class="text-[13px] text-emerald-400 mt-2 flex items-center justify-center gap-1.5 font-medium z-10">
+                            <p id="info-status" class="text-[13px] text-emerald-400 mt-2 flex items-center justify-center gap-1.5 font-medium z-10">
                                 <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Active Connection
                             </p>
                         </div>
                         
                         <div class="p-6">
-                            <div class="w-full glass-input p-5 rounded-2xl">
+                            <!-- About Section -->
+                            <div class="w-full glass-input p-4 rounded-2xl mb-4">
+                                <p class="text-[10px] uppercase tracking-widest text-indigo-400 mb-1.5 font-bold">About</p>
+                                <p id="info-about" class="text-[14px] text-slate-200 leading-relaxed font-medium">Loading...</p>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="grid grid-cols-2 gap-3 mb-4">
+                                <button onclick="shareContact(this)" class="glass-input hover:bg-white/10 p-3 rounded-xl text-xs text-slate-200 flex flex-col items-center gap-2 transition-all group font-semibold">
+                                    <i data-lucide="share-2" class="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform"></i> Share
+                                </button>
+                                <button onclick="clearCurrentChat(this)" class="glass-input hover:bg-white/10 p-3 rounded-xl text-xs text-slate-200 flex flex-col items-center gap-2 transition-all group font-semibold">
+                                    <i data-lucide="eraser" class="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform"></i> Clear Chat
+                                </button>
+                            </div>
+
+                            <button onclick="deleteCurrentChat(this)" class="w-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 p-3.5 rounded-xl text-sm text-rose-400 flex items-center justify-center gap-2 transition-all font-semibold shadow-lg shadow-rose-900/10">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Chat
+                            </button>
+
+                            <div class="w-full glass-input p-5 rounded-2xl mt-4">
                                 <p class="text-[10px] uppercase tracking-widest text-indigo-400 mb-2 font-bold">Encrypted User ID</p>
                                 <p id="info-id" class="text-[13px] text-slate-300 font-mono break-all leading-relaxed select-all"></p>
                             </div>
@@ -350,6 +411,10 @@
                 <div>
                     <label class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2 block">Display Name</label>
                     <input type="text" id="setting-name" class="w-full glass-input p-3 rounded-xl text-sm text-white outline-none transition-all focus:border-indigo-500 focus:bg-white/5" placeholder="Name">
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2 block">About / Bio</label>
+                    <input type="text" id="setting-about" class="w-full glass-input p-3 rounded-xl text-sm text-white outline-none transition-all focus:border-indigo-500 focus:bg-white/5" placeholder="Hey there! I am using ChatPro.">
                 </div>
                 <div>
                     <label class="text-[10px] uppercase tracking-widest text-slate-400 font-semibold mb-2 block">Profile Photo URL</label>
@@ -433,9 +498,11 @@
         let localContacts = {}; 
         let currentTargetId = "";
         let isInitialLoad = true;
+        let isFetchingChat = false; 
 
         let myProfile = JSON.parse(localStorage.getItem('chatpro_profile')) || {
             name: "My Account",
+            about: "Hey there! I am using ChatPro.",
             photo: "", 
             hue: 0,
             isVerified: false
@@ -494,11 +561,13 @@
 
         window.saveProfile = async () => {
             myProfile.name = document.getElementById('setting-name').value || "My Account";
+            myProfile.about = document.getElementById('setting-about').value || "Hey there! I am using ChatPro.";
             myProfile.photo = document.getElementById('setting-photo').value || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.uid}&backgroundColor=transparent`;
             
             localStorage.setItem('chatpro_profile', JSON.stringify(myProfile));
             updateMyProfileUI();
             toggleModal('profile-modal', false);
+            updatePresenceStatus();
 
             if (currentUser && !currentUser.isAnonymous) {
                 try {
@@ -513,6 +582,7 @@
         function updateMyProfileUI() {
             document.getElementById('my-name').textContent = myProfile.name;
             document.getElementById('setting-name').value = myProfile.name;
+            document.getElementById('setting-about').value = myProfile.about || "Hey there! I am using ChatPro.";
             
             const avatarSrc = myProfile.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.uid}&backgroundColor=transparent`;
             document.getElementById('my-avatar').src = avatarSrc;
@@ -533,6 +603,7 @@
             setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users_presence', currentUser.uid), {
                 isOnline: true,
                 lastSeen: Date.now(),
+                about: myProfile.about || "Hey there! I am using ChatPro.",
                 isVerified: myProfile.isVerified || false 
             }, { merge: true }).catch(err => console.error(err));
         }
@@ -680,14 +751,22 @@
             
             const presenceRef = doc(db, 'artifacts', appId, 'public', 'data', 'users_presence', partnerId);
             unsubscribePresence = onSnapshot(presenceRef, (docSnap) => {
+                const infoStatus = document.getElementById('info-status');
+                const infoAbout = document.getElementById('info-about');
+
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     const isOnline = data.isOnline && (Date.now() - data.lastSeen < 60000);
                     
+                    infoAbout.textContent = data.about || "Hey there! I am using ChatPro.";
+
                     if (isOnline) {
                         chatSubtitle.textContent = "Online";
                         chatSubtitle.classList.replace('text-slate-400', 'text-emerald-400');
                         statusDot.className = "w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse transition-all duration-500";
+                        
+                        infoStatus.innerHTML = `<span class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span> Online`;
+                        infoStatus.className = "text-[13px] text-emerald-400 mt-2 flex items-center justify-center gap-1.5 font-medium z-10 animate-fade-in";
                     } else {
                         const date = new Date(data.lastSeen);
                         const now = new Date();
@@ -698,11 +777,18 @@
                         chatSubtitle.textContent = `Last seen: ${timeStr}`;
                         chatSubtitle.classList.replace('text-emerald-400', 'text-slate-400');
                         statusDot.className = "w-3.5 h-3.5 bg-slate-600 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500";
+                        
+                        infoStatus.innerHTML = `Last seen: ${timeStr}`;
+                        infoStatus.className = "text-[13px] text-slate-400 mt-2 flex items-center justify-center gap-1.5 font-medium z-10 animate-fade-in";
                     }
                 } else {
                     chatSubtitle.textContent = "Offline";
                     chatSubtitle.classList.replace('text-emerald-400', 'text-slate-400');
                     statusDot.className = "w-3.5 h-3.5 bg-slate-600 rounded-full border-2 border-slate-900 absolute -bottom-1 -right-1 transition-all duration-500";
+
+                    infoStatus.innerHTML = `Offline`;
+                    infoStatus.className = "text-[13px] text-slate-400 mt-2 flex items-center justify-center gap-1.5 font-medium z-10 animate-fade-in";
+                    infoAbout.textContent = "Hey there! I am using ChatPro.";
                 }
             });
         }
@@ -748,6 +834,9 @@
         function processContacts() {
             localContacts = {};
             
+            const skel = document.getElementById('sidebar-skeleton');
+            if (skel) skel.classList.add('hidden');
+
             allMessages.forEach(m => {
                 if (m.isSystem && m.systemType === 'chat_deleted') return; 
 
@@ -788,11 +877,13 @@
             const emptyMsg = contactsList.querySelector('.empty-contacts');
             if (arr.length === 0) {
                 if (!emptyMsg) {
-                    contactsList.innerHTML = `<div class="text-center text-slate-500 mt-10 text-[13px] font-medium empty-contacts">No active chats</div>`;
+                    contactsList.insertAdjacentHTML('beforeend', `<div class="text-center text-slate-500 mt-10 text-[13px] font-medium empty-contacts">No active chats</div>`);
+                } else {
+                    emptyMsg.classList.remove('hidden');
                 }
                 return;
             } else if (emptyMsg) {
-                emptyMsg.remove();
+                emptyMsg.classList.add('hidden');
             }
 
             arr.forEach((c, index) => {
@@ -916,14 +1007,35 @@
             chatAvatar.src = contact.photo;
 
             // Info Panel UI Update
-            document.getElementById('info-name').innerHTML = `${contact.name} ${contact.isVerified ? '<i data-lucide="badge-check" class="w-6 h-6 text-sky-400 verified-glow"></i>' : ''}`;
+            document.getElementById('info-name').innerHTML = `${contact.name} ${contact.isVerified ? '<i data-lucide="badge-check" class="w-6 h-6 text-sky-400 verified-glow inline-block"></i>' : ''}`;
             document.getElementById('info-avatar').src = contact.photo;
             document.getElementById('info-id').textContent = currentTargetId;
 
+            // Show Chat Skeleton temporarily
+            msgContainer.innerHTML = `
+                <div class="max-w-3xl mx-auto w-full flex flex-col gap-6 pb-4 pt-4 relative z-10 w-full animate-fade-in p-4">
+                    <div class="flex flex-col items-start w-full">
+                        <div class="skeleton w-48 h-12 rounded-2xl rounded-bl-sm"></div>
+                    </div>
+                    <div class="flex flex-col items-end w-full">
+                        <div class="skeleton w-64 h-16 rounded-2xl rounded-br-sm"></div>
+                    </div>
+                    <div class="flex flex-col items-start w-full">
+                        <div class="skeleton w-32 h-10 rounded-2xl rounded-bl-sm"></div>
+                    </div>
+                </div>
+            `;
+            isFetchingChat = true;
+
             listenToPartnerPresence(currentTargetId);
             markAsRead(currentTargetId);
-            updateActiveChatUI();
             
+            // Artificial delay for smooth skeleton effect
+            setTimeout(() => {
+                isFetchingChat = false;
+                updateActiveChatUI();
+            }, 500);
+
             if (localContacts[currentTargetId]) {
                 localContacts[currentTargetId].unreadCount = 0;
                 renderSidebarContacts();
@@ -955,7 +1067,7 @@
         }
 
         function updateActiveChatUI() {
-            if (!currentTargetId || currentTargetId.length < 10) return;
+            if (!currentTargetId || currentTargetId.length < 10 || isFetchingChat) return;
 
             const activeMsgs = allMessages.filter(m => 
                 (m.senderId === currentUser.uid && m.receiverId === currentTargetId) || 
@@ -1001,7 +1113,7 @@
         function createMessageHTML(m) {
             if (m.isSystem && m.systemType === 'chat_deleted') {
                 return `
-                    <div class="message-wrapper w-full flex justify-center my-4" data-id="${m.id}">
+                    <div class="message-wrapper w-full flex justify-center my-4 animate-fade-in" data-id="${m.id}">
                         <div class="bg-rose-500/10 border border-rose-500/20 text-rose-300 text-[13px] px-5 py-3 rounded-2xl text-center max-w-sm backdrop-blur-md shadow-lg shadow-rose-900/10">
                             <i data-lucide="alert-circle" class="w-5 h-5 mx-auto mb-2 opacity-80"></i>
                             <p>${escapeHTML(m.senderName)} has cleared the chat.</p>
@@ -1017,7 +1129,7 @@
 
             if (m.deleted) {
                 return `
-                    <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
+                    <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full animate-fade-in" data-id="${m.id}">
                         <div class="message-bubble ${isMe ? 'my-message' : 'their-message'} is-deleted italic opacity-60 flex items-center gap-2">
                             <i data-lucide="ban" class="w-4 h-4 opacity-70"></i> 
                             <span>This message was deleted</span>
@@ -1033,7 +1145,7 @@
             if (isSingleEmoji(text)) {
                 const hex = getEmojiHex(text);
                 return `
-                    <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
+                    <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full animate-fade-in" data-id="${m.id}">
                         <div class="${isMe ? 'my-message' : 'their-message'} inner-bubble !bg-transparent !border-none !shadow-none !p-0">
                             <div class="emoji-msg-container transform hover:scale-110 transition-transform" data-hex="${hex}" data-raw="${text}">
                                 <span class="text-6xl drop-shadow-lg">${text}</span>
@@ -1048,7 +1160,7 @@
             }
 
             return `
-                <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full" data-id="${m.id}">
+                <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full animate-fade-in" data-id="${m.id}">
                     <div class="message-bubble inner-bubble ${isMe ? 'my-message' : 'their-message'}">
                         ${formatMessageContent(text)}
                     </div>
@@ -1342,6 +1454,57 @@
         }
 
         window.deleteChatWith = (partnerId) => performChatDeletion(partnerId, false);
+
+        // New Info Panel Actions
+        window.shareContact = (btn) => {
+            if (!currentTargetId) return;
+            const link = `${window.location.origin}${window.location.pathname}?chat=${currentTargetId}`;
+            navigator.clipboard.writeText(link);
+            
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="check" class="w-5 h-5 text-emerald-400"></i> Copied!`;
+            lucide.createIcons();
+            setTimeout(() => { btn.innerHTML = originalHTML; lucide.createIcons(); }, 2000);
+        };
+
+        window.clearCurrentChat = (btn) => {
+            if(btn.dataset.confirm !== 'true') {
+                btn.dataset.confirm = 'true';
+                const originalHtml = btn.innerHTML;
+                btn.dataset.original = originalHtml;
+                btn.innerHTML = `<i data-lucide="help-circle" class="w-5 h-5 text-amber-400"></i> Sure?`;
+                btn.classList.replace('text-slate-200', 'text-amber-400');
+                lucide.createIcons();
+                setTimeout(() => { 
+                    btn.dataset.confirm = 'false'; 
+                    btn.innerHTML = btn.dataset.original; 
+                    btn.classList.replace('text-amber-400', 'text-slate-200');
+                    lucide.createIcons(); 
+                }, 3000);
+                return;
+            }
+            performChatDeletion(currentTargetId, false);
+            toggleInfoPanel(false);
+        };
+
+        window.deleteCurrentChat = (btn) => {
+            if(btn.dataset.confirm !== 'true') {
+                btn.dataset.confirm = 'true';
+                const originalHtml = btn.innerHTML;
+                btn.dataset.original = originalHtml;
+                btn.innerHTML = `<i data-lucide="alert-triangle" class="w-4 h-4"></i> Confirm Delete`;
+                lucide.createIcons();
+                setTimeout(() => { 
+                    btn.dataset.confirm = 'false'; 
+                    btn.innerHTML = btn.dataset.original; 
+                    lucide.createIcons(); 
+                }, 3000);
+                return;
+            }
+            performChatDeletion(currentTargetId, true);
+            toggleInfoPanel(false);
+            closeMobileChat();
+        };
 
         cmDeleteBtn.addEventListener('click', async () => {
             if (!currentContextMenuTarget) return;
