@@ -256,7 +256,7 @@
   <!-- Firebase & App Logic -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-    import { getAuth, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+    import { getAuth, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, linkWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
     lucide.createIcons();
@@ -381,7 +381,10 @@
       const progress = calculateProgress(subject);
       const taskCount = getTaskCount(subject);
       const unitCount = subject.units ? subject.units.length : 0;
-      const textColor = subject.color.replace('bg-', 'text-');
+      
+      // Fallback in case subject.color is missing or undefined
+      const colorClass = subject.color || 'bg-indigo-500';
+      const textColor = colorClass.replace('bg-', 'text-');
       
       // Delay animation slightly based on index
       const delay = index * 0.05;
@@ -390,7 +393,7 @@
         <div style="animation-delay: ${delay}s" onclick="window.app.openSubjectDrawer('${subject.id}')" class="animate-slide-up opacity-0 bg-white rounded-3xl p-5 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:border-indigo-100 hover:-translate-y-1 transition-all duration-300 cursor-pointer group flex flex-col justify-between h-48">
           <div>
             <div class="flex justify-between items-start mb-4">
-              <div class="p-3 rounded-2xl ${subject.color} bg-opacity-10 text-opacity-90 flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <div class="p-3 rounded-2xl ${colorClass} bg-opacity-10 text-opacity-90 flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
                 <i data-lucide="book-marked" class="w-6 h-6 ${textColor}"></i>
               </div>
               <button class="text-slate-300 group-hover:text-slate-500 p-1 hover:bg-slate-50 rounded-lg transition-colors">
@@ -405,7 +408,7 @@
               <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Progress</span>
               <span class="text-sm font-bold text-slate-700">${progress}%</span>
             </div>
-            ${generateProgressBar(progress, subject.color)}
+            ${generateProgressBar(progress, colorClass)}
           </div>
         </div>
       `;
@@ -572,7 +575,10 @@
       }
 
       const progress = calculateProgress(subject);
-      const textColor = subject.color.replace('bg-', 'text-');
+      
+      // Fallback in case subject.color is missing or undefined
+      const colorClass = subject.color || 'bg-indigo-500';
+      const textColor = colorClass.replace('bg-', 'text-');
       const drawer = document.getElementById('drawer-content');
 
       let unitsHTML = '';
@@ -624,7 +630,7 @@
                 ${subunitsHTML}
                 <form onsubmit="window.app.handleAddSubunit(event, '${subject.id}', '${unit.id}')" class="flex items-center gap-2 mt-2">
                   <input type="text" name="subunit" placeholder="Add new task..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 focus:bg-white transition-all" required autocomplete="off"/>
-                  <button type="submit" class="bg-slate-100 text-slate-600 hover:text-white hover:${subject.color} p-2.5 rounded-xl transition-all duration-300 hover:shadow-md">
+                  <button type="submit" class="bg-slate-100 text-slate-600 hover:text-white hover:${colorClass} p-2.5 rounded-xl transition-all duration-300 hover:shadow-md">
                     <i data-lucide="plus" class="w-4 h-4"></i>
                   </button>
                 </form>
@@ -635,17 +641,17 @@
       }
 
       drawer.innerHTML = `
-        <div class="${subject.color} bg-opacity-10 p-6 border-b border-slate-100 flex items-start justify-between relative overflow-hidden">
+        <div class="${colorClass} bg-opacity-10 p-6 border-b border-slate-100 flex items-start justify-between relative overflow-hidden">
           <div class="relative z-10">
             <div class="flex items-center gap-3 mb-2">
-              <div class="p-3 rounded-2xl ${subject.color} bg-opacity-10 text-opacity-90 flex items-center justify-center shadow-sm">
+              <div class="p-3 rounded-2xl ${colorClass} bg-opacity-10 text-opacity-90 flex items-center justify-center shadow-sm">
                 <i data-lucide="book-marked" class="w-6 h-6 ${textColor}"></i>
               </div>
               <h2 class="text-xl font-bold text-slate-800 tracking-tight">${subject.title}</h2>
             </div>
             <div class="flex items-center gap-3 mt-5">
               <div class="flex-1 w-40">
-                ${generateProgressBar(progress, subject.color)}
+                ${generateProgressBar(progress, colorClass)}
               </div>
               <span class="text-sm font-bold text-slate-700">${progress}%</span>
             </div>
@@ -659,7 +665,7 @@
             </button>
           </div>
           <!-- Decorative circle -->
-          <div class="absolute -bottom-10 -right-10 w-32 h-32 rounded-full ${subject.color} opacity-[0.03] pointer-events-none"></div>
+          <div class="absolute -bottom-10 -right-10 w-32 h-32 rounded-full ${colorClass} opacity-[0.03] pointer-events-none"></div>
         </div>
         
         <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-50/50">
@@ -672,7 +678,7 @@
         <div class="p-4 bg-white border-t border-slate-100 shadow-[0_-10px_30px_rgba(0,0,0,0.03)] z-10">
           <form onsubmit="window.app.handleAddUnit(event, '${subject.id}')" class="flex items-center gap-2">
             <input type="text" name="unit" placeholder="Add new unit..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-400 focus:bg-white transition-all shadow-sm" required autocomplete="off"/>
-            <button type="submit" class="${subject.color} text-white px-4 py-3 rounded-xl hover:opacity-90 transition-all duration-300 font-semibold text-sm shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2">
+            <button type="submit" class="${colorClass} text-white px-4 py-3 rounded-xl hover:opacity-90 transition-all duration-300 font-semibold text-sm shadow-md hover:shadow-lg active:scale-95 flex items-center gap-2">
               <i data-lucide="folder-plus" class="w-4 h-4"></i>
               <span class="hidden sm:inline">Add Unit</span>
             </button>
@@ -710,6 +716,30 @@
       },
       closeSettings: () => {
         document.getElementById('settings-modal').classList.add('hidden');
+      },
+      signInWithGoogle: async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          // If the user is currently anonymous, try linking their account so they don't lose data
+          if (auth.currentUser && auth.currentUser.isAnonymous) {
+             await linkWithPopup(auth.currentUser, provider);
+             showToast("Successfully linked with Google!", "success");
+          } else {
+             await signInWithPopup(auth, provider);
+             showToast("Signed in with Google", "success");
+          }
+          window.app.closeSettings();
+        } catch (error) {
+          if (error.code === 'auth/credential-already-in-use') {
+             // Account exists, just sign them in (might drop local anonymous data if not merged)
+             await signInWithPopup(auth, provider);
+             showToast("Signed in with Google", "success");
+             window.app.closeSettings();
+          } else {
+             console.error("Google Auth error:", error);
+             showToast("Google Sign-In failed", "error");
+          }
+        }
       },
       logout: async () => {
         try { 
@@ -911,6 +941,9 @@
     // Initialize Auth (Allows "Guest Mode" via Anonymously if no token present)
     const initAuth = async () => {
       try {
+        await auth.authStateReady(); // Wait for existing session to load
+        if (auth.currentUser) return; // Prevent overwriting existing login
+
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
           await signInWithCustomToken(auth, __initial_auth_token);
         } else {
@@ -933,12 +966,30 @@
         // Update user profile UI for Guest Mode vs Logged In
         const isGuest = user.isAnonymous;
         const userNameText = isGuest ? "Guest User" : "Logged Student";
-        const emailText = isGuest ? "Local Guest Mode" : "Authenticated";
+        const emailText = isGuest ? "Local Guest Mode" : (user.email || "Authenticated");
         
         document.getElementById('desktop-user-name').textContent = userNameText;
         document.getElementById('desktop-user-email').textContent = emailText;
         document.getElementById('settings-name').textContent = userNameText;
         document.getElementById('settings-email').textContent = emailText;
+
+        // Update settings modal block based on login status
+        const signoutBlock = document.getElementById('signout-block');
+        if (isGuest) {
+          signoutBlock.innerHTML = `
+            <button onclick="window.app.signInWithGoogle()" class="w-full flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 font-medium py-2.5 px-4 rounded-xl transition-colors duration-200 shadow-sm mb-2">
+              <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Sign in with Google
+            </button>
+          `;
+        } else {
+          signoutBlock.innerHTML = `
+            <button onclick="window.app.logout()" class="w-full flex items-center justify-center gap-2 text-rose-600 hover:bg-rose-50 font-medium py-2.5 px-4 rounded-xl transition-colors duration-200 group">
+              <i data-lucide="log-out" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i> Sign Out
+            </button>
+          `;
+          lucide.createIcons({ root: signoutBlock });
+        }
 
         if (state.unsubscribeDb) state.unsubscribeDb();
         
