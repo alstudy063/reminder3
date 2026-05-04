@@ -158,6 +158,38 @@
         }
         .toast-enter { animation: toastEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: toastLeave 0.3s ease-in forwards; }
+
+        /* Fix for Prose Content Paragraphs and Markdown spacing */
+        .prose-content ul { list-style-type: none; padding-left: 0; margin-bottom: 0.75rem; }
+        .prose-content li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
+        .prose-content li::before {
+            content: '›';
+            position: absolute;
+            left: 0;
+            color: rgb(var(--accent-rgb));
+            font-weight: bold;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .prose-content p {
+            margin-bottom: 0.75rem; /* Add paragraph spacing */
+            line-height: 1.6;
+        }
+        .prose-content p:last-child, .prose-content ul:last-child {
+            margin-bottom: 0;
+        }
+        .prose-content b, .prose-content strong {
+            font-weight: 700;
+            color: inherit;
+        }
+        .prose-content i, .prose-content em {
+            font-style: italic;
+        }
+        
+        .equation-display { box-shadow: inset 0 2px 10px rgba(0,0,0,0.05); }
+        .dark .equation-display { box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
+        
+        input, textarea, select { font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 dark:bg-[#0b1121] dark:text-slate-200 antialiased selection:bg-accent/30">
@@ -552,11 +584,11 @@
 
                 if(prevEl) {
                     prevEl.style.opacity = '0';
-                    prevEl.style.transform = 'translateY(15px) scale(0.98)'; // Smoother exit
+                    prevEl.style.transform = 'translateY(15px) scale(0.98)';
                     setTimeout(() => {
                         prevEl.classList.add('hidden');
                         showNext();
-                    }, 250); // Premium delay
+                    }, 250);
                 } else {
                     showNext();
                 }
@@ -596,7 +628,7 @@
                 const content = modal.querySelector('.animate-scale-in');
                 
                 content.style.animation = 'none';
-                content.offsetHeight; // trigger reflow
+                content.offsetHeight; 
                 content.style.animation = null; 
                 content.style.opacity = '';
                 content.style.transform = '';
@@ -677,13 +709,17 @@
             parseMarkdownWithMath(text) {
                 if (!text) return "";
                 let mathBlocks = [];
-                let contentText = text.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => {
+                // LaTeX render වීමට බාධා නොවන ලෙස @@ ලකුණු මගින් placeholder එක සාදා ඇත.
+                let contentText = text.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\$[\s\S]*?\$|\\\([\s\S]*?\\\))/g, (match) => {
                     mathBlocks.push(match);
-                    return `__MATH_PLACEHOLDER_${mathBlocks.length - 1}__`;
+                    return `@@MATH_PLACEHOLDER_${mathBlocks.length - 1}@@`;
                 });
-                let parsedHtml = marked.parse(contentText);
+                
+                // breaks: true මගින් new line එකක් enter කළවිට එය ඡේදයක් (paragraph) හෝ line break එකක් ලෙස සකසයි
+                let parsedHtml = marked.parse(contentText, { breaks: true, gfm: true });
+                
                 mathBlocks.forEach((block, i) => {
-                    parsedHtml = parsedHtml.replace(`__MATH_PLACEHOLDER_${i}__`, block);
+                    parsedHtml = parsedHtml.replace(`@@MATH_PLACEHOLDER_${i}@@`, block);
                 });
                 return parsedHtml;
             },
@@ -886,7 +922,6 @@
 
                 if(val) {
                     const fullPath = parent ? `${parent}/${val}` : val;
-                    // DUPLICATE CHECK
                     if(!AppState.subjects.some(s => s.toLowerCase() === fullPath.toLowerCase())) {
                         AppState.subjects.push(fullPath);
                         this.extractAllFolders();
@@ -928,7 +963,6 @@
                     if(!Array.isArray(parsed)) throw new Error("Format error");
                     
                     const cleaned = parsed.map(s => String(s).trim()).filter(s => s !== "");
-                    // PREVENT DUPLICATES
                     const existingLower = AppState.subjects.map(s => s.toLowerCase());
                     const uniqueNew = cleaned.filter(s => !existingLower.includes(s.toLowerCase()));
                     
