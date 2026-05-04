@@ -556,7 +556,8 @@
                 } else {
                     document.getElementById('edit-id').value = '';
                     document.getElementById('edit-title').value = '';
-                    document.getElementById('edit-category').value = AppState.currentPath || (AppState.allFolders[0] || '');
+                    // Default to current path if any
+                    document.getElementById('edit-category').value = AppState.currentPath || '';
                     document.getElementById('edit-equation').value = '';
                     document.getElementById('edit-variables').value = '';
                     document.getElementById('edit-conditions').value = '';
@@ -667,7 +668,7 @@
                     Array.from(subFolders).sort().forEach((subFolder) => {
                         const folderName = subFolder.split('/').pop();
                         // Count equations recursively in this folder
-                        const count = AppState.equations.filter(eq => eq.category === subFolder || eq.category.startsWith(subFolder + '/')).length;
+                        const count = AppState.equations.filter(eq => eq.category === subFolder || (eq.category && eq.category.startsWith(subFolder + '/'))).length;
                         
                         htmlStr += `
                             <div class="card-physics stagger-card bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
@@ -691,12 +692,12 @@
                 if (AppState.isSearching) {
                     equationsToRender = AppState.equations;
                 } else {
-                    equationsToRender = AppState.equations.filter(eq => eq.category === AppState.currentPath);
+                    equationsToRender = AppState.equations.filter(eq => (eq.category || '') === AppState.currentPath);
                 }
 
                 equationsToRender.forEach((eq) => {
                     const searchString = `${eq.title} ${eq.category} ${eq.equation}`.toLowerCase();
-                    const badgeText = eq.category ? eq.category.split('/').pop() : 'Uncategorized';
+                    const badgeText = (eq.category && eq.category !== '') ? eq.category.split('/').pop() : 'Root';
                     
                     htmlStr += `
                         <div class="card-physics eq-card stagger-card bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
@@ -704,7 +705,7 @@
                              data-search="${searchString}" style="animation-delay: ${indexCount * 40}ms">
                             <div>
                                 <div class="flex items-center justify-between mb-4">
-                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10 truncate max-w-[70%]" title="${eq.category}">
+                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10 truncate max-w-[70%]" title="${eq.category || 'Root'}">
                                         ${badgeText}
                                     </span>
                                     <i data-lucide="arrow-up-right" class="text-slate-400 group-hover:text-accent transition-colors" size="18"></i>
@@ -857,13 +858,20 @@
                 const editSelect = document.getElementById('edit-category');
                 const parentSelect = document.getElementById('new-subject-parent');
                 
-                const selectHtml = AppState.allFolders.map(s => {
-                    const display = s.split('/').join(' → ');
-                    return `<option value="${s}">${display}</option>`;
-                }).join('');
+                const selectHtml = `
+                    <option value="">Root / Uncategorized</option>
+                    ${AppState.allFolders.map(s => {
+                        const display = s.split('/').join(' → ');
+                        return `<option value="${s}">${display}</option>`;
+                    }).join('')}
+                `;
 
                 if(editSelect) editSelect.innerHTML = selectHtml;
-                if(parentSelect) parentSelect.innerHTML = `<option value="">-- Root Level --</option>` + selectHtml;
+                if(parentSelect) parentSelect.innerHTML = `<option value="">-- Root Level --</option>` + 
+                    AppState.allFolders.map(s => {
+                        const display = s.split('/').join(' → ');
+                        return `<option value="${s}">${display}</option>`;
+                    }).join('');
                 
                 lucide.createIcons();
             },
@@ -947,10 +955,31 @@
             processMagicText() {
                 const text = document.getElementById('magic-paste-input').value;
                 if(!text.trim()) return;
+                
+                const updateCategory = (cat) => {
+                    if (!cat) return;
+                    const select = document.getElementById('edit-category');
+                    let exists = false;
+                    for(let i=0; i<select.options.length; i++) {
+                        if(select.options[i].value.toLowerCase() === cat.toLowerCase()) {
+                            select.value = select.options[i].value;
+                            exists = true; break;
+                        }
+                    }
+                    if(!exists && cat) {
+                        if(!AppState.subjects.includes(cat)) {
+                            AppState.subjects.push(cat);
+                            window.AppUI.updateSubjectUI();
+                            window.AppFirebase.saveSettings({ subjects: AppState.subjects });
+                        }
+                        select.value = cat;
+                    }
+                };
+
                 try {
                     const data = JSON.parse(text);
                     if (data.title) document.getElementById('edit-title').value = data.title;
-                    if (data.category) document.getElementById('edit-category').value = data.category;
+                    if (data.category) updateCategory(data.category);
                     if (data.equation) document.getElementById('edit-equation').value = data.equation;
                     if (data.variables) document.getElementById('edit-variables').value = Array.isArray(data.variables) ? data.variables.join('\n') : data.variables;
                     if (data.conditions) document.getElementById('edit-conditions').value = Array.isArray(data.conditions) ? data.conditions.join('\n') : data.conditions;
@@ -958,37 +987,20 @@
                     this.showToast("Magic Paste successful!");
                 } catch (e) {
                     const extract = (key) => {
-                        const regex = new RegExp(`(?:\\*\\*|###\\s*)?${key}(?:\\*\\*)?\\s*:\\s*([\\s\\S]*?)(?=\\n(?:\\*\\*|###\\s*)?[A-Z][a-z]+(?:\\s*&\\s*[A-Z][a-z]+)*\\s*:|$)`, 'i');
+                        const regex = new RegExp(`(?:\\*\\*|###\\s*)?${key}(?:\\*\\*)?\\s*[:=]\\s*([\\s\\S]*?)(?=\\n(?:\\*\\*|###\\s*)?[A-Z][a-z]+(?:\\s*&\\s*[A-Z][a-z]+)*\\s*[:=]|$)`, 'i');
                         const match = text.match(regex);
                         return match ? match[1].trim() : null;
                     };
                     
                     const title = extract('Title') || extract('Name') || extract('Equation Name');
-                    const category = extract('Category') || extract('Physics Category') || extract('Folder');
+                    const category = extract('Category') || extract('Physics Category') || extract('Folder') || extract('Sub Folder');
                     const equation = extract('Equation') || extract('Main Equation') || extract('Formula');
                     const variables = extract('Variables') || extract('Variables & Units') || extract('Parameters');
                     const conditions = extract('Conditions') || extract('Validity Conditions');
                     const notes = extract('Notes') || extract('Important Notes');
 
                     if (title) document.getElementById('edit-title').value = title;
-                    if (category) {
-                        const select = document.getElementById('edit-category');
-                        let exists = false;
-                        for(let i=0; i<select.options.length; i++) {
-                            if(select.options[i].value.toLowerCase() === category.toLowerCase()) {
-                                select.value = select.options[i].value;
-                                exists = true; break;
-                            }
-                        }
-                        if(!exists && category) {
-                            if(!AppState.subjects.includes(category)) {
-                                AppState.subjects.push(category);
-                                window.AppUI.updateSubjectUI();
-                                window.AppFirebase.saveSettings({ subjects: AppState.subjects });
-                            }
-                            select.value = category;
-                        }
-                    }
+                    if (category) updateCategory(category);
                     if (equation) document.getElementById('edit-equation').value = equation.replace(/^\$\$?|\$\$?$/g, '').trim();
                     if (variables) document.getElementById('edit-variables').value = variables;
                     if (conditions) document.getElementById('edit-conditions').value = conditions;
