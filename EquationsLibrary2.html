@@ -209,8 +209,11 @@
                 <button onclick="window.AppUI.switchTab('home')" id="nav-home" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400">
                     <i data-lucide="layout-dashboard" size="20"></i> Dashboard
                 </button>
-                <button onclick="window.AppUI.switchTab('library')" id="nav-library" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl text-slate-600 dark:text-slate-400">
+                <button onclick="window.AppUI.switchTab('library')" id="nav-library" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400">
                     <i data-lucide="book-open" size="20"></i> Equations Library
+                </button>
+                <button onclick="window.AppUI.switchTab('reminders')" id="nav-reminders" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400">
+                    <i data-lucide="brain-circuit" size="20"></i> Daily Reminders
                 </button>
                 <button onclick="window.AppUI.switchTab('settings')" id="nav-settings" class="nav-link w-full flex items-center gap-4 p-3.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/50 text-slate-600 dark:text-slate-400">
                     <i data-lucide="settings" size="20"></i> Settings
@@ -269,6 +272,23 @@
                 
                 <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     <!-- Skeletons will be injected here via JavaScript -->
+                </div>
+            </div>
+
+            <!-- Tab: Reminders -->
+            <div id="tab-reminders" class="tab-content hidden animate-slide">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div class="p-4 bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800/50 rounded-xl flex-1 flex items-center gap-3">
+                        <i data-lucide="brain-circuit" class="text-purple-500" size="24"></i>
+                        <p class="text-sm text-purple-800 dark:text-purple-300 font-medium">Review these equations today to keep them fresh in your memory. Selected from all lessons.</p>
+                    </div>
+                    <button onclick="window.AppUI.generateReminders(true)" class="px-5 py-3.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-xl transition-colors border border-slate-300 dark:border-slate-600 flex items-center justify-center gap-2 text-sm font-bold shadow-sm whitespace-nowrap w-full sm:w-auto">
+                        <i data-lucide="refresh-cw" size="18"></i> Refresh List
+                    </button>
+                </div>
+                
+                <div id="reminders-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Reminder Cards -->
                 </div>
             </div>
 
@@ -387,8 +407,9 @@
         <!-- Mobile Nav -->
         <nav class="md:hidden fixed bottom-0 left-0 w-full bg-white/95 dark:bg-[#0b1121]/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 p-3 px-6 flex justify-between items-center z-50">
             <button onclick="window.AppUI.switchTab('home')" class="text-slate-400 hover:text-accent transition-colors" id="m-nav-home"><i data-lucide="layout-dashboard" size="24"></i></button>
-            <button onclick="window.AppUI.switchTab('library')" class="text-accent transition-colors" id="m-nav-library"><i data-lucide="book-open" size="24"></i></button>
+            <button onclick="window.AppUI.switchTab('library')" class="text-slate-400 hover:text-accent transition-colors" id="m-nav-library"><i data-lucide="book-open" size="24"></i></button>
             <button onclick="window.AppUI.openAddEditModal()" class="w-12 h-12 bg-accent rounded-full flex items-center justify-center text-white shadow-lg shadow-accent/40 active:scale-95 transition-transform"><i data-lucide="plus" size="24" stroke-width="3"></i></button>
+            <button onclick="window.AppUI.switchTab('reminders')" class="text-slate-400 hover:text-accent transition-colors" id="m-nav-reminders"><i data-lucide="brain-circuit" size="24"></i></button>
             <button onclick="window.AppUI.switchTab('settings')" class="text-slate-400 hover:text-accent transition-colors" id="m-nav-settings"><i data-lucide="settings" size="24"></i></button>
         </nav>
 
@@ -420,7 +441,7 @@
                         <div id="view-notes" class="prose-content bg-purple-50 dark:bg-purple-500/5 p-5 rounded-2xl border border-purple-200 dark:border-purple-500/10 text-purple-900 dark:text-purple-100"></div>
                     </div>
                 </div>
-                <div class="p-5 border-t border-slate-100 dark:border-slate-800 flex gap-3 bg-slate-50 dark:bg-slate-800/30">
+                <div id="view-modal-actions" class="p-5 border-t border-slate-100 dark:border-slate-800 flex gap-3 bg-slate-50 dark:bg-slate-800/30">
                     <button onclick="window.AppUI.openAddEditModal(document.getElementById('view-id').value)" class="flex-1 py-3.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-xl font-bold text-sm transition-colors border border-slate-300 dark:border-slate-700 flex items-center justify-center gap-2">
                         <i data-lucide="edit-3" size="18"></i> Edit
                     </button>
@@ -524,6 +545,7 @@
             equations: [],
             subjects: ["Mechanics", "Current Electricity", "Fields", "Fields/Gravitational Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"],
             allFolders: [], 
+            dailyReminders: [], // New state for reminders
             currentTab: 'library',
             currentPath: '', 
             isSearching: false,
@@ -612,14 +634,15 @@
                     });
                     document.getElementById(`m-nav-${tab}`)?.classList.replace('text-slate-400', 'text-accent');
 
-                    const titles = { 'home': 'Dashboard', 'library': 'Equations Library', 'settings': 'Settings' };
-                    const subtitles = { 'home': 'Your physics learning overview.', 'library': 'Your cloud-synced formulas.', 'settings': 'Manage account & appearance.' };
+                    const titles = { 'home': 'Dashboard', 'library': 'Equations Library', 'settings': 'Settings', 'reminders': 'Daily Reminders' };
+                    const subtitles = { 'home': 'Your physics learning overview.', 'library': 'Your cloud-synced formulas.', 'settings': 'Manage account & appearance.', 'reminders': 'Review your memory.' };
                     
                     document.getElementById('page-title').innerText = titles[tab] || '';
                     document.getElementById('page-subtitle').innerText = subtitles[tab] || '';
                     document.getElementById('search-container').style.display = (tab === 'library') ? 'block' : 'none';
 
                     if(tab === 'library') window.AppUI.renderEquations();
+                    if(tab === 'reminders') window.AppUI.generateReminders();
                 }
             },
 
@@ -683,13 +706,13 @@
                 lucide.createIcons();
             },
 
-            openViewModal(id) {
+            openViewModal(id, isReadOnly = false) {
                 const eq = AppState.equations.find(x => String(x.id) === String(id));
                 if (!eq) return;
 
                 document.getElementById('view-id').value = eq.id;
                 document.getElementById('view-title').innerText = eq.title;
-                document.getElementById('view-category-badge').innerText = eq.category.split('/').join(' → ');
+                document.getElementById('view-category-badge').innerText = (eq.category || 'Root').split('/').join(' → ');
                 
                 const eqContainer = document.getElementById('view-equation');
                 const varContainer = document.getElementById('view-variables');
@@ -700,6 +723,14 @@
                 varContainer.innerHTML = this.parseMarkdownWithMath(eq.variables) || "<p class='opacity-50 italic'>No variables defined.</p>";
                 condContainer.innerHTML = this.parseMarkdownWithMath(eq.conditions) || "<p class='opacity-50 italic'>No specific conditions.</p>";
                 notesContainer.innerHTML = this.parseMarkdownWithMath(eq.notes) || "<p class='opacity-50 italic'>No additional notes.</p>";
+
+                // Hide edit/delete buttons if in ReadOnly mode (Reminders tab)
+                const actionFooter = document.getElementById('view-modal-actions');
+                if (isReadOnly) {
+                    actionFooter.classList.add('hidden');
+                } else {
+                    actionFooter.classList.remove('hidden');
+                }
 
                 this.openModal('view-modal');
                 MathManager.add([eqContainer, varContainer, condContainer, notesContainer]);
@@ -723,6 +754,88 @@
                 });
                 return parsedHtml;
             },
+
+            // --- Reminder Logic ---
+            generateReminders(forceRefresh = false) {
+                if (!forceRefresh && AppState.dailyReminders && AppState.dailyReminders.length > 0) {
+                    this.renderReminders();
+                    return;
+                }
+
+                const allEqs = [...AppState.equations];
+                if (allEqs.length === 0) {
+                    AppState.dailyReminders = [];
+                    this.renderReminders();
+                    return;
+                }
+
+                // 1. Group equations by root folder
+                const grouped = {};
+                allEqs.forEach(eq => {
+                    const rootCat = eq.category ? eq.category.split('/')[0] : 'Uncategorized';
+                    if (!grouped[rootCat]) grouped[rootCat] = [];
+                    grouped[rootCat].push(eq);
+                });
+
+                let selectedIds = new Set();
+
+                // 2. Select at least 3 from each lesson
+                Object.keys(grouped).forEach(cat => {
+                    let catEqs = [...grouped[cat]].sort(() => 0.5 - Math.random());
+                    let take = Math.min(3, catEqs.length);
+                    for(let i=0; i<take; i++) {
+                        selectedIds.add(catEqs[i].id);
+                    }
+                });
+
+                // 3. Fill up to 30 equations (if available) with random ones
+                let remaining = allEqs.filter(eq => !selectedIds.has(eq.id)).sort(() => 0.5 - Math.random());
+                while(selectedIds.size < 30 && remaining.length > 0) {
+                    selectedIds.add(remaining.pop().id);
+                }
+
+                // Final shuffle
+                AppState.dailyReminders = allEqs.filter(eq => selectedIds.has(eq.id)).sort(() => 0.5 - Math.random());
+                this.renderReminders();
+            },
+
+            renderReminders() {
+                const container = document.getElementById('reminders-container');
+                container.innerHTML = '';
+                
+                if (AppState.dailyReminders.length === 0) {
+                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 animate-fade-in"><i data-lucide="brain" size="32" class="mx-auto mb-2 opacity-50"></i><p>Add more equations to your library to get daily reminders.</p></div>`;
+                    lucide.createIcons();
+                    return;
+                }
+
+                let htmlStr = '';
+                AppState.dailyReminders.forEach((eq, indexCount) => {
+                    const badgeText = (eq.category && eq.category !== '') ? eq.category.split('/').pop() : 'Root';
+                    htmlStr += `
+                        <div class="card-physics eq-card stagger-card bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm hover:border-purple-300 dark:hover:border-purple-700"
+                             onclick="window.AppUI.openViewModal('${eq.id}', true)" style="animation-delay: ${(indexCount % 10) * 40}ms">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-700/50 bg-white dark:bg-purple-900/30 truncate max-w-[70%]">
+                                        ${badgeText}
+                                    </span>
+                                    <i data-lucide="eye" class="text-slate-300 group-hover:text-purple-500 transition-colors" size="18"></i>
+                                </div>
+                                <h4 class="font-bold text-lg text-slate-900 dark:text-white sinhala-font mb-4 leading-tight">${eq.title}</h4>
+                            </div>
+                            <div class="bg-white dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 text-center overflow-hidden flex items-center justify-center min-h-[80px]">
+                                <span class="text-slate-800 dark:text-cyan-300 font-mono text-lg">$$${eq.equation}$$</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = htmlStr;
+                MathManager.add([container]);
+                lucide.createIcons();
+            },
+            // --- End Reminder Logic ---
 
             setPath(path) {
                 AppState.currentPath = path;
@@ -834,7 +947,7 @@
                     
                     htmlStr += `
                         <div class="card-physics eq-card stagger-card bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
-                             onclick="window.AppUI.openViewModal('${eq.id}')"
+                             onclick="window.AppUI.openViewModal('${eq.id}', false)"
                              data-search="${searchString}" style="animation-delay: ${indexCount * 40}ms">
                             <div>
                                 <div class="flex items-center justify-between mb-4">
@@ -1176,8 +1289,16 @@
                 AppState.unsubEquations = onSnapshot(collection(db, 'artifacts', 'studyflow-pro', 'users', uid, 'equations'), (snapshot) => {
                     AppState.isLoading = false;
                     AppState.equations = snapshot.docs.map(doc => doc.data());
+                    
+                    // Cleanup deleted equations from reminders
+                    if (AppState.dailyReminders) {
+                         const existingIds = new Set(AppState.equations.map(e => e.id));
+                         AppState.dailyReminders = AppState.dailyReminders.filter(e => existingIds.has(e.id));
+                    }
+
                     document.getElementById('reaction-count').innerText = AppState.equations.length;
                     if(AppState.currentTab === 'library') window.AppUI.renderEquations();
+                    if(AppState.currentTab === 'reminders') window.AppUI.renderReminders();
                 });
 
                 AppState.unsubSettings = onSnapshot(doc(db, 'artifacts', 'studyflow-pro', 'users', uid, 'settings', 'prefs'), (docSnap) => {
