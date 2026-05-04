@@ -88,7 +88,7 @@
         .animate-slide { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            from { opacity: 0; transform: scale(0.95) translateY(15px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
         .animate-scale-in { animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -102,6 +102,30 @@
         .stagger-card {
             opacity: 0;
             animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        /* --- Premium Skeleton Animation --- */
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        .skeleton {
+            position: relative;
+            overflow: hidden;
+            background-color: #e2e8f0;
+        }
+        .skeleton::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+        .dark .skeleton {
+            background-color: rgba(30, 41, 59, 0.8);
+        }
+        .dark .skeleton::after {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
         }
 
         ::-webkit-scrollbar { width: 6px; }
@@ -212,9 +236,7 @@
                 </div>
                 
                 <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <div class="col-span-full text-center py-10 text-slate-500">
-                        <i data-lucide="loader-2" class="animate-spin mx-auto mb-2"></i> Loading from Cloud...
-                    </div>
+                    <!-- Skeletons will be injected here via JavaScript -->
                 </div>
             </div>
 
@@ -473,6 +495,7 @@
             currentTab: 'library',
             currentPath: '', 
             isSearching: false,
+            isLoading: true,
             unsubEquations: null,
             unsubSettings: null
         };
@@ -529,11 +552,11 @@
 
                 if(prevEl) {
                     prevEl.style.opacity = '0';
-                    prevEl.style.transform = 'translateY(10px)';
+                    prevEl.style.transform = 'translateY(15px) scale(0.98)'; // Smoother exit
                     setTimeout(() => {
                         prevEl.classList.add('hidden');
                         showNext();
-                    }, 200);
+                    }, 250); // Premium delay
                 } else {
                     showNext();
                 }
@@ -570,19 +593,34 @@
 
             openModal(id) { 
                 const modal = document.getElementById(id);
+                const content = modal.querySelector('.animate-scale-in');
+                
+                content.style.animation = 'none';
+                content.offsetHeight; // trigger reflow
+                content.style.animation = null; 
+                content.style.opacity = '';
+                content.style.transform = '';
+                
                 modal.style.display = 'flex';
                 requestAnimationFrame(() => {
                     modal.querySelector('.modal-overlay').style.opacity = '1';
-                    modal.querySelector('.animate-scale-in').style.transform = 'scale(1)';
                 });
             },
             
             closeModal(id, event = null) {
                 if(event && event.target !== event.currentTarget && event.currentTarget.classList.contains('modal-overlay')) return;
                 const modal = document.getElementById(id);
+                const content = modal.querySelector('.animate-scale-in');
+                
                 modal.querySelector('.modal-overlay').style.opacity = '0';
-                modal.querySelector('.animate-scale-in').style.transform = 'scale(0.95)';
-                setTimeout(() => modal.style.display = 'none', 300);
+                content.style.transition = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease';
+                content.style.transform = 'scale(0.95) translateY(15px)';
+                content.style.opacity = '0';
+                
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    content.style.transition = '';
+                }, 400);
             },
 
             openAddEditModal(id = null) {
@@ -690,6 +728,26 @@
                 container.innerHTML = '';
                 this.renderBreadcrumbs();
                 
+                if (AppState.isLoading) {
+                    let skelHtml = '';
+                    for(let i=0; i<6; i++) {
+                        skelHtml += `
+                            <div class="card-physics bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-slate-700/50 p-6 rounded-2xl h-[190px] flex flex-col justify-between shadow-sm">
+                                <div>
+                                    <div class="flex justify-between mb-4">
+                                        <div class="w-16 h-5 skeleton rounded-md"></div>
+                                        <div class="w-5 h-5 skeleton rounded-md"></div>
+                                    </div>
+                                    <div class="w-3/4 h-6 skeleton rounded-md mb-4"></div>
+                                </div>
+                                <div class="w-full h-16 skeleton rounded-xl"></div>
+                            </div>
+                        `;
+                    }
+                    container.innerHTML = skelHtml;
+                    return;
+                }
+
                 if (AppState.equations.length === 0 && AppState.allFolders.length === 0 && !AppState.isSearching) {
                     container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 animate-fade-in"><i data-lucide="ghost" size="32" class="mx-auto mb-2 opacity-50"></i><p>Your library is empty.</p></div>`;
                     lucide.createIcons();
@@ -961,13 +1019,60 @@
             processMagicText() {
                 const text = document.getElementById('magic-paste-input').value;
                 if(!text.trim()) return;
+                
+                const updateCategory = (cat) => {
+                    if (!cat) return;
+                    const select = document.getElementById('edit-category');
+                    let exists = false;
+                    for(let i=0; i<select.options.length; i++) {
+                        if(select.options[i].value.toLowerCase() === cat.toLowerCase()) {
+                            select.value = select.options[i].value;
+                            exists = true; break;
+                        }
+                    }
+                    if(!exists && cat) {
+                        if(!AppState.subjects.includes(cat)) {
+                            AppState.subjects.push(cat);
+                            window.AppUI.updateSubjectUI();
+                            window.AppFirebase.saveSettings({ subjects: AppState.subjects });
+                        }
+                        select.value = cat;
+                    }
+                };
+
                 try {
                     const data = JSON.parse(text);
                     if (data.title) document.getElementById('edit-title').value = data.title;
+                    if (data.category) updateCategory(data.category);
                     if (data.equation) document.getElementById('edit-equation').value = data.equation;
-                    this.showToast("Parsed!");
-                } catch (e) { this.showToast("Check JSON format", "warning"); }
+                    if (data.variables) document.getElementById('edit-variables').value = Array.isArray(data.variables) ? data.variables.join('\n') : data.variables;
+                    if (data.conditions) document.getElementById('edit-conditions').value = Array.isArray(data.conditions) ? data.conditions.join('\n') : data.conditions;
+                    if (data.notes) document.getElementById('edit-notes').value = Array.isArray(data.notes) ? data.notes.join('\n') : data.notes;
+                    this.showToast("Magic Paste successful!");
+                } catch (e) {
+                    const extract = (key) => {
+                        const regex = new RegExp(`(?:\\*\\*|###\\s*)?${key}(?:\\*\\*)?\\s*[:=]\\s*([\\s\\S]*?)(?=\\n(?:\\*\\*|###\\s*)?[A-Z][a-z]+(?:\\s*&\\s*[A-Z][a-z]+)*\\s*[:=]|$)`, 'i');
+                        const match = text.match(regex);
+                        return match ? match[1].trim() : null;
+                    };
+                    
+                    const title = extract('Title') || extract('Name') || extract('Equation Name');
+                    const category = extract('Category') || extract('Physics Category') || extract('Folder') || extract('Sub Folder');
+                    const equation = extract('Equation') || extract('Main Equation') || extract('Formula');
+                    const variables = extract('Variables') || extract('Variables & Units') || extract('Parameters');
+                    const conditions = extract('Conditions') || extract('Validity Conditions');
+                    const notes = extract('Notes') || extract('Important Notes');
+
+                    if (title) document.getElementById('edit-title').value = title;
+                    if (category) updateCategory(category);
+                    if (equation) document.getElementById('edit-equation').value = equation.replace(/^\$\$?|\$\$?$/g, '').trim();
+                    if (variables) document.getElementById('edit-variables').value = variables;
+                    if (conditions) document.getElementById('edit-conditions').value = conditions;
+                    if (notes) document.getElementById('edit-notes').value = notes;
+                    this.showToast("Content parsed & filled!");
+                }
                 document.getElementById('magic-paste-container').classList.add('hidden');
+                document.getElementById('magic-paste-input').value = '';
             }
         };
 
@@ -1035,6 +1140,7 @@
                 if (AppState.unsubSettings) AppState.unsubSettings();
 
                 AppState.unsubEquations = onSnapshot(collection(db, 'artifacts', 'studyflow-pro', 'users', uid, 'equations'), (snapshot) => {
+                    AppState.isLoading = false;
                     AppState.equations = snapshot.docs.map(doc => doc.data());
                     document.getElementById('reaction-count').innerText = AppState.equations.length;
                     if(AppState.currentTab === 'library') window.AppUI.renderEquations();
