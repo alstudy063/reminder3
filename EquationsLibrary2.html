@@ -183,11 +183,10 @@
                 </div>
             </header>
 
-            <div id="search-container" class="mb-10 max-w-2xl relative group">
+            <div id="search-container" class="mb-6 max-w-2xl relative group">
                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <i data-lucide="search" class="text-slate-400 group-focus-within:text-accent transition-colors" size="20"></i>
                 </div>
-                <!-- Filtering logic fixed properly -->
                 <input type="text" id="search-input" onkeyup="window.AppUI.handleSearch()" placeholder="Search equations, symbols, or categories..." class="w-full pl-12 pr-4 py-4 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-700 rounded-2xl outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 shadow-sm">
             </div>
 
@@ -209,14 +208,9 @@
 
             <!-- Tab: Equations Grid / Subject Cards -->
             <div id="tab-library" class="tab-content hidden animate-slide">
-                <div id="subject-header" class="mb-6 hidden items-center gap-4">
-                    <button onclick="window.AppUI.clearSubject()" class="p-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 rounded-xl transition-colors text-slate-700 dark:text-slate-300">
-                        <i data-lucide="arrow-left" size="20"></i>
-                    </button>
-                    <div>
-                        <h3 id="selected-subject-title" class="text-2xl font-bold text-slate-900 dark:text-white sinhala-font">පාඩමේ නම</h3>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">මෙම පාඩමට අදාළ සමීකරණ</p>
-                    </div>
+                <!-- Breadcrumbs -->
+                <div id="breadcrumb-container" class="flex items-center flex-wrap gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 mb-6 hidden">
+                    <!-- Dynamic Breadcrumbs injected here -->
                 </div>
                 
                 <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -278,14 +272,36 @@
                     </div>
                 </div>
 
-                <!-- Subjects Section -->
+                <!-- Subjects / Folders Section -->
                 <div class="bg-white dark:bg-slate-800/50 p-6 sm:p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white"><i data-lucide="tags" class="text-accent"></i> Manage Subjects</h3>
-                    <div class="flex gap-3 mb-6">
-                        <input type="text" id="new-subject-input" placeholder="Add new subject..." class="flex-1 p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-accent transition-all text-slate-900 dark:text-white text-sm">
-                        <button onclick="window.AppUI.addSubject()" class="px-5 bg-accent text-white font-bold rounded-xl hover:opacity-90 transition-opacity">Add</button>
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-slate-900 dark:text-white"><i data-lucide="folder-tree" class="text-accent"></i> Manage Nested Folders</h3>
+                    <div class="flex flex-col md:flex-row gap-3 mb-6">
+                        <select id="new-subject-parent" class="md:w-1/3 p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-accent transition-all text-slate-900 dark:text-white text-sm">
+                            <option value="">-- Root Level --</option>
+                        </select>
+                        <input type="text" id="new-subject-input" placeholder="New Folder Name..." class="flex-1 p-3 bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-accent transition-all text-slate-900 dark:text-white text-sm">
+                        <button onclick="window.AppUI.addSubject()" class="px-5 py-3 bg-accent text-white font-bold rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap">Add Folder</button>
                     </div>
-                    <div id="subjects-list" class="flex flex-wrap gap-3"></div>
+                    <div id="subjects-list" class="flex flex-col gap-2 mt-4 max-h-[300px] overflow-y-auto pr-2">
+                        <!-- Folders rendered here -->
+                    </div>
+                </div>
+
+                <!-- Data Management Section -->
+                <div class="bg-white dark:bg-slate-800/50 p-6 sm:p-8 rounded-[2rem] border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h3 class="text-lg font-bold mb-2 flex items-center gap-2 text-slate-900 dark:text-white"><i data-lucide="database" class="text-accent"></i> Data Management</h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Backup your equations or import them from another device.</p>
+                    
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="window.AppUI.exportData()" class="px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold rounded-xl transition-colors border border-slate-300 dark:border-slate-600 flex items-center gap-2">
+                            <i data-lucide="download" size="18"></i> Export Backup (JSON)
+                        </button>
+                        
+                        <label class="px-6 py-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white font-bold rounded-xl transition-colors border border-slate-300 dark:border-slate-600 flex items-center gap-2 cursor-pointer relative overflow-hidden group">
+                            <i data-lucide="upload" size="18"></i> Import Backup
+                            <input type="file" id="import-file" accept=".json" onchange="window.AppUI.importData(event)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Danger Zone -->
@@ -360,7 +376,7 @@
                             <input type="text" id="edit-title" placeholder="e.g. Ohm's Law (ඕම්ගේ නියමය)" class="w-full p-4 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all sinhala-font text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600">
                         </div>
                         <div class="space-y-2">
-                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Physics Category</label>
+                            <label class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">Physics Folder / Category</label>
                             <select id="edit-category" class="w-full p-4 bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-slate-900 dark:text-white cursor-pointer appearance-none"></select>
                         </div>
                     </div>
@@ -437,9 +453,10 @@
         // 2. Global State Management
         const AppState = {
             equations: [],
-            subjects: ["Mechanics", "Current Electricity", "Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"],
+            subjects: ["Mechanics", "Current Electricity", "Fields", "Fields/Gravitational Fields", "Fields/Magnetic Fields", "Fields/Electrostatic Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"],
+            allFolders: [], // Generated implicitly
             currentTab: 'library',
-            selectedSubject: null,
+            currentPath: '', // '' represents Root directory
             isSearching: false,
             unsubEquations: null,
             unsubSettings: null
@@ -539,7 +556,7 @@
                 } else {
                     document.getElementById('edit-id').value = '';
                     document.getElementById('edit-title').value = '';
-                    document.getElementById('edit-category').value = AppState.subjects[0] || '';
+                    document.getElementById('edit-category').value = AppState.currentPath || (AppState.allFolders[0] || '');
                     document.getElementById('edit-equation').value = '';
                     document.getElementById('edit-variables').value = '';
                     document.getElementById('edit-conditions').value = '';
@@ -555,7 +572,7 @@
 
                 document.getElementById('view-id').value = eq.id;
                 document.getElementById('view-title').innerText = eq.title;
-                document.getElementById('view-category-badge').innerText = eq.category;
+                document.getElementById('view-category-badge').innerText = eq.category.split('/').join(' → ');
                 
                 const eqContainer = document.getElementById('view-equation');
                 const varContainer = document.getElementById('view-variables');
@@ -586,88 +603,109 @@
                 return parsedHtml;
             },
 
-            selectSubject(subject) {
-                AppState.selectedSubject = subject;
+            setPath(path) {
+                AppState.currentPath = path;
                 document.getElementById('search-input').value = '';
                 AppState.isSearching = false;
                 this.renderEquations();
             },
 
-            clearSubject() {
-                AppState.selectedSubject = null;
-                document.getElementById('search-input').value = '';
-                AppState.isSearching = false;
-                this.renderEquations();
+            renderBreadcrumbs() {
+                const container = document.getElementById('breadcrumb-container');
+                if (AppState.isSearching) {
+                    container.classList.add('hidden');
+                    return;
+                }
+                
+                container.classList.remove('hidden');
+                let html = `<button onclick="window.AppUI.setPath('')" class="hover:text-accent transition-colors flex items-center gap-1 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm"><i data-lucide="home" size="16"></i> Home</button>`;
+                
+                if (AppState.currentPath) {
+                    const parts = AppState.currentPath.split('/');
+                    let accum = '';
+                    parts.forEach((p, i) => {
+                        accum += (i === 0 ? p : '/' + p);
+                        html += `<i data-lucide="chevron-right" size="16" class="text-slate-300 dark:text-slate-600"></i>`;
+                        
+                        if(i === parts.length - 1) {
+                            html += `<span class="bg-accent/10 text-accent px-3 py-1.5 rounded-lg border border-accent/20 font-bold shadow-sm">${p}</span>`;
+                        } else {
+                            html += `<button onclick="window.AppUI.setPath('${accum}')" class="hover:text-accent transition-colors bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">${p}</button>`;
+                        }
+                    });
+                }
+                container.innerHTML = html;
             },
 
             renderEquations() {
                 const container = document.getElementById('cards-container');
-                const header = document.getElementById('subject-header');
                 container.innerHTML = '';
+                this.renderBreadcrumbs();
                 
-                if (AppState.equations.length === 0 && !AppState.isSearching) {
-                    header.classList.add('hidden');
-                    header.classList.remove('flex', 'animate-fade-in');
+                if (AppState.equations.length === 0 && AppState.allFolders.length === 0 && !AppState.isSearching) {
                     container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 flex flex-col items-center gap-3 animate-fade-in"><div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2"><i data-lucide="ghost" size="32"></i></div><p class="text-lg">Your library is empty.</p><p class="text-sm">Click 'Add Equation' to save to the cloud!</p></div>`;
                     lucide.createIcons();
                     return;
                 }
 
-                let equationsToRender = [];
+                let htmlStr = '';
+                let indexCount = 0;
 
-                if (AppState.isSearching) {
-                    header.classList.add('hidden');
-                    header.classList.remove('flex', 'animate-fade-in');
-                    equationsToRender = AppState.equations;
-                } else if (!AppState.selectedSubject) {
-                    header.classList.add('hidden');
-                    header.classList.remove('flex', 'animate-fade-in');
-                    // Render Subjects Cards
-                    let htmlStr = '';
-                    AppState.subjects.forEach((sub, index) => {
-                        const count = AppState.equations.filter(eq => eq.category === sub).length;
+                // 1. Render Folders (If not searching)
+                if (!AppState.isSearching) {
+                    let subFolders = new Set();
+                    AppState.allFolders.forEach(folder => {
+                        if (AppState.currentPath === "") {
+                            subFolders.add(folder.split('/')[0]);
+                        } else if (folder.startsWith(AppState.currentPath + '/')) {
+                            const remainder = folder.substring(AppState.currentPath.length + 1);
+                            const nextLevel = remainder.split('/')[0];
+                            if (nextLevel) subFolders.add(AppState.currentPath + '/' + nextLevel);
+                        }
+                    });
+
+                    Array.from(subFolders).sort().forEach((subFolder) => {
+                        const folderName = subFolder.split('/').pop();
+                        // Count equations recursively in this folder
+                        const count = AppState.equations.filter(eq => eq.category === subFolder || eq.category.startsWith(subFolder + '/')).length;
+                        
                         htmlStr += `
                             <div class="card-physics stagger-card bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
-                                 onclick="window.AppUI.selectSubject('${sub}')" style="animation-delay: ${index * 40}ms">
+                                 onclick="window.AppUI.setPath('${subFolder}')" style="animation-delay: ${indexCount * 40}ms">
                                 <div class="flex items-center justify-between mb-6">
                                     <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 text-accent flex items-center justify-center border border-accent/20">
                                         <i data-lucide="folder-open" size="28"></i>
                                     </div>
                                     <i data-lucide="chevron-right" class="text-slate-300 group-hover:text-accent transition-all group-hover:translate-x-1" size="24"></i>
                                 </div>
-                                <h4 class="font-bold text-xl text-slate-900 dark:text-white sinhala-font mb-1">${sub}</h4>
+                                <h4 class="font-bold text-xl text-slate-900 dark:text-white sinhala-font mb-1">${folderName}</h4>
                                 <p class="text-sm text-slate-500 dark:text-slate-400 font-medium">${count} සමීකරණ</p>
                             </div>
                         `;
+                        indexCount++;
                     });
-                    container.innerHTML = htmlStr;
-                    lucide.createIcons();
-                    return;
-                } else {
-                    header.classList.remove('hidden');
-                    header.classList.add('flex', 'animate-fade-in');
-                    document.getElementById('selected-subject-title').innerText = AppState.selectedSubject;
-                    equationsToRender = AppState.equations.filter(eq => eq.category === AppState.selectedSubject);
-                    
-                    if(equationsToRender.length === 0) {
-                        container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500 animate-fade-in">මෙම පාඩම සඳහා තවමත් සමීකරණ එකතු කර නොමැත.</div>`;
-                        lucide.createIcons();
-                        return;
-                    }
                 }
 
-                // Render Equation Cards
-                let htmlStr = '';
-                equationsToRender.forEach((eq, index) => {
+                // 2. Render Equations
+                let equationsToRender = [];
+                if (AppState.isSearching) {
+                    equationsToRender = AppState.equations;
+                } else {
+                    equationsToRender = AppState.equations.filter(eq => eq.category === AppState.currentPath);
+                }
+
+                equationsToRender.forEach((eq) => {
                     const searchString = `${eq.title} ${eq.category} ${eq.equation}`.toLowerCase();
+                    const badgeText = eq.category ? eq.category.split('/').pop() : 'Uncategorized';
+                    
                     htmlStr += `
                         <div class="card-physics eq-card stagger-card bg-white dark:bg-[rgba(30,41,59,0.6)] border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm"
                              onclick="window.AppUI.openViewModal('${eq.id}')"
-                             data-search="${searchString}" style="animation-delay: ${index * 40}ms">
+                             data-search="${searchString}" style="animation-delay: ${indexCount * 40}ms">
                             <div>
                                 <div class="flex items-center justify-between mb-4">
-                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10">
-                                        ${eq.category}
+                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10 truncate max-w-[70%]" title="${eq.category}">
+                                        ${badgeText}
                                     </span>
                                     <i data-lucide="arrow-up-right" class="text-slate-400 group-hover:text-accent transition-colors" size="18"></i>
                                 </div>
@@ -678,7 +716,13 @@
                             </div>
                         </div>
                     `;
+                    indexCount++;
                 });
+
+                if (indexCount === 0 && AppState.currentPath !== "") {
+                    htmlStr = `<div class="col-span-full py-10 text-center text-slate-500 animate-fade-in">මෙම ගොනුවේ සමීකරණ නොමැත. (Empty Folder)</div>`;
+                }
+
                 container.innerHTML = htmlStr;
                 
                 MathManager.add([container]);
@@ -687,10 +731,19 @@
                 if (AppState.isSearching) {
                     const q = document.getElementById('search-input').value.toLowerCase().trim();
                     const cards = document.querySelectorAll('#cards-container > .eq-card');
+                    let visibleCount = 0;
                     cards.forEach(card => {
                         const searchData = card.getAttribute('data-search');
-                        card.style.display = (searchData && searchData.includes(q)) ? 'flex' : 'none';
+                        if (searchData && searchData.includes(q)) {
+                            card.style.display = 'flex';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
                     });
+                    if (visibleCount === 0) {
+                        container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500">No results found for "${q}"</div>`;
+                    }
                 }
             },
 
@@ -703,16 +756,8 @@
                 } else if (q.length === 0 && AppState.isSearching) {
                     AppState.isSearching = false;
                     this.renderEquations();
-                } else if (AppState.isSearching || AppState.selectedSubject) {
-                    const cards = document.querySelectorAll('#cards-container > .eq-card');
-                    cards.forEach(card => {
-                        const searchData = card.getAttribute('data-search');
-                        if (searchData && searchData.includes(q)) {
-                            card.style.display = 'flex';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
+                } else if (AppState.isSearching) {
+                    this.renderEquations(); // Re-render to handle filter logic in the main function cleanly
                 }
             },
 
@@ -739,29 +784,158 @@
                 if(save) window.AppFirebase.saveSettings({ accent: rgb });
             },
 
+            extractAllFolders() {
+                let all = new Set();
+                AppState.subjects.forEach(sub => {
+                    let parts = sub.split('/');
+                    let accum = '';
+                    parts.forEach(p => {
+                        accum += (accum ? '/' : '') + p;
+                        all.add(accum);
+                    });
+                });
+                AppState.allFolders = Array.from(all).sort();
+            },
+
             addSubject() {
-                const val = document.getElementById('new-subject-input').value.trim();
-                if(val && !AppState.subjects.includes(val)) {
-                    AppState.subjects.push(val);
-                    window.AppFirebase.saveSettings({ subjects: AppState.subjects });
-                    this.updateSubjectUI();
-                    this.showToast("Subject Added!");
-                    document.getElementById('new-subject-input').value = '';
+                const parent = document.getElementById('new-subject-parent').value;
+                let val = document.getElementById('new-subject-input').value.trim();
+                
+                // Prevent slashes in the new segment name
+                val = val.replace(/\//g, '-');
+
+                if(val) {
+                    const fullPath = parent ? `${parent}/${val}` : val;
+                    if(!AppState.subjects.includes(fullPath)) {
+                        AppState.subjects.push(fullPath);
+                        this.extractAllFolders();
+                        window.AppFirebase.saveSettings({ subjects: AppState.subjects });
+                        this.updateSubjectUI();
+                        this.showToast("Folder Created!");
+                        document.getElementById('new-subject-input').value = '';
+                    } else {
+                        this.showToast("Folder already exists!", "warning");
+                    }
                 }
             },
 
-            removeSubject(sub) {
-                AppState.subjects = AppState.subjects.filter(s => s !== sub);
+            removeSubject(pathToRemove) {
+                if(!confirm(`Delete folder "${pathToRemove}"? Note: Equations will remain but might become uncategorized.`)) return;
+                
+                AppState.subjects = AppState.subjects.filter(s => s !== pathToRemove && !s.startsWith(pathToRemove + '/'));
+                this.extractAllFolders();
                 window.AppFirebase.saveSettings({ subjects: AppState.subjects });
                 this.updateSubjectUI();
             },
 
             updateSubjectUI() {
-                const list = document.getElementById('subjects-list');
-                if(list) list.innerHTML = AppState.subjects.map(s => `<div class="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg flex items-center gap-2 text-sm">${s} <button onclick="window.AppUI.removeSubject('${s}')" class="text-red-500 font-bold ml-1">&times;</button></div>`).join('');
+                this.extractAllFolders();
                 
-                const select = document.getElementById('edit-category');
-                if(select) select.innerHTML = AppState.subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+                // Update Settings List
+                const list = document.getElementById('subjects-list');
+                if(list) {
+                    let html = '';
+                    AppState.allFolders.forEach(s => {
+                        const depth = s.split('/').length - 1;
+                        const name = s.split('/').pop();
+                        const padding = depth * 1.5;
+                        html += `
+                            <div class="px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg flex justify-between items-center text-sm" style="margin-left: ${padding}rem">
+                                <span class="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
+                                    <i data-lucide="${depth === 0 ? 'folder' : 'corner-down-right'}" size="16" class="text-accent/70"></i> ${name}
+                                </span>
+                                <button onclick="window.AppUI.removeSubject('${s}')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-1.5 rounded-md transition-colors" title="Delete Folder">
+                                    <i data-lucide="trash" size="14"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    list.innerHTML = html;
+                }
+                
+                // Update Modals/Selects
+                const editSelect = document.getElementById('edit-category');
+                const parentSelect = document.getElementById('new-subject-parent');
+                
+                const selectHtml = AppState.allFolders.map(s => {
+                    const display = s.split('/').join(' → ');
+                    return `<option value="${s}">${display}</option>`;
+                }).join('');
+
+                if(editSelect) editSelect.innerHTML = selectHtml;
+                if(parentSelect) parentSelect.innerHTML = `<option value="">-- Root Level --</option>` + selectHtml;
+                
+                lucide.createIcons();
+            },
+
+            exportData() {
+                const data = {
+                    version: "2.0",
+                    timestamp: new Date().toISOString(),
+                    subjects: AppState.subjects,
+                    equations: AppState.equations
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `PhysFlow_Backup_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                this.showToast("Export Complete!");
+            },
+
+            importData(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                if (!auth.currentUser) {
+                    this.showToast("Please sign in to import data.", "error");
+                    event.target.value = '';
+                    return;
+                }
+
+                if (!confirm("This will merge imported data into your cloud library. Proceed?")) {
+                    event.target.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        this.showToast("Importing data... please wait", "info");
+                        
+                        // Merge Subjects
+                        if (data.subjects && Array.isArray(data.subjects)) {
+                            const newSubs = Array.from(new Set([...AppState.subjects, ...data.subjects]));
+                            AppState.subjects = newSubs;
+                            await window.AppFirebase.saveSettings({ subjects: newSubs });
+                        }
+
+                        // Upload Equations individually to Firestore
+                        if (data.equations && Array.isArray(data.equations)) {
+                            for (let eq of data.equations) {
+                                // Basic validation
+                                if (eq.id && eq.title && eq.equation) {
+                                    const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(eq.id));
+                                    await setDoc(docRef, eq);
+                                }
+                            }
+                        }
+
+                        this.showToast("Import Successful! Data synced to cloud.");
+                        event.target.value = ''; // reset file input
+                    } catch (err) {
+                        console.error(err);
+                        this.showToast("Failed to parse Backup file.", "error");
+                        event.target.value = '';
+                    }
+                };
+                reader.readAsText(file);
             },
 
             toggleMagicPaste() {
@@ -790,7 +964,7 @@
                     };
                     
                     const title = extract('Title') || extract('Name') || extract('Equation Name');
-                    const category = extract('Category') || extract('Physics Category') || extract('Subject');
+                    const category = extract('Category') || extract('Physics Category') || extract('Folder');
                     const equation = extract('Equation') || extract('Main Equation') || extract('Formula');
                     const variables = extract('Variables') || extract('Variables & Units') || extract('Parameters');
                     const conditions = extract('Conditions') || extract('Validity Conditions');
@@ -929,6 +1103,9 @@
                         if(data.theme) window.AppUI.applyTheme(data.theme);
                         if(data.accent) window.AppUI.setAccent(data.accent, false);
                         if(data.subjects) { AppState.subjects = data.subjects; window.AppUI.updateSubjectUI(); }
+                    } else {
+                        // Ensure defaults load visually if no prefs document
+                        window.AppUI.updateSubjectUI();
                     }
                 });
             }
