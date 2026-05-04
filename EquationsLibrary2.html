@@ -43,7 +43,7 @@
 
         body {
             font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .dark body {
@@ -69,7 +69,11 @@
             border-color: rgba(var(--accent-rgb), 0.4); 
         }
 
-        .nav-link { transition: all 0.2s ease; }
+        .nav-link { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
         .nav-link.active {
             background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.15) 0%, transparent 100%);
             color: rgb(var(--accent-rgb));
@@ -78,61 +82,57 @@
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(15px); }
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-slide { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         @keyframes scaleIn {
-            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .animate-scale-in { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-scale-in { animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
         }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
 
         .stagger-card {
             opacity: 0;
-            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 10px; }
-
-        .prose-content ul { list-style-type: none; padding-left: 0; }
-        .prose-content li { position: relative; padding-left: 1.5rem; margin-bottom: 0.5rem; }
-        .prose-content li::before {
-            content: '›';
-            position: absolute;
-            left: 0;
-            color: rgb(var(--accent-rgb));
-            font-weight: bold;
-            font-size: 1.2rem;
-            line-height: 1;
+        
+        .modal-overlay { 
+            background-color: rgba(2, 6, 23, 0.4); 
+            backdrop-filter: blur(8px);
+            transition: opacity 0.4s ease;
         }
         
-        .equation-display { box-shadow: inset 0 2px 10px rgba(0,0,0,0.05); }
-        .dark .equation-display { box-shadow: inset 0 2px 10px rgba(0,0,0,0.5); }
-
-        .modal-overlay { background-color: rgba(2, 6, 23, 0.4); backdrop-filter: blur(8px); }
-        .dark .modal-overlay { background-color: rgba(2, 6, 23, 0.8); }
+        .tab-content {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
         
-        input, textarea, select { font-family: 'Outfit', 'Noto Sans Sinhala', sans-serif; }
+        .tab-content.hidden {
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
 
         @keyframes toastEnter {
-            from { opacity: 0; transform: translateY(100%); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(100%) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes toastLeave {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(100%); }
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(100%) scale(0.9); }
         }
-        .toast-enter { animation: toastEnter 0.3s ease-out forwards; }
+        .toast-enter { animation: toastEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-leave { animation: toastLeave 0.3s ease-in forwards; }
     </style>
 </head>
@@ -206,7 +206,7 @@
                 </div>
             </div>
 
-            <!-- Tab: Equations Grid / Subject Cards -->
+            <!-- Tab: Library -->
             <div id="tab-library" class="tab-content hidden animate-slide">
                 <div id="breadcrumb-container" class="flex items-center flex-wrap gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 mb-6 hidden">
                 </div>
@@ -279,7 +279,7 @@
                         </button>
                     </div>
 
-                    <!-- JSON Folder Import Box (Expandable) -->
+                    <!-- JSON Folder Import Box -->
                     <div id="json-folder-container" class="hidden overflow-hidden mb-6 bg-accent/5 dark:bg-accent/10 border border-accent/20 rounded-2xl animate-fade-in">
                         <div class="p-5 space-y-4">
                             <label class="text-[10px] font-bold text-accent uppercase tracking-widest block">Paste Folders JSON Array</label>
@@ -338,7 +338,7 @@
             <button onclick="window.AppUI.switchTab('settings')" class="text-slate-400 hover:text-accent transition-colors" id="m-nav-settings"><i data-lucide="settings" size="24"></i></button>
         </nav>
 
-        <!-- View Modal -->
+        <!-- Modals -->
         <div id="view-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4">
             <div class="absolute inset-0 modal-overlay animate-fade-in" onclick="window.AppUI.closeModal('view-modal', event)"></div>
             <div class="relative w-full max-w-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[2rem] shadow-2xl overflow-hidden animate-scale-in flex flex-col max-h-[90vh]">
@@ -446,7 +446,7 @@
         <div id="toast-container" class="fixed bottom-20 md:bottom-10 right-4 z-[150] flex flex-col gap-2"></div>
     </div>
 
-    <!-- MAIN SCRIPT -->
+    <!-- Script Section -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -456,21 +456,19 @@
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
-            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
             projectId: "studymaster-919ba",
             storageBucket: "studymaster-919ba.firebasestorage.app",
             messagingSenderId: "426684063256",
-            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
-            measurementId: "G-CWQB2330GF"
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d"
         };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // 2. Global State Management
+        // 2. Global State
         const AppState = {
             equations: [],
-            subjects: ["Mechanics", "Current Electricity", "Fields", "Fields/Gravitational Fields", "Fields/Magnetic Fields", "Fields/Electrostatic Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"],
+            subjects: ["Mechanics", "Current Electricity", "Fields", "Fields/Gravitational Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"],
             allFolders: [], 
             currentTab: 'library',
             currentPath: '', 
@@ -479,7 +477,7 @@
             unsubSettings: null
         };
 
-        // 3. MathJax Queue Manager
+        // 3. Math Manager
         const MathManager = {
             queue: [],
             isRunning: false,
@@ -495,7 +493,7 @@
                 try {
                     await MathJax.typesetPromise(elements);
                 } catch (e) {
-                    console.error('MathJax processing error:', e);
+                    console.error('MathJax Error:', e);
                 } finally {
                     this.isRunning = false;
                     this.process();
@@ -523,36 +521,68 @@
             },
 
             switchTab(tab) {
-                AppState.currentTab = tab;
-                document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-                
-                const targetId = `tab-${tab}`;
-                document.getElementById(targetId)?.classList.remove('hidden');
-                
-                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-                document.getElementById(`nav-${tab}`)?.classList.add('active');
-                
-                document.querySelectorAll('nav button').forEach(el => {
-                    el.classList.remove('text-accent');
-                    if(!el.querySelector('.bg-accent')) el.classList.add('text-slate-400');
-                });
-                document.getElementById(`m-nav-${tab}`)?.classList.replace('text-slate-400', 'text-accent');
+                const prevTab = AppState.currentTab;
+                if(prevTab === tab) return;
 
-                const titles = { 'home': 'Dashboard', 'library': 'Equations Library', 'settings': 'Settings' };
-                const subtitles = { 'home': 'Your physics learning overview.', 'library': 'Your cloud-synced formulas.', 'settings': 'Manage account & appearance.' };
-                
-                document.getElementById('page-title').innerText = titles[tab] || '';
-                document.getElementById('page-subtitle').innerText = subtitles[tab] || '';
-                document.getElementById('search-container').style.display = (tab === 'library') ? 'block' : 'none';
+                const prevEl = document.getElementById(`tab-${prevTab}`);
+                const nextEl = document.getElementById(`tab-${tab}`);
 
-                if(tab === 'library') this.renderEquations();
+                if(prevEl) {
+                    prevEl.style.opacity = '0';
+                    prevEl.style.transform = 'translateY(10px)';
+                    setTimeout(() => {
+                        prevEl.classList.add('hidden');
+                        showNext();
+                    }, 200);
+                } else {
+                    showNext();
+                }
+
+                function showNext() {
+                    AppState.currentTab = tab;
+                    if(nextEl) {
+                        nextEl.classList.remove('hidden');
+                        requestAnimationFrame(() => {
+                            nextEl.style.opacity = '1';
+                            nextEl.style.transform = 'translateY(0)';
+                        });
+                    }
+                    
+                    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                    document.getElementById(`nav-${tab}`)?.classList.add('active');
+                    
+                    document.querySelectorAll('nav button').forEach(el => {
+                        el.classList.remove('text-accent');
+                        if(!el.querySelector('.bg-accent')) el.classList.add('text-slate-400');
+                    });
+                    document.getElementById(`m-nav-${tab}`)?.classList.replace('text-slate-400', 'text-accent');
+
+                    const titles = { 'home': 'Dashboard', 'library': 'Equations Library', 'settings': 'Settings' };
+                    const subtitles = { 'home': 'Your physics learning overview.', 'library': 'Your cloud-synced formulas.', 'settings': 'Manage account & appearance.' };
+                    
+                    document.getElementById('page-title').innerText = titles[tab] || '';
+                    document.getElementById('page-subtitle').innerText = subtitles[tab] || '';
+                    document.getElementById('search-container').style.display = (tab === 'library') ? 'block' : 'none';
+
+                    if(tab === 'library') window.AppUI.renderEquations();
+                }
             },
 
-            openModal(id) { document.getElementById(id).style.display = 'flex'; },
+            openModal(id) { 
+                const modal = document.getElementById(id);
+                modal.style.display = 'flex';
+                requestAnimationFrame(() => {
+                    modal.querySelector('.modal-overlay').style.opacity = '1';
+                    modal.querySelector('.animate-scale-in').style.transform = 'scale(1)';
+                });
+            },
             
             closeModal(id, event = null) {
                 if(event && event.target !== event.currentTarget && event.currentTarget.classList.contains('modal-overlay')) return;
-                document.getElementById(id).style.display = 'none';
+                const modal = document.getElementById(id);
+                modal.querySelector('.modal-overlay').style.opacity = '0';
+                modal.querySelector('.animate-scale-in').style.transform = 'scale(0.95)';
+                setTimeout(() => modal.style.display = 'none', 300);
             },
 
             openAddEditModal(id = null) {
@@ -635,7 +665,7 @@
                 }
                 
                 container.classList.remove('hidden');
-                let html = `<button onclick="window.AppUI.setPath('')" class="hover:text-accent transition-colors flex items-center gap-1 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm"><i data-lucide="home" size="16"></i> Home</button>`;
+                let html = `<button onclick="window.AppUI.setPath('')" class="hover:text-accent transition-all flex items-center gap-1 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95"><i data-lucide="home" size="16"></i> Home</button>`;
                 
                 if (AppState.currentPath) {
                     const parts = AppState.currentPath.split('/');
@@ -647,11 +677,12 @@
                         if(i === parts.length - 1) {
                             html += `<span class="bg-accent/10 text-accent px-3 py-1.5 rounded-lg border border-accent/20 font-bold shadow-sm">${p}</span>`;
                         } else {
-                            html += `<button onclick="window.AppUI.setPath('${accum}')" class="hover:text-accent transition-colors bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">${p}</button>`;
+                            html += `<button onclick="window.AppUI.setPath('${accum}')" class="hover:text-accent transition-all bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm active:scale-95">${p}</button>`;
                         }
                     });
                 }
                 container.innerHTML = html;
+                lucide.createIcons();
             },
 
             renderEquations() {
@@ -660,7 +691,7 @@
                 this.renderBreadcrumbs();
                 
                 if (AppState.equations.length === 0 && AppState.allFolders.length === 0 && !AppState.isSearching) {
-                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 flex flex-col items-center gap-3 animate-fade-in"><div class="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2"><i data-lucide="ghost" size="32"></i></div><p class="text-lg">Your library is empty.</p><p class="text-sm">Click 'Add Equation' to save to the cloud!</p></div>`;
+                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 animate-fade-in"><i data-lucide="ghost" size="32" class="mx-auto mb-2 opacity-50"></i><p>Your library is empty.</p></div>`;
                     lucide.createIcons();
                     return;
                 }
@@ -701,12 +732,7 @@
                     });
                 }
 
-                let equationsToRender = [];
-                if (AppState.isSearching) {
-                    equationsToRender = AppState.equations;
-                } else {
-                    equationsToRender = AppState.equations.filter(eq => (eq.category || '') === AppState.currentPath);
-                }
+                let equationsToRender = AppState.isSearching ? AppState.equations : AppState.equations.filter(eq => (eq.category || '') === AppState.currentPath);
 
                 equationsToRender.forEach((eq) => {
                     const searchString = `${eq.title} ${eq.category} ${eq.equation}`.toLowerCase();
@@ -718,7 +744,7 @@
                              data-search="${searchString}" style="animation-delay: ${indexCount * 40}ms">
                             <div>
                                 <div class="flex items-center justify-between mb-4">
-                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10 truncate max-w-[70%]" title="${eq.category || 'Root'}">
+                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-slate-500 dark:text-accent border-slate-200 dark:border-accent/20 bg-slate-50 dark:bg-accent/10 truncate max-w-[70%]">
                                         ${badgeText}
                                     </span>
                                     <i data-lucide="arrow-up-right" class="text-slate-400 group-hover:text-accent transition-colors" size="18"></i>
@@ -733,12 +759,7 @@
                     indexCount++;
                 });
 
-                if (indexCount === 0 && AppState.currentPath !== "") {
-                    htmlStr = `<div class="col-span-full py-10 text-center text-slate-500 animate-fade-in">මෙම ගොනුවේ සමීකරණ නොමැත. (Empty Folder)</div>`;
-                }
-
                 container.innerHTML = htmlStr;
-                
                 MathManager.add([container]);
                 lucide.createIcons();
                 
@@ -755,24 +776,13 @@
                             card.style.display = 'none';
                         }
                     });
-                    if (visibleCount === 0) {
-                        container.innerHTML = `<div class="col-span-full py-10 text-center text-slate-500">No results found for "${q}"</div>`;
-                    }
                 }
             },
 
             handleSearch() {
                 const q = document.getElementById('search-input').value.toLowerCase().trim();
-                
-                if (q.length > 0 && !AppState.isSearching) {
-                    AppState.isSearching = true;
-                    this.renderEquations();
-                } else if (q.length === 0 && AppState.isSearching) {
-                    AppState.isSearching = false;
-                    this.renderEquations();
-                } else if (AppState.isSearching) {
-                    this.renderEquations(); 
-                }
+                AppState.isSearching = q.length > 0;
+                this.renderEquations();
             },
 
             toggleTheme() {
@@ -818,7 +828,8 @@
 
                 if(val) {
                     const fullPath = parent ? `${parent}/${val}` : val;
-                    if(!AppState.subjects.includes(fullPath)) {
+                    // DUPLICATE CHECK
+                    if(!AppState.subjects.some(s => s.toLowerCase() === fullPath.toLowerCase())) {
                         AppState.subjects.push(fullPath);
                         this.extractAllFolders();
                         window.AppFirebase.saveSettings({ subjects: AppState.subjects });
@@ -832,8 +843,7 @@
             },
 
             removeSubject(pathToRemove) {
-                if(!confirm(`Delete folder "${pathToRemove}"? Note: Equations will remain but might become uncategorized.`)) return;
-                
+                if(!confirm(`Delete folder "${pathToRemove}" and its subfolders?`)) return;
                 AppState.subjects = AppState.subjects.filter(s => s !== pathToRemove && !s.startsWith(pathToRemove + '/'));
                 this.extractAllFolders();
                 window.AppFirebase.saveSettings({ subjects: AppState.subjects });
@@ -842,9 +852,12 @@
 
             toggleJsonFolderInput() {
                 const container = document.getElementById('json-folder-container');
-                container.classList.toggle('hidden');
-                if(!container.classList.contains('hidden')) {
-                    document.getElementById('json-folder-input').focus();
+                if(container.classList.contains('hidden')) {
+                    container.classList.remove('hidden');
+                    container.style.maxHeight = '500px';
+                } else {
+                    container.style.maxHeight = '0';
+                    setTimeout(() => container.classList.add('hidden'), 300);
                 }
             },
 
@@ -854,133 +867,88 @@
 
                 try {
                     const parsed = JSON.parse(input);
-                    if(!Array.isArray(parsed)) throw new Error("JSON must be an array of strings.");
+                    if(!Array.isArray(parsed)) throw new Error("Format error");
                     
                     const cleaned = parsed.map(s => String(s).trim()).filter(s => s !== "");
-                    const merged = Array.from(new Set([...AppState.subjects, ...cleaned]));
+                    // PREVENT DUPLICATES
+                    const existingLower = AppState.subjects.map(s => s.toLowerCase());
+                    const uniqueNew = cleaned.filter(s => !existingLower.includes(s.toLowerCase()));
                     
-                    AppState.subjects = merged;
-                    this.extractAllFolders();
-                    await window.AppFirebase.saveSettings({ subjects: AppState.subjects });
-                    this.updateSubjectUI();
-                    this.showToast(`${cleaned.length} Folders Imported Successfully!`);
+                    if(uniqueNew.length > 0) {
+                        const merged = [...AppState.subjects, ...uniqueNew];
+                        AppState.subjects = merged;
+                        this.extractAllFolders();
+                        await window.AppFirebase.saveSettings({ subjects: AppState.subjects });
+                        this.updateSubjectUI();
+                        this.showToast(`${uniqueNew.length} New Folders Added!`);
+                    } else {
+                        this.showToast("All folders already exist.", "info");
+                    }
                     
                     document.getElementById('json-folder-input').value = '';
                     this.toggleJsonFolderInput();
                 } catch (e) {
-                    console.error(e);
                     this.showToast("Invalid JSON array format.", "error");
                 }
             },
 
             updateSubjectUI() {
                 this.extractAllFolders();
-                
                 const list = document.getElementById('subjects-list');
                 if(list) {
-                    let html = '';
-                    AppState.allFolders.forEach(s => {
+                    list.innerHTML = AppState.allFolders.map(s => {
                         const depth = s.split('/').length - 1;
                         const name = s.split('/').pop();
-                        const padding = depth * 1.5;
-                        html += `
-                            <div class="px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg flex justify-between items-center text-sm" style="margin-left: ${padding}rem">
-                                <span class="flex items-center gap-2 text-slate-700 dark:text-slate-300 font-medium">
-                                    <i data-lucide="${depth === 0 ? 'folder' : 'corner-down-right'}" size="16" class="text-accent/70"></i> ${name}
+                        return `
+                            <div class="px-3 py-2 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-lg flex justify-between items-center text-sm" style="margin-left: ${depth * 1.5}rem">
+                                <span class="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                                    <i data-lucide="${depth === 0 ? 'folder' : 'corner-down-right'}" size="14"></i> ${name}
                                 </span>
-                                <button onclick="window.AppUI.removeSubject('${s}')" class="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-1.5 rounded-md transition-colors" title="Delete Folder">
-                                    <i data-lucide="trash" size="14"></i>
-                                </button>
+                                <button onclick="window.AppUI.removeSubject('${s}')" class="text-red-500 hover:bg-red-50 p-1 rounded-md transition-all active:scale-90"><i data-lucide="trash" size="14"></i></button>
                             </div>
                         `;
-                    });
-                    list.innerHTML = html;
+                    }).join('');
                 }
                 
-                const editSelect = document.getElementById('edit-category');
-                const parentSelect = document.getElementById('new-subject-parent');
-                
-                const selectHtml = `
-                    <option value="">Root / Uncategorized</option>
-                    ${AppState.allFolders.map(s => {
-                        const display = s.split('/').join(' → ');
-                        return `<option value="${s}">${display}</option>`;
-                    }).join('')}
-                `;
-
-                if(editSelect) editSelect.innerHTML = selectHtml;
-                if(parentSelect) parentSelect.innerHTML = `<option value="">-- Root Level --</option>` + 
-                    AppState.allFolders.map(s => {
-                        const display = s.split('/').join(' → ');
-                        return `<option value="${s}">${display}</option>`;
-                    }).join('');
-                
+                const selectHtml = `<option value="">Root / Uncategorized</option>` + AppState.allFolders.map(s => `<option value="${s}">${s.split('/').join(' → ')}</option>`).join('');
+                document.getElementById('edit-category').innerHTML = selectHtml;
+                document.getElementById('new-subject-parent').innerHTML = `<option value="">-- Root Level --</option>` + AppState.allFolders.map(s => `<option value="${s}">${s.split('/').join(' → ')}</option>`).join('');
                 lucide.createIcons();
             },
 
             exportData() {
-                const data = {
-                    version: "2.0",
-                    timestamp: new Date().toISOString(),
-                    subjects: AppState.subjects,
-                    equations: AppState.equations
-                };
-                
+                const data = { version: "2.0", subjects: AppState.subjects, equations: AppState.equations };
                 const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `PhysFlow_Backup_${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
+                a.download = `PhysFlow_Backup.json`;
                 a.click();
-                document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 this.showToast("Export Complete!");
             },
 
             importData(event) {
                 const file = event.target.files[0];
-                if (!file) return;
-                
-                if (!auth.currentUser) {
-                    this.showToast("Please sign in to import data.", "error");
-                    event.target.value = '';
-                    return;
-                }
-
-                if (!confirm("This will merge imported data into your cloud library. Proceed?")) {
-                    event.target.value = '';
-                    return;
-                }
-
+                if (!file || !auth.currentUser) return;
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     try {
                         const data = JSON.parse(e.target.result);
-                        this.showToast("Importing data... please wait", "info");
-                        
-                        if (data.subjects && Array.isArray(data.subjects)) {
-                            const newSubs = Array.from(new Set([...AppState.subjects, ...data.subjects]));
-                            AppState.subjects = newSubs;
-                            await window.AppFirebase.saveSettings({ subjects: newSubs });
+                        if (data.subjects) {
+                            const existingLower = AppState.subjects.map(s => s.toLowerCase());
+                            const unique = data.subjects.filter(s => !existingLower.includes(s.toLowerCase()));
+                            AppState.subjects = [...AppState.subjects, ...unique];
+                            await window.AppFirebase.saveSettings({ subjects: AppState.subjects });
                         }
-
-                        if (data.equations && Array.isArray(data.equations)) {
+                        if (data.equations) {
                             for (let eq of data.equations) {
-                                if (eq.id && eq.title && eq.equation) {
-                                    const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(eq.id));
-                                    await setDoc(docRef, eq);
-                                }
+                                const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(eq.id));
+                                await setDoc(docRef, eq);
                             }
                         }
-
-                        this.showToast("Import Successful! Data synced to cloud.");
-                        event.target.value = ''; 
-                    } catch (err) {
-                        console.error(err);
-                        this.showToast("Failed to parse Backup file.", "error");
-                        event.target.value = '';
-                    }
+                        this.showToast("Import Successful!");
+                    } catch (err) { this.showToast("Import Failed", "error"); }
                 };
                 reader.readAsText(file);
             },
@@ -988,202 +956,112 @@
             toggleMagicPaste() {
                 const container = document.getElementById('magic-paste-container');
                 container.classList.toggle('hidden');
-                if(!container.classList.contains('hidden')) document.getElementById('magic-paste-input').focus();
             },
 
             processMagicText() {
                 const text = document.getElementById('magic-paste-input').value;
                 if(!text.trim()) return;
-                
-                const updateCategory = (cat) => {
-                    if (!cat) return;
-                    const select = document.getElementById('edit-category');
-                    let exists = false;
-                    for(let i=0; i<select.options.length; i++) {
-                        if(select.options[i].value.toLowerCase() === cat.toLowerCase()) {
-                            select.value = select.options[i].value;
-                            exists = true; break;
-                        }
-                    }
-                    if(!exists && cat) {
-                        if(!AppState.subjects.includes(cat)) {
-                            AppState.subjects.push(cat);
-                            window.AppUI.updateSubjectUI();
-                            window.AppFirebase.saveSettings({ subjects: AppState.subjects });
-                        }
-                        select.value = cat;
-                    }
-                };
-
                 try {
                     const data = JSON.parse(text);
                     if (data.title) document.getElementById('edit-title').value = data.title;
-                    if (data.category) updateCategory(data.category);
                     if (data.equation) document.getElementById('edit-equation').value = data.equation;
-                    if (data.variables) document.getElementById('edit-variables').value = Array.isArray(data.variables) ? data.variables.join('\n') : data.variables;
-                    if (data.conditions) document.getElementById('edit-conditions').value = Array.isArray(data.conditions) ? data.conditions.join('\n') : data.conditions;
-                    if (data.notes) document.getElementById('edit-notes').value = Array.isArray(data.notes) ? data.notes.join('\n') : data.notes;
-                    this.showToast("Magic Paste successful!");
-                } catch (e) {
-                    const extract = (key) => {
-                        const regex = new RegExp(`(?:\\*\\*|###\\s*)?${key}(?:\\*\\*)?\\s*[:=]\\s*([\\s\\S]*?)(?=\\n(?:\\*\\*|###\\s*)?[A-Z][a-z]+(?:\\s*&\\s*[A-Z][a-z]+)*\\s*[:=]|$)`, 'i');
-                        const match = text.match(regex);
-                        return match ? match[1].trim() : null;
-                    };
-                    
-                    const title = extract('Title') || extract('Name') || extract('Equation Name');
-                    const category = extract('Category') || extract('Physics Category') || extract('Folder') || extract('Sub Folder');
-                    const equation = extract('Equation') || extract('Main Equation') || extract('Formula');
-                    const variables = extract('Variables') || extract('Variables & Units') || extract('Parameters');
-                    const conditions = extract('Conditions') || extract('Validity Conditions');
-                    const notes = extract('Notes') || extract('Important Notes');
-
-                    if (title) document.getElementById('edit-title').value = title;
-                    if (category) updateCategory(category);
-                    if (equation) document.getElementById('edit-equation').value = equation.replace(/^\$\$?|\$\$?$/g, '').trim();
-                    if (variables) document.getElementById('edit-variables').value = variables;
-                    if (conditions) document.getElementById('edit-conditions').value = conditions;
-                    if (notes) document.getElementById('edit-notes').value = notes;
-                    this.showToast("Content parsed & filled!");
-                }
+                    this.showToast("Parsed!");
+                } catch (e) { this.showToast("Check JSON format", "warning"); }
                 document.getElementById('magic-paste-container').classList.add('hidden');
-                document.getElementById('magic-paste-input').value = '';
             }
         };
 
-        // 5. Firebase Operations Manager
+        // 5. Firebase Ops
         window.AppFirebase = {
             async saveEquation() {
-                if (!auth.currentUser) {
-                    window.AppUI.showToast("Firestore error! Authentication required.", "error");
-                    return;
-                }
+                if (!auth.currentUser) return;
                 const btn = document.getElementById('save-btn');
                 btn.disabled = true;
-                btn.innerHTML = `<i data-lucide="loader-2" class="animate-spin" size="18"></i> Saving...`;
-                lucide.createIcons();
-
                 try {
                     const id = document.getElementById('edit-id').value || Date.now().toString();
                     const title = document.getElementById('edit-title').value.trim();
                     const category = document.getElementById('edit-category').value;
                     const equation = document.getElementById('edit-equation').value.trim();
-                    const variables = document.getElementById('edit-variables').value;
-                    const conditions = document.getElementById('edit-conditions').value;
-                    const notes = document.getElementById('edit-notes').value;
-
-                    if (!title || !equation) {
-                        window.AppUI.showToast("Title & Equation are required!", "warning");
-                        return;
-                    }
+                    if (!title || !equation) return window.AppUI.showToast("Missing fields", "warning");
 
                     const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', id);
-                    await setDoc(docRef, { title, category, equation, variables, conditions, notes, id });
-                    
-                    window.AppUI.showToast("Equation saved to cloud!");
-                    document.getElementById('search-input').value = ''; 
+                    await setDoc(docRef, { 
+                        title, category, equation, 
+                        variables: document.getElementById('edit-variables').value,
+                        conditions: document.getElementById('edit-conditions').value,
+                        notes: document.getElementById('edit-notes').value,
+                        id 
+                    });
+                    window.AppUI.showToast("Saved to cloud!");
                     window.AppUI.closeModal('edit-modal');
-                } catch (err) {
-                    console.error("Save Error:", err);
-                    window.AppUI.showToast("Permission denied! Check rules.", "error");
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = `<i data-lucide="save" size="18"></i> Save Equation`;
-                    lucide.createIcons();
-                }
+                } catch (err) { window.AppUI.showToast("Save Error", "error"); }
+                finally { btn.disabled = false; }
             },
 
             async deleteEquation(id) {
-                if(!auth.currentUser) return;
-                if(!confirm('Delete this formula from your cloud library?')) return;
+                if(!auth.currentUser || !confirm('Delete this?')) return;
                 try {
-                    const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(id));
-                    await deleteDoc(docRef);
-                    window.AppUI.showToast("Equation removed.");
+                    await deleteDoc(doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(id)));
+                    window.AppUI.showToast("Deleted");
                     window.AppUI.closeModal('view-modal');
-                } catch(e) { window.AppUI.showToast("Delete failed", "error"); }
+                } catch(e) { window.AppUI.showToast("Error", "error"); }
             },
 
             async clearAllData() {
-                if(!auth.currentUser) return;
-                if(confirm('🚨 This will wipe your entire cloud library. Continue?')) {
-                    try {
-                        for(let eq of AppState.equations) {
-                            const docRef = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(eq.id));
-                            await deleteDoc(docRef);
-                        }
-                        window.AppUI.showToast("Library cleared", "info");
-                    } catch(e) { window.AppUI.showToast("Error clearing data", "error"); }
-                }
+                if(!auth.currentUser || !confirm('Wipe all?')) return;
+                try {
+                    for(let eq of AppState.equations) {
+                        await deleteDoc(doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'equations', String(eq.id)));
+                    }
+                    window.AppUI.showToast("Cleared");
+                } catch(e) { window.AppUI.showToast("Error", "error"); }
             },
 
             async saveSettings(updates) {
                 if(!auth.currentUser) return;
-                try {
-                    const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'settings', 'prefs');
-                    await setDoc(ref, updates, { merge: true });
-                } catch (e) { console.error("Settings Error", e); }
+                await setDoc(doc(db, 'artifacts', 'studyflow-pro', 'users', auth.currentUser.uid, 'settings', 'prefs'), updates, { merge: true });
             },
 
             async signInWithGoogle() {
-                const provider = new GoogleAuthProvider();
-                try { await signInWithPopup(auth, provider); } catch(err) { window.AppUI.showToast("Login failed", "error"); }
+                try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(err) { window.AppUI.showToast("Login failed", "error"); }
             },
 
             async signOutUser() {
-                try { await signOut(auth); } catch(e) { window.AppUI.showToast("Sign out failed", "error"); }
+                await signOut(auth);
             },
 
             setupCloudListeners(uid) {
                 if (AppState.unsubEquations) AppState.unsubEquations();
                 if (AppState.unsubSettings) AppState.unsubSettings();
 
-                const eqRef = collection(db, 'artifacts', 'studyflow-pro', 'users', uid, 'equations');
-                AppState.unsubEquations = onSnapshot(eqRef, (snapshot) => {
+                AppState.unsubEquations = onSnapshot(collection(db, 'artifacts', 'studyflow-pro', 'users', uid, 'equations'), (snapshot) => {
                     AppState.equations = snapshot.docs.map(doc => doc.data());
-                    AppState.equations.sort((a,b) => Number(b.id) - Number(a.id)); 
                     document.getElementById('reaction-count').innerText = AppState.equations.length;
-                    
                     if(AppState.currentTab === 'library') window.AppUI.renderEquations();
-                }, (err) => window.AppUI.showToast("Firestore Read Error!", "error"));
+                });
 
-                const setRef = doc(db, 'artifacts', 'studyflow-pro', 'users', uid, 'settings', 'prefs');
-                AppState.unsubSettings = onSnapshot(setRef, (docSnap) => {
+                AppState.unsubSettings = onSnapshot(doc(db, 'artifacts', 'studyflow-pro', 'users', uid, 'settings', 'prefs'), (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         if(data.theme) window.AppUI.applyTheme(data.theme);
-                        if(data.accent) window.AppUI.setAccent(data.accent, false);
+                        if(data.accent) window.AppUI.setAccent(data.accent);
                         if(data.subjects) { AppState.subjects = data.subjects; window.AppUI.updateSubjectUI(); }
-                    } else {
-                        window.AppUI.updateSubjectUI();
-                    }
+                    } else { window.AppUI.updateSubjectUI(); }
                 });
             }
         };
 
-        // 6. Initialization & Auth Handlers
-        marked.setOptions({ breaks: true, gfm: true });
-
+        // Init
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                if(user.isAnonymous) {
-                    document.getElementById('auth-signed-out').classList.remove('hidden');
-                    document.getElementById('auth-signed-in').classList.add('hidden');
-                    document.getElementById('sidebar-user-name').innerText = "Guest User";
-                    document.getElementById('sidebar-user-status').innerText = "Temporary";
-                } else {
+                if(!user.isAnonymous) {
                     document.getElementById('auth-signed-out').classList.add('hidden');
                     document.getElementById('auth-signed-in').classList.remove('hidden');
-                    document.getElementById('sidebar-user-name').innerText = user.displayName || "Scholar";
-                    document.getElementById('sidebar-user-status').innerText = "Pro User";
-                    document.getElementById('settings-name').innerText = user.displayName;
-                    document.getElementById('settings-email').innerText = user.email;
-                    document.getElementById('sidebar-user-avatar').src = user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.uid}`;
+                    document.getElementById('sidebar-user-name').innerText = user.displayName;
+                    document.getElementById('sidebar-user-avatar').src = user.photoURL;
                 }
                 window.AppFirebase.setupCloudListeners(user.uid);
-            } else {
-                try { await signInAnonymously(auth); } catch(e) { window.AppUI.showToast("Database Connection Failed", "error"); }
-            }
+            } else { await signInAnonymously(auth); }
         });
 
         window.addEventListener('load', () => {
