@@ -546,8 +546,9 @@
             subjects: ["Mechanics", "Current Electricity", "Fields", "Fields/Gravitational Fields", "Properties of Matter", "Thermodynamics", "Optics & Waves", "Modern Physics"],
             allFolders: [], 
             dailyReminders: [], // New state for reminders
-            currentTab: 'library',
+            currentTab: null, // Changed for initial history setup
             currentPath: '', 
+            activeModal: null, // Added to track modal history
             isSearching: false,
             isLoading: true,
             unsubEquations: null,
@@ -597,7 +598,7 @@
                 }, 3000);
             },
 
-            switchTab(tab) {
+            switchTab(tab, isFromHistory = false) {
                 const prevTab = AppState.currentTab;
                 if(prevTab === tab) return;
 
@@ -617,6 +618,11 @@
 
                 function showNext() {
                     AppState.currentTab = tab;
+                    
+                    if (!isFromHistory) {
+                        history.pushState({ tab: tab, path: AppState.currentPath, modal: AppState.activeModal }, "", "");
+                    }
+
                     if(nextEl) {
                         nextEl.classList.remove('hidden');
                         requestAnimationFrame(() => {
@@ -646,9 +652,14 @@
                 }
             },
 
-            openModal(id) { 
+            openModal(id, isFromHistory = false) { 
                 const modal = document.getElementById(id);
                 const content = modal.querySelector('.animate-scale-in');
+                
+                AppState.activeModal = id;
+                if (!isFromHistory) {
+                    history.pushState({ tab: AppState.currentTab, path: AppState.currentPath, modal: id }, "", "");
+                }
                 
                 content.style.animation = 'none';
                 content.offsetHeight; 
@@ -662,8 +673,16 @@
                 });
             },
             
-            closeModal(id, event = null) {
+            closeModal(id, event = null, isFromHistory = false) {
                 if(event && event.target !== event.currentTarget && event.currentTarget.classList.contains('modal-overlay')) return;
+                
+                if (!isFromHistory && history.state && history.state.modal === id) {
+                    history.back(); // Pop the modal state from history
+                    return;
+                }
+
+                AppState.activeModal = null;
+                
                 const modal = document.getElementById(id);
                 const content = modal.querySelector('.animate-scale-in');
                 
@@ -755,93 +774,15 @@
                 return parsedHtml;
             },
 
-            // --- Reminder Logic ---
-            generateReminders(forceRefresh = false) {
-                if (!forceRefresh && AppState.dailyReminders && AppState.dailyReminders.length > 0) {
-                    this.renderReminders();
-                    return;
-                }
-
-                const allEqs = [...AppState.equations];
-                if (allEqs.length === 0) {
-                    AppState.dailyReminders = [];
-                    this.renderReminders();
-                    return;
-                }
-
-                // 1. Group equations by root folder
-                const grouped = {};
-                allEqs.forEach(eq => {
-                    const rootCat = eq.category ? eq.category.split('/')[0] : 'Uncategorized';
-                    if (!grouped[rootCat]) grouped[rootCat] = [];
-                    grouped[rootCat].push(eq);
-                });
-
-                let selectedIds = new Set();
-
-                // 2. Select at least 3 from each lesson
-                Object.keys(grouped).forEach(cat => {
-                    let catEqs = [...grouped[cat]].sort(() => 0.5 - Math.random());
-                    let take = Math.min(3, catEqs.length);
-                    for(let i=0; i<take; i++) {
-                        selectedIds.add(catEqs[i].id);
-                    }
-                });
-
-                // 3. Fill up to 30 equations (if available) with random ones
-                let remaining = allEqs.filter(eq => !selectedIds.has(eq.id)).sort(() => 0.5 - Math.random());
-                while(selectedIds.size < 30 && remaining.length > 0) {
-                    selectedIds.add(remaining.pop().id);
-                }
-
-                // Final shuffle
-                AppState.dailyReminders = allEqs.filter(eq => selectedIds.has(eq.id)).sort(() => 0.5 - Math.random());
-                this.renderReminders();
-            },
-
-            renderReminders() {
-                const container = document.getElementById('reminders-container');
-                container.innerHTML = '';
-                
-                if (AppState.dailyReminders.length === 0) {
-                    container.innerHTML = `<div class="col-span-full py-20 text-center text-slate-500 animate-fade-in"><i data-lucide="brain" size="32" class="mx-auto mb-2 opacity-50"></i><p>Add more equations to your library to get daily reminders.</p></div>`;
-                    lucide.createIcons();
-                    return;
-                }
-
-                let htmlStr = '';
-                AppState.dailyReminders.forEach((eq, indexCount) => {
-                    const badgeText = (eq.category && eq.category !== '') ? eq.category.split('/').pop() : 'Root';
-                    htmlStr += `
-                        <div class="card-physics eq-card stagger-card bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-[rgba(148,163,184,0.1)] p-6 rounded-2xl cursor-pointer flex flex-col justify-between group shadow-sm hover:border-purple-300 dark:hover:border-purple-700"
-                             onclick="window.AppUI.openViewModal('${eq.id}', true)" style="animation-delay: ${(indexCount % 10) * 40}ms">
-                            <div>
-                                <div class="flex items-center justify-between mb-4">
-                                    <span class="px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest border text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-700/50 bg-white dark:bg-purple-900/30 truncate max-w-[70%]">
-                                        ${badgeText}
-                                    </span>
-                                    <i data-lucide="eye" class="text-slate-300 group-hover:text-purple-500 transition-colors" size="18"></i>
-                                </div>
-                                <h4 class="font-bold text-lg text-slate-900 dark:text-white sinhala-font mb-4 leading-tight">${eq.title}</h4>
-                            </div>
-                            <div class="bg-white dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-slate-700/50 text-center overflow-hidden flex items-center justify-center min-h-[80px]">
-                                <span class="text-slate-800 dark:text-cyan-300 font-mono text-lg">$$${eq.equation}$$</span>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = htmlStr;
-                MathManager.add([container]);
-                lucide.createIcons();
-            },
-            // --- End Reminder Logic ---
-
-            setPath(path) {
+            setPath(path, isFromHistory = false) {
                 AppState.currentPath = path;
                 document.getElementById('search-input').value = '';
                 AppState.isSearching = false;
                 this.renderEquations();
+                
+                if (!isFromHistory) {
+                    history.pushState({ tab: AppState.currentTab, path: path, modal: AppState.activeModal }, "", "");
+                }
             },
 
             renderBreadcrumbs() {
@@ -1325,10 +1266,42 @@
             } else { await signInAnonymously(auth); }
         });
 
+        // Add popstate listener for System Back Button handling
+        window.addEventListener('popstate', (e) => {
+            const state = e.state;
+            
+            // Handle Modal Closing
+            if (AppState.activeModal && (!state || !state.modal)) {
+                window.AppUI.closeModal(AppState.activeModal, null, true);
+            }
+            
+            if (state) {
+                // Handle Path Navigation
+                if (state.path !== undefined && state.path !== AppState.currentPath) {
+                    window.AppUI.setPath(state.path, true);
+                }
+                // Handle Tab Switching
+                if (state.tab && state.tab !== AppState.currentTab) {
+                    window.AppUI.switchTab(state.tab, true);
+                }
+                // Handle Modal Opening (if navigated forward)
+                if (state.modal && state.modal !== AppState.activeModal) {
+                    window.AppUI.openModal(state.modal, true);
+                }
+            } else {
+                // Handle Initial / Empty State
+                if (AppState.currentPath !== '') window.AppUI.setPath('', true);
+                if (AppState.currentTab !== 'library') window.AppUI.switchTab('library', true);
+            }
+        });
+
         window.addEventListener('load', () => {
             lucide.createIcons();
             window.AppUI.updateSubjectUI();
-            window.AppUI.switchTab('library');
+            
+            // Load initial tab without pushing history state, then replace root state
+            window.AppUI.switchTab('library', true);
+            history.replaceState({ tab: 'library', path: '', modal: null }, "", "");
         });
     </script>
 </body>
