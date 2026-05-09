@@ -7,7 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Added Yaldevi font for Sinhala text -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Yaldevi:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-main: #FFF8F4;
@@ -24,6 +25,10 @@
             width: 100vw;
             color: #0f172a;
             -webkit-font-smoothing: antialiased;
+        }
+
+        .font-yaldevi {
+            font-family: 'Yaldevi', sans-serif;
         }
         
         #slider-stage {
@@ -440,6 +445,80 @@
             font-family: monospace;
             border: 1px solid rgba(255,255,255,0.15);
         }
+
+        /* ----- Final Popup Styles ----- */
+        #final-popup {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85); /* Dark blur backdrop */
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000; 
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+
+        #final-popup.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .popup-card {
+            background: rgba(255, 255, 255, 0.98);
+            padding: 40px 30px;
+            border-radius: 28px;
+            text-align: center;
+            max-width: 90%;
+            width: 380px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255,255,255,0.1) inset;
+            transform: scale(0.9) translateY(20px);
+            transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        #final-popup.show .popup-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .popup-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+
+        .popup-text {
+            font-size: 1.15rem;
+            color: #475569;
+            line-height: 1.5;
+            margin: 0 0 10px 0;
+            font-weight: 500;
+        }
+
+        .popup-btn {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            width: 100%;
+        }
+
+        .popup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -484,6 +563,15 @@
         </div>
     </div>
     
+    <!-- Final Popup Modal -->
+    <div id="final-popup">
+        <div class="popup-card font-yaldevi">
+            <h2 class="popup-title font-yaldevi">හරි වැඩේ ඉවරයි.</h2>
+            <p class="popup-text font-yaldevi">එහෙනම් මට ත් මොනාහරි කොටගෙන යන්න සිස්</p>
+            <button class="popup-btn font-yaldevi" onclick="window.location.href='https://alstudy063.github.io/reminder3/messages?chat=EnAH1bgVF5fCAfC2bwQguHpGMS22'">text me</button>
+        </div>
+    </div>
+
     <div class="shortcuts-hint">
         ⌨️ ← → | SPACE (⏯️) | M (🔇)
     </div>
@@ -540,6 +628,7 @@
         const container = document.getElementById('shorts-container');
         const hint = document.getElementById('interaction-hint');
         const notification = document.getElementById('secretNotification');
+        const finalPopup = document.getElementById('final-popup');
         
         let currentIndex = 0;
         let userInteracted = false;
@@ -595,6 +684,13 @@
             if (!notification) return;
             notification.classList.remove('show', 'pulse');
             if (pulseTimer) clearTimeout(pulseTimer);
+        }
+
+        // Show the final popup message
+        function showFinalPopup() {
+            if (finalPopup) {
+                finalPopup.classList.add('show');
+            }
         }
         
         function addSpecialVideoAndTransition() {
@@ -682,6 +778,9 @@
                         }, 50);
                     } else if (index === content.length - 1 && !specialVideoAdded) {
                         showNotification();
+                    } else if (index === content.length - 1 && specialVideoAdded) {
+                        // Trigger final popup when the special video is finished
+                        showFinalPopup();
                     }
                 }
             });
