@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Location Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;600;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Quicksand', 'Noto Sans Sinhala', sans-serif;
+            background-color: #f8fafc;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #3b82f6;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .table-container::-webkit-scrollbar { height: 6px; }
+        .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="glass-card rounded-3xl p-6 flex flex-col md:flex-row justify-between items-center gap-4 border-l-8 border-l-blue-600">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800">සියලුම පරිශීලකයින්ගේ දත්ත (Global Location Feed)</h1>
+                <p class="text-slate-500 text-sm">සියලුම පරිශීලකයින්ගේ ස්ථාන දත්ත ස්වයංක්‍රීයව මෙහි දිස්වේ.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div id="syncStatus" class="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider">
+                    <div class="loader"></div>
+                    <span id="syncText">Syncing...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="glass-card p-6 rounded-2xl">
+                <p class="text-slate-500 text-sm font-semibold">මුළු දත්ත ප්‍රමාණය (Total Records)</p>
+                <h3 id="totalRecords" class="text-3xl font-bold text-blue-600">0</h3>
+            </div>
+            <div class="glass-card p-6 rounded-2xl">
+                <p class="text-slate-500 text-sm font-semibold">ක්‍රියාකාරී පරිශීලකයින් (Active Users)</p>
+                <h3 id="totalUsers" class="text-3xl font-bold text-indigo-600">0</h3>
+            </div>
+            <div class="glass-card p-6 rounded-2xl">
+                <p class="text-slate-500 text-sm font-semibold">අන්තිමට යාවත්කාලීන වූයේ (Last Update)</p>
+                <h3 id="lastUpdate" class="text-lg font-bold text-emerald-600">Just now</h3>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="glass-card rounded-3xl overflow-hidden">
+            <div class="table-container overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-600 text-sm border-b">
+                            <th class="p-4 font-bold">දිනය සහ වේලාව</th>
+                            <th class="p-4 font-bold">User ID</th>
+                            <th class="p-4 font-bold">Location (Lat, Lng)</th>
+                            <th class="p-4 font-bold">Device Info</th>
+                            <th class="p-4 font-bold text-center">ක්‍රියාව</th>
+                        </tr>
+                    </thead>
+                    <tbody id="masterTableBody" class="text-sm">
+                        <tr>
+                            <td colspan="5" class="p-12 text-center text-slate-400">
+                                <div class="flex flex-col items-center">
+                                    <div class="loader mb-4 h-8 w-8"></div>
+                                    දත්ත පද්ධතිය පරීක්ෂා කරමින්... (Scanning users...)
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhZIUYj_tjXhcvVGEboWcyVP8auVsNcZc",
+            authDomain: "messages-9bc85.firebaseapp.com",
+            projectId: "messages-9bc85",
+            storageBucket: "messages-9bc85.firebasestorage.app",
+            messagingSenderId: "781930969359",
+            appId: "1:781930969359:web:ce557881c2092197a0a67a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = "studyflow-pro";
+
+        const tableBody = document.getElementById('masterTableBody');
+        const totalRecordsEl = document.getElementById('totalRecords');
+        const totalUsersEl = document.getElementById('totalUsers');
+        const lastUpdateEl = document.getElementById('lastUpdate');
+        const syncText = document.getElementById('syncText');
+
+        let allData = [];
+        let activeListeners = [];
+
+        // Auth
+        signInAnonymously(auth);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                syncText.innerText = "Scanning Users...";
+                discoverAndListen();
+            }
+        });
+
+        // මූලිකවම users ලැයිස්තුව සොයාගෙන ඔවුන්ගේ 'locations' වලට සවන් දීම (Listening)
+        async function discoverAndListen() {
+            try {
+                // Rule: root-level collections වෙත යා නොහැක, එනිසා parent path එක භාවිතා කරයි
+                // artifacts/{appId}/users යනු collection group එකක් ලෙස ක්‍රියා කළ හැකි නමුත් 
+                // මෙහිදී සරලව users ලැයිස්තුව ලබාගැනීමට උත්සාහ කරමු
+                const usersPath = `artifacts/${appId}/users`;
+                const usersCollection = collection(db, usersPath);
+                
+                // Note: Firestore permissions අනුව සියලුම sub-collections query කිරීමට 
+                // index අවශ්‍ය විය හැක. එනිසා අපි සරලව users fetch කරමු.
+                const userQuery = await getDocs(usersCollection);
+                const userIds = [];
+                userQuery.forEach(doc => userIds.push(doc.id));
+
+                if (userIds.length === 0) {
+                    tableBody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-500 font-medium">කිසිදු පරිශීලකයෙක් හමුවූයේ නැත.</td></tr>`;
+                    syncText.innerText = "No Users";
+                    return;
+                }
+
+                totalUsersEl.innerText = userIds.length;
+                startGlobalSync(userIds);
+
+            } catch (err) {
+                console.error(err);
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-red-500 font-medium">දත්ත ලබාගැනීමට අවසර නැත. (Security Rules Error)</td></tr>`;
+            }
+        }
+
+        function startGlobalSync(userIds) {
+            allData = [];
+            // කලින් තිබූ listeners ඉවත් කරන්න
+            activeListeners.forEach(unsub => unsub());
+            activeListeners = [];
+
+            userIds.forEach(uid => {
+                const locRef = collection(db, 'artifacts', appId, 'users', uid, 'locations');
+                
+                const unsub = onSnapshot(locRef, (snapshot) => {
+                    // මෙම user ට අදාළ පරණ දත්ත ඉවත් කරන්න
+                    allData = allData.filter(item => item.uid !== uid);
+                    
+                    snapshot.forEach(doc => {
+                        allData.push({
+                            id: doc.id,
+                            uid: uid,
+                            ...doc.data()
+                        });
+                    });
+
+                    // දත්ත sort කරන්න (අලුත්ම දත්ත මුලට)
+                    allData.sort((a, b) => {
+                        const tA = a.timestamp ? a.timestamp.toMillis() : 0;
+                        const tB = b.timestamp ? b.timestamp.toMillis() : 0;
+                        return tB - tA;
+                    });
+
+                    updateUI();
+                }, (error) => console.log(`Listener error for ${uid}:`, error));
+
+                activeListeners.push(unsub);
+            });
+        }
+
+        function updateUI() {
+            totalRecordsEl.innerText = allData.length;
+            lastUpdateEl.innerText = new Date().toLocaleTimeString('si-LK');
+            syncText.innerText = "Live Synced";
+            
+            if (allData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-12 text-center text-slate-500">දත්ත කිසිවක් හමු නොවීය.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            allData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b hover:bg-slate-50/50 transition-colors';
+
+                const dateStr = row.timestamp ? row.timestamp.toDate().toLocaleString('si-LK') : 'N/A';
+                const latLng = (row.lat && row.lng) ? `${row.lat.toFixed(5)}, ${row.lng.toFixed(5)}` : 'N/A';
+                const mapsLink = (row.lat && row.lng) ? `https://www.google.com/maps?q=${row.lat},${row.lng}` : '#';
+                
+                let device = row.userAgent || 'Unknown';
+                if(device.length > 40) device = device.substring(0, 37) + '...';
+
+                tr.innerHTML = `
+                    <td class="p-4 text-slate-700 font-medium">${dateStr}</td>
+                    <td class="p-4"><code class="bg-slate-100 px-2 py-1 rounded text-xs text-indigo-600">${row.uid.substring(0, 8)}...</code></td>
+                    <td class="p-4 text-slate-600 font-mono">${latLng}</td>
+                    <td class="p-4 text-xs text-slate-500" title="${row.userAgent || ''}">${device}</td>
+                    <td class="p-4 text-center">
+                        <a href="${mapsLink}" target="_blank" class="bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-xl text-xs font-bold hover:bg-emerald-200 transition-colors inline-flex items-center gap-1">
+                            🗺️ Map
+                        </a>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
