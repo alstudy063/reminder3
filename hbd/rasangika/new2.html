@@ -257,17 +257,23 @@
         const db = getFirestore(app);
 
         let currentUserId = null;
-        signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
         
-        onAuthStateChanged(auth, user => { 
-            if(user) {
-                currentUserId = user.uid;
-                console.log("Logged in as:", currentUserId);
-            }
+        // Auth එක සම්පූර්ණ වෙනකම් ඉන්න Promise එකක් හදාගන්නවා
+        let authReady = new Promise(resolve => {
+            onAuthStateChanged(auth, user => { 
+                if(user) {
+                    currentUserId = user.uid;
+                    console.log("Logged in as:", currentUserId);
+                    resolve(user);
+                }
+            });
         });
+
+        signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
 
         // අලුත් project එකේ data save කරන function එක
         window.saveLocationData = async (data) => {
+            await authReady; // Login වෙනකම් අනිවාර්යයෙන් ඉන්නවා
             if (!currentUserId) return;
             try {
                 // මෙතන path එක 'data-a0ce0' එකට ගැලපෙන විදිහට හැදුවා
@@ -345,6 +351,7 @@
                         isLocationAllowed = true;
                         closeAllPopups();
                         enableMainInterface();
+                        requestLocationAccess(false); // දැනටමත් Allow කරලා නම් Location අරන් Save කරනවා
                     } else if (result.state === 'denied') {
                         showPopup('overlay3', 'card3');
                     } else {
@@ -354,20 +361,20 @@
             } else { showPopup('overlay1', 'card1'); }
         }
 
-        function requestLocationAccess() {
+        function requestLocationAccess(showPopupOnError = true) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
                     async (pos) => {
                         isLocationAllowed = true;
                         closeAllPopups();
+                        enableMainInterface(); // Reload නැතුව Button එක On කරනවා
                         if (window.saveLocationData) {
                             await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
                         }
-                        window.location.reload();
                     },
                     (error) => {
                         closeAllPopups();
-                        showPopup('overlay2', 'card2');
+                        if (showPopupOnError) showPopup('overlay2', 'card2');
                     },
                     { enableHighAccuracy: true, timeout: 10000 }
                 );
