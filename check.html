@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Location Tracker </title>
+    <title>Live Location Tracker Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&family=Yaldevi:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -15,6 +15,20 @@
         .user-item.active { background-color: #eff6ff; border-left-color: #3b82f6; }
         .custom-scroll::-webkit-scrollbar { width: 6px; }
         .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        /* Modal Styles */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; animation: fadeIn 0.3s ease; }
+        .modal-content { background: white; width: 90%; max-width: 500px; border-radius: 2rem; padding: 2rem; position: relative; animation: slideUp 0.3s ease; max-height: 85vh; overflow-y: auto; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .detail-label { color: #64748b; font-weight: 500; font-size: 0.875rem; }
+        .detail-value { color: #1e293b; font-weight: 600; font-size: 0.875rem; text-align: right; }
+        
+        .agent-expand { cursor: pointer; background: #f8fafc; border-radius: 12px; padding: 12px; margin-top: 10px; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .agent-text { font-size: 0.75rem; color: #64748b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
+        .agent-expand.active .agent-text { -webkit-line-clamp: unset; display: block; }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -31,38 +45,90 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <!-- User List -->
             <div class="lg:col-span-4 glass-card rounded-3xl shadow-sm border border-gray-200 h-[600px] flex flex-col overflow-hidden">
-                <div class="p-5 border-b bg-gray-50/50">
+                <div class="p-5 border-b bg-gray-50/50 space-y-3">
                     <h2 class="font-bold text-gray-800">පරිශීලකයින් (<span id="userCount">0</span>)</h2>
+                    <input type="text" id="searchInput" placeholder="🔍 User ID එක සොයන්න..." class="w-full px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 </div>
                 <div id="userList" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
                     <div class="p-8 text-center text-gray-400">Loading...</div>
                 </div>
             </div>
 
-            <!-- Map & Details -->
             <div class="lg:col-span-8 space-y-6">
                 <div class="glass-card p-4 rounded-3xl shadow-lg border border-gray-100">
                     <div id="map"></div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="glass-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="p-3 bg-blue-100 rounded-xl text-blue-600">📍</div>
-                        <div>
-                            <p class="text-lg font-bold text-gray-800" id="cordData">තෝරාගෙන නැත</p>
-                            <p class="text-xs text-gray-500" id="accuracyData">Accuracy: -</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    <div class="glass-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between h-[110px]">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-blue-100 rounded-xl text-blue-600">📍</div>
+                            <div>
+                                <p class="text-lg font-bold text-gray-800" id="cordData">තෝරාගෙන නැත</p>
+                                <p class="text-xs text-gray-500" id="accuracyData">Accuracy: -</p>
+                            </div>
                         </div>
+                        <a id="gmapsLink" href="#" target="_blank" class="hidden flex-col items-center justify-center p-2 bg-gray-50 hover:bg-blue-50 rounded-xl transition-all border border-gray-100 group">
+                            <span class="text-xl group-hover:scale-110 transition-transform">🗺️</span>
+                            <span class="text-[10px] font-bold text-gray-500 group-hover:text-blue-600 mt-1">Open</span>
+                        </a>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                        <div class="p-3 bg-purple-100 rounded-xl text-purple-600">📱</div>
-                        <div class="overflow-hidden">
-                            <p class="text-sm font-bold text-gray-800 truncate" id="platformData">Device Info</p>
-                            <p class="text-xs text-gray-500 truncate" id="userAgentData">-</p>
+
+                    <div id="deviceCard" class="glass-card p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-all h-[110px]" onclick="openDeviceModal()">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 bg-purple-100 rounded-xl text-purple-600">📱</div>
+                            <div>
+                                <p class="text-sm font-bold text-gray-800" id="platformData">Device Info</p>
+                                <p class="text-xs text-gray-500" id="userAgentData">Click for details ➜</p>
+                            </div>
                         </div>
+                        <div class="text-gray-300">➜</div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div id="deviceModal" class="modal-overlay" onclick="closeDeviceModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800 flex items-center gap-2">📱 Device Specifications</h3>
+                <button onclick="closeDeviceModal()" class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200">✕</button>
+            </div>
+            
+            <div class="space-y-1">
+                <div class="detail-row">
+                    <span class="detail-label">Operating System</span>
+                    <span id="modalPlatform" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Browser</span>
+                    <span id="modalBrowser" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Battery Level</span>
+                    <span id="modalBattery" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">CPU Cores</span>
+                    <span id="modalCores" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Screen Resolution</span>
+                    <span id="modalScreen" class="detail-value">-</span>
+                </div>
+            </div>
+
+            <div class="mt-6">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">User Agent (Full Details)</p>
+                <div class="agent-expand" onclick="this.classList.toggle('active')">
+                    <p id="modalFullAgent" class="agent-text font-mono">-</p>
+                    <p class="text-[10px] text-blue-500 mt-2 font-bold uppercase">Click to expand/shrink</p>
+                </div>
+            </div>
+
+            <button onclick="closeDeviceModal()" class="w-full mt-8 py-4 bg-gray-900 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition-all">Close</button>
         </div>
     </div>
 
@@ -70,7 +136,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, onSnapshot, query, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collectionGroup, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
@@ -88,87 +154,149 @@
         let map = L.map('map').setView([7.8731, 80.7718], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         let activeMarker, activeCircle;
+        let currentSelectedUser = null;
+
+        // Search Functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            document.querySelectorAll('.user-item').forEach(item => {
+                const userId = item.getAttribute('data-uid').toLowerCase();
+                if(userId.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
 
         signInAnonymously(auth).then(() => {
             fetchAllUserLocations();
         });
 
         function fetchAllUserLocations() {
-            const userListEl = document.getElementById('userList');
-            
-            // අපි කෙලින්ම 'locations' කියන collection group එක query කරමු.
-            // එතකොට artifacts/birthday-card/users/{any}/locations ඇතුළේ තියෙන ඔක්කොම එනවා.
-            // වැදගත්: ඔයාගේ Firestore rules වල මේ path එකට read අවසර තියෙන්න ඕනේ.
             const locationsQuery = collectionGroup(db, 'locations');
-
             onSnapshot(locationsQuery, (snapshot) => {
                 const uniqueUsers = {};
-                
                 snapshot.docs.forEach(doc => {
-                    // path එකෙන් userId එක අරගන්නවා (artifacts/birthday-card/users/USER_ID/locations/DOC_ID)
                     const pathSegments = doc.ref.path.split('/');
                     const userId = pathSegments[3]; 
                     const data = doc.data();
-
-                    // අලුත්ම location එක විතරක් තියාගන්නවා
                     if (!uniqueUsers[userId] || (data.timestamp?.toMillis() > uniqueUsers[userId].timestamp?.toMillis())) {
                         uniqueUsers[userId] = { id: userId, ...data };
                     }
                 });
-
                 renderUserList(Object.values(uniqueUsers));
-            }, (err) => {
-                userListEl.innerHTML = `<div class="p-4 text-red-500 text-sm">Error: ${err.message}</div>`;
             });
+        }
+
+        // Feature 3: Time Ago Logic
+        function timeAgo(date) {
+            if (!date) return 'Unknown time';
+            const seconds = Math.floor((new Date() - date) / 1000);
+            let interval = seconds / 86400;
+            if (interval > 1) return Math.floor(interval) + " days ago";
+            interval = seconds / 3600;
+            if (interval > 1) return Math.floor(interval) + " hours ago";
+            interval = seconds / 60;
+            if (interval > 1) return Math.floor(interval) + " mins ago";
+            return "Just now";
         }
 
         function renderUserList(users) {
             const userListEl = document.getElementById('userList');
-            const userCountEl = document.getElementById('userCount');
+            document.getElementById('userCount').textContent = users.length;
             userListEl.innerHTML = '';
-            userCountEl.textContent = users.length;
-
-            if (users.length === 0) {
-                userListEl.innerHTML = '<div class="p-8 text-center text-gray-400">කිසිදු දත්තයක් හමු නොවීය.</div>';
-                return;
-            }
 
             users.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
-
             users.forEach(user => {
+                const userDate = user.timestamp ? user.timestamp.toDate() : null;
+                const timeStr = timeAgo(userDate);
+                
                 const div = document.createElement('div');
                 div.className = 'user-item p-4 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50';
+                div.setAttribute('data-uid', user.id);
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">${user.id.substring(0,2).toUpperCase()}</div>
                         <div>
                             <p class="text-sm font-bold text-gray-800">ID: ${user.id.substring(0,8)}...</p>
-                            <p class="text-[10px] text-gray-400">${user.timestamp?.toDate().toLocaleString() || ''}</p>
+                            <p class="text-[10px] text-gray-500 font-semibold text-blue-600">${timeStr}</p>
                         </div>
                     </div>
                 `;
                 div.onclick = () => {
                     document.querySelectorAll('.user-item').forEach(i => i.classList.remove('active'));
                     div.classList.add('active');
+                    currentSelectedUser = user;
                     showOnMap(user);
                 };
                 userListEl.appendChild(div);
             });
         }
 
+        window.openDeviceModal = function() {
+            if (!currentSelectedUser) {
+                alert("පළමුව ලැයිස්තුවෙන් පරිශීලකයෙකු තෝරන්න!");
+                return;
+            }
+            const d = currentSelectedUser;
+            document.getElementById('modalPlatform').textContent = d.platform || 'Unknown';
+            document.getElementById('modalBrowser').textContent = parseBrowser(d.userAgent);
+            document.getElementById('modalBattery').textContent = d.battery ? `${Math.round(d.battery * 100)}%` : 'N/A';
+            document.getElementById('modalCores').textContent = d.cores || 'N/A';
+            document.getElementById('modalScreen').textContent = d.screen ? `${d.screen.w} x ${d.screen.h}` : 'N/A';
+            document.getElementById('modalFullAgent').textContent = d.userAgent || 'No data';
+            
+            document.getElementById('deviceModal').style.display = 'flex';
+        }
+
+        window.closeDeviceModal = function(e) {
+            document.getElementById('deviceModal').style.display = 'none';
+        }
+
         function showOnMap(data) {
-            document.getElementById('cordData').textContent = `${data.lat.toFixed(6)}, ${data.lng.toFixed(6)}`;
-            document.getElementById('accuracyData').textContent = `Accuracy: ${Math.round(data.accuracy)}m`;
+            const lat = Number(data.lat);
+            const lng = Number(data.lng);
+            
+            // Bug Fix: Check if lat/lng are valid numbers
+            if (!isNaN(lat) && !isNaN(lng)) {
+                document.getElementById('cordData').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                
+                const latlng = [lat, lng];
+                if (activeMarker) map.removeLayer(activeMarker);
+                if (activeCircle) map.removeLayer(activeCircle);
+
+                activeMarker = L.marker(latlng).addTo(map).bindPopup(`User: ${data.id.substring(0,8)}`).openPopup();
+                
+                // Bug Fix: Check if accuracy is a valid number greater than 0 before drawing circle
+                const acc = Number(data.accuracy);
+                if (!isNaN(acc) && acc > 0) {
+                    activeCircle = L.circle(latlng, { radius: acc, color: '#3b82f6', fillOpacity: 0.1 }).addTo(map);
+                }
+                
+                map.setView(latlng, 16);
+
+                // Update Google Maps Link
+                const gmapsLink = document.getElementById('gmapsLink');
+                gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+                gmapsLink.classList.remove('hidden');
+                gmapsLink.classList.add('flex');
+            } else {
+                document.getElementById('cordData').textContent = "Invalid Location";
+                document.getElementById('gmapsLink').classList.add('hidden');
+            }
+
+            document.getElementById('accuracyData').textContent = data.accuracy ? `Accuracy: ${Math.round(data.accuracy)}m` : 'Accuracy: N/A';
             document.getElementById('platformData').textContent = data.platform || 'Unknown Device';
-            document.getElementById('userAgentData').textContent = data.userAgent || '-';
+        }
 
-            const latlng = [data.lat, data.lng];
-            if (activeMarker) map.removeLayer(activeMarker);
-            if (activeCircle) map.removeLayer(activeCircle);
-
-            activeMarker = L.marker(latlng).addTo(map).bindPopup(data.id).openPopup();
-            activeCircle = L.circle(latlng, { radius: data.accuracy, color: '#3b82f6', fillOpacity: 0.1 }).addTo(map);
-            map.setView(latlng, 16);
+        function parseBrowser(ua) {
+            if (!ua) return "N/A";
+            if (ua.includes("Chrome") && !ua.includes("Edg")) return "Google Chrome";
+            if (ua.includes("Firefox")) return "Mozilla Firefox";
+            if (ua.includes("Safari") && !ua.includes("Chrome")) return "Apple Safari";
+            if (ua.includes("Edg")) return "Microsoft Edge";
+            return "Web Browser";
         }
     </script>
 </body>
