@@ -101,7 +101,7 @@
             font-size: 14px;
             line-height: 1.5;
             position: relative;
-            animation: message-slide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: message-pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.2) forwards;
             word-wrap: break-word;
             will-change: transform, opacity;
         }
@@ -113,6 +113,7 @@
             align-self: flex-end;
             box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            transform-origin: bottom right;
         }
         .their-message {
             background: rgba(30, 41, 59, 0.8);
@@ -122,10 +123,11 @@
             align-self: flex-start;
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.2);
+            transform-origin: bottom left;
         }
 
-        @keyframes message-slide {
-            0% { opacity: 0; transform: translateY(12px) scale(0.98); }
+        @keyframes message-pop {
+            0% { opacity: 0; transform: translateY(15px) scale(0.9); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -153,6 +155,15 @@
             filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
         }
 
+        @keyframes contact-enter {
+            from { opacity: 0; transform: translateX(-15px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .contact-item {
+            animation: contact-enter 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         /* Loading Skeletons & Animations */
         .skeleton {
             background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
@@ -172,7 +183,7 @@
         }
     </style>
 </head>
-<body class="h-[100dvh] w-full flex items-center justify-center p-0 md:p-6 lg:p-8 relative">
+<body class="h-[100dvh] w-full flex items-center justify-center p-0 relative">
 
     <div id="app-wrapper" class="w-full h-full flex justify-center items-center relative">
         <!-- Premium Ambient Background -->
@@ -183,7 +194,7 @@
         </div>
 
         <!-- Main App Container -->
-        <div class="w-full h-full max-w-[1500px] flex md:rounded-[2rem] glass-panel overflow-hidden relative">
+        <div class="w-full h-full flex glass-panel overflow-hidden relative border-0">
             
             <!-- Sidebar (Contacts List) -->
             <div id="sidebar-area" class="w-full md:w-[380px] h-full absolute md:relative z-20 border-r border-white/10 flex flex-col shrink-0 glass-sidebar panel-transition max-md:translate-x-0">
@@ -297,6 +308,12 @@
                         <p class="text-[12px] mt-2 text-slate-500 text-center max-w-xs leading-relaxed">Enter a valid ID to initialize the stream.</p>
                     </div>
                 </div>
+
+                <!-- Scroll to bottom button -->
+                <button id="scroll-bottom-btn" onclick="scrollToBottom()" class="absolute bottom-28 right-6 md:right-10 z-40 w-11 h-11 bg-indigo-500/80 hover:bg-indigo-500 backdrop-blur-md rounded-full text-white flex items-center justify-center shadow-[0_4px_20px_rgba(99,102,241,0.5)] transition-all duration-300 translate-y-20 opacity-0 pointer-events-none group">
+                    <i data-lucide="chevron-down" class="w-6 h-6 group-hover:translate-y-0.5 transition-transform"></i>
+                    <span id="unread-scroll-badge" class="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full hidden border-2 border-slate-900"></span>
+                </button>
 
                 <!-- Input Area -->
                 <div class="p-3 md:p-6 bg-slate-900/60 backdrop-blur-lg border-t border-white/5 relative z-20 shrink-0">
@@ -514,6 +531,7 @@
         const sendBtn = document.getElementById('send-btn');
         const chatForm = document.getElementById('chat-form');
         const contactsList = document.getElementById('contacts-list');
+        const scrollBtn = document.getElementById('scroll-bottom-btn');
         
         const chatTitle = document.getElementById('chat-title');
         const chatSubtitle = document.getElementById('chat-subtitle');
@@ -541,6 +559,21 @@
                 }, 300); 
             }
         };
+
+        // Scroll to Bottom Logic
+        window.scrollToBottom = () => {
+            msgContainer.scrollTo({ top: msgContainer.scrollHeight, behavior: 'smooth' });
+        };
+
+        msgContainer.addEventListener('scroll', () => {
+            const isNearBottom = msgContainer.scrollHeight - msgContainer.clientHeight <= msgContainer.scrollTop + 150;
+            if (!isNearBottom) {
+                scrollBtn.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            } else {
+                scrollBtn.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+                document.getElementById('unread-scroll-badge').classList.add('hidden');
+            }
+        });
 
         // Info Sidebar Toggle
         window.toggleInfoPanel = (show) => {
@@ -1127,7 +1160,16 @@
             const timeStr = new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             const ticks = isMe ? `<i data-lucide="check-check" class="w-3.5 h-3.5 ml-1.5 read-ticks transition-colors duration-300 ${m.read ? 'text-sky-300 glow-icon' : 'text-indigo-200 opacity-60'}"></i>` : '';
 
+            let showAsDeleted = false;
             if (m.deleted) {
+                if (isMe) {
+                    showAsDeleted = true;
+                } else {
+                    showAsDeleted = !myProfile.isVerified;
+                }
+            }
+
+            if (showAsDeleted) {
                 return `
                     <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full animate-fade-in" data-id="${m.id}">
                         <div class="message-bubble ${isMe ? 'my-message' : 'their-message'} is-deleted italic opacity-60 flex items-center gap-2">
@@ -1142,14 +1184,20 @@
             }
 
             const text = m.text.trim();
+            let recoveredBadge = '';
+            if (m.deleted && !isMe && myProfile.isVerified) {
+                recoveredBadge = `<div class="shrink-0 ml-2" title="Sender deleted this, but you have premium access"><i data-lucide="eye" class="w-4 h-4 text-rose-400 opacity-80"></i></div>`;
+            }
+
             if (isSingleEmoji(text)) {
                 const hex = getEmojiHex(text);
                 return `
                     <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full animate-fade-in" data-id="${m.id}">
-                        <div class="${isMe ? 'my-message' : 'their-message'} inner-bubble !bg-transparent !border-none !shadow-none !p-0">
+                        <div class="${isMe ? 'my-message' : 'their-message'} inner-bubble !bg-transparent !border-none !shadow-none !p-0 flex items-end">
                             <div class="emoji-msg-container transform hover:scale-110 transition-transform" data-hex="${hex}" data-raw="${text}">
                                 <span class="text-6xl drop-shadow-lg">${text}</span>
                             </div>
+                            ${recoveredBadge}
                         </div>
                         <div class="flex items-center mt-1 px-3">
                             <span class="text-[10px] text-slate-400 font-mono tracking-wider">${timeStr}</span>
@@ -1162,7 +1210,10 @@
             return `
                 <div class="message-wrapper flex flex-col ${isMe ? 'items-end' : 'items-start'} w-full animate-fade-in" data-id="${m.id}">
                     <div class="message-bubble inner-bubble ${isMe ? 'my-message' : 'their-message'}">
-                        ${formatMessageContent(text)}
+                        <div class="flex items-end justify-between gap-3">
+                            <div class="min-w-0 break-words">${formatMessageContent(text)}</div>
+                            ${recoveredBadge}
+                        </div>
                     </div>
                     <div class="flex items-center mt-1.5 px-2">
                         <span class="text-[10px] text-slate-400 font-mono tracking-wider">${timeStr}</span>
@@ -1179,11 +1230,31 @@
                 tickIcon.classList.add('text-sky-300', 'glow-icon');
             }
 
+            const isMe = m.senderId === currentUser.uid;
+            let showAsDeleted = false;
             if (m.deleted) {
+                if (isMe) {
+                    showAsDeleted = true;
+                } else {
+                    showAsDeleted = !myProfile.isVerified;
+                }
+            }
+
+            if (showAsDeleted) {
                 const inner = el.querySelector('.inner-bubble, .message-bubble');
                 if (inner && !inner.classList.contains('is-deleted')) {
-                    inner.className = `message-bubble ${m.senderId === currentUser.uid ? 'my-message' : 'their-message'} is-deleted italic opacity-60 flex items-center gap-2`;
+                    inner.className = `message-bubble ${isMe ? 'my-message' : 'their-message'} is-deleted italic opacity-60 flex items-center gap-2`;
                     inner.innerHTML = `<i data-lucide="ban" class="w-4 h-4 opacity-70"></i> <span>This message was deleted</span>`;
+                    lucide.createIcons({root: inner});
+                }
+            } else if (m.deleted && !isMe && myProfile.isVerified) {
+                const inner = el.querySelector('.inner-bubble, .message-bubble');
+                if (inner && !inner.querySelector('[data-lucide="eye"]')) {
+                    if (inner.querySelector('.flex.items-end.justify-between')) {
+                        inner.querySelector('.flex.items-end.justify-between').insertAdjacentHTML('beforeend', `<div class="shrink-0 ml-2" title="Sender deleted this, but you have premium access"><i data-lucide="eye" class="w-4 h-4 text-rose-400 opacity-80"></i></div>`);
+                    } else if (inner.querySelector('.emoji-msg-container')) {
+                        inner.insertAdjacentHTML('beforeend', `<div class="shrink-0 ml-2 mb-2" title="Sender deleted this, but you have premium access"><i data-lucide="eye" class="w-4 h-4 text-rose-400 opacity-80"></i></div>`);
+                    }
                     lucide.createIcons({root: inner});
                 }
             }
@@ -1244,6 +1315,9 @@
 
             if (isScrolledToBottom) {
                 msgContainer.scrollTo({ top: msgContainer.scrollHeight, behavior: 'smooth' });
+            } else if (msgs.length > 0 && msgs[msgs.length-1].senderId !== currentUser.uid) {
+                // If not at bottom and new message received, show badge on scroll button
+                document.getElementById('unread-scroll-badge').classList.remove('hidden');
             }
         }
 
@@ -1512,8 +1586,7 @@
             try {
                 if (currentContextMenuAction === 'delete_msg') {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'private_messages', currentContextMenuTarget), {
-                        deleted: true,
-                        text: '' 
+                        deleted: true
                     });
                 } else if (currentContextMenuAction === 'delete_chat') {
                     await performChatDeletion(currentContextMenuTarget, true);
