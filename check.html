@@ -29,6 +29,13 @@
         .agent-expand { cursor: pointer; background: #f8fafc; border-radius: 12px; padding: 12px; margin-top: 10px; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
         .agent-text { font-size: 0.75rem; color: #64748b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-all; }
         .agent-expand.active .agent-text { -webkit-line-clamp: unset; display: block; }
+        
+        /* Context Menu Styles */
+        .context-menu { position: absolute; background: white; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; padding: 8px; z-index: 2000; display: none; min-width: 180px; }
+        .context-menu-item { padding: 10px 12px; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; color: #334155; }
+        .context-menu-item:hover { background: #f1f5f9; }
+        .context-menu-item.danger { color: #ef4444; }
+        .context-menu-item.danger:hover { background: #fef2f2; }
     </style>
 </head>
 <body class="p-4 md:p-10">
@@ -47,8 +54,11 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-4 glass-card rounded-3xl shadow-sm border border-gray-200 h-[600px] flex flex-col overflow-hidden">
                 <div class="p-5 border-b bg-gray-50/50 space-y-3">
-                    <h2 class="font-bold text-gray-800">පරිශීලකයින් (<span id="userCount">0</span>)</h2>
-                    <input type="text" id="searchInput" placeholder="🔍 User ID එක සොයන්න..." class="w-full px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
+                    <div class="flex justify-between items-center">
+                        <h2 class="font-bold text-gray-800">පරිශීලකයින් (<span id="userCount">0</span>)</h2>
+                        <button id="toggleArchiveBtn" onclick="toggleArchiveView()" class="px-3 py-1.5 bg-gray-200 text-gray-700 rounded-lg text-xs font-bold hover:bg-gray-300 transition-all flex items-center gap-1">📦 Archived බලන්න</button>
+                    </div>
+                    <input type="text" id="searchInput" placeholder="🔍 User ID හෝ නම සොයන්න..." class="w-full px-4 py-2 bg-white rounded-xl border border-gray-200 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all">
                 </div>
                 <div id="userList" class="flex-1 overflow-y-auto custom-scroll p-2 space-y-1">
                     <div class="p-8 text-center text-gray-400">Loading...</div>
@@ -132,11 +142,32 @@
         </div>
     </div>
 
+    <!-- Custom Context Menu -->
+    <div id="contextMenu" class="context-menu">
+        <div class="context-menu-item" onclick="ctxEditName()">✏️ නම වෙනස් කරන්න</div>
+        <div class="context-menu-item" onclick="ctxToggleArchive()">📦 <span id="ctxArchiveText">Archive කරන්න</span></div>
+        <div class="context-menu-item danger" onclick="ctxDelete()">🗑️ Delete කරන්න</div>
+    </div>
+
+    <!-- Edit Name Modal -->
+    <div id="editNameModal" class="modal-overlay" onclick="closeEditNameModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">✏️ නම වෙනස් කරන්න</h3>
+                <button onclick="closeEditNameModal()" class="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200">✕</button>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="editNameInput" placeholder="නව නම ඇතුලත් කරන්න..." class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-gray-800 font-medium">
+                <button onclick="saveEditedName()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:bg-blue-700 active:scale-95 transition-all">Save කරන්න</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, collectionGroup, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collectionGroup, onSnapshot, doc, setDoc, collection, updateDoc, query } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
@@ -151,17 +182,53 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
         let map = L.map('map').setView([7.8731, 80.7718], 7);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
         let activeMarker, activeCircle;
         let currentSelectedUser = null;
 
-        // Search Functionality
+        let userMetadata = {};
+        let currentView = 'active'; 
+        let contextMenuUserId = null;
+        let globalUniqueUsers = {};
+        
+        // Handle Auth to prevent permission errors
+        const initAuth = async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenError) {
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Auth error:", error);
+            }
+        };
+
+        initAuth();
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // Ensure auth is complete before querying
+                fetchUserMetadata();
+                fetchAllUserLocations();
+            }
+        });
+
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             document.querySelectorAll('.user-item').forEach(item => {
                 const userId = item.getAttribute('data-uid').toLowerCase();
-                if(userId.includes(searchTerm)) {
+                const meta = userMetadata[userId] || {};
+                const displayName = (meta.customName || '').toLowerCase();
+                
+                if(userId.includes(searchTerm) || displayName.includes(searchTerm)) {
                     item.style.display = 'flex';
                 } else {
                     item.style.display = 'none';
@@ -169,27 +236,62 @@
             });
         });
 
-        signInAnonymously(auth).then(() => {
-            fetchAllUserLocations();
-        });
+        function fetchUserMetadata() {
+            const user = auth.currentUser;
+            if(!user) return;
+            
+            // Use specific path structure to avoid permission errors
+            // Path: /artifacts/{appId}/users/{userId}/tracked_users
+            const metaRef = collection(db, 'artifacts', appId, 'users', user.uid, 'tracked_users');
+            
+            onSnapshot(metaRef, (snapshot) => {
+                snapshot.docs.forEach(doc => {
+                    userMetadata[doc.id] = doc.data();
+                });
+                renderUserList(Object.values(globalUniqueUsers));
+            }, (error) => {
+                console.error("Metadata fetch error:", error);
+            });
+        }
 
         function fetchAllUserLocations() {
+            const user = auth.currentUser;
+            if(!user) return;
+
+            // Simple query without complex filters for collectionGroup to avoid index errors
             const locationsQuery = collectionGroup(db, 'locations');
+            
             onSnapshot(locationsQuery, (snapshot) => {
                 const uniqueUsers = {};
                 snapshot.docs.forEach(doc => {
                     const pathSegments = doc.ref.path.split('/');
+                    // Extract user ID from the path: /artifacts/{appId}/public/data/locations/{userId}
                     const userId = pathSegments[3]; 
                     const data = doc.data();
-                    if (!uniqueUsers[userId] || (data.timestamp?.toMillis() > uniqueUsers[userId].timestamp?.toMillis())) {
+                    
+                    const existingTimestamp = globalUniqueUsers[userId]?.timestamp?.toMillis() || 0;
+                    const newTimestamp = data.timestamp?.toMillis() || 0;
+
+                    if (!uniqueUsers[userId] || (newTimestamp > (uniqueUsers[userId].timestamp?.toMillis() || 0))) {
                         uniqueUsers[userId] = { id: userId, ...data };
+                        
+                        // Auto-unarchive logic
+                        const meta = userMetadata[userId] || {};
+                        if (meta.status === 'archived' && newTimestamp > existingTimestamp && existingTimestamp !== 0) {
+                             userMetadata[userId].status = 'active'; 
+                             saveUserMeta(userId, { status: 'active' });
+                        }
                     }
                 });
+                
+                globalUniqueUsers = uniqueUsers;
                 renderUserList(Object.values(uniqueUsers));
+                
+            }, (error) => {
+                 console.error("Location fetch error:", error);
             });
         }
 
-        // Feature 3: Time Ago Logic
         function timeAgo(date) {
             if (!date) return 'Unknown time';
             const seconds = Math.floor((new Date() - date) / 1000);
@@ -204,22 +306,36 @@
 
         function renderUserList(users) {
             const userListEl = document.getElementById('userList');
-            document.getElementById('userCount').textContent = users.length;
+            if (!userListEl) return;
             userListEl.innerHTML = '';
 
-            users.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
-            users.forEach(user => {
+            const filteredUsers = users.filter(user => {
+                const meta = userMetadata[user.id] || {};
+                if (meta.status === 'deleted') return false;
+                if (currentView === 'archived' && meta.status !== 'archived') return false;
+                if (currentView === 'active' && meta.status === 'archived') return false;
+                return true;
+            });
+
+            document.getElementById('userCount').textContent = filteredUsers.length;
+
+            // Sort in memory instead of Firestore to avoid index requirements
+            filteredUsers.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
+            
+            filteredUsers.forEach(user => {
                 const userDate = user.timestamp ? user.timestamp.toDate() : null;
                 const timeStr = timeAgo(userDate);
+                const meta = userMetadata[user.id] || {};
+                const displayName = meta.customName || `ID: ${user.id.substring(0,8)}...`;
                 
                 const div = document.createElement('div');
-                div.className = 'user-item p-4 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50';
+                div.className = `user-item p-4 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 ${currentSelectedUser?.id === user.id ? 'active' : ''}`;
                 div.setAttribute('data-uid', user.id);
                 div.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">${user.id.substring(0,2).toUpperCase()}</div>
+                        <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">${displayName.substring(0,2).toUpperCase()}</div>
                         <div>
-                            <p class="text-sm font-bold text-gray-800">ID: ${user.id.substring(0,8)}...</p>
+                            <p class="text-sm font-bold text-gray-800">${displayName}</p>
                             <p class="text-[10px] text-gray-500 font-semibold text-blue-600">${timeStr}</p>
                         </div>
                     </div>
@@ -230,9 +346,82 @@
                     currentSelectedUser = user;
                     showOnMap(user);
                 };
+
+                div.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    contextMenuUserId = user.id;
+                    const menu = document.getElementById('contextMenu');
+                    menu.style.display = 'block';
+                    menu.style.left = e.pageX + 'px';
+                    menu.style.top = e.pageY + 'px';
+                    
+                    const isArchived = meta.status === 'archived';
+                    document.getElementById('ctxArchiveText').textContent = isArchived ? 'Unarchive කරන්න' : 'Archive කරන්න';
+                });
+
                 userListEl.appendChild(div);
             });
         }
+
+        window.toggleArchiveView = function() {
+            currentView = currentView === 'active' ? 'archived' : 'active';
+            const btn = document.getElementById('toggleArchiveBtn');
+            if(currentView === 'archived') {
+                btn.innerHTML = '📍 Active බලන්න';
+                btn.classList.replace('bg-gray-200', 'bg-blue-100');
+                btn.classList.replace('text-gray-700', 'text-blue-700');
+            } else {
+                btn.innerHTML = '📦 Archived බලන්න';
+                btn.classList.replace('bg-blue-100', 'bg-gray-200');
+                btn.classList.replace('text-blue-700', 'text-gray-700');
+            }
+            renderUserList(Object.values(globalUniqueUsers));
+        };
+
+        document.addEventListener('click', () => {
+            const menu = document.getElementById('contextMenu');
+            if(menu) menu.style.display = 'none';
+        });
+
+        async function saveUserMeta(userId, updates) {
+            const user = auth.currentUser;
+            if(!user) return;
+            const ref = doc(db, 'artifacts', appId, 'users', user.uid, 'tracked_users', userId);
+            const current = userMetadata[userId] || {};
+            const merged = { ...current, ...updates };
+            userMetadata[userId] = merged; 
+            renderUserList(Object.values(globalUniqueUsers));
+            await setDoc(ref, merged, { merge: true });
+        }
+
+        window.ctxEditName = function() {
+            const meta = userMetadata[contextMenuUserId] || {};
+            document.getElementById('editNameInput').value = meta.customName || '';
+            document.getElementById('editNameModal').style.display = 'flex';
+            document.getElementById('contextMenu').style.display = 'none';
+        };
+
+        window.ctxToggleArchive = function() {
+            const meta = userMetadata[contextMenuUserId] || {};
+            const newStatus = meta.status === 'archived' ? 'active' : 'archived';
+            saveUserMeta(contextMenuUserId, { status: newStatus });
+            document.getElementById('contextMenu').style.display = 'none';
+        };
+
+        window.ctxDelete = function() {
+            saveUserMeta(contextMenuUserId, { status: 'deleted' });
+            document.getElementById('contextMenu').style.display = 'none';
+        };
+
+        window.closeEditNameModal = function() {
+            document.getElementById('editNameModal').style.display = 'none';
+        };
+
+        window.saveEditedName = function() {
+            const newName = document.getElementById('editNameInput').value.trim();
+            saveUserMeta(contextMenuUserId, { customName: newName });
+            closeEditNameModal();
+        };
 
         window.openDeviceModal = function() {
             if (!currentSelectedUser) {
@@ -258,7 +447,6 @@
             const lat = Number(data.lat);
             const lng = Number(data.lng);
             
-            // Bug Fix: Check if lat/lng are valid numbers
             if (!isNaN(lat) && !isNaN(lng)) {
                 document.getElementById('cordData').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
                 
@@ -268,7 +456,6 @@
 
                 activeMarker = L.marker(latlng).addTo(map).bindPopup(`User: ${data.id.substring(0,8)}`).openPopup();
                 
-                // Bug Fix: Check if accuracy is a valid number greater than 0 before drawing circle
                 const acc = Number(data.accuracy);
                 if (!isNaN(acc) && acc > 0) {
                     activeCircle = L.circle(latlng, { radius: acc, color: '#3b82f6', fillOpacity: 0.1 }).addTo(map);
@@ -276,7 +463,6 @@
                 
                 map.setView(latlng, 16);
 
-                // Update Google Maps Link
                 const gmapsLink = document.getElementById('gmapsLink');
                 gmapsLink.href = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
                 gmapsLink.classList.remove('hidden');
