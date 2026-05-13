@@ -5,19 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>StudyMaster Pro</title>
   
-  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Sans+Sinhala:wght@100..900&display=swap" rel="stylesheet">
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
     body {
-      font-family: 'Noto Sans', sans-serif;
+      font-family: 'Noto Sans', 'Noto Sans Sinhala', sans-serif;
     }
     
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -58,10 +55,8 @@
 </head>
 <body class="bg-slate-50 text-slate-900 overflow-hidden select-none md:select-auto">
 
-  <!-- MAIN APP -->
   <div id="app-container" class="flex h-screen overflow-hidden relative">
     
-    <!-- Sidebar Navigation -->
     <aside class="hidden md:flex w-72 flex-col bg-white border-r border-slate-200 z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
       <div class="p-6 flex items-center gap-3">
         <div class="bg-indigo-600 p-2.5 rounded-xl shadow-md shadow-indigo-200 transform transition-transform hover:rotate-12">
@@ -95,10 +90,8 @@
       </div>
     </aside>
 
-    <!-- Main Content Area -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-slate-50/50">
       
-      <!-- Mobile Header -->
       <header class="md:hidden flex items-center justify-between p-4 bg-white/80 backdrop-blur-md border-b border-slate-200 z-10 sticky top-0">
         <div class="flex items-center gap-2">
           <div class="bg-indigo-600 p-1.5 rounded-lg shadow-sm">
@@ -125,22 +118,18 @@
             </button>
           </div>
 
-          <!-- View Container (Dashboard or Subjects) -->
           <div id="view-container" class="min-h-[400px]">
-            <!-- Initially empty, will be populated by JS -->
-          </div>
+            </div>
 
         </div>
       </div>
 
-      <!-- Mobile Floating Action Button -->
       <button onclick="window.app.openAddSubjectModal()" class="md:hidden absolute bottom-28 right-4 w-14 h-14 bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-lg shadow-indigo-200 active:scale-95 transition-transform duration-200 z-20 hover:bg-indigo-700">
         <i data-lucide="plus" class="w-6 h-6"></i>
       </button>
 
     </main>
 
-    <!-- Mobile Navigation -->
     <nav class="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-md border-t border-slate-100 flex justify-around p-3 pb-safe z-30 shadow-[0_-4px_20px_rgba(0,0,0,0.04)]">
       <button onclick="window.app.switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn flex flex-col items-center p-2 rounded-xl transition-all duration-300 text-indigo-600 transform active:scale-95">
         <i data-lucide="layout-dashboard" class="w-6 h-6 mb-1"></i>
@@ -153,7 +142,6 @@
     </nav>
   </div>
 
-  <!-- Drawers & Modals -->
   <div id="subject-drawer" class="fixed inset-0 z-40 flex justify-end hidden">
     <div class="absolute inset-0 bg-slate-900/30 backdrop-blur-sm transition-opacity" onclick="window.app.closeSubjectDrawer()"></div>
     <div class="relative w-full md:w-[450px] max-w-lg h-full bg-white shadow-2xl flex flex-col animate-slide-right border-l border-slate-100">
@@ -245,7 +233,6 @@
     </div>
   </div>
 
-  <!-- Toast Notification -->
   <div id="toast" class="fixed top-4 right-4 z-[70] transition-all duration-300 transform -translate-y-full opacity-0 pointer-events-none">
     <div id="toast-content" class="flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-xl border bg-white border-slate-100 text-slate-700">
       <i id="toast-icon" data-lucide="info" class="w-5 h-5"></i>
@@ -253,7 +240,6 @@
     </div>
   </div>
 
-  <!-- Firebase & App Logic -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
     import { getAuth, onAuthStateChanged, signOut, signInAnonymously, signInWithCustomToken, GoogleAuthProvider, signInWithPopup, linkWithPopup } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -262,7 +248,6 @@
     lucide.createIcons();
 
     // Setup Firebase configuration
-    // Fallback logic to support both the canvas environment and local testing with user's config
     let firebaseConfig;
     if (typeof __firebase_config !== 'undefined') {
       firebaseConfig = JSON.parse(__firebase_config);
@@ -283,8 +268,6 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     
-    // Setting App ID specifically to match the Firestore rules provided:
-    // match /artifacts/studyflow-pro/users/{userId}/{document=**}
     const appId = "studyflow-pro";
 
     // App State
@@ -294,7 +277,7 @@
       activeTab: 'dashboard',
       selectedSubjectId: null,
       unsubscribeDb: null,
-      isLoading: true // Used for showing skeletons
+      isLoading: true 
     };
 
     const colors = ['bg-blue-500', 'bg-indigo-500', 'bg-purple-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500'];
@@ -381,12 +364,8 @@
       const progress = calculateProgress(subject);
       const taskCount = getTaskCount(subject);
       const unitCount = subject.units ? subject.units.length : 0;
-      
-      // Fallback in case subject.color is missing or undefined
       const colorClass = subject.color || 'bg-indigo-500';
       const textColor = colorClass.replace('bg-', 'text-');
-      
-      // Delay animation slightly based on index
       const delay = index * 0.05;
 
       return `
@@ -460,7 +439,6 @@
       const container = document.getElementById('view-container');
       
       if (state.isLoading) {
-        // Show Skeletons
         if (state.activeTab === 'dashboard') {
            container.innerHTML = `
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
@@ -574,9 +552,11 @@
         return;
       }
 
+      // Preserve scroll position of the units area
+      const scrollArea = document.querySelector('#drawer-content .overflow-y-auto');
+      const savedScroll = scrollArea ? scrollArea.scrollTop : 0;
+
       const progress = calculateProgress(subject);
-      
-      // Fallback in case subject.color is missing or undefined
       const colorClass = subject.color || 'bg-indigo-500';
       const textColor = colorClass.replace('bg-', 'text-');
       const drawer = document.getElementById('drawer-content');
@@ -616,7 +596,7 @@
             subunitsHTML = `<p class="text-xs text-slate-400 mt-3 ml-2 italic mb-4">No tasks found in this unit.</p>`;
           }
           return `
-            <div class="bg-white border border-slate-200 rounded-2xl mb-5 overflow-hidden shadow-sm animate-slide-up" style="animation-delay: ${uIdx * 0.05}s">
+            <div class="bg-white border border-slate-200 rounded-2xl mb-5 overflow-hidden shadow-sm">
               <div class="bg-slate-50/70 p-3.5 border-b border-slate-100 flex items-center justify-between">
                 <h4 class="font-bold text-slate-800 text-sm flex items-center gap-2">
                   <i data-lucide="folder" class="w-4 h-4 ${textColor}"></i>
@@ -664,7 +644,6 @@
               <i data-lucide="x" class="w-6 h-6"></i>
             </button>
           </div>
-          <!-- Decorative circle -->
           <div class="absolute -bottom-10 -right-10 w-32 h-32 rounded-full ${colorClass} opacity-[0.03] pointer-events-none"></div>
         </div>
         
@@ -686,9 +665,13 @@
         </div>
       `;
       lucide.createIcons({ root: drawer });
+
+      // Restore scroll
+      const newScrollArea = document.querySelector('#drawer-content .overflow-y-auto');
+      if (newScrollArea) newScrollArea.scrollTop = savedScroll;
     }
 
-    // App API Exposed globally
+    // App API
     window.app = {
       switchTab: (tab) => {
         state.activeTab = tab;
@@ -710,6 +693,7 @@
       closeSubjectDrawer: () => {
         state.selectedSubjectId = null;
         document.getElementById('subject-drawer').classList.add('hidden');
+        renderView(); // Sync dashboard progress when drawer closes
       },
       openSettings: () => {
         document.getElementById('settings-modal').classList.remove('hidden');
@@ -720,7 +704,6 @@
       signInWithGoogle: async () => {
         const provider = new GoogleAuthProvider();
         try {
-          // If the user is currently anonymous, try linking their account so they don't lose data
           if (auth.currentUser && auth.currentUser.isAnonymous) {
              await linkWithPopup(auth.currentUser, provider);
              showToast("Successfully linked with Google!", "success");
@@ -731,7 +714,6 @@
           window.app.closeSettings();
         } catch (error) {
           if (error.code === 'auth/credential-already-in-use') {
-             // Account exists, just sign them in (might drop local anonymous data if not merged)
              await signInWithPopup(auth, provider);
              showToast("Signed in with Google", "success");
              window.app.closeSettings();
@@ -804,7 +786,6 @@
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
         const newId = crypto.randomUUID();
         
-        // Optimistic Update
         const newSubject = { id: newId, title: title, color: randomColor, units: [], createdAt: Date.now() };
         state.subjects.unshift(newSubject);
         window.app.closeAddSubjectModal();
@@ -822,7 +803,6 @@
       deleteSubject: async (id) => {
         if (!state.user) return;
         
-        // Optimistic Update
         state.subjects = state.subjects.filter(s => s.id !== id);
         window.app.closeSubjectDrawer();
         renderView();
@@ -848,7 +828,6 @@
         const newUnit = { id: crypto.randomUUID(), title: title, subunits: [] };
         const updatedUnits = [...(subject.units || []), newUnit];
         
-        // Optimistic Update
         subject.units = updatedUnits;
         input.value = '';
         renderSubjectDrawer();
@@ -865,7 +844,6 @@
 
         const updatedUnits = subject.units.filter(u => u.id !== unitId);
         
-        // Optimistic Update
         subject.units = updatedUnits;
         renderSubjectDrawer();
 
@@ -888,11 +866,9 @@
           u.id === unitId ? { ...u, subunits: [...(u.subunits || []), newSubunit] } : u
         );
 
-        // Optimistic Update
         subject.units = updatedUnits;
         input.value = '';
         renderSubjectDrawer();
-        if (state.activeTab === 'dashboard') renderView();
 
         const subjectRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', subjectId);
         try { await updateDoc(subjectRef, { units: updatedUnits }); } 
@@ -909,10 +885,8 @@
           } : u
         );
 
-        // Optimistic Update
         subject.units = updatedUnits;
-        renderSubjectDrawer();
-        if (state.activeTab === 'dashboard') renderView();
+        renderSubjectDrawer(); // Only re-render drawer, preserving scroll
 
         const subjectRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', subjectId);
         try { await updateDoc(subjectRef, { units: updatedUnits }); } 
@@ -927,10 +901,8 @@
           u.id === unitId ? { ...u, subunits: u.subunits.filter(su => su.id !== subunitId) } : u
         );
 
-        // Optimistic Update
         subject.units = updatedUnits;
         renderSubjectDrawer();
-        if (state.activeTab === 'dashboard') renderView();
 
         const subjectRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'subjects', subjectId);
         try { await updateDoc(subjectRef, { units: updatedUnits }); } 
@@ -938,16 +910,15 @@
       }
     };
 
-    // Initialize Auth (Allows "Guest Mode" via Anonymously if no token present)
+    // Initialize Auth
     const initAuth = async () => {
       try {
-        await auth.authStateReady(); // Wait for existing session to load
-        if (auth.currentUser) return; // Prevent overwriting existing login
+        await auth.authStateReady();
+        if (auth.currentUser) return;
 
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
           await signInWithCustomToken(auth, __initial_auth_token);
         } else {
-          // If no formal auth, fallback to Anonymous "Guest Mode"
           await signInAnonymously(auth);
         }
       } catch (err) {
@@ -955,7 +926,6 @@
       }
     };
     
-    // Render initial skeletons
     renderView();
     initAuth();
 
@@ -963,7 +933,6 @@
       state.user = user;
       
       if (user) {
-        // Update user profile UI for Guest Mode vs Logged In
         const isGuest = user.isAnonymous;
         const userNameText = isGuest ? "Guest User" : "Logged Student";
         const emailText = isGuest ? "Local Guest Mode" : (user.email || "Authenticated");
@@ -973,7 +942,6 @@
         document.getElementById('settings-name').textContent = userNameText;
         document.getElementById('settings-email').textContent = emailText;
 
-        // Update settings modal block based on login status
         const signoutBlock = document.getElementById('signout-block');
         if (isGuest) {
           signoutBlock.innerHTML = `
@@ -993,14 +961,12 @@
 
         if (state.unsubscribeDb) state.unsubscribeDb();
         
-        // Connect to Firestore using the matching path for your security rules
         const subjectsRef = collection(db, 'artifacts', appId, 'users', user.uid, 'subjects');
         
         state.unsubscribeDb = onSnapshot(subjectsRef, (snapshot) => {
           state.subjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           state.subjects.sort((a, b) => b.createdAt - a.createdAt);
           
-          // Data loaded, hide skeletons
           state.isLoading = false;
           renderView();
           
