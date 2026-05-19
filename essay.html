@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BioEssay Reminder</title>
   
-  <!-- Google Fonts for Sinhala and premium English Typography -->
+  <!-- Premium English Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@300;400;500;600;700&family=Yaldevi:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -16,10 +16,11 @@
   <style>
     /* Premium Font Configurations */
     body {
-      font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
     h1, h2, h3, .font-heading {
-      font-family: 'Yaldevi', 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      letter-spacing: -0.02em;
     }
 
     /* Animated background elements */
@@ -51,23 +52,23 @@
     /* Ultra Modern Glassmorphism & Shadows */
     .glass-panel {
       background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.8);
     }
 
     .glass-card {
       background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .glass-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 12px 20px -8px rgba(16, 185, 129, 0.15);
-      background: rgba(255, 255, 255, 0.85);
-      border-color: rgba(16, 185, 129, 0.2);
+      box-shadow: 0 12px 24px -8px rgba(16, 185, 129, 0.12);
+      background: rgba(255, 255, 255, 0.9);
+      border-color: rgba(16, 185, 129, 0.15);
     }
 
     /* Premium Button Hover FX */
@@ -87,7 +88,7 @@
   <div id="loading-spinner" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
     <div class="text-center animate-pulse">
       <div class="w-16 h-16 border-4 border-emerald-100 border-t-emerald-600 rounded-full animate-spin mx-auto mb-4"></div>
-      <p class="text-emerald-700 font-semibold tracking-wide">BioEssay සූදානම් වෙනවා...</p>
+      <p class="text-emerald-700 font-semibold tracking-wide">Loading BioEssay...</p>
     </div>
   </div>
 
@@ -95,190 +96,219 @@
   <div id="app-container" class="flex h-screen overflow-hidden relative hidden">
     
     <!-- DESKTOP SIDEBAR -->
-    <aside class="hidden md:flex w-80 flex-col glass-panel border-r border-slate-200/50 z-10 m-3 rounded-3xl shadow-lg shadow-slate-100">
-      <div class="p-6 flex items-center gap-3">
-        <div class="bg-gradient-to-tr from-emerald-600 to-teal-500 p-2.5 rounded-2xl shadow-md shadow-emerald-600/20">
+    <aside class="hidden md:flex w-80 flex-col glass-panel border-r border-slate-200/50 z-10 m-3 rounded-[2rem] shadow-xl shadow-slate-200/50">
+      <div class="p-8 flex items-center gap-4">
+        <div class="bg-gradient-to-tr from-emerald-600 to-teal-500 p-3 rounded-2xl shadow-lg shadow-emerald-600/20">
           <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
         </div>
         <div>
-          <h1 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 tracking-tight leading-none">BioEssay</h1>
-          <span class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase">Reminder Hub</span>
+          <h1 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-600 tracking-tight leading-none">BioEssay</h1>
+          <span class="text-[10px] text-slate-400 font-bold tracking-widest uppercase mt-1 block">Reminder Hub</span>
         </div>
       </div>
       
-      <nav class="flex-1 px-4 py-6 space-y-2">
-        <button onclick="window.app.switchTab('dashboard')" id="nav-desktop-dashboard" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all duration-300 bg-emerald-50 text-emerald-700 font-bold shadow-sm shadow-emerald-500/5">
+      <nav class="flex-1 px-5 py-4 space-y-2">
+        <button onclick="window.app.switchTab('dashboard')" id="nav-desktop-dashboard" class="nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 bg-emerald-50 text-emerald-700 font-bold shadow-sm shadow-emerald-500/5">
           <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
         </button>
-        <button onclick="window.app.switchTab('suggestion')" id="nav-desktop-suggestion" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all duration-300 text-slate-600 hover:bg-slate-50">
-          <i data-lucide="calendar-check" class="w-5 h-5"></i> Today's Suggestion
+        <button onclick="window.app.switchTab('suggestion')" id="nav-desktop-suggestion" class="nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-50 hover:text-slate-800 font-semibold">
+          <i data-lucide="calendar-check" class="w-5 h-5"></i> Today's Tasks
         </button>
-        <button onclick="window.app.switchTab('essays')" id="nav-desktop-essays" class="nav-btn w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl transition-all duration-300 text-slate-600 hover:bg-slate-50">
+        <button onclick="window.app.switchTab('essays')" id="nav-desktop-essays" class="nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 text-slate-500 hover:bg-slate-50 hover:text-slate-800 font-semibold">
           <i data-lucide="edit-3" class="w-5 h-5"></i> All Essays
         </button>
       </nav>
 
-      <div class="p-4 border-t border-slate-100/80">
-        <button onclick="window.app.openSettings()" class="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-slate-50/50 hover:bg-emerald-50/50 border border-transparent hover:border-emerald-100 transition-all duration-300 group text-left">
-          <div id="desktop-user-avatar" class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-100 to-teal-50 flex items-center justify-center text-emerald-700 font-bold shadow-inner">U</div>
+      <div class="p-5 border-t border-slate-100/80">
+        <button onclick="window.app.openSettings()" class="w-full flex items-center gap-4 p-3.5 rounded-2xl bg-slate-50/50 hover:bg-emerald-50/50 border border-transparent hover:border-emerald-100 transition-all duration-300 group text-left">
+          <div id="desktop-user-avatar" class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-100 to-teal-50 flex items-center justify-center text-emerald-700 font-bold shadow-inner">U</div>
           <div class="flex-1 overflow-hidden">
             <p id="desktop-user-name" class="text-sm font-bold text-slate-800 truncate">Student</p>
-            <p id="desktop-user-email" class="text-xs text-slate-400 font-medium truncate">Settings & Profile</p>
+            <p id="desktop-user-email" class="text-xs text-slate-400 font-semibold truncate">Settings & Profile</p>
           </div>
-          <i data-lucide="settings" class="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:rotate-45 transition-transform duration-300"></i>
+          <i data-lucide="settings" class="w-5 h-5 text-slate-300 group-hover:text-emerald-600 group-hover:rotate-45 transition-transform duration-300"></i>
         </button>
       </div>
     </aside>
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-      <header class="md:hidden flex items-center justify-between p-4 bg-white/85 backdrop-blur-md border-b border-slate-100">
-        <div class="flex items-center gap-2.5">
-          <div class="bg-gradient-to-tr from-emerald-600 to-teal-500 p-2 rounded-xl">
+      <header class="md:hidden flex items-center justify-between p-5 bg-white/85 backdrop-blur-md border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="bg-gradient-to-tr from-emerald-600 to-teal-500 p-2.5 rounded-xl">
             <i data-lucide="book-open" class="w-5 h-5 text-white"></i>
           </div>
-          <h1 class="text-lg font-bold text-slate-800">BioEssay</h1>
+          <h1 class="text-xl font-extrabold text-slate-800 tracking-tight">BioEssay</h1>
         </div>
-        <button onclick="window.app.openSettings()" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-100 to-teal-50 border border-emerald-100 text-emerald-700 font-bold shadow-sm" id="mobile-user-avatar">U</button>
+        <button onclick="window.app.openSettings()" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-100 to-teal-50 border border-emerald-100 text-emerald-700 font-bold shadow-sm" id="mobile-user-avatar">U</button>
       </header>
 
       <div class="flex-1 overflow-y-auto pb-28 md:pb-8" id="main-scroll-area">
-        <div class="max-w-5xl mx-auto p-4 md:p-8">
-          <div class="flex justify-between items-end mb-8 animate-fade-in">
+        <div class="max-w-5xl mx-auto p-5 md:p-10">
+          <div class="flex justify-between items-end mb-10 animate-fade-in">
             <div>
-              <h2 id="page-title" class="text-2xl md:text-3.5xl font-extrabold text-slate-900 tracking-tight">Dashboard</h2>
-              <p id="page-subtitle" class="text-slate-400 font-medium mt-1 text-sm md:text-base">Track your essay practice</p>
+              <h2 id="page-title" class="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight font-heading">Dashboard</h2>
+              <p id="page-subtitle" class="text-slate-400 font-semibold mt-2 text-sm md:text-base">Track your essay practice progress</p>
             </div>
-            <button onclick="window.app.openAddUnitModal()" class="hidden md:flex items-center gap-2 btn-gradient text-white px-5 py-3 rounded-2xl font-bold shadow-lg shadow-emerald-900/10">
-              <i data-lucide="plus" class="w-5 h-5"></i> New Unit
+            <button onclick="window.app.openAddUnitModal()" class="hidden md:flex items-center gap-2.5 btn-gradient text-white px-6 py-3.5 rounded-2xl font-bold shadow-lg shadow-emerald-900/10 hover:-translate-y-0.5 transition-transform">
+              <i data-lucide="plus" class="w-5 h-5"></i> Add Unit
             </button>
           </div>
           <div id="view-container"></div>
         </div>
       </div>
 
-      <!-- FIXED: mobile add button elevated and styled beautifully -->
-      <button onclick="window.app.openAddUnitModal()" class="md:hidden fixed bottom-28 right-5 w-14 h-14 btn-gradient text-white rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-600/30 active:scale-95 transition-all duration-200 z-20">
+      <!-- MOBILE ADD BUTTON -->
+      <button onclick="window.app.openAddUnitModal()" class="md:hidden fixed bottom-28 right-6 w-14 h-14 btn-gradient text-white rounded-[1.25rem] flex items-center justify-center shadow-xl shadow-emerald-600/30 active:scale-95 transition-all duration-200 z-20">
         <i data-lucide="plus" class="w-6 h-6"></i>
       </button>
     </main>
 
     <!-- MOBILE NAVIGATION -->
-    <nav class="md:hidden fixed bottom-3 left-3 right-3 bg-white/85 backdrop-blur-xl border border-slate-100/80 shadow-xl shadow-slate-900/5 flex justify-around p-3 rounded-2.5xl z-30">
+    <nav class="md:hidden fixed bottom-4 left-4 right-4 bg-white/90 backdrop-blur-xl border border-slate-100/80 shadow-2xl shadow-slate-900/10 flex justify-around p-3.5 rounded-[2rem] z-30">
       <button onclick="window.app.switchTab('dashboard')" id="nav-mobile-dashboard" class="nav-btn flex flex-col items-center p-2 rounded-xl text-emerald-600 transition-colors duration-200">
-        <i data-lucide="layout-dashboard" class="w-5.5 h-5.5 mb-1"></i>
-        <span class="text-[10px] font-bold">Home</span>
+        <i data-lucide="layout-dashboard" class="w-6 h-6 mb-1.5"></i>
+        <span class="text-[10px] font-bold uppercase tracking-wide">Home</span>
       </button>
       <button onclick="window.app.switchTab('suggestion')" id="nav-mobile-suggestion" class="nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400 transition-colors duration-200">
-        <i data-lucide="calendar-check" class="w-5.5 h-5.5 mb-1"></i>
-        <span class="text-[10px] font-bold">Today</span>
+        <i data-lucide="calendar-check" class="w-6 h-6 mb-1.5"></i>
+        <span class="text-[10px] font-bold uppercase tracking-wide">Tasks</span>
       </button>
       <button onclick="window.app.switchTab('essays')" id="nav-mobile-essays" class="nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400 transition-colors duration-200">
-        <i data-lucide="edit-3" class="w-5.5 h-5.5 mb-1"></i>
-        <span class="text-[10px] font-bold">Essays</span>
+        <i data-lucide="edit-3" class="w-6 h-6 mb-1.5"></i>
+        <span class="text-[10px] font-bold uppercase tracking-wide">Essays</span>
       </button>
     </nav>
   </div>
 
   <!-- MODALS -->
-  <div id="add-unit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="window.app.closeAddUnitModal()"></div>
-    <div class="relative bg-white/95 border border-white rounded-3.5xl shadow-2xl shadow-slate-900/20 w-full max-w-sm p-7 animate-zoom-in">
-      <h2 class="text-xl font-bold text-slate-850 mb-4 font-heading">නව ඒකකයක් එක්කරන්න</h2>
+  <div id="add-unit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-5 hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeAddUnitModal()"></div>
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-sm p-8 animate-zoom-in">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
+          <i data-lucide="folder-plus" class="w-5 h-5"></i>
+        </div>
+        <h2 class="text-xl font-extrabold text-slate-800 font-heading tracking-tight">Create New Unit</h2>
+      </div>
       <form id="add-unit-form" onsubmit="window.app.handleAddUnit(event)">
-        <input type="text" id="new-unit-title" placeholder="උදා: සෛල ජෛව විද්‍යාව" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-5 text-sm" required />
-        <button type="submit" class="w-full btn-gradient text-white font-bold py-3.5 rounded-2xl shadow-md">Create Unit</button>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Unit Title</label>
+        <input type="text" id="new-unit-title" placeholder="e.g. Cell Biology" class="w-full bg-slate-50/80 border border-slate-200/60 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 mb-6 text-sm font-semibold transition-all" required />
+        <button type="submit" class="w-full btn-gradient text-white font-bold py-4 rounded-2xl shadow-md text-sm tracking-wide">Create Unit</button>
       </form>
     </div>
   </div>
 
-  <div id="add-essay-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="window.app.closeAddEssayModal()"></div>
-    <div class="relative bg-white/95 border border-white rounded-3.5xl shadow-2xl shadow-slate-900/20 w-full max-w-md p-7 animate-zoom-in">
-      <h2 class="text-xl font-bold text-slate-850 mb-4 font-heading">නව රචනා මාතෘකාව</h2>
+  <div id="add-essay-modal" class="fixed inset-0 z-50 flex items-center justify-center p-5 hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeAddEssayModal()"></div>
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md p-8 animate-zoom-in">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
+          <i data-lucide="file-plus" class="w-5 h-5"></i>
+        </div>
+        <h2 class="text-xl font-extrabold text-slate-800 font-heading tracking-tight">Add Essay Topic</h2>
+      </div>
       <form id="add-essay-form" onsubmit="window.app.handleAddEssay(event)">
         <input type="hidden" id="essay-unit-id">
-        <input type="text" id="new-essay-title" placeholder="රචනා ප්‍රශ්නය හෝ මාතෘකාව..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-4 text-sm" required />
-        <textarea id="new-essay-description" rows="3" placeholder="අමතර සටහන් හෝ වැදගත් කරුණු (Optional)..." class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 mb-5 text-sm"></textarea>
-        <button type="submit" class="w-full btn-gradient text-white font-bold py-3.5 rounded-2xl shadow-md">Add Essay</button>
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Question / Topic</label>
+            <input type="text" id="new-essay-title" placeholder="Enter the essay question..." class="w-full bg-slate-50/80 border border-slate-200/60 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm font-semibold transition-all" required />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Notes (Optional)</label>
+            <textarea id="new-essay-description" rows="3" placeholder="Key points to remember..." class="w-full bg-slate-50/80 border border-slate-200/60 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-sm font-medium transition-all"></textarea>
+          </div>
+        </div>
+        <button type="submit" class="w-full btn-gradient text-white font-bold py-4 rounded-2xl shadow-md text-sm tracking-wide">Save Essay</button>
       </form>
     </div>
   </div>
 
   <!-- Settings Modal with Mode Toggle -->
-  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 hidden">
-    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="window.app.closeSettings()"></div>
-    <div class="relative bg-white/95 border border-white rounded-3.5xl shadow-2xl shadow-slate-900/20 w-full max-w-md p-7 animate-zoom-in">
-      <div class="flex justify-between items-center mb-5">
-        <h2 class="text-xl font-bold font-heading">සැකසුම් (Settings)</h2>
-        <button onclick="window.app.closeSettings()" class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-500 hover:bg-slate-100 transition-colors">
-          <i data-lucide="x" class="w-4 h-4"></i>
+  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-5 hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeSettings()"></div>
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md p-8 animate-zoom-in">
+      <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center gap-3">
+          <div class="bg-slate-100 p-2.5 rounded-xl text-slate-600">
+            <i data-lucide="sliders-horizontal" class="w-5 h-5"></i>
+          </div>
+          <h2 class="text-xl font-extrabold font-heading text-slate-800 tracking-tight">Settings</h2>
+        </div>
+        <button onclick="window.app.closeSettings()" class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-      <div class="space-y-4">
-        <div class="flex items-center gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl">
-          <div id="settings-avatar" class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-100 to-teal-50 flex items-center justify-center text-emerald-700 font-bold text-lg border border-emerald-100">U</div>
+      
+      <div class="space-y-5">
+        <div class="flex items-center gap-4 p-4 bg-slate-50/80 border border-slate-100 rounded-[1.5rem]">
+          <div id="settings-avatar" class="w-14 h-14 rounded-[1.25rem] bg-gradient-to-tr from-emerald-100 to-teal-50 flex items-center justify-center text-emerald-700 font-extrabold text-xl border border-emerald-100 shadow-sm">U</div>
           <div>
-            <p id="settings-name" class="font-bold text-slate-800">Student</p>
-            <p id="settings-email" class="text-xs text-slate-400 font-medium">Signed in</p>
+            <p id="settings-name" class="font-extrabold text-slate-800 text-base">Student</p>
+            <p id="settings-email" class="text-xs text-slate-400 font-semibold mt-0.5">Signed in</p>
           </div>
         </div>
 
         <!-- Mode selection -->
-        <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4">
-          <label class="text-sm font-bold text-slate-700 block mb-3 font-heading">යෝජනා ක්‍රමය (Suggestion Mode)</label>
-          <div class="space-y-2.5">
-            <label class="flex items-center gap-3 p-2.5 bg-white border border-slate-100 rounded-xl cursor-pointer hover:border-emerald-200 transition-all">
-              <input type="radio" name="suggestionMode" value="pattern" checked class="accent-emerald-600"> 
-              <span class="text-sm font-medium text-slate-700">අනුපිළිවෙලින් (Spaced repetition)</span>
+        <div class="bg-slate-50/80 border border-slate-100 rounded-[1.5rem] p-5">
+          <label class="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3 ml-1">Suggestion Mode</label>
+          <div class="space-y-3">
+            <label class="flex items-center gap-3 p-3 bg-white border border-slate-200/60 rounded-2xl cursor-pointer hover:border-emerald-300 transition-all shadow-sm">
+              <input type="radio" name="suggestionMode" value="pattern" checked class="accent-emerald-600 w-4 h-4"> 
+              <span class="text-sm font-bold text-slate-700">Pattern (Spaced Repetition)</span>
             </label>
-            <label class="flex items-center gap-3 p-2.5 bg-white border border-slate-100 rounded-xl cursor-pointer hover:border-emerald-200 transition-all">
-              <input type="radio" name="suggestionMode" value="random" class="accent-emerald-600"> 
-              <span class="text-sm font-medium text-slate-700">අහඹු ලෙස (Random suggestion)</span>
+            <label class="flex items-center gap-3 p-3 bg-white border border-slate-200/60 rounded-2xl cursor-pointer hover:border-emerald-300 transition-all shadow-sm">
+              <input type="radio" name="suggestionMode" value="random" class="accent-emerald-600 w-4 h-4"> 
+              <span class="text-sm font-bold text-slate-700">Random Selection</span>
             </label>
           </div>
-          <div id="randomCountContainer" class="mt-4 hidden">
-            <label class="text-xs text-slate-400 font-semibold block mb-1">දිනකට යෝජනා කරන රචනා ගණන:</label>
-            <input type="number" id="randomEssayCount" min="1" max="10" value="2" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800">
+          <div id="randomCountContainer" class="mt-4 hidden p-3 bg-white rounded-2xl border border-slate-100">
+            <label class="text-xs text-slate-500 font-bold block mb-2">Daily random essays:</label>
+            <input type="number" id="randomEssayCount" min="1" max="10" value="2" class="w-full bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800">
           </div>
         </div>
 
-        <button onclick="window.app.saveSettings()" class="w-full btn-gradient text-white py-3 rounded-2xl font-bold shadow-md">සුරකින්න (Save)</button>
-        <button onclick="window.app.logout()" class="w-full flex items-center justify-center gap-2 text-rose-600 hover:bg-rose-50 py-3 rounded-2xl font-bold transition-all border border-transparent hover:border-rose-100">Sign Out</button>
+        <button onclick="window.app.saveSettings()" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold shadow-md text-sm tracking-wide">Save Preferences</button>
         
-        <div class="grid grid-cols-2 gap-3 pt-2">
-          <button onclick="window.app.handleBackup()" class="flex items-center justify-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-3 rounded-2xl font-bold text-xs transition-colors">
+        <div class="grid grid-cols-2 gap-3 pt-1">
+          <button onclick="window.app.handleBackup()" class="flex items-center justify-center gap-2 bg-indigo-50/80 hover:bg-indigo-100 text-indigo-700 py-3.5 rounded-2xl font-bold text-xs transition-colors border border-indigo-100/50">
             <i data-lucide="download" class="w-4 h-4"></i> Backup Data
           </button>
-          <button onclick="document.getElementById('file-upload').click()" class="flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-3 rounded-2xl font-bold text-xs transition-colors">
+          <button onclick="document.getElementById('file-upload').click()" class="flex items-center justify-center gap-2 bg-emerald-50/80 hover:bg-emerald-100 text-emerald-700 py-3.5 rounded-2xl font-bold text-xs transition-colors border border-emerald-100/50">
             <i data-lucide="upload" class="w-4 h-4"></i> Restore Data
           </button>
         </div>
+        
+        <button onclick="window.app.logout()" class="w-full flex items-center justify-center gap-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 py-3.5 rounded-2xl font-bold transition-all text-sm mt-2">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+        </button>
         <input type="file" id="file-upload" accept=".json" class="hidden" onchange="window.app.handleRestore(event)">
       </div>
     </div>
   </div>
 
-  <div id="toast" class="fixed top-4 right-4 z-[70] transition-all duration-300 transform -translate-y-full opacity-0 pointer-events-none">
-    <div class="flex items-center gap-3 px-4 py-3.5 rounded-2xl shadow-xl bg-white/95 border border-slate-100/80 backdrop-blur-md">
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed top-6 right-6 z-[70] transition-all duration-400 transform -translate-y-full opacity-0 pointer-events-none">
+    <div class="flex items-center gap-3.5 px-5 py-4 rounded-2xl shadow-2xl bg-white/95 border border-slate-100/80 backdrop-blur-xl">
       <i id="toast-icon" data-lucide="info" class="w-5 h-5"></i>
-      <span id="toast-message" class="font-bold text-sm text-slate-800">Message</span>
+      <span id="toast-message" class="font-bold text-sm text-slate-800 tracking-wide">Message</span>
     </div>
   </div>
 
   <!-- SIGN-IN MODAL -->
-  <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md hidden">
-    <div class="bg-white/95 border border-white rounded-3.5xl shadow-2xl w-full max-w-sm p-8 text-center animate-zoom-in">
-      <div class="bg-gradient-to-tr from-emerald-600 to-teal-500 p-4 rounded-3xl w-20 h-20 mx-auto mb-5 flex items-center justify-center shadow-lg shadow-emerald-500/20 animate-bounce">
-        <i data-lucide="book-open" class="w-10 h-10 text-white"></i>
+  <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-lg hidden">
+    <div class="bg-white/95 border border-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-10 text-center animate-zoom-in">
+      <div class="bg-gradient-to-tr from-emerald-600 to-teal-500 p-5 rounded-[1.75rem] w-24 h-24 mx-auto mb-6 flex items-center justify-center shadow-xl shadow-emerald-500/30 animate-bounce">
+        <i data-lucide="book-open" class="w-12 h-12 text-white"></i>
       </div>
-      <h2 class="text-2.5xl font-extrabold mb-2 text-slate-850 tracking-tight font-heading">BioEssay Reminder</h2>
-      <p class="text-slate-400 font-medium text-sm mb-7 leading-relaxed">ඔයාගේ පාඩම් වැඩ පිළිවෙලට Spaced Repetition එකතු කරලා මතක තියාගැනීම සුපිරි කරන්න!</p>
-      <button id="immediate-google-signin" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 border border-slate-200 py-3.5 rounded-2xl font-bold text-slate-700 shadow-sm transition-all active:scale-95">
+      <h2 class="text-3xl font-extrabold mb-3 text-slate-900 tracking-tight font-heading">BioEssay</h2>
+      <p class="text-slate-500 font-semibold text-sm mb-8 leading-relaxed">Supercharge your memory by adding Spaced Repetition to your study routine!</p>
+      <button id="immediate-google-signin" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 border-2 border-slate-100 py-4 rounded-2xl font-extrabold text-slate-700 shadow-sm transition-all active:scale-95 text-sm">
         <svg class="w-5 h-5" viewBox="0 0 24 24">
           <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.275 1.565-1.88 4.604-6.887 4.604-4.33 0-7.859-3.577-7.859-8s3.53-8 7.859-8c2.46 0 4.105 1.025 5.047 1.926l3.227-3.227C18.263 1.157 15.54 0 12.24 0 5.58 0 0 5.58 0 12.24s5.58 12.24 12.24 12.24c6.96 0 11.57-4.89 11.57-11.79 0-.795-.085-1.4-.187-1.926H12.24z"/>
         </svg>
-        Sign in with Google
+        Continue with Google
       </button>
     </div>
   </div>
@@ -399,7 +429,7 @@
       );
       const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
       await updateDoc(unitRef, { essays: updatedEssays });
-      showToast(`"${essay.title}" සාර්ථකව සලකුණු කළා! ඊළඟ වාරය: ${formatDate(nextReminder)}`, "success");
+      showToast(`"${essay.title}" marked as reviewed! Next: ${formatDate(nextReminder)}`, "success");
       renderView(); // refresh suggestion tab
     }
 
@@ -407,12 +437,12 @@
     function renderSuggestion() {
       if (state.units.length === 0 || !state.units.some(u => u.essays && u.essays.length > 0)) {
         return `
-          <div class="glass-card rounded-3.5xl p-10 text-center max-w-lg mx-auto border-emerald-100">
-            <div class="bg-emerald-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-              <i data-lucide="smile" class="w-8 h-8 text-emerald-500"></i>
+          <div class="glass-card rounded-[2.5rem] p-12 text-center max-w-lg mx-auto border-emerald-100/50 shadow-sm">
+            <div class="bg-emerald-50 w-20 h-20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6">
+              <i data-lucide="smile" class="w-10 h-10 text-emerald-500"></i>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2 font-heading">තවම රචනා ප්‍රශ්න ඇතුළත් කර නැත!</h3>
-            <p class="text-slate-400 font-medium text-sm">නව ප්‍රශ්න එකතු කර ඔබගේ පාඩම් වැඩ ආරම්භ කරන්න.</p>
+            <h3 class="text-2xl font-extrabold text-slate-800 mb-3 font-heading tracking-tight">No Questions Yet!</h3>
+            <p class="text-slate-500 font-medium text-sm">Add some essay questions to start your study routine.</p>
           </div>`;
       }
 
@@ -420,12 +450,12 @@
         const suggestion = getPatternSuggestion();
         if (!suggestion) {
           return `
-            <div class="glass-card rounded-3.5xl p-10 text-center max-w-lg mx-auto border-emerald-100">
-              <div class="bg-gradient-to-tr from-emerald-50 to-teal-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-100">
-                <i data-lucide="check-circle" class="w-8 h-8 text-emerald-500"></i>
+            <div class="glass-card rounded-[2.5rem] p-12 text-center max-w-lg mx-auto border-emerald-100/50 shadow-sm">
+              <div class="bg-gradient-to-tr from-emerald-50 to-teal-50 w-20 h-20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 border border-emerald-100">
+                <i data-lucide="check-circle" class="w-10 h-10 text-emerald-500"></i>
               </div>
-              <h3 class="text-xl font-bold text-slate-800 mb-2 font-heading">අද දිනයට නියමිත ප්‍රශ්න සියල්ල අවසන්!</h3>
-              <p class="text-slate-400 font-medium text-sm">නියමයි! ඔයා අද දවසේ පාඩම් වැඩ ටික සුපිරියටම නිම කළා.</p>
+              <h3 class="text-2xl font-extrabold text-slate-800 mb-3 font-heading tracking-tight">All Caught Up!</h3>
+              <p class="text-slate-500 font-medium text-sm">Great job! You have successfully finished all your scheduled tasks for today.</p>
             </div>`;
         }
         return renderEssayCard(suggestion, 'pattern');
@@ -434,7 +464,7 @@
         const count = state.randomCount;
         const suggestions = getRandomSuggestions(count);
         if (suggestions.length === 0) {
-          return `<div class="glass-card rounded-3.5xl p-10 text-center text-slate-400">ප්‍රශ්න කිසිවක් හමු වුණේ නැත.</div>`;
+          return `<div class="glass-card rounded-[2.5rem] p-12 text-center text-slate-400 font-semibold">No questions available.</div>`;
         }
         return `<div class="space-y-6">${suggestions.map(s => renderEssayCard(s, 'random')).join('')}</div>`;
       }
@@ -442,36 +472,36 @@
 
     function renderEssayCard(suggestion, mode) {
       const { unitTitle, essay, unitId } = suggestion;
-      const badgeColor = mode === 'pattern' ? 'bg-emerald-100/70 text-emerald-700 border-emerald-200' : 'bg-blue-100/70 text-blue-700 border-blue-200';
-      const badgeText = mode === 'pattern' ? 'අනුපිළිවෙලින් (Pattern)' : 'අහඹු ලෙස (Random)';
+      const badgeColor = mode === 'pattern' ? 'bg-emerald-100/80 text-emerald-700 border-emerald-200/60' : 'bg-blue-100/80 text-blue-700 border-blue-200/60';
+      const badgeText = mode === 'pattern' ? 'Pattern Match' : 'Random Pick';
       return `
-        <div class="glass-card rounded-3.5xl shadow-lg border border-slate-100 overflow-hidden animate-slide-up max-w-2xl mx-auto">
-          <div class="bg-slate-50/70 p-5 border-b border-slate-100/80 flex justify-between items-center">
+        <div class="glass-card rounded-[2.5rem] shadow-lg border border-slate-100 overflow-hidden animate-slide-up max-w-2xl mx-auto">
+          <div class="bg-slate-50/70 p-6 border-b border-slate-100/80 flex justify-between items-center">
             <span class="text-xs font-extrabold text-emerald-700 tracking-wider uppercase font-heading">${escapeHtml(unitTitle)}</span>
-            <span class="text-[10px] px-2.5 py-1 rounded-full ${badgeColor} border font-extrabold tracking-wide uppercase">${badgeText}</span>
+            <span class="text-[10px] px-3 py-1.5 rounded-xl ${badgeColor} border font-extrabold tracking-wide uppercase">${badgeText}</span>
           </div>
-          <div class="p-6 md:p-8">
-            <h3 class="text-xl md:text-2xl font-bold text-slate-800 mb-3 leading-snug font-heading">${escapeHtml(essay.title)}</h3>
-            ${essay.description ? `<p class="text-slate-500 font-medium text-sm mb-6 leading-relaxed bg-slate-50/50 p-4 rounded-2xl border border-slate-100/50">${escapeHtml(essay.description)}</p>` : ''}
+          <div class="p-8 md:p-10">
+            <h3 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-4 leading-snug font-heading tracking-tight">${escapeHtml(essay.title)}</h3>
+            ${essay.description ? `<p class="text-slate-500 font-semibold text-sm mb-8 leading-relaxed bg-slate-50/60 p-5 rounded-2xl border border-slate-100/60">${escapeHtml(essay.description)}</p>` : ''}
             
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3.5 mb-8">
-              <div class="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100/50">
-                <span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-0.5">සංශෝධන වාර</span>
-                <span class="text-lg font-extrabold text-slate-800">${essay.reminderCount || 0}</span>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+              <div class="bg-slate-50/60 p-4 rounded-2xl border border-slate-100/60">
+                <span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-1">Review Count</span>
+                <span class="text-xl font-extrabold text-slate-800">${essay.reminderCount || 0}</span>
               </div>
-              <div class="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100/50">
-                <span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-0.5">අවසාන වරට සෙවූ</span>
-                <span class="text-sm font-bold text-slate-800 block mt-1">${essay.lastReminded ? formatDate(essay.lastReminded) : 'පළමු වරට'}</span>
+              <div class="bg-slate-50/60 p-4 rounded-2xl border border-slate-100/60">
+                <span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-1">Last Reviewed</span>
+                <span class="text-sm font-bold text-slate-800 block mt-1">${essay.lastReminded ? formatDate(essay.lastReminded) : 'First Time'}</span>
               </div>
               ${mode === 'pattern' ? `
-              <div class="bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100/50 col-span-2 md:col-span-1">
-                <span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-0.5">මීළඟ වාරය</span>
+              <div class="bg-slate-50/60 p-4 rounded-2xl border border-slate-100/60 col-span-2 md:col-span-1">
+                <span class="text-[10px] text-slate-400 font-bold block uppercase tracking-wider mb-1">Next Review</span>
                 <span class="text-sm font-bold text-slate-800 block mt-1">${formatDate(essay.nextReminder)}</span>
               </div>` : ''}
             </div>
             
-            <button onclick="window.app.markReviewed('${unitId}', '${essay.id}')" class="w-full btn-gradient hover:scale-[1.01] active:scale-[0.99] text-white font-bold py-4 rounded-2.5xl shadow-md transition-all flex items-center justify-center gap-2">
-              <i data-lucide="check-circle-2" class="w-5 h-5"></i> අද දිනට සලකුණු කරන්න
+            <button onclick="window.app.markReviewed('${unitId}', '${essay.id}')" class="w-full btn-gradient hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold py-4.5 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
+              <i data-lucide="check-circle-2" class="w-5 h-5"></i> Mark as Reviewed Today
             </button>
           </div>
         </div>
@@ -500,27 +530,45 @@
       }
       return `
         <div class="space-y-8 animate-slide-up">
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100/50 flex items-center gap-4">
-              <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-100/50"><i data-lucide="edit-3" class="w-7 h-7 text-emerald-600"></i></div>
-              <div><p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">මුළු රචනා ගණන</p><p class="text-3xl font-extrabold text-slate-800 font-heading">${totalEssays}</p></div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-card relative overflow-hidden p-8 rounded-[2rem] shadow-sm border border-slate-100/50 flex flex-col gap-4 group hover:shadow-md transition-all duration-300">
+              <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-300"><i data-lucide="edit-3" class="w-32 h-32 text-emerald-900"></i></div>
+              <div class="w-14 h-14 bg-gradient-to-br from-emerald-100/80 to-emerald-50 rounded-[1.25rem] border border-emerald-100/50 flex items-center justify-center text-emerald-600 shadow-inner z-10"><i data-lucide="edit-3" class="w-7 h-7"></i></div>
+              <div class="z-10 mt-2">
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Total Essays</p>
+                <p class="text-4xl font-extrabold text-slate-800 font-heading tracking-tight">${totalEssays}</p>
+              </div>
             </div>
-            <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100/50 flex items-center gap-4">
-              <div class="p-4 bg-indigo-50 rounded-2xl border border-indigo-100/50"><i data-lucide="repeat" class="w-7 h-7 text-indigo-600"></i></div>
-              <div><p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">සංශෝධන වාර</p><p class="text-3xl font-extrabold text-slate-800 font-heading">${totalReviews}</p></div>
+            
+            <div class="glass-card relative overflow-hidden p-8 rounded-[2rem] shadow-sm border border-slate-100/50 flex flex-col gap-4 group hover:shadow-md transition-all duration-300">
+              <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-300"><i data-lucide="repeat" class="w-32 h-32 text-indigo-900"></i></div>
+              <div class="w-14 h-14 bg-gradient-to-br from-indigo-100/80 to-indigo-50 rounded-[1.25rem] border border-indigo-100/50 flex items-center justify-center text-indigo-600 shadow-inner z-10"><i data-lucide="repeat" class="w-7 h-7"></i></div>
+              <div class="z-10 mt-2">
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Total Reviews</p>
+                <p class="text-4xl font-extrabold text-slate-800 font-heading tracking-tight">${totalReviews}</p>
+              </div>
             </div>
-            <div class="glass-card p-6 rounded-3xl shadow-sm border border-slate-100/50 flex items-center gap-4">
-              <div class="p-4 bg-amber-50 rounded-2xl border border-amber-100/50"><i data-lucide="calendar" class="w-7 h-7 text-amber-600"></i></div>
-              <div><p class="text-[11px] text-slate-400 font-bold uppercase tracking-wider">අද නියමිත වැඩ</p><p class="text-3xl font-extrabold text-slate-800 font-heading">${dueCount}</p></div>
+            
+            <div class="glass-card relative overflow-hidden p-8 rounded-[2rem] shadow-sm border border-slate-100/50 flex flex-col gap-4 group hover:shadow-md transition-all duration-300">
+              <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-300"><i data-lucide="calendar-clock" class="w-32 h-32 text-amber-900"></i></div>
+              <div class="w-14 h-14 bg-gradient-to-br from-amber-100/80 to-amber-50 rounded-[1.25rem] border border-amber-100/50 flex items-center justify-center text-amber-600 shadow-inner z-10"><i data-lucide="calendar-clock" class="w-7 h-7"></i></div>
+              <div class="z-10 mt-2">
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">Due Today</p>
+                <p class="text-4xl font-extrabold text-slate-800 font-heading tracking-tight">${dueCount}</p>
+              </div>
             </div>
           </div>
-          <div class="glass-panel rounded-3.5xl p-6 md:p-8 border border-slate-100/50 shadow-md">
-            <h3 class="text-lg font-bold mb-4 font-heading text-slate-800">ඔබගේ ඒකකයන් (Your Units)</h3>
-            ${state.units.length === 0 ? '<p class="text-slate-400 font-medium text-sm">තවම ඒකකයක් එකතු කර නැත. ඉහළින් ඇති "New Unit" ක්ලික් කරන්න.</p>' : 
-              `<div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">${state.units.map(u => `
-                <div class="flex justify-between items-center p-4 bg-white/60 hover:bg-white/90 border border-slate-100 rounded-2xl transition-all duration-300">
-                  <span class="font-bold text-slate-800 font-heading text-sm">${escapeHtml(u.title)}</span>
-                  <span class="text-xs px-3 py-1.5 bg-slate-50 rounded-xl font-bold text-slate-500 border border-slate-100">${(u.essays||[]).length} essays</span>
+
+          <div class="glass-panel rounded-[2.5rem] p-8 md:p-10 border border-slate-100/50 shadow-sm mt-8">
+            <h3 class="text-xl font-extrabold mb-6 font-heading text-slate-800 tracking-tight">Your Study Units</h3>
+            ${state.units.length === 0 ? '<div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100/50 text-center"><p class="text-slate-500 font-semibold text-sm">No units added yet. Click "Add Unit" to get started.</p></div>' : 
+              `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${state.units.map(u => `
+                <div class="flex justify-between items-center p-5 bg-white/70 hover:bg-white border border-slate-200/50 rounded-[1.5rem] transition-all duration-300 hover:shadow-sm group">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform"><i data-lucide="folder" class="w-4 h-4"></i></div>
+                    <span class="font-extrabold text-slate-800 font-heading text-sm">${escapeHtml(u.title)}</span>
+                  </div>
+                  <span class="text-xs px-3.5 py-1.5 bg-slate-100/80 rounded-xl font-bold text-slate-500 border border-slate-200/50">${(u.essays||[]).length} items</span>
                 </div>`).join('')}</div>`}
           </div>
         </div>
@@ -528,35 +576,38 @@
     }
 
     function renderEssays() {
-      if (state.units.length === 0) return `<div class="glass-card rounded-3.5xl p-10 text-center text-slate-400">කිසිදු ඒකකයක් තවම සකසා නැත.</div>`;
+      if (state.units.length === 0) return `<div class="glass-card rounded-[2.5rem] p-12 text-center text-slate-400 font-semibold">No units have been set up yet. Create a unit first.</div>`;
       let html = `<div class="space-y-6 animate-slide-up">`;
       for (const unit of state.units) {
         html += `
-          <div class="glass-card rounded-3.5xl border border-slate-100/50 overflow-hidden shadow-sm">
-            <div class="bg-slate-50/70 p-4 md:p-5 flex justify-between items-center border-b border-slate-100">
-              <h3 class="font-bold text-slate-800 font-heading text-base">${escapeHtml(unit.title)}</h3>
-              <button onclick="window.app.openAddEssayModal('${unit.id}')" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 transition-colors">
-                <i data-lucide="plus" class="w-4 h-4"></i> Add Essay
+          <div class="glass-card rounded-[2.5rem] border border-slate-100/50 overflow-hidden shadow-sm">
+            <div class="bg-slate-50/80 p-5 md:p-6 flex justify-between items-center border-b border-slate-100/80">
+              <div class="flex items-center gap-3">
+                <div class="p-2 bg-white rounded-lg shadow-sm border border-slate-100"><i data-lucide="folder" class="w-4 h-4 text-emerald-600"></i></div>
+                <h3 class="font-extrabold text-slate-800 font-heading text-base">${escapeHtml(unit.title)}</h3>
+              </div>
+              <button onclick="window.app.openAddEssayModal('${unit.id}')" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1.5 bg-emerald-100/50 px-4 py-2 rounded-xl border border-emerald-200/50 transition-colors hover:bg-emerald-100">
+                <i data-lucide="plus" class="w-4 h-4"></i> Add
               </button>
             </div>`;
         if (!unit.essays || unit.essays.length === 0) {
-          html += `<div class="p-8 text-center text-slate-400 font-medium text-sm">මෙම ඒකකයට රචනා ප්‍රශ්න තවම එකතු කර නැත.</div>`;
+          html += `<div class="p-8 text-center text-slate-400 font-medium text-sm">No essay questions have been added to this unit yet.</div>`;
         } else {
-          html += `<div class="divide-y divide-slate-100">`;
+          html += `<div class="divide-y divide-slate-100/80">`;
           for (const essay of unit.essays) {
             html += `
-              <div class="p-5 md:p-6 hover:bg-slate-50/30 transition-colors">
+              <div class="p-6 md:p-7 hover:bg-slate-50/40 transition-colors">
                 <div class="flex justify-between items-start gap-4">
                   <div class="flex-1">
                     <p class="font-bold text-slate-800 leading-snug font-heading text-base">${escapeHtml(essay.title)}</p>
-                    ${essay.description ? `<p class="text-xs text-slate-400 font-medium mt-1.5 max-w-xl">${escapeHtml(essay.description.substring(0,100))}${essay.description.length>100?'…':''}</p>` : ''}
-                    <div class="flex flex-wrap gap-3 text-[10px] text-slate-400 font-bold tracking-wide uppercase mt-3">
-                      <span class="bg-slate-100 px-2 py-1 rounded-md">🔄 ${essay.reminderCount || 0} reviews</span>
-                      <span class="bg-slate-100 px-2 py-1 rounded-md">📅 Last: ${essay.lastReminded ? formatDate(essay.lastReminded) : '—'}</span>
-                      <span class="bg-slate-100 px-2 py-1 rounded-md">⏰ Next: ${essay.nextReminder ? formatDate(essay.nextReminder) : '—'}</span>
+                    ${essay.description ? `<p class="text-xs text-slate-500 font-medium mt-2 max-w-2xl bg-white/50 p-3 rounded-xl border border-slate-100/50">${escapeHtml(essay.description.substring(0,100))}${essay.description.length>100?'…':''}</p>` : ''}
+                    <div class="flex flex-wrap gap-3 text-[10px] text-slate-500 font-bold tracking-wider uppercase mt-4">
+                      <span class="bg-slate-100/80 border border-slate-200/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"><i data-lucide="rotate-cw" class="w-3 h-3 text-emerald-500"></i> ${essay.reminderCount || 0} reviews</span>
+                      <span class="bg-slate-100/80 border border-slate-200/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Last: ${essay.lastReminded ? formatDate(essay.lastReminded) : '—'}</span>
+                      <span class="bg-slate-100/80 border border-slate-200/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3 text-amber-500"></i> Next: ${essay.nextReminder ? formatDate(essay.nextReminder) : '—'}</span>
                     </div>
                   </div>
-                  <button onclick="window.app.deleteEssay('${unit.id}', '${essay.id}')" class="w-8 h-8 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all">
+                  <button onclick="window.app.deleteEssay('${unit.id}', '${essay.id}')" class="w-9 h-9 rounded-xl text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all border border-transparent hover:border-rose-100">
                     <i data-lucide="trash-2" class="w-4 h-4"></i>
                   </button>
                 </div>
@@ -573,15 +624,15 @@
     function renderNavigation() {
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.className = btn.id.includes('desktop') 
-          ? 'nav-btn w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-slate-500 hover:bg-slate-50/70 hover:text-slate-800 transition-all duration-300 font-semibold'
+          ? 'nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-slate-500 hover:bg-slate-50/70 hover:text-slate-800 transition-all duration-300 font-semibold'
           : 'nav-btn flex flex-col items-center p-2 rounded-xl text-slate-400 transition-colors';
       });
       const activeDesktop = document.getElementById(`nav-desktop-${state.activeTab}`);
       const activeMobile = document.getElementById(`nav-mobile-${state.activeTab}`);
-      if(activeDesktop) activeDesktop.className = 'nav-btn w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold shadow-md shadow-emerald-500/10';
+      if(activeDesktop) activeDesktop.className = 'nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold shadow-md shadow-emerald-500/10';
       if(activeMobile) activeMobile.className = 'nav-btn flex flex-col items-center p-2 rounded-xl text-emerald-600 font-bold';
       
-      const titles = { dashboard: 'Dashboard', suggestion: "Today's Suggestion", essays: 'All Essays' };
+      const titles = { dashboard: 'Dashboard', suggestion: "Today's Tasks", essays: 'All Essays' };
       document.getElementById('page-title').textContent = titles[state.activeTab];
     }
 
@@ -623,7 +674,7 @@
         await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', newId), { title, essays: [] });
         document.getElementById('new-unit-title').value = '';
         window.app.closeAddUnitModal();
-        showToast(`Unit "${title}" සාර්ථකව එකතු කළා`, "success");
+        showToast(`Unit "${title}" added successfully`, "success");
       },
       openAddEssayModal: (unitId) => {
         document.getElementById('essay-unit-id').value = unitId;
@@ -653,15 +704,15 @@
         const updatedEssays = [...(unit.essays || []), newEssay];
         await updateDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId), { essays: updatedEssays });
         window.app.closeAddEssayModal();
-        showToast(`Essay "${title}" සාර්ථකව එකතු කළා`, "success");
+        showToast(`Essay "${title}" added successfully`, "success");
       },
       deleteEssay: async (unitId, essayId) => {
-        if (!confirm('ඔබට විශ්වාසද මෙම ප්‍රශ්නය ඉවත් කිරීමට අවශ්‍ය බව?')) return;
+        if (!confirm('Are you sure you want to delete this question?')) return;
         const unit = state.units.find(u => u.id === unitId);
         if (!unit) return;
         const updatedEssays = (unit.essays || []).filter(e => e.id !== essayId);
         await updateDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId), { essays: updatedEssays });
-        showToast('ප්‍රශ්නය සාර්ථකව ඉවත් කළා', 'success');
+        showToast('Question removed successfully', 'success');
       },
       markReviewed: async (unitId, essayId) => {
         await markEssayReviewed(unitId, essayId);
@@ -693,7 +744,7 @@
         localStorage.setItem('randomEssayCount', state.randomCount);
         window.app.closeSettings();
         renderView();
-        showToast(`යෝජනා ක්‍රමය සුරැකුණා!`, "success");
+        showToast(`Suggestion mode saved!`, "success");
       },
       logout: async () => { await signOut(auth); window.app.closeSettings(); },
       handleBackup: () => {
@@ -705,7 +756,7 @@
         a.download = `bioessay_backup_${new Date().toISOString().split('T')[0]}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        showToast('Backup එක සාර්ථකව ලබාගත්තා', 'success');
+        showToast('Backup downloaded successfully', 'success');
       },
       handleRestore: async (e) => {
         const file = e.target.files[0];
@@ -718,8 +769,8 @@
               const ref = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unit.id);
               await setDoc(ref, unit);
             }
-            showToast('සියලුම දත්ත සාර්ථකව ප්‍රතිස්ථාපනය කළා', 'success');
-          } catch(err) { showToast('Backup ගොනුව නිවැරදි නැත', 'error'); }
+            showToast('All data restored successfully', 'success');
+          } catch(err) { showToast('Invalid backup file', 'error'); }
           e.target.value = '';
         };
         reader.readAsText(file);
