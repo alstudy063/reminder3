@@ -5,21 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>BioEssay Reminder</title>
   
-  <!-- Premium English Typography -->
+  <!-- Premium English & Sinhala Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans+Sinhala:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
     /* Premium Font Configurations */
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+    body, input, textarea, button, select {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif !important;
     }
     h1, h2, h3, .font-heading {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Sinhala', sans-serif !important;
       letter-spacing: -0.02em;
     }
 
@@ -210,6 +210,7 @@
       </div>
       <form id="add-essay-form" onsubmit="window.app.handleAddEssay(event)">
         <input type="hidden" id="essay-unit-id">
+        <input type="hidden" id="essay-subunit-id">
         <div class="space-y-4 mb-6">
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Question / Topic</label>
@@ -222,6 +223,70 @@
         </div>
         <button type="submit" class="w-full btn-gradient text-white font-bold py-4 rounded-2xl shadow-md text-sm tracking-wide">Save Essay</button>
       </form>
+    </div>
+  </div>
+
+  <!-- UNIT DETAILS MODAL (POPUP) -->
+  <div id="unit-details-modal" class="fixed inset-0 z-[55] flex items-center justify-center p-4 md:p-5 hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeUnitDetails()"></div>
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-2xl max-h-[85vh] flex flex-col animate-zoom-in">
+      <div class="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
+            <i data-lucide="folder-open" class="w-5 h-5"></i>
+          </div>
+          <h2 id="unit-details-title" class="text-2xl font-extrabold text-slate-800 font-heading tracking-tight">Unit Details</h2>
+        </div>
+        <button onclick="window.app.closeUnitDetails()" class="p-2 bg-slate-50 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="unit-details-content" class="p-6 md:p-8 overflow-y-auto flex-1 space-y-6">
+        <!-- Content injected here -->
+      </div>
+      <div class="p-6 border-t border-slate-100 flex gap-3 shrink-0 bg-slate-50/50 rounded-b-[2.5rem]">
+        <button onclick="window.app.openAddSubUnitModal()" class="flex-1 bg-white border border-slate-200 text-slate-700 font-bold py-3.5 rounded-2xl shadow-sm text-sm tracking-wide hover:bg-slate-50 transition-colors">Add Sub-Unit</button>
+        <button onclick="window.app.openAddEssayModal(window.app.currentViewUnitId)" class="flex-1 btn-gradient text-white font-bold py-3.5 rounded-2xl shadow-md text-sm tracking-wide">Add Essay</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD SUB-UNIT MODAL -->
+  <div id="add-subunit-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-5 hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeAddSubUnitModal()"></div>
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-sm p-8 animate-zoom-in">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
+          <i data-lucide="layers" class="w-5 h-5"></i>
+        </div>
+        <h2 class="text-xl font-extrabold text-slate-800 font-heading tracking-tight">Add Sub-Unit</h2>
+      </div>
+      <form id="add-subunit-form" onsubmit="window.app.handleAddSubUnit(event)">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">Sub-Unit Title</label>
+        <input type="text" id="new-subunit-title" placeholder="e.g. Mitosis" class="w-full bg-slate-50/80 border border-slate-200/60 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 mb-6 text-sm font-semibold transition-all" required />
+        <button type="submit" class="w-full btn-gradient text-white font-bold py-4 rounded-2xl shadow-md text-sm tracking-wide">Create Sub-Unit</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MANAGE UNITS MODAL -->
+  <div id="manage-units-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-5 hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeManageUnits()"></div>
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md max-h-[80vh] flex flex-col animate-zoom-in">
+      <div class="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="bg-indigo-100/50 p-2.5 rounded-xl text-indigo-600">
+            <i data-lucide="settings-2" class="w-5 h-5"></i>
+          </div>
+          <h2 class="text-xl font-extrabold text-slate-800 font-heading tracking-tight">Manage Units</h2>
+        </div>
+        <button onclick="window.app.closeManageUnits()" class="p-2 bg-slate-50 rounded-xl hover:bg-slate-100 text-slate-500 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div id="manage-units-list" class="p-6 overflow-y-auto flex-1 space-y-3">
+        <!-- List injected here -->
+      </div>
     </div>
   </div>
 
@@ -268,6 +333,14 @@
             <input type="number" id="randomEssayCount" min="1" max="10" value="2" class="w-full bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800">
           </div>
         </div>
+
+        <button onclick="window.app.openManageUnits()" class="w-full flex items-center justify-between p-4 bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100/80 rounded-[1.5rem] transition-colors shadow-sm group">
+          <div class="flex items-center gap-3">
+            <div class="bg-indigo-100/80 p-2 rounded-lg text-indigo-600"><i data-lucide="layers" class="w-4 h-4"></i></div>
+            <span class="font-bold text-indigo-900 text-sm">Manage Units & Content</span>
+          </div>
+          <i data-lucide="chevron-right" class="w-5 h-5 text-indigo-400 group-hover:translate-x-1 transition-transform"></i>
+        </button>
 
         <button onclick="window.app.saveSettings()" class="w-full btn-gradient text-white py-4 rounded-2xl font-bold shadow-md text-sm tracking-wide">Save Preferences</button>
         
@@ -380,35 +453,52 @@
       }, 3000);
     }
 
-    // Get pattern suggestion (most overdue)
-    function getPatternSuggestion() {
-      const today = new Date(); today.setHours(0,0,0,0);
-      let dueEssays = [];
+    // Helper to extract all essays recursively from units and subunits
+    function extractAllEssays() {
+      let all = [];
       for (const unit of state.units) {
-        for (const essay of (unit.essays || [])) {
-          if (!essay.nextReminder) continue;
-          const nextDate = new Date(essay.nextReminder);
-          nextDate.setHours(0,0,0,0);
-          if (nextDate <= today) {
-            dueEssays.push({ unitTitle: unit.title, essay, unitId: unit.id });
+        if (unit.essays) {
+          for (const essay of unit.essays) {
+            all.push({ unitTitle: unit.title, subUnitTitle: null, essay, unitId: unit.id, subUnitId: null });
+          }
+        }
+        if (unit.subUnits) {
+          for (const sub of unit.subUnits) {
+            if (sub.essays) {
+              for (const essay of sub.essays) {
+                all.push({ unitTitle: unit.title, subUnitTitle: sub.title, essay, unitId: unit.id, subUnitId: sub.id });
+              }
+            }
           }
         }
       }
+      return all;
+    }
+
+    async function updateUnitDoc(unitId, updateData) {
+      const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
+      await updateDoc(unitRef, updateData);
+    }
+
+    // Get pattern suggestion (most overdue)
+    function getPatternSuggestion() {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const allEssays = extractAllEssays();
+      let dueEssays = allEssays.filter(item => {
+        if(!item.essay.nextReminder) return false;
+        const nextDate = new Date(item.essay.nextReminder);
+        nextDate.setHours(0,0,0,0);
+        return nextDate <= today;
+      });
       if (dueEssays.length === 0) return null;
       dueEssays.sort((a,b) => new Date(a.essay.nextReminder) - new Date(b.essay.nextReminder));
       return dueEssays[0];
     }
 
-    // Get random suggestions (distinct essays, not necessarily due)
+    // Get random suggestions
     function getRandomSuggestions(count) {
-      let allEssays = [];
-      for (const unit of state.units) {
-        for (const essay of (unit.essays || [])) {
-          allEssays.push({ unitTitle: unit.title, essay, unitId: unit.id });
-        }
-      }
+      let allEssays = extractAllEssays();
       if (allEssays.length === 0) return [];
-      // Shuffle and take first 'count'
       for (let i = allEssays.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [allEssays[i], allEssays[j]] = [allEssays[j], allEssays[i]];
@@ -416,26 +506,10 @@
       return allEssays.slice(0, count);
     }
 
-    async function markEssayReviewed(unitId, essayId) {
-      const unit = state.units.find(u => u.id === unitId);
-      if (!unit) return;
-      const essay = unit.essays.find(e => e.id === essayId);
-      if (!essay) return;
-      const now = new Date();
-      const reminderCount = (essay.reminderCount || 0) + 1;
-      const nextReminder = computeNextReminder(reminderCount, now);
-      const updatedEssays = unit.essays.map(e => 
-        e.id === essayId ? { ...e, reminderCount, lastReminded: now.toISOString(), nextReminder: nextReminder.toISOString() } : e
-      );
-      const unitRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId);
-      await updateDoc(unitRef, { essays: updatedEssays });
-      showToast(`"${essay.title}" marked as reviewed! Next: ${formatDate(nextReminder)}`, "success");
-      renderView(); // refresh suggestion tab
-    }
-
     // Render the Today's Suggestion tab based on mode
     function renderSuggestion() {
-      if (state.units.length === 0 || !state.units.some(u => u.essays && u.essays.length > 0)) {
+      const allEssays = extractAllEssays();
+      if (allEssays.length === 0) {
         return `
           <div class="glass-card rounded-[2.5rem] p-12 text-center max-w-lg mx-auto border-emerald-100/50 shadow-sm">
             <div class="bg-emerald-50 w-20 h-20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6">
@@ -460,7 +534,7 @@
         }
         return renderEssayCard(suggestion, 'pattern');
       } 
-      else { // random mode
+      else { 
         const count = state.randomCount;
         const suggestions = getRandomSuggestions(count);
         if (suggestions.length === 0) {
@@ -471,13 +545,16 @@
     }
 
     function renderEssayCard(suggestion, mode) {
-      const { unitTitle, essay, unitId } = suggestion;
+      const { unitTitle, subUnitTitle, essay, unitId, subUnitId } = suggestion;
       const badgeColor = mode === 'pattern' ? 'bg-emerald-100/80 text-emerald-700 border-emerald-200/60' : 'bg-blue-100/80 text-blue-700 border-blue-200/60';
       const badgeText = mode === 'pattern' ? 'Pattern Match' : 'Random Pick';
+      const locationText = subUnitTitle ? `${escapeHtml(unitTitle)} <span class="text-slate-300 mx-1">/</span> ${escapeHtml(subUnitTitle)}` : escapeHtml(unitTitle);
+      const subIdArg = subUnitId ? `'${subUnitId}'` : 'null';
+
       return `
         <div class="glass-card rounded-[2.5rem] shadow-lg border border-slate-100 overflow-hidden animate-slide-up max-w-2xl mx-auto">
           <div class="bg-slate-50/70 p-6 border-b border-slate-100/80 flex justify-between items-center">
-            <span class="text-xs font-extrabold text-emerald-700 tracking-wider uppercase font-heading">${escapeHtml(unitTitle)}</span>
+            <span class="text-xs font-extrabold text-emerald-700 tracking-wider uppercase font-heading flex items-center">${locationText}</span>
             <span class="text-[10px] px-3 py-1.5 rounded-xl ${badgeColor} border font-extrabold tracking-wide uppercase">${badgeText}</span>
           </div>
           <div class="p-8 md:p-10">
@@ -500,7 +577,7 @@
               </div>` : ''}
             </div>
             
-            <button onclick="window.app.markReviewed('${unitId}', '${essay.id}')" class="w-full btn-gradient hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold py-4.5 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
+            <button onclick="window.app.markReviewed('${unitId}', ${subIdArg}, '${essay.id}')" class="w-full btn-gradient hover:scale-[1.02] active:scale-[0.98] text-white font-extrabold py-4.5 rounded-2xl shadow-xl shadow-emerald-600/20 transition-all flex items-center justify-center gap-2">
               <i data-lucide="check-circle-2" class="w-5 h-5"></i> Mark as Reviewed Today
             </button>
           </div>
@@ -521,13 +598,14 @@
     function renderDashboard() {
       let totalEssays = 0, totalReviews = 0, dueCount = 0;
       const today = new Date(); today.setHours(0,0,0,0);
-      for (const unit of state.units) {
-        for (const essay of (unit.essays || [])) {
-          totalEssays++;
-          totalReviews += (essay.reminderCount || 0);
-          if (essay.nextReminder && new Date(essay.nextReminder) <= today) dueCount++;
-        }
+      const allEssays = extractAllEssays();
+      totalEssays = allEssays.length;
+
+      for (const item of allEssays) {
+        totalReviews += (item.essay.reminderCount || 0);
+        if (item.essay.nextReminder && new Date(item.essay.nextReminder) <= today) dueCount++;
       }
+
       return `
         <div class="space-y-8 animate-slide-up">
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -562,13 +640,13 @@
           <div class="glass-panel rounded-[2.5rem] p-8 md:p-10 border border-slate-100/50 shadow-sm mt-8">
             <h3 class="text-xl font-extrabold mb-6 font-heading text-slate-800 tracking-tight">Your Study Units</h3>
             ${state.units.length === 0 ? '<div class="bg-slate-50/50 rounded-2xl p-6 border border-slate-100/50 text-center"><p class="text-slate-500 font-semibold text-sm">No units added yet. Click "Add Unit" to get started.</p></div>' : 
-              `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">${state.units.map(u => `
-                <div class="flex justify-between items-center p-5 bg-white/70 hover:bg-white border border-slate-200/50 rounded-[1.5rem] transition-all duration-300 hover:shadow-sm group">
+              `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">${state.units.map(u => `
+                <div onclick="window.app.openUnitDetails('${u.id}')" class="flex justify-between items-center p-5 bg-white/70 hover:bg-white border border-slate-200/50 rounded-[1.5rem] transition-all duration-300 hover:shadow-md cursor-pointer group">
                   <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform"><i data-lucide="folder" class="w-4 h-4"></i></div>
+                    <div class="w-10 h-10 rounded-[1rem] bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-100 transition-all"><i data-lucide="folder" class="w-5 h-5"></i></div>
                     <span class="font-extrabold text-slate-800 font-heading text-sm">${escapeHtml(u.title)}</span>
                   </div>
-                  <span class="text-xs px-3.5 py-1.5 bg-slate-100/80 rounded-xl font-bold text-slate-500 border border-slate-200/50">${(u.essays||[]).length} items</span>
+                  <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors"></i>
                 </div>`).join('')}</div>`}
           </div>
         </div>
@@ -577,45 +655,28 @@
 
     function renderEssays() {
       if (state.units.length === 0) return `<div class="glass-card rounded-[2.5rem] p-12 text-center text-slate-400 font-semibold">No units have been set up yet. Create a unit first.</div>`;
-      let html = `<div class="space-y-6 animate-slide-up">`;
+      
+      let html = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-slide-up">`;
       for (const unit of state.units) {
+        const subCount = (unit.subUnits || []).length;
+        const essayCount = (unit.essays || []).length + (unit.subUnits || []).reduce((acc, sub) => acc + (sub.essays || []).length, 0);
+
         html += `
-          <div class="glass-card rounded-[2.5rem] border border-slate-100/50 overflow-hidden shadow-sm">
-            <div class="bg-slate-50/80 p-5 md:p-6 flex justify-between items-center border-b border-slate-100/80">
-              <div class="flex items-center gap-3">
-                <div class="p-2 bg-white rounded-lg shadow-sm border border-slate-100"><i data-lucide="folder" class="w-4 h-4 text-emerald-600"></i></div>
-                <h3 class="font-extrabold text-slate-800 font-heading text-base">${escapeHtml(unit.title)}</h3>
-              </div>
-              <button onclick="window.app.openAddEssayModal('${unit.id}')" class="text-emerald-700 hover:text-emerald-800 text-xs font-bold flex items-center gap-1.5 bg-emerald-100/50 px-4 py-2 rounded-xl border border-emerald-200/50 transition-colors hover:bg-emerald-100">
-                <i data-lucide="plus" class="w-4 h-4"></i> Add
-              </button>
-            </div>`;
-        if (!unit.essays || unit.essays.length === 0) {
-          html += `<div class="p-8 text-center text-slate-400 font-medium text-sm">No essay questions have been added to this unit yet.</div>`;
-        } else {
-          html += `<div class="divide-y divide-slate-100/80">`;
-          for (const essay of unit.essays) {
-            html += `
-              <div class="p-6 md:p-7 hover:bg-slate-50/40 transition-colors">
-                <div class="flex justify-between items-start gap-4">
-                  <div class="flex-1">
-                    <p class="font-bold text-slate-800 leading-snug font-heading text-base">${escapeHtml(essay.title)}</p>
-                    ${essay.description ? `<p class="text-xs text-slate-500 font-medium mt-2 max-w-2xl bg-white/50 p-3 rounded-xl border border-slate-100/50">${escapeHtml(essay.description.substring(0,100))}${essay.description.length>100?'…':''}</p>` : ''}
-                    <div class="flex flex-wrap gap-3 text-[10px] text-slate-500 font-bold tracking-wider uppercase mt-4">
-                      <span class="bg-slate-100/80 border border-slate-200/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"><i data-lucide="rotate-cw" class="w-3 h-3 text-emerald-500"></i> ${essay.reminderCount || 0} reviews</span>
-                      <span class="bg-slate-100/80 border border-slate-200/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 text-slate-400"></i> Last: ${essay.lastReminded ? formatDate(essay.lastReminded) : '—'}</span>
-                      <span class="bg-slate-100/80 border border-slate-200/50 px-2.5 py-1.5 rounded-lg flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3 text-amber-500"></i> Next: ${essay.nextReminder ? formatDate(essay.nextReminder) : '—'}</span>
-                    </div>
-                  </div>
-                  <button onclick="window.app.deleteEssay('${unit.id}', '${essay.id}')" class="w-9 h-9 rounded-xl text-rose-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-all border border-transparent hover:border-rose-100">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
+        <div onclick="window.app.openUnitDetails('${unit.id}')" class="glass-card cursor-pointer rounded-[2rem] p-6 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-slate-100 group relative overflow-hidden">
+            <div class="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-300">
+                <i data-lucide="folder" class="w-32 h-32 text-emerald-900"></i>
+            </div>
+            <div class="flex items-center gap-4 mb-5 z-10 relative">
+                <div class="w-14 h-14 bg-gradient-to-tr from-emerald-100 to-teal-50 rounded-[1.25rem] flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100/50">
+                    <i data-lucide="folder-open" class="w-7 h-7"></i>
                 </div>
-              </div>`;
-          }
-          html += `</div>`;
-        }
-        html += `</div>`;
+                <h3 class="font-extrabold text-slate-800 text-xl font-heading leading-tight">${escapeHtml(unit.title)}</h3>
+            </div>
+            <div class="flex gap-3 z-10 relative">
+                <span class="text-[11px] font-bold px-3 py-1.5 bg-white border border-slate-200 text-slate-600 rounded-xl flex items-center gap-1.5"><i data-lucide="layers" class="w-3 h-3"></i> ${subCount} Sub-units</span>
+                <span class="text-[11px] font-bold px-3 py-1.5 bg-emerald-50 border border-emerald-100/50 text-emerald-700 rounded-xl flex items-center gap-1.5"><i data-lucide="file-text" class="w-3 h-3"></i> ${essayCount} Essays</span>
+            </div>
+        </div>`;
       }
       html += `</div>`;
       return html;
@@ -632,8 +693,16 @@
       if(activeDesktop) activeDesktop.className = 'nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold shadow-md shadow-emerald-500/10';
       if(activeMobile) activeMobile.className = 'nav-btn flex flex-col items-center p-2 rounded-xl text-emerald-600 font-bold';
       
-      const titles = { dashboard: 'Dashboard', suggestion: "Today's Tasks", essays: 'All Essays' };
+      const titles = { dashboard: 'Dashboard', suggestion: "Today's Tasks", essays: 'All Units' };
       document.getElementById('page-title').textContent = titles[state.activeTab];
+      
+      if(state.activeTab === 'essays') {
+          document.getElementById('page-subtitle').textContent = 'Manage your study units and sub-units';
+      } else if (state.activeTab === 'dashboard') {
+          document.getElementById('page-subtitle').textContent = 'Track your essay practice progress';
+      } else {
+          document.getElementById('page-subtitle').textContent = 'Review your scheduled questions';
+      }
     }
 
     async function renderView() {
@@ -651,6 +720,15 @@
       state.unsubscribeDb = onSnapshot(unitsRef, (snapshot) => {
         state.units = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderView();
+        
+        // If unit details is open, refresh it
+        if (!document.getElementById('unit-details-modal').classList.contains('hidden') && window.app.currentViewUnitId) {
+            window.app.openUnitDetails(window.app.currentViewUnitId);
+        }
+        // If manage units is open, refresh it
+        if (!document.getElementById('manage-units-modal').classList.contains('hidden')) {
+            window.app.openManageUnits();
+        }
       });
     }
 
@@ -663,6 +741,7 @@
     }
 
     window.app = {
+      currentViewUnitId: null,
       switchTab: (tab) => { state.activeTab = tab; renderView(); },
       openAddUnitModal: () => { document.getElementById('add-unit-modal').classList.remove('hidden'); },
       closeAddUnitModal: () => { document.getElementById('add-unit-modal').classList.add('hidden'); },
@@ -671,13 +750,34 @@
         const title = document.getElementById('new-unit-title').value.trim();
         if (!title) return;
         const newId = crypto.randomUUID();
-        await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', newId), { title, essays: [] });
+        await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', newId), { title, essays: [], subUnits: [] });
         document.getElementById('new-unit-title').value = '';
         window.app.closeAddUnitModal();
         showToast(`Unit "${title}" added successfully`, "success");
       },
-      openAddEssayModal: (unitId) => {
+      openAddSubUnitModal: () => {
+        document.getElementById('new-subunit-title').value = '';
+        document.getElementById('add-subunit-modal').classList.remove('hidden');
+      },
+      closeAddSubUnitModal: () => { document.getElementById('add-subunit-modal').classList.add('hidden'); },
+      handleAddSubUnit: async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('new-subunit-title').value.trim();
+        if (!title || !window.app.currentViewUnitId) return;
+        const unitId = window.app.currentViewUnitId;
+        const unit = state.units.find(u => u.id === unitId);
+        if(!unit) return;
+        
+        const newSub = { id: crypto.randomUUID(), title, essays: [] };
+        const updatedSubUnits = [...(unit.subUnits || []), newSub];
+        await updateUnitDoc(unitId, { subUnits: updatedSubUnits });
+        
+        window.app.closeAddSubUnitModal();
+        showToast(`Sub-unit added`, "success");
+      },
+      openAddEssayModal: (unitId, subUnitId = null) => {
         document.getElementById('essay-unit-id').value = unitId;
+        document.getElementById('essay-subunit-id').value = subUnitId || '';
         document.getElementById('new-essay-title').value = '';
         document.getElementById('new-essay-description').value = '';
         document.getElementById('add-essay-modal').classList.remove('hidden');
@@ -686,37 +786,219 @@
       handleAddEssay: async (e) => {
         e.preventDefault();
         const unitId = document.getElementById('essay-unit-id').value;
+        const subUnitId = document.getElementById('essay-subunit-id').value;
         const title = document.getElementById('new-essay-title').value.trim();
         const description = document.getElementById('new-essay-description').value.trim();
         if (!title) return;
+        
         const unit = state.units.find(u => u.id === unitId);
         if (!unit) return;
         const now = new Date();
         const newEssay = {
-          id: crypto.randomUUID(),
-          title,
-          description: description || '',
-          reminderCount: 0,
-          lastReminded: null,
+          id: crypto.randomUUID(), title, description: description || '',
+          reminderCount: 0, lastReminded: null,
           nextReminder: computeNextReminder(0, now).toISOString(),
           createdAt: now.toISOString()
         };
-        const updatedEssays = [...(unit.essays || []), newEssay];
-        await updateDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId), { essays: updatedEssays });
+
+        if (subUnitId) {
+            const updatedSubUnits = (unit.subUnits || []).map(sub => {
+                if (sub.id === subUnitId) return { ...sub, essays: [...(sub.essays || []), newEssay] };
+                return sub;
+            });
+            await updateUnitDoc(unitId, { subUnits: updatedSubUnits });
+        } else {
+            const updatedEssays = [...(unit.essays || []), newEssay];
+            await updateUnitDoc(unitId, { essays: updatedEssays });
+        }
+        
         window.app.closeAddEssayModal();
-        showToast(`Essay "${title}" added successfully`, "success");
+        showToast(`Essay added`, "success");
       },
-      deleteEssay: async (unitId, essayId) => {
+      openUnitDetails: (unitId) => {
+        window.app.currentViewUnitId = unitId;
+        const unit = state.units.find(u => u.id === unitId);
+        if(!unit) return;
+
+        document.getElementById('unit-details-title').textContent = unit.title;
+        const content = document.getElementById('unit-details-content');
+
+        let html = '';
+
+        // Sub Units
+        if (unit.subUnits && unit.subUnits.length > 0) {
+            html += `<div class="space-y-5">`;
+            for (const sub of unit.subUnits) {
+                html += `
+                <div class="bg-white border border-slate-200/80 rounded-[1.5rem] shadow-sm overflow-hidden">
+                    <div class="flex justify-between items-center p-4 md:p-5 bg-slate-50/50 border-b border-slate-100">
+                        <h4 class="font-extrabold text-slate-800 flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5 text-emerald-500"></i> ${escapeHtml(sub.title)}</h4>
+                        <div class="flex gap-2">
+                            <button onclick="window.app.openAddEssayModal('${unit.id}', '${sub.id}')" class="text-xs bg-white border border-slate-200 px-3.5 py-2 rounded-xl font-bold text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-colors shadow-sm">Add Essay</button>
+                        </div>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                `;
+                if (!sub.essays || sub.essays.length === 0) {
+                    html += `<div class="p-6 text-sm text-slate-400 text-center font-medium">No essays added here yet.</div>`;
+                } else {
+                    html += sub.essays.map(essay => window.app.generateEssayRowHtml(unit.id, sub.id, essay)).join('');
+                }
+                html += `</div></div>`;
+            }
+            html += `</div>`;
+        }
+
+        // Direct Essays
+        let directEssaysHtml = '';
+        if (unit.essays && unit.essays.length > 0) {
+            directEssaysHtml = `
+                <div class="mt-6 bg-white border border-slate-200/80 rounded-[1.5rem] shadow-sm overflow-hidden">
+                    <div class="p-4 md:p-5 bg-slate-50/50 border-b border-slate-100">
+                        <h4 class="font-extrabold text-slate-800 flex items-center gap-2"><i data-lucide="file-text" class="w-5 h-5 text-indigo-500"></i> Direct Essays</h4>
+                    </div>
+                    <div class="divide-y divide-slate-100">
+                        ${unit.essays.map(essay => window.app.generateEssayRowHtml(unit.id, null, essay)).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        if ((!unit.subUnits || unit.subUnits.length === 0) && (!unit.essays || unit.essays.length === 0)) {
+            html = `<div class="text-center p-12 glass-card rounded-[2rem] border border-slate-100">
+                      <div class="bg-slate-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"><i data-lucide="inbox" class="w-8 h-8 text-slate-400"></i></div>
+                      <p class="text-slate-500 font-semibold">This unit is empty. Add a sub-unit or an essay.</p>
+                    </div>`;
+        } else {
+            html += directEssaysHtml;
+        }
+
+        content.innerHTML = html;
+        lucide.createIcons({ root: document.getElementById('unit-details-modal') });
+        document.getElementById('unit-details-modal').classList.remove('hidden');
+      },
+      closeUnitDetails: () => {
+        document.getElementById('unit-details-modal').classList.add('hidden');
+        window.app.currentViewUnitId = null;
+      },
+      generateEssayRowHtml: (unitId, subUnitId, essay) => {
+        const subIdArg = subUnitId ? `'${subUnitId}'` : 'null';
+        return `
+        <div class="p-5 hover:bg-slate-50/80 transition-colors flex justify-between items-center gap-4 group">
+            <div class="flex-1">
+                <p class="font-bold text-slate-800 text-sm md:text-base leading-snug">${escapeHtml(essay.title)}</p>
+                <div class="flex flex-wrap gap-2 text-[10px] text-slate-500 mt-2 font-bold uppercase tracking-wider">
+                    <span class="bg-slate-100/80 border border-slate-200/60 px-2 py-1 rounded-md flex items-center gap-1"><i data-lucide="rotate-cw" class="w-3 h-3 text-emerald-500"></i> ${essay.reminderCount || 0}</span>
+                    <span class="bg-slate-100/80 border border-slate-200/60 px-2 py-1 rounded-md flex items-center gap-1"><i data-lucide="calendar" class="w-3 h-3 text-amber-500"></i> ${essay.nextReminder ? formatDate(essay.nextReminder) : '-'}</span>
+                </div>
+            </div>
+            <button onclick="window.app.deleteEssay('${unitId}', ${subIdArg}, '${essay.id}')" class="text-slate-300 hover:text-rose-500 p-2.5 rounded-xl hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+        </div>
+        `;
+      },
+      deleteEssay: async (unitId, subUnitId, essayId) => {
         if (!confirm('Are you sure you want to delete this question?')) return;
         const unit = state.units.find(u => u.id === unitId);
         if (!unit) return;
-        const updatedEssays = (unit.essays || []).filter(e => e.id !== essayId);
-        await updateDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId), { essays: updatedEssays });
+
+        if (subUnitId) {
+             const updatedSubUnits = (unit.subUnits || []).map(sub => {
+                 if (sub.id === subUnitId) return { ...sub, essays: (sub.essays || []).filter(e => e.id !== essayId) };
+                 return sub;
+             });
+             await updateUnitDoc(unitId, { subUnits: updatedSubUnits });
+        } else {
+             const updatedEssays = (unit.essays || []).filter(e => e.id !== essayId);
+             await updateUnitDoc(unitId, { essays: updatedEssays });
+        }
         showToast('Question removed successfully', 'success');
       },
-      markReviewed: async (unitId, essayId) => {
-        await markEssayReviewed(unitId, essayId);
-        renderView();
+      markReviewed: async (unitId, subUnitId, essayId) => {
+        const unit = state.units.find(u => u.id === unitId);
+        const now = new Date();
+        let targetEssay = null;
+
+        if (subUnitId) {
+             const updatedSubUnits = (unit.subUnits || []).map(sub => {
+                 if (sub.id === subUnitId) {
+                     const essays = (sub.essays || []).map(e => {
+                         if (e.id === essayId) {
+                             const count = (e.reminderCount || 0) + 1;
+                             targetEssay = { ...e, reminderCount: count, lastReminded: now.toISOString(), nextReminder: computeNextReminder(count, now).toISOString() };
+                             return targetEssay;
+                         }
+                         return e;
+                     });
+                     return { ...sub, essays };
+                 }
+                 return sub;
+             });
+             if(targetEssay) await updateUnitDoc(unitId, { subUnits: updatedSubUnits });
+        } else {
+             const essays = (unit.essays || []).map(e => {
+                 if (e.id === essayId) {
+                     const count = (e.reminderCount || 0) + 1;
+                     targetEssay = { ...e, reminderCount: count, lastReminded: now.toISOString(), nextReminder: computeNextReminder(count, now).toISOString() };
+                     return targetEssay;
+                 }
+                 return e;
+             });
+             if(targetEssay) await updateUnitDoc(unitId, { essays });
+        }
+
+        if(targetEssay) {
+            showToast(`Reviewed! Next: ${formatDate(targetEssay.nextReminder)}`, "success");
+            renderView();
+        }
+      },
+      openManageUnits: () => {
+        window.app.closeSettings();
+        const list = document.getElementById('manage-units-list');
+        if(state.units.length === 0) {
+            list.innerHTML = `<p class="text-center text-slate-400 font-medium text-sm p-4">No units available.</p>`;
+        } else {
+            list.innerHTML = state.units.map(u => `
+                <div class="bg-white border border-slate-200 p-4 rounded-2xl shadow-sm mb-3">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="font-extrabold text-slate-800 text-lg">${escapeHtml(u.title)}</span>
+                        <button onclick="window.app.deleteUnit('${u.id}')" class="text-rose-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-xl transition-colors border border-transparent hover:border-rose-100">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="space-y-2 border-t border-slate-100 pt-3">
+                        ${(u.subUnits || []).length === 0 ? '<p class="text-xs text-slate-400">No sub-units</p>' : 
+                          (u.subUnits || []).map(sub => `
+                            <div class="flex justify-between items-center bg-slate-50 px-3 py-2 rounded-xl border border-slate-100">
+                                <span class="text-sm font-semibold text-slate-600">${escapeHtml(sub.title)}</span>
+                                <button onclick="window.app.deleteSubUnit('${u.id}', '${sub.id}')" class="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg transition-colors">
+                                    <i data-lucide="x" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                          `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+        lucide.createIcons({ root: document.getElementById('manage-units-modal') });
+        document.getElementById('manage-units-modal').classList.remove('hidden');
+      },
+      closeManageUnits: () => {
+        document.getElementById('manage-units-modal').classList.add('hidden');
+      },
+      deleteUnit: async (unitId) => {
+        if(!confirm('Are you sure you want to delete this unit and ALL its sub-units and essays?')) return;
+        await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'units', unitId));
+        showToast('Unit deleted', 'success');
+      },
+      deleteSubUnit: async (unitId, subUnitId) => {
+        if(!confirm('Are you sure you want to delete this sub-unit and ALL its essays?')) return;
+        const unit = state.units.find(u => u.id === unitId);
+        if (!unit) return;
+        const updatedSubUnits = (unit.subUnits || []).filter(s => s.id !== subUnitId);
+        await updateUnitDoc(unitId, { subUnits: updatedSubUnits });
+        showToast('Sub-unit deleted', 'success');
       },
       openSettings: () => {
         document.querySelector(`input[name="suggestionMode"][value="${state.suggestionMode}"]`).checked = true;
