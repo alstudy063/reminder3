@@ -199,7 +199,7 @@
     </div>
   </div>
 
-  <div id="add-essay-modal" class="fixed inset-0 z-50 flex items-center justify-center p-5 hidden">
+  <div id="add-essay-modal" class="fixed inset-0 z-[65] flex items-center justify-center p-5 hidden">
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeAddEssayModal()"></div>
     <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md p-8 animate-zoom-in">
       <div class="flex items-center gap-3 mb-6">
@@ -825,19 +825,24 @@
 
         let html = '';
 
-        // Sub Units
+        // Sub Units with accordion functionality
         if (unit.subUnits && unit.subUnits.length > 0) {
             html += `<div class="space-y-5">`;
             for (const sub of unit.subUnits) {
+                const essayCount = (sub.essays || []).length;
                 html += `
-                <div class="bg-white border border-slate-200/80 rounded-[1.5rem] shadow-sm overflow-hidden">
-                    <div class="flex justify-between items-center p-4 md:p-5 bg-slate-50/50 border-b border-slate-100">
-                        <h4 class="font-extrabold text-slate-800 flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5 text-emerald-500"></i> ${escapeHtml(sub.title)}</h4>
-                        <div class="flex gap-2">
+                <div class="bg-white border border-slate-200/80 rounded-[1.5rem] shadow-sm overflow-hidden transition-all duration-300">
+                    <div onclick="window.app.toggleSubUnit('${sub.id}')" class="flex justify-between items-center p-4 md:p-5 bg-slate-50/50 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="chevron-right" id="chevron-${sub.id}" class="w-5 h-5 text-slate-400 transition-transform duration-300"></i>
+                            <h4 class="font-extrabold text-slate-800 flex items-center gap-2"><i data-lucide="layers" class="w-5 h-5 text-emerald-500"></i> ${escapeHtml(sub.title)}</h4>
+                            <span class="text-[10px] font-bold px-2 py-1 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100/30">${essayCount} Essays</span>
+                        </div>
+                        <div class="flex gap-2" onclick="event.stopPropagation();">
                             <button onclick="window.app.openAddEssayModal('${unit.id}', '${sub.id}')" class="text-xs bg-white border border-slate-200 px-3.5 py-2 rounded-xl font-bold text-slate-600 hover:text-emerald-600 hover:border-emerald-200 transition-colors shadow-sm">Add Essay</button>
                         </div>
                     </div>
-                    <div class="divide-y divide-slate-100">
+                    <div id="subunit-essays-${sub.id}" class="divide-y divide-slate-100 hidden">
                 `;
                 if (!sub.essays || sub.essays.length === 0) {
                     html += `<div class="p-6 text-sm text-slate-400 text-center font-medium">No essays added here yet.</div>`;
@@ -876,6 +881,19 @@
         content.innerHTML = html;
         lucide.createIcons({ root: document.getElementById('unit-details-modal') });
         document.getElementById('unit-details-modal').classList.remove('hidden');
+      },
+      toggleSubUnit: (subUnitId) => {
+        const container = document.getElementById(`subunit-essays-${subUnitId}`);
+        const chevron = document.getElementById(`chevron-${subUnitId}`);
+        if (container) {
+          if (container.classList.contains('hidden')) {
+            container.classList.remove('hidden');
+            if (chevron) chevron.classList.add('rotate-90');
+          } else {
+            container.classList.add('hidden');
+            if (chevron) chevron.classList.remove('rotate-90');
+          }
+        }
       },
       closeUnitDetails: () => {
         document.getElementById('unit-details-modal').classList.add('hidden');
