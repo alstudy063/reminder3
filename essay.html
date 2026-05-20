@@ -80,6 +80,54 @@
       filter: brightness(1.08);
       box-shadow: 0 4px 15px rgba(13, 148, 136, 0.3);
     }
+
+    /* Focus Timer Fullscreen */
+    @media (min-width: 768px) {
+      .timer-fullscreen {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        z-index: 100 !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        background: #0f172a !important; /* slate-900 */
+        margin: 0 !important;
+        gap: 2rem !important;
+      }
+      .timer-fullscreen .timer-info {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 1rem !important;
+      }
+      .timer-fullscreen .timer-icon {
+        transform: scale(2);
+        margin-bottom: 1rem;
+      }
+      .timer-fullscreen .timer-label {
+        font-size: 1.5rem !important;
+        margin-bottom: 1rem !important;
+        text-align: center;
+      }
+      .timer-fullscreen .timer-text {
+        font-size: 8rem !important;
+        line-height: 1 !important;
+        text-align: center;
+      }
+      .timer-fullscreen .timer-controls {
+        transform: scale(1.5) !important;
+        margin-top: 1.5rem !important;
+      }
+      .timer-fullscreen .minimize-btn {
+        display: flex !important;
+      }
+    }
   </style>
 </head>
 <body class="mesh-bg text-slate-900 overflow-hidden select-none md:select-auto min-h-screen">
@@ -328,9 +376,13 @@
               <span class="text-sm font-bold text-slate-700">Random Selection</span>
             </label>
           </div>
-          <div id="randomCountContainer" class="mt-4 hidden p-3 bg-white rounded-2xl border border-slate-100">
+          <div id="randomCountContainer" class="mt-4 hidden p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
             <label class="text-xs text-slate-500 font-bold block mb-2">Daily random essays:</label>
             <input type="number" id="randomEssayCount" min="1" max="10" value="2" class="w-full bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800">
+          </div>
+          <div class="mt-4 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <label class="text-xs text-slate-500 font-bold block mb-2">Focus Timer Duration (Minutes):</label>
+            <input type="number" id="settingsTimerDuration" min="1" max="120" value="20" class="w-full bg-slate-50 border border-slate-200/60 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800">
           </div>
         </div>
 
@@ -422,7 +474,8 @@
       activeTab: 'dashboard',
       unsubscribeDb: null,
       suggestionMode: 'pattern',   // 'pattern' or 'random'
-      randomCount: 2
+      randomCount: 2,
+      defaultTimerMinutes: 20
     };
 
     function showToast(msg, type='info') {
@@ -578,22 +631,25 @@
             <h3 class="text-2xl md:text-3xl font-extrabold text-slate-800 mb-4 leading-snug font-heading tracking-tight">${escapeHtml(essay.title)}</h3>
             ${essay.description ? `<p class="text-slate-600 font-medium text-sm md:text-base mb-6 leading-relaxed bg-white/50 p-5 rounded-2xl border border-slate-100/60 shadow-inner">${escapeHtml(essay.description)}</p>` : ''}
             
-            <div class="bg-slate-900 rounded-[1.5rem] p-5 mb-8 flex items-center justify-between shadow-lg shadow-slate-900/20 text-white border border-slate-800">
-                <div class="flex items-center gap-4">
-                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700/50 shadow-inner">
+            <div id="${timerId}-container" class="bg-slate-900 rounded-[1.5rem] p-5 mb-8 flex items-center justify-between shadow-lg shadow-slate-900/20 text-white border border-slate-800 transition-all duration-500">
+                <div class="flex items-center gap-4 timer-info">
+                    <div class="bg-slate-800 p-3 rounded-xl border border-slate-700/50 shadow-inner timer-icon transition-transform">
                         <i data-lucide="timer" class="w-6 h-6 text-emerald-400"></i>
                     </div>
-                    <div>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Focus Timer</p>
-                        <p id="${timerId}-display" class="text-2xl font-extrabold tracking-tight font-mono leading-none">20:00</p>
+                    <div class="timer-text-container">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 timer-label transition-all">Focus Timer</p>
+                        <p id="${timerId}-display" class="text-2xl font-extrabold tracking-tight font-mono leading-none timer-text transition-all">${state.defaultTimerMinutes.toString().padStart(2, '0')}:00</p>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="window.app.toggleTimer('${timerId}', 20)" id="${timerId}-btn" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-900 px-4 md:px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 text-sm">
+                <div class="flex gap-2 timer-controls transition-transform">
+                    <button onclick="window.app.toggleTimer('${timerId}')" id="${timerId}-btn" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-900 px-4 md:px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 text-sm">
                         <i data-lucide="play" class="w-4 h-4"></i> <span id="${timerId}-btn-text">Start</span>
                     </button>
                     <button onclick="window.app.resetTimer('${timerId}')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 p-2.5 rounded-xl transition-all border border-slate-700/50">
                         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="window.app.minimizeTimer('${timerId}')" id="${timerId}-min-btn" class="hidden minimize-btn bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 p-2.5 rounded-xl transition-all border border-slate-700/50 ml-1">
+                        <i data-lucide="minimize-2" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
@@ -798,8 +854,10 @@
     function loadSettings() {
       const savedMode = localStorage.getItem('suggestionMode');
       const savedCount = localStorage.getItem('randomEssayCount');
+      const savedTimer = localStorage.getItem('defaultTimerMinutes');
       if (savedMode === 'pattern' || savedMode === 'random') state.suggestionMode = savedMode;
       if (savedCount && !isNaN(parseInt(savedCount))) state.randomCount = parseInt(savedCount);
+      if (savedTimer && !isNaN(parseInt(savedTimer))) state.defaultTimerMinutes = parseInt(savedTimer);
     }
 
     window.app = {
@@ -1001,9 +1059,10 @@
       timeLeft: 0,
       activeTimerId: null,
       
-      toggleTimer: (timerId, minutes) => {
+      toggleTimer: (timerId) => {
           const btnText = document.getElementById(`${timerId}-btn-text`);
           const icon = document.getElementById(`${timerId}-btn`).querySelector('i');
+          const container = document.getElementById(`${timerId}-container`);
           
           if (window.app.activeTimerId === timerId && window.app.timerInterval) {
               // Pause
@@ -1016,12 +1075,18 @@
               // Start or Resume
               if (window.app.activeTimerId !== timerId) {
                   if (window.app.timerInterval) clearInterval(window.app.timerInterval);
-                  window.app.timeLeft = minutes * 60;
+                  window.app.timeLeft = state.defaultTimerMinutes * 60;
                   window.app.activeTimerId = timerId;
               }
               
               btnText.textContent = "Pause";
               icon.setAttribute('data-lucide', 'pause');
+              
+              // Fullscreen expansion (Desktop only)
+              if (window.innerWidth >= 768 && container) {
+                  container.classList.add('timer-fullscreen');
+              }
+
               lucide.createIcons();
               
               window.app.timerInterval = setInterval(() => {
@@ -1036,6 +1101,7 @@
                       window.app.timerInterval = null;
                       btnText.textContent = "Done";
                       icon.setAttribute('data-lucide', 'check');
+                      if (container) container.classList.remove('timer-fullscreen');
                       lucide.createIcons();
                       showToast("Time's up! Great focus.", "success");
                   }
@@ -1043,12 +1109,21 @@
           }
       },
       
+      minimizeTimer: (timerId) => {
+          const container = document.getElementById(`${timerId}-container`);
+          if (container) container.classList.remove('timer-fullscreen');
+      },
+
       resetTimer: (timerId) => {
           if (window.app.timerInterval) clearInterval(window.app.timerInterval);
           window.app.timerInterval = null;
           window.app.activeTimerId = null;
+          
+          const container = document.getElementById(`${timerId}-container`);
+          if (container) container.classList.remove('timer-fullscreen');
+
           const displayEl = document.getElementById(`${timerId}-display`);
-          if (displayEl) displayEl.textContent = "20:00";
+          if (displayEl) displayEl.textContent = `${state.defaultTimerMinutes.toString().padStart(2, '0')}:00`;
           
           const btnText = document.getElementById(`${timerId}-btn-text`);
           if (btnText) btnText.textContent = "Start";
@@ -1159,6 +1234,8 @@
       openSettings: () => {
         document.querySelector(`input[name="suggestionMode"][value="${state.suggestionMode}"]`).checked = true;
         document.getElementById('randomEssayCount').value = state.randomCount;
+        document.getElementById('settingsTimerDuration').value = state.defaultTimerMinutes;
+        
         const randomContainer = document.getElementById('randomCountContainer');
         if (state.suggestionMode === 'random') randomContainer.classList.remove('hidden');
         else randomContainer.classList.add('hidden');
@@ -1176,13 +1253,19 @@
       saveSettings: () => {
         const mode = document.querySelector('input[name="suggestionMode"]:checked').value;
         const count = parseInt(document.getElementById('randomEssayCount').value) || 2;
+        const timerMins = parseInt(document.getElementById('settingsTimerDuration').value) || 20;
+
         state.suggestionMode = mode;
         state.randomCount = Math.min(10, Math.max(1, count));
+        state.defaultTimerMinutes = Math.min(120, Math.max(1, timerMins));
+
         localStorage.setItem('suggestionMode', state.suggestionMode);
         localStorage.setItem('randomEssayCount', state.randomCount);
+        localStorage.setItem('defaultTimerMinutes', state.defaultTimerMinutes);
+
         window.app.closeSettings();
         renderView();
-        showToast(`Suggestion mode saved!`, "success");
+        showToast(`Preferences saved!`, "success");
       },
       logout: async () => { await signOut(auth); window.app.closeSettings(); },
       handleBackup: () => {
