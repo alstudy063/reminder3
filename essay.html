@@ -85,6 +85,28 @@
     .timer-container-transition {
       transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
+    /* Smooth Modal Transitions */
+    .modal-wrapper {
+        opacity: 0;
+        pointer-events: none;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .modal-wrapper.active {
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+    }
+    .modal-wrapper .modal-content {
+        transform: scale(0.95) translateY(10px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-wrapper.active .modal-content {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
   </style>
 </head>
 <body class="mesh-bg text-slate-900 overflow-hidden select-none md:select-auto min-h-screen">
@@ -187,9 +209,9 @@
   </div>
 
   <!-- MODALS -->
-  <div id="add-unit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-5 hidden">
+  <div id="add-unit-modal" class="fixed inset-0 z-50 flex items-center justify-center p-5 modal-wrapper">
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeAddUnitModal()"></div>
-    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-sm p-8 animate-zoom-in">
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-sm p-8 modal-content">
       <div class="flex items-center gap-3 mb-6">
         <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
           <i data-lucide="folder-plus" class="w-5 h-5"></i>
@@ -204,9 +226,9 @@
     </div>
   </div>
 
-  <div id="add-essay-modal" class="fixed inset-0 z-[65] flex items-center justify-center p-5 hidden">
+  <div id="add-essay-modal" class="fixed inset-0 z-[65] flex items-center justify-center p-5 modal-wrapper">
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeAddEssayModal()"></div>
-    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md p-8 animate-zoom-in">
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md p-8 modal-content">
       <div class="flex items-center gap-3 mb-6">
         <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
           <i data-lucide="file-plus" class="w-5 h-5"></i>
@@ -232,9 +254,9 @@
   </div>
 
   <!-- UNIT DETAILS MODAL (POPUP) -->
-  <div id="unit-details-modal" class="fixed inset-0 z-[55] flex items-center justify-center p-4 md:p-5 hidden">
+  <div id="unit-details-modal" class="fixed inset-0 z-[55] flex items-center justify-center p-4 md:p-5 modal-wrapper">
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeUnitDetails()"></div>
-    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-2xl max-h-[85vh] flex flex-col animate-zoom-in">
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-2xl max-h-[85vh] flex flex-col modal-content">
       <div class="p-6 md:p-8 border-b border-slate-100 flex justify-between items-center shrink-0">
         <div class="flex items-center gap-3">
           <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
@@ -257,9 +279,9 @@
   </div>
 
   <!-- ADD SUB-UNIT MODAL -->
-  <div id="add-subunit-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-5 hidden">
+  <div id="add-subunit-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-5 modal-wrapper">
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeAddSubUnitModal()"></div>
-    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-sm p-8 animate-zoom-in">
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-sm p-8 modal-content">
       <div class="flex items-center gap-3 mb-6">
         <div class="bg-emerald-100/50 p-2.5 rounded-xl text-emerald-600">
           <i data-lucide="layers" class="w-5 h-5"></i>
@@ -275,9 +297,9 @@
   </div>
 
   <!-- MANAGE UNITS MODAL -->
-  <div id="manage-units-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-5 hidden">
+  <div id="manage-units-modal" class="fixed inset-0 z-[60] flex items-center justify-center p-5 modal-wrapper">
     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity" onclick="window.app.closeManageUnits()"></div>
-    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md max-h-[80vh] flex flex-col animate-zoom-in">
+    <div class="relative bg-white/95 border border-white rounded-[2.5rem] shadow-2xl shadow-slate-900/20 w-full max-w-md max-h-[80vh] flex flex-col modal-content">
       <div class="p-6 border-b border-slate-100 flex justify-between items-center shrink-0">
         <div class="flex items-center gap-3">
           <div class="bg-indigo-100/50 p-2.5 rounded-xl text-indigo-600">
@@ -296,10 +318,10 @@
   </div>
 
   <!-- Settings Modal with Mode Toggle (Modernized) -->
-  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 hidden">
+  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6 modal-wrapper">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-lg transition-opacity" onclick="window.app.closeSettings()"></div>
     
-    <div class="relative bg-white/95 border border-white/80 rounded-[2.5rem] shadow-2xl shadow-slate-900/30 w-full max-w-lg md:max-w-4xl p-6 md:p-8 animate-zoom-in overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="relative bg-white/95 border border-white/80 rounded-[2.5rem] shadow-2xl shadow-slate-900/30 w-full max-w-lg md:max-w-4xl p-6 md:p-8 overflow-hidden flex flex-col max-h-[90vh] modal-content">
       
       <!-- Header area -->
       <div class="flex justify-between items-center mb-6 md:mb-8 shrink-0">
@@ -437,8 +459,8 @@
   </div>
 
   <!-- GLOBAL TIMER POPUP (Desktop) -->
-  <div id="global-timer-modal" class="fixed inset-0 z-[80] flex items-center justify-center p-5 hidden bg-slate-900/60 backdrop-blur-md transition-opacity">
-    <div class="relative bg-white border border-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-8 text-center animate-zoom-in">
+  <div id="global-timer-modal" class="fixed inset-0 z-[80] flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-md transition-opacity modal-wrapper">
+    <div class="relative bg-white border border-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-8 text-center modal-content">
       <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white p-3 rounded-full shadow-lg border-4 border-white">
          <i data-lucide="timer" class="w-6 h-6"></i>
       </div>
@@ -604,7 +626,7 @@
       const allEssays = extractAllEssays();
       if (allEssays.length === 0) {
         return `
-          <div class="glass-card rounded-[2.5rem] p-12 text-center max-w-lg mx-auto border-emerald-100/50 shadow-sm">
+          <div class="glass-card rounded-[2.5rem] p-12 text-center max-w-lg mx-auto border-emerald-100/50 shadow-sm mt-8">
             <div class="bg-emerald-50 w-20 h-20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6">
               <i data-lucide="smile" class="w-10 h-10 text-emerald-500"></i>
             </div>
@@ -613,21 +635,11 @@
           </div>`;
       }
 
-      let headerHtml = `
-        <div class="mb-8 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-[2rem] p-6 md:p-8 text-white shadow-xl shadow-emerald-600/20 relative overflow-hidden animate-slide-up">
-            <div class="absolute -right-4 -top-4 opacity-[0.15] mix-blend-overlay"><i data-lucide="target" class="w-48 h-48"></i></div>
-            <h2 class="text-2xl font-extrabold font-heading tracking-tight mb-2 relative z-10 flex items-center gap-3">
-                <i data-lucide="flame" class="w-6 h-6 text-amber-300"></i> Your Focus for Today
-            </h2>
-            <p class="text-emerald-50 font-medium text-sm md:text-base relative z-10">${state.suggestionMode === 'pattern' ? 'Spaced repetition tailored to your memory.' : 'Random selection for varied practice.'}</p>
-        </div>
-      `;
-
       if (state.suggestionMode === 'pattern') {
         const suggestion = getPatternSuggestion();
         if (!suggestion) {
-          return headerHtml + `
-            <div class="glass-card rounded-[2.5rem] p-12 text-center max-w-lg mx-auto border-emerald-100/50 shadow-sm animate-zoom-in">
+          return `
+            <div class="glass-card rounded-[2.5rem] p-12 text-center max-w-lg mx-auto border-emerald-100/50 shadow-sm animate-zoom-in mt-8">
               <div class="bg-gradient-to-tr from-emerald-50 to-teal-50 w-20 h-20 rounded-[1.5rem] flex items-center justify-center mx-auto mb-6 border border-emerald-100">
                 <i data-lucide="check-circle" class="w-10 h-10 text-emerald-500"></i>
               </div>
@@ -635,15 +647,15 @@
               <p class="text-slate-500 font-medium text-sm">Great job! You have successfully finished all your scheduled tasks for today.</p>
             </div>`;
         }
-        return headerHtml + renderEssayCard(suggestion, 'pattern');
+        return renderEssayCard(suggestion, 'pattern');
       } 
       else { 
         const count = state.randomCount;
         const suggestions = getRandomSuggestions(count);
         if (suggestions.length === 0) {
-          return headerHtml + `<div class="glass-card rounded-[2.5rem] p-12 text-center text-slate-400 font-semibold">No questions available.</div>`;
+          return `<div class="glass-card rounded-[2.5rem] p-12 text-center text-slate-400 font-semibold mt-8">No questions available.</div>`;
         }
-        return headerHtml + `<div class="space-y-6">${suggestions.map(s => renderEssayCard(s, 'random')).join('')}</div>`;
+        return `<div class="space-y-6">${suggestions.map(s => renderEssayCard(s, 'random')).join('')}</div>`;
       }
     }
 
@@ -773,7 +785,11 @@
 
       for (const item of allEssays) {
         totalReviews += (item.essay.reminderCount || 0);
-        if (item.essay.nextReminder && new Date(item.essay.nextReminder) <= today) dueCount++;
+        if (item.essay.nextReminder) {
+            const nextDate = new Date(item.essay.nextReminder);
+            nextDate.setHours(0,0,0,0);
+            if (nextDate <= today) dueCount++;
+        }
       }
 
       return `
@@ -892,11 +908,11 @@
         renderView();
         
         // If unit details is open, refresh it
-        if (!document.getElementById('unit-details-modal').classList.contains('hidden') && window.app.currentViewUnitId) {
+        if (document.getElementById('unit-details-modal').classList.contains('active') && window.app.currentViewUnitId) {
             window.app.openUnitDetails(window.app.currentViewUnitId);
         }
         // If manage units is open, refresh it
-        if (!document.getElementById('manage-units-modal').classList.contains('hidden')) {
+        if (document.getElementById('manage-units-modal').classList.contains('active')) {
             window.app.openManageUnits();
         }
       });
@@ -915,8 +931,8 @@
     window.app = {
       currentViewUnitId: null,
       switchTab: (tab) => { state.activeTab = tab; renderView(); },
-      openAddUnitModal: () => { document.getElementById('add-unit-modal').classList.remove('hidden'); },
-      closeAddUnitModal: () => { document.getElementById('add-unit-modal').classList.add('hidden'); },
+      openAddUnitModal: () => { document.getElementById('add-unit-modal').classList.add('active'); },
+      closeAddUnitModal: () => { document.getElementById('add-unit-modal').classList.remove('active'); },
       handleAddUnit: async (e) => {
         e.preventDefault();
         const title = document.getElementById('new-unit-title').value.trim();
@@ -929,9 +945,9 @@
       },
       openAddSubUnitModal: () => {
         document.getElementById('new-subunit-title').value = '';
-        document.getElementById('add-subunit-modal').classList.remove('hidden');
+        document.getElementById('add-subunit-modal').classList.add('active');
       },
-      closeAddSubUnitModal: () => { document.getElementById('add-subunit-modal').classList.add('hidden'); },
+      closeAddSubUnitModal: () => { document.getElementById('add-subunit-modal').classList.remove('active'); },
       handleAddSubUnit: async (e) => {
         e.preventDefault();
         const title = document.getElementById('new-subunit-title').value.trim();
@@ -952,9 +968,9 @@
         document.getElementById('essay-subunit-id').value = subUnitId || '';
         document.getElementById('new-essay-title').value = '';
         document.getElementById('new-essay-description').value = '';
-        document.getElementById('add-essay-modal').classList.remove('hidden');
+        document.getElementById('add-essay-modal').classList.add('active');
       },
-      closeAddEssayModal: () => { document.getElementById('add-essay-modal').classList.add('hidden'); },
+      closeAddEssayModal: () => { document.getElementById('add-essay-modal').classList.remove('active'); },
       handleAddEssay: async (e) => {
         e.preventDefault();
         const unitId = document.getElementById('essay-unit-id').value;
@@ -1052,7 +1068,7 @@
 
         content.innerHTML = html;
         lucide.createIcons({ root: document.getElementById('unit-details-modal') });
-        document.getElementById('unit-details-modal').classList.remove('hidden');
+        document.getElementById('unit-details-modal').classList.add('active');
       },
       toggleSubUnit: (subUnitId) => {
         const container = document.getElementById(`subunit-essays-${subUnitId}`);
@@ -1068,8 +1084,8 @@
         }
       },
       closeUnitDetails: () => {
-        document.getElementById('unit-details-modal').classList.add('hidden');
-        window.app.currentViewUnitId = null;
+        document.getElementById('unit-details-modal').classList.remove('active');
+        setTimeout(() => { window.app.currentViewUnitId = null; }, 300);
       },
       generateEssayRowHtml: (unitId, subUnitId, essay) => {
         const subIdArg = subUnitId ? `'${subUnitId}'` : 'null';
@@ -1110,13 +1126,13 @@
       
       openTimerPopup: () => {
           if(window.innerWidth >= 768 && window.app.activeTimer.id) {
-              document.getElementById('global-timer-modal').classList.remove('hidden');
+              document.getElementById('global-timer-modal').classList.add('active');
               window.app.updateTimerUI();
           }
       },
       
       closeTimerPopup: () => {
-          document.getElementById('global-timer-modal').classList.add('hidden');
+          document.getElementById('global-timer-modal').classList.remove('active');
       },
 
       toggleTimer: (essayId, essayTitle) => {
@@ -1303,10 +1319,10 @@
             `).join('');
         }
         lucide.createIcons({ root: document.getElementById('manage-units-modal') });
-        document.getElementById('manage-units-modal').classList.remove('hidden');
+        document.getElementById('manage-units-modal').classList.add('active');
       },
       closeManageUnits: () => {
-        document.getElementById('manage-units-modal').classList.add('hidden');
+        document.getElementById('manage-units-modal').classList.remove('active');
       },
       deleteUnit: async (unitId) => {
         if(!confirm('Are you sure you want to delete this unit and ALL its sub-units and essays?')) return;
@@ -1338,28 +1354,9 @@
           };
         });
 
-        // Add visual cues on settings modification
-        const saveBtn = document.getElementById('save-settings-btn');
-        saveBtn.classList.remove('animate-pulse', 'from-emerald-500', 'to-teal-500');
-        saveBtn.textContent = "Save Preferences";
-
-        const elements = [
-          document.getElementById('randomEssayCount'),
-          document.getElementById('settingsTimerDuration'),
-          ...radios
-        ];
-
-        elements.forEach(el => {
-          if (!el) return;
-          el.oninput = el.onchange = () => {
-            saveBtn.classList.add('animate-pulse');
-            saveBtn.textContent = "Save Changes *";
-          };
-        });
-
-        document.getElementById('settings-modal').classList.remove('hidden');
+        document.getElementById('settings-modal').classList.add('active');
       },
-      closeSettings: () => { document.getElementById('settings-modal').classList.add('hidden'); },
+      closeSettings: () => { document.getElementById('settings-modal').classList.remove('active'); },
       saveSettings: () => {
         const mode = document.querySelector('input[name="suggestionMode"]:checked').value;
         const count = parseInt(document.getElementById('randomEssayCount').value) || 2;
