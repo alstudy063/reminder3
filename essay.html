@@ -85,61 +85,6 @@
     .timer-container-transition {
       transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     }
-
-    /* Focus Timer Fullscreen Smooth Expand (Desktop only) */
-    @media (min-width: 768px) {
-      .timer-fullscreen {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        z-index: 100 !important;
-        border-radius: 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        background: rgba(15, 23, 42, 0.98) !important; /* slate-900 with rich blur */
-        backdrop-filter: blur(24px) !important;
-        -webkit-backdrop-filter: blur(24px) !important;
-        margin: 0 !important;
-        gap: 3rem !important;
-        animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      }
-      .timer-fullscreen .timer-info {
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 1.5rem !important;
-      }
-      .timer-fullscreen .timer-icon {
-        transform: scale(2);
-        margin-bottom: 1.5rem;
-        background: #1e293b !important;
-        border-color: #334155 !important;
-      }
-      .timer-fullscreen .timer-label {
-        font-size: 1.5rem !important;
-        margin-bottom: 1rem !important;
-        text-align: center;
-        color: #94a3b8 !important;
-      }
-      .timer-fullscreen .timer-text {
-        font-size: 8rem !important;
-        line-height: 1 !important;
-        text-align: center;
-        text-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
-      }
-      .timer-fullscreen .timer-controls {
-        transform: scale(1.5) !important;
-        margin-top: 2rem !important;
-      }
-      .timer-fullscreen .minimize-btn {
-        display: flex !important;
-      }
-    }
   </style>
 </head>
 <body class="mesh-bg text-slate-900 overflow-hidden select-none md:select-auto min-h-screen">
@@ -435,6 +380,31 @@
     </div>
   </div>
 
+  <!-- GLOBAL TIMER POPUP (Desktop) -->
+  <div id="global-timer-modal" class="fixed inset-0 z-[80] flex items-center justify-center p-5 hidden bg-slate-900/60 backdrop-blur-md transition-opacity">
+    <div class="relative bg-white border border-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-8 text-center animate-zoom-in">
+      <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white p-3 rounded-full shadow-lg border-4 border-white">
+         <i data-lucide="timer" class="w-6 h-6"></i>
+      </div>
+      <h3 id="global-timer-title" class="text-lg font-bold text-slate-800 mt-4 mb-2 truncate px-4">Essay Title</h3>
+      <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-6">Focus Timer</p>
+      
+      <div class="text-6xl font-mono font-extrabold text-slate-800 tracking-tighter mb-8" id="global-timer-display">20:00</div>
+      
+      <div class="flex items-center justify-center gap-3">
+         <button id="global-timer-toggle-btn" onclick="window.app.toggleTimer(window.app.activeTimer.id, window.app.activeTimer.title)" class="flex-1 btn-gradient text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-md transition-all active:scale-95">
+             <i data-lucide="pause" id="global-timer-toggle-icon" class="w-5 h-5"></i> <span id="global-timer-toggle-text">Pause</span>
+         </button>
+         <button onclick="window.app.closeTimerPopup()" class="w-14 h-14 bg-slate-100 text-slate-600 rounded-2xl flex items-center justify-center hover:bg-slate-200 transition-colors tooltip active:scale-95" title="Minimize">
+             <i data-lucide="minimize-2" class="w-5 h-5"></i>
+         </button>
+         <button onclick="window.app.resetTimer(window.app.activeTimer.id)" class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center hover:bg-rose-100 transition-colors active:scale-95" title="Stop">
+             <i data-lucide="square" class="w-5 h-5"></i>
+         </button>
+      </div>
+    </div>
+  </div>
+
   <!-- SIGN-IN MODAL -->
   <div id="signin-modal" class="fixed inset-0 z-60 flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-lg hidden">
     <div class="bg-white/95 border border-white rounded-[2.5rem] shadow-2xl w-full max-w-sm p-10 text-center animate-zoom-in">
@@ -629,6 +599,21 @@
       const subIdArg = subUnitId ? `'${subUnitId}'` : 'null';
       
       const timerId = `timer-${essay.id}`;
+      const safeTitle = essay.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
+      const tState = window.app && window.app.activeTimer ? window.app.activeTimer : { id: null, timeLeft: state.defaultTimerMinutes * 60, state: 'idle' };
+      const isActiveTimer = tState.id === essay.id;
+      const currentLeft = isActiveTimer ? tState.timeLeft : state.defaultTimerMinutes * 60;
+      
+      const m = Math.floor(currentLeft / 60).toString().padStart(2, '0');
+      const s = (currentLeft % 60).toString().padStart(2, '0');
+      
+      let btnText = "Start";
+      let btnIcon = "play";
+      if (isActiveTimer) {
+          if (tState.state === 'running') { btnText = "Pause"; btnIcon = "pause"; }
+          else if (tState.state === 'paused') { btnText = "Resume"; btnIcon = "play"; }
+      }
 
       return `
         <div class="glass-card rounded-[2.5rem] shadow-xl shadow-slate-200/40 border border-white overflow-hidden animate-slide-up max-w-2xl mx-auto mb-6 relative group">
@@ -652,18 +637,15 @@
                     </div>
                     <div class="timer-text-container">
                         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5 timer-label transition-all">Focus Timer</p>
-                        <p id="${timerId}-display" class="text-2xl font-extrabold tracking-tight font-mono leading-none timer-text transition-all">${state.defaultTimerMinutes.toString().padStart(2, '0')}:00</p>
+                        <p id="${timerId}-display" class="text-2xl font-extrabold tracking-tight font-mono leading-none timer-text transition-all w-16">${m}:${s}</p>
                     </div>
                 </div>
                 <div class="flex gap-2 timer-controls transition-transform">
-                    <button id="${timerId}-btn" onclick="window.app.toggleTimer('${timerId}')" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-900 px-4 md:px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2 text-sm">
-                        <i data-lucide="play" class="w-4 h-4"></i> <span id="${timerId}-btn-text">Start</span>
+                    <button id="${timerId}-btn" onclick="window.app.toggleTimer('${essay.id}', '${safeTitle}')" class="bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-900 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center justify-center gap-2 text-sm w-28">
+                        <i data-lucide="${btnIcon}" class="w-4 h-4"></i> <span id="${timerId}-btn-text">${btnText}</span>
                     </button>
-                    <button onclick="window.app.resetTimer('${timerId}')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 p-2.5 rounded-xl transition-all border border-slate-700/50 flex items-center justify-center">
+                    <button onclick="window.app.resetTimer('${essay.id}')" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 p-2.5 rounded-xl transition-all border border-slate-700/50 flex items-center justify-center">
                         <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="window.app.minimizeTimer('${timerId}')" id="${timerId}-min-btn" class="hidden minimize-btn bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 p-2.5 rounded-xl transition-all border border-slate-700/50 ml-1 flex items-center justify-center">
-                        <i data-lucide="minimize-2" class="w-4 h-4"></i>
                     </button>
                 </div>
             </div>
@@ -1068,81 +1050,122 @@
         showToast('Question removed successfully', 'success');
       },
       
-      // Robust countdown state tracker
-      timerInterval: null,
-      timeLeft: 0,
-      activeTimerId: null,
+      activeTimer: { id: null, title: '', timeLeft: 0, state: 'idle', intervalId: null },
       
-      toggleTimer: (timerId) => {
-          const container = document.getElementById(`${timerId}-container`);
-          const btn = document.getElementById(`${timerId}-btn`);
-          
-          if (window.app.activeTimerId === timerId && window.app.timerInterval) {
-              // Pause Timer
-              clearInterval(window.app.timerInterval);
-              window.app.timerInterval = null;
-              
-              btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> <span id="${timerId}-btn-text">Resume</span>`;
-              lucide.createIcons({ root: btn });
-          } else {
-              // Start or Resume Timer
-              if (window.app.activeTimerId !== timerId) {
-                  if (window.app.timerInterval) clearInterval(window.app.timerInterval);
-                  window.app.timeLeft = state.defaultTimerMinutes * 60;
-                  window.app.activeTimerId = timerId;
-              }
-              
-              btn.innerHTML = `<i data-lucide="pause" class="w-4 h-4"></i> <span id="${timerId}-btn-text">Pause</span>`;
-              lucide.createIcons({ root: btn });
-              
-              // Smooth Fullscreen Expand (Desktop only)
-              if (window.innerWidth >= 768 && container) {
-                  container.classList.add('timer-fullscreen');
-              }
-
-              window.app.timerInterval = setInterval(() => {
-                  window.app.timeLeft--;
-                  const m = Math.floor(window.app.timeLeft / 60);
-                  const s = window.app.timeLeft % 60;
-                  const displayEl = document.getElementById(`${timerId}-display`);
-                  if (displayEl) {
-                      displayEl.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                  }
-                  
-                  if (window.app.timeLeft <= 0) {
-                      clearInterval(window.app.timerInterval);
-                      window.app.timerInterval = null;
-                      
-                      btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i> <span id="${timerId}-btn-text">Done</span>`;
-                      lucide.createIcons({ root: btn });
-                      
-                      if (container) container.classList.remove('timer-fullscreen');
-                      showToast("Time's up! Great focus.", "success");
-                  }
-              }, 1000);
+      openTimerPopup: () => {
+          if(window.innerWidth >= 768 && window.app.activeTimer.id) {
+              document.getElementById('global-timer-modal').classList.remove('hidden');
+              window.app.updateTimerUI();
           }
       },
       
-      minimizeTimer: (timerId) => {
-          const container = document.getElementById(`${timerId}-container`);
-          if (container) container.classList.remove('timer-fullscreen');
+      closeTimerPopup: () => {
+          document.getElementById('global-timer-modal').classList.add('hidden');
       },
 
-      resetTimer: (timerId) => {
-          if (window.app.timerInterval) clearInterval(window.app.timerInterval);
-          window.app.timerInterval = null;
-          window.app.activeTimerId = null;
+      toggleTimer: (essayId, essayTitle) => {
+          const timer = window.app.activeTimer;
           
-          const container = document.getElementById(`${timerId}-container`);
-          if (container) container.classList.remove('timer-fullscreen');
+          if (timer.id !== essayId) {
+              // Clicked on a new essay timer
+              if (timer.intervalId) clearInterval(timer.intervalId);
+              timer.id = essayId;
+              timer.title = essayTitle || 'Focus Session';
+              timer.timeLeft = state.defaultTimerMinutes * 60;
+              timer.state = 'running';
+              window.app.openTimerPopup();
+              window.app.runTimerInterval();
+          } else {
+              // Toggle existing timer
+              if (timer.state === 'running') {
+                  timer.state = 'paused';
+                  clearInterval(timer.intervalId);
+                  timer.intervalId = null;
+              } else {
+                  timer.state = 'running';
+                  window.app.openTimerPopup();
+                  window.app.runTimerInterval();
+              }
+          }
+          window.app.updateTimerUI();
+      },
+      
+      runTimerInterval: () => {
+          const timer = window.app.activeTimer;
+          if (timer.intervalId) clearInterval(timer.intervalId);
+          
+          timer.intervalId = setInterval(() => {
+              timer.timeLeft--;
+              if (timer.timeLeft <= 0) {
+                  clearInterval(timer.intervalId);
+                  timer.state = 'idle';
+                  timer.timeLeft = 0;
+                  window.app.updateTimerUI();
+                  window.app.closeTimerPopup();
+                  showToast("Time's up! Great focus.", "success");
+              } else {
+                  window.app.updateTimerUI();
+              }
+          }, 1000);
+      },
 
-          const displayEl = document.getElementById(`${timerId}-display`);
-          if (displayEl) displayEl.textContent = `${state.defaultTimerMinutes.toString().padStart(2, '0')}:00`;
+      resetTimer: (essayId) => {
+          const timer = window.app.activeTimer;
+          if (timer.id === essayId || !essayId) {
+              if (timer.intervalId) clearInterval(timer.intervalId);
+              timer.id = null;
+              timer.state = 'idle';
+              timer.timeLeft = state.defaultTimerMinutes * 60;
+              window.app.closeTimerPopup();
+              renderView(); // Force card UI to reset perfectly
+          }
+      },
+      
+      updateTimerUI: () => {
+          const timer = window.app.activeTimer;
+          if (!timer.id) return;
           
-          const btn = document.getElementById(`${timerId}-btn`);
-          if (btn) {
-              btn.innerHTML = `<i data-lucide="play" class="w-4 h-4"></i> <span id="${timerId}-btn-text">Start</span>`;
-              lucide.createIcons({ root: btn });
+          const m = Math.floor(timer.timeLeft / 60).toString().padStart(2, '0');
+          const s = (timer.timeLeft % 60).toString().padStart(2, '0');
+          const timeStr = `${m}:${s}`;
+          
+          // Update Global Popup
+          const popupDisplay = document.getElementById('global-timer-display');
+          if (popupDisplay && !document.getElementById('global-timer-modal').classList.contains('hidden')) {
+              popupDisplay.textContent = timeStr;
+              document.getElementById('global-timer-title').textContent = timer.title;
+              
+              const pBtnText = document.getElementById('global-timer-toggle-text');
+              const pBtnIcon = document.getElementById('global-timer-toggle-icon');
+              
+              if (timer.state === 'running') {
+                  pBtnText.textContent = "Pause";
+                  pBtnIcon.setAttribute('data-lucide', 'pause');
+              } else {
+                  pBtnText.textContent = "Resume";
+                  pBtnIcon.setAttribute('data-lucide', 'play');
+              }
+              lucide.createIcons({ root: document.getElementById('global-timer-toggle-btn') });
+          }
+          
+          // Update Inline Card (if currently rendered)
+          const cardDisplay = document.getElementById(`timer-${timer.id}-display`);
+          const cardBtnText = document.getElementById(`timer-${timer.id}-btn-text`);
+          const cardBtn = document.getElementById(`timer-${timer.id}-btn`);
+          
+          if (cardDisplay && cardBtnText && cardBtn) {
+              cardDisplay.textContent = timeStr;
+              
+              let iconName = 'play';
+              let btnLabel = 'Start';
+              
+              if (timer.state === 'running') { iconName = 'pause'; btnLabel = 'Pause'; } 
+              else if (timer.state === 'paused') { iconName = 'play'; btnLabel = 'Resume'; }
+              
+              if (cardBtnText.textContent !== btnLabel) {
+                  cardBtn.innerHTML = `<i data-lucide="${iconName}" class="w-4 h-4"></i> <span id="timer-${timer.id}-btn-text">${btnLabel}</span>`;
+                  lucide.createIcons({ root: cardBtn });
+              }
           }
       },
 
