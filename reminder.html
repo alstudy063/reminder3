@@ -11,10 +11,10 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
-    <!-- Google Fonts: Plus Jakarta Sans -->
+    <!-- Google Fonts: Plus Jakarta Sans & Noto Sans Sinhala -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Sinhala:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         /* Theme Variables */
@@ -50,44 +50,50 @@
             -webkit-tap-highlight-color: transparent;
             font-feature-settings: "cv02", "cv03", "cv04", "cv11";
             overscroll-behavior-y: contain;
-            user-select: none; /* Disable copy text globally */
+            user-select: none;
             -webkit-user-select: none;
         }
 
-        /* Allow text selection in input fields */
         input, textarea, select {
             user-select: auto;
             -webkit-user-select: auto;
         }
 
         .glass-effect {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
         }
 
         .dark .glass-effect {
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(9, 9, 11, 0.75); /* Zinc-950 base */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .card-shadow { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
-        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        /* Sleeker Shadows */
+        .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05); }
+        .dark .card-shadow { box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3); }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #3f3f46; }
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        /* Animations */
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .animate-slide-up { animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
         .tab-active { color: var(--color-primary-500); position: relative; }
         .tab-active::after {
             content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 2px;
             background-color: var(--color-primary-500); border-radius: 9999px;
+            box-shadow: 0 -1px 4px var(--color-primary-500);
         }
     </style>
 
@@ -104,42 +110,41 @@
                             500: 'var(--color-primary-500)',
                             600: 'var(--color-primary-600)',
                             900: 'var(--color-primary-900)',
-                        },
-                        surface: { light: '#ffffff', dark: '#0f172a', alt: '#f8fafc' }
+                        }
                     },
                     fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        /* Prioritize Plus Jakarta, fallback elegantly to Noto Sans Sinhala */
+                        sans: ['"Plus Jakarta Sans"', '"Noto Sans Sinhala"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen selection:bg-primary-100 dark:selection:bg-primary-900 transition-colors duration-200">
+<body class="bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 min-h-screen selection:bg-primary-100 dark:selection:bg-primary-900 transition-colors duration-300">
 
     <!-- Desktop Sidebar -->
-    <aside class="fixed top-0 left-0 h-screen w-64 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 z-40 hidden md:flex flex-col">
-        <div class="h-[var(--header-height)] flex items-center px-6 border-b border-slate-200 dark:border-slate-800">
-            <div class="w-8 h-8 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20 mr-3 transition-colors">
+    <aside class="fixed top-0 left-0 h-screen w-64 bg-white/60 dark:bg-zinc-950/60 backdrop-blur-2xl border-r border-zinc-200/60 dark:border-zinc-800/60 z-40 hidden md:flex flex-col transition-colors duration-300">
+        <div class="h-[var(--header-height)] flex items-center px-6 border-b border-zinc-200/60 dark:border-zinc-800/60">
+            <div class="w-8 h-8 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30 mr-3 transition-colors">
                 <i class="ph-bold ph-graduation-cap text-xl"></i>
             </div>
             <div>
-                <h1 class="text-lg font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">StudyFlow <span class="text-primary-500 transition-colors">Pro</span></h1>
+                <h1 class="text-lg font-extrabold tracking-tight leading-none text-zinc-900 dark:text-white">StudyFlow <span class="text-primary-500 transition-colors">Pro</span></h1>
             </div>
         </div>
         
-        <div class="flex-1 py-6 px-4 space-y-2">
-            <button id="nav-desktop-home" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all">
+        <div class="flex-1 py-8 px-4 space-y-2">
+            <button id="nav-desktop-home" class="nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all hover:scale-[1.02]">
                 <i class="ph-bold ph-house text-xl"></i> Home
             </button>
-            <button id="nav-desktop-stats" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl font-bold transition-all">
+            <button id="nav-desktop-stats" class="nav-btn w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-2xl font-bold transition-all hover:scale-[1.02]">
                 <i class="ph-bold ph-chart-line-up text-xl"></i> Statistics
             </button>
         </div>
 
-        <div class="p-4 border-t border-slate-200 dark:border-slate-800">
-            <!-- Redesigned Desktop "New Topic" Button -->
-            <button id="btn-add-topic-desktop" class="w-full relative group overflow-hidden bg-slate-900 dark:bg-white text-white dark:text-slate-900 py-4 rounded-2xl font-bold shadow-xl transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95">
+        <div class="p-6">
+            <button id="btn-add-topic-desktop" class="w-full relative group overflow-hidden bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 py-3.5 rounded-2xl font-bold shadow-xl transition-all flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95">
                 <div class="absolute inset-0 bg-gradient-to-r from-primary-600 to-primary-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <i class="ph-bold ph-plus text-xl relative z-10 group-hover:rotate-90 transition-transform duration-300 group-hover:text-white"></i>
                 <span class="relative z-10 group-hover:text-white transition-colors">Create Topic</span>
@@ -148,28 +153,27 @@
     </aside>
 
     <!-- Header / Navigation -->
-    <header class="fixed top-0 left-0 md:left-64 right-0 z-30 glass-effect border-b border-slate-200 dark:border-slate-800">
-        <div class="max-w-7xl mx-auto px-4 h-[var(--header-height)] flex items-center justify-between">
+    <header class="fixed top-0 left-0 md:left-64 right-0 z-30 glass-effect">
+        <div class="max-w-7xl mx-auto px-6 h-[var(--header-height)] flex items-center justify-between">
             <div class="flex items-center gap-3 md:hidden">
-                <div class="w-10 h-10 bg-primary-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/20 transition-colors">
-                    <i class="ph-bold ph-graduation-cap text-2xl"></i>
+                <div class="w-9 h-9 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary-500/30 transition-colors">
+                    <i class="ph-bold ph-graduation-cap text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-extrabold tracking-tight leading-none text-slate-900 dark:text-white">StudyFlow</h1>
-                    <p class="text-[10px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500">Pro</p>
+                    <h1 class="text-lg font-extrabold tracking-tight leading-none text-zinc-900 dark:text-white">StudyFlow</h1>
                 </div>
             </div>
 
             <div class="hidden md:block">
-                <h2 id="header-title" class="text-xl font-bold text-slate-800 dark:text-slate-100">Dashboard</h2>
+                <h2 id="header-title" class="text-xl font-extrabold text-zinc-800 dark:text-zinc-100 tracking-tight">Dashboard</h2>
             </div>
 
-            <div class="flex items-center gap-3">
-                <div id="sync-indicator-wrapper" class="hidden items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500">
-                    <span id="sync-dot" class="w-2 h-2 bg-green-500 rounded-full"></span>
+            <div class="flex items-center gap-4">
+                <div id="sync-indicator-wrapper" class="hidden items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-100/80 dark:bg-zinc-800/80 border border-zinc-200/50 dark:border-zinc-700/50 text-[10px] font-bold text-zinc-500 backdrop-blur-sm transition-all duration-300">
+                    <span id="sync-dot" class="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
                     <span id="sync-text">Saved</span>
                 </div>
-                <button id="btn-profile" class="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-primary-500 transition-all shadow-sm cursor-pointer" title="Settings & Profile">
+                <button id="btn-profile" class="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center overflow-hidden border-2 border-transparent hover:border-primary-500 hover:scale-105 transition-all shadow-sm cursor-pointer" title="Settings & Profile">
                     <img id="profile-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" alt="User" class="w-full h-full object-cover">
                 </button>
             </div>
@@ -177,30 +181,38 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class="md:ml-64 max-w-7xl mx-auto px-4 pt-24 pb-28 md:pb-12 min-h-screen relative overflow-hidden">
+    <main class="md:ml-64 max-w-7xl mx-auto px-4 md:px-8 pt-24 pb-28 md:pb-12 min-h-screen relative overflow-hidden">
         
         <!-- DASHBOARD VIEW -->
-        <div id="view-dashboard" class="transition-all duration-300 origin-top">
-            <!-- Welcome Section -->
-            <section class="mb-8">
-                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                    <div>
-                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-1">Hello, <span id="user-firstname">Scholar</span>! 👋</h2>
-                        <p class="text-slate-500 dark:text-slate-400">Ready to conquer your revision today?</p>
+        <div id="view-dashboard" class="transition-all duration-500 origin-top">
+            
+            <!-- Welcome Section with Search -->
+            <section class="mb-8 flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                <div>
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-zinc-900 dark:text-white mb-1.5 tracking-tight">Hello, <span id="user-firstname" class="text-primary-500">Scholar</span>! 👋</h2>
+                    <p class="text-zinc-500 dark:text-zinc-400 font-medium">Ready to conquer your revision today?</p>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <!-- Search Bar -->
+                    <div class="relative w-full sm:w-64 group">
+                        <i class="ph-bold ph-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-primary-500 transition-colors"></i>
+                        <input type="text" id="search-tasks" placeholder="Search topics..." class="w-full bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/80 rounded-2xl py-3 pl-11 pr-4 text-sm font-medium focus:ring-2 focus:ring-primary-500/50 outline-none transition-all shadow-sm dark:shadow-none placeholder-zinc-400">
                     </div>
-                    <div class="flex gap-2">
-                        <div class="bg-white dark:bg-slate-900 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3 shadow-sm">
-                            <div class="text-orange-500 text-xl"><i class="ph-fill ph-fire"></i></div>
+                    
+                    <div class="flex gap-2 shrink-0">
+                        <div class="bg-white dark:bg-zinc-900/50 px-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 flex items-center gap-3 shadow-sm dark:shadow-none transition-all hover:border-orange-200 dark:hover:border-orange-900/30">
+                            <div class="text-orange-500 bg-orange-50 dark:bg-orange-500/10 p-2 rounded-xl text-lg"><i class="ph-fill ph-fire"></i></div>
                             <div>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase">Streak</p>
-                                <p class="text-sm font-bold leading-none"><span id="stat-streak">0</span> Days</p>
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Streak</p>
+                                <p class="text-sm font-extrabold leading-none text-zinc-800 dark:text-zinc-100"><span id="stat-streak">0</span> Days</p>
                             </div>
                         </div>
-                        <div class="bg-white dark:bg-slate-900 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 flex items-center gap-3 shadow-sm">
-                            <div class="text-primary-500 transition-colors text-xl"><i class="ph-fill ph-check-circle"></i></div>
+                        <div class="bg-white dark:bg-zinc-900/50 px-4 py-2.5 rounded-2xl border border-zinc-200 dark:border-zinc-800/80 flex items-center gap-3 shadow-sm dark:shadow-none transition-all hover:border-primary-200 dark:hover:border-primary-900/30">
+                            <div class="text-primary-500 bg-primary-50 dark:bg-primary-500/10 p-2 rounded-xl text-lg transition-colors"><i class="ph-fill ph-check-circle"></i></div>
                             <div>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase">Done Today</p>
-                                <p class="text-sm font-bold leading-none"><span id="stat-done">0</span> / <span id="stat-total">0</span></p>
+                                <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Done</p>
+                                <p class="text-sm font-extrabold leading-none text-zinc-800 dark:text-zinc-100"><span id="stat-done">0</span> / <span id="stat-total">0</span></p>
                             </div>
                         </div>
                     </div>
@@ -208,63 +220,63 @@
             </section>
 
             <!-- Filters Section -->
-            <section class="mb-6 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sticky top-[var(--header-height)] z-20 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md">
-                <div class="flex items-center gap-3 min-w-max">
-                    <button class="subject-filter active px-5 py-2 rounded-full text-sm font-semibold bg-primary-500 text-white shadow-md shadow-primary-500/20 transition-all" data-subject="All">All Subjects</button>
-                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Physics">Physics</button>
-                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Chemistry">Chemistry</button>
-                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Biology">Biology</button>
-                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:border-primary-300 transition-all" data-subject="Math">Math</button>
+            <section class="mb-6 overflow-x-auto no-scrollbar py-2 -mx-4 px-4 sticky top-[var(--header-height)] z-20 bg-zinc-50/90 dark:bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-200/50 dark:border-zinc-800/50">
+                <div class="flex items-center gap-2 min-w-max">
+                    <button class="subject-filter active px-5 py-2 rounded-full text-sm font-bold bg-primary-500 text-white shadow-lg shadow-primary-500/25 transition-all hover:scale-105" data-subject="All">All Subjects</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-bold bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 hover:border-primary-300 dark:hover:border-primary-700 transition-all hover:scale-105" data-subject="Physics">Physics</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-bold bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 hover:border-primary-300 dark:hover:border-primary-700 transition-all hover:scale-105" data-subject="Chemistry">Chemistry</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-bold bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 hover:border-primary-300 dark:hover:border-primary-700 transition-all hover:scale-105" data-subject="Biology">Biology</button>
+                    <button class="subject-filter px-5 py-2 rounded-full text-sm font-bold bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800 hover:border-primary-300 dark:hover:border-primary-700 transition-all hover:scale-105" data-subject="Math">Math</button>
                 </div>
             </section>
 
             <!-- Dynamic Content Tabs -->
-            <section class="mb-6 flex border-b border-slate-200 dark:border-slate-800">
-                <button class="status-tab tab-active px-4 py-3 text-sm font-bold transition-all" data-status="All">All Tasks</button>
-                <button class="status-tab px-4 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all" data-status="Due">Due Today</button>
-                <button class="status-tab px-4 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all" data-status="Mastered">Mastered</button>
+            <section class="mb-6 flex gap-6 border-b border-zinc-200 dark:border-zinc-800/80">
+                <button class="status-tab tab-active pb-3 text-sm font-extrabold transition-all hover:text-primary-600" data-status="All">All Tasks</button>
+                <button class="status-tab pb-3 text-sm font-bold text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all" data-status="Due">Due Today</button>
+                <button class="status-tab pb-3 text-sm font-bold text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-all" data-status="Mastered">Mastered</button>
             </section>
 
             <!-- Tasks Grid -->
-            <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div id="task-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <!-- Tasks will be injected here -->
-                <div class="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 opacity-50">
+                <div class="col-span-full py-24 flex flex-col items-center justify-center text-zinc-400 opacity-50">
                     <div class="loader mb-4"></div>
-                    <p class="font-medium">Loading your journey...</p>
+                    <p class="font-medium tracking-wide">Loading your journey...</p>
                 </div>
             </div>
         </div>
 
         <!-- STATISTICS VIEW (Hidden by default) -->
-        <div id="view-statistics" class="hidden absolute top-24 left-4 right-4 md:left-4 md:right-0 pb-28 md:pb-12 transition-all duration-300 opacity-0 translate-y-4">
-            <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">Your Progress 📈</h2>
+        <div id="view-statistics" class="hidden absolute top-24 left-4 right-4 md:left-8 md:right-8 pb-28 md:pb-12 transition-all duration-500 opacity-0 translate-y-8">
+            <h2 class="text-3xl font-extrabold text-zinc-900 dark:text-white mb-8 tracking-tight">Your Progress 📈</h2>
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
-                    <i class="ph-fill ph-books text-3xl text-primary-500 mb-2"></i>
-                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-total-topics">0</p>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Total Topics</p>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white dark:bg-zinc-900/80 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/60 shadow-sm flex flex-col justify-center items-center hover:-translate-y-1 transition-transform">
+                    <div class="bg-primary-50 dark:bg-primary-500/10 p-3 rounded-2xl mb-3"><i class="ph-fill ph-books text-2xl text-primary-500"></i></div>
+                    <p class="text-3xl font-black text-zinc-800 dark:text-white leading-none" id="stats-total-topics">0</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase mt-2 tracking-widest text-center">Total Topics</p>
                 </div>
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
-                    <i class="ph-fill ph-check-circle text-3xl text-green-500 mb-2"></i>
-                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-mastered">0</p>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Mastered</p>
+                <div class="bg-white dark:bg-zinc-900/80 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/60 shadow-sm flex flex-col justify-center items-center hover:-translate-y-1 transition-transform">
+                    <div class="bg-green-50 dark:bg-green-500/10 p-3 rounded-2xl mb-3"><i class="ph-fill ph-check-circle text-2xl text-green-500"></i></div>
+                    <p class="text-3xl font-black text-zinc-800 dark:text-white leading-none" id="stats-mastered">0</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase mt-2 tracking-widest text-center">Mastered</p>
                 </div>
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
-                    <i class="ph-fill ph-clock-countdown text-3xl text-orange-500 mb-2"></i>
-                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-pending">0</p>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Pending Review</p>
+                <div class="bg-white dark:bg-zinc-900/80 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/60 shadow-sm flex flex-col justify-center items-center hover:-translate-y-1 transition-transform">
+                    <div class="bg-orange-50 dark:bg-orange-500/10 p-3 rounded-2xl mb-3"><i class="ph-fill ph-clock-countdown text-2xl text-orange-500"></i></div>
+                    <p class="text-3xl font-black text-zinc-800 dark:text-white leading-none" id="stats-pending">0</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase mt-2 tracking-widest text-center">Pending Review</p>
                 </div>
-                <div class="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-center items-center">
-                    <i class="ph-fill ph-fire text-3xl text-red-500 mb-2"></i>
-                    <p class="text-2xl font-black text-slate-800 dark:text-white leading-none" id="stats-streak-view">0</p>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase mt-1 text-center">Day Streak</p>
+                <div class="bg-white dark:bg-zinc-900/80 p-6 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/60 shadow-sm flex flex-col justify-center items-center hover:-translate-y-1 transition-transform">
+                    <div class="bg-red-50 dark:bg-red-500/10 p-3 rounded-2xl mb-3"><i class="ph-fill ph-fire text-2xl text-red-500"></i></div>
+                    <p class="text-3xl font-black text-zinc-800 dark:text-white leading-none" id="stats-streak-view">0</p>
+                    <p class="text-[10px] font-bold text-zinc-400 uppercase mt-2 tracking-widest text-center">Day Streak</p>
                 </div>
             </div>
 
-            <div class="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><i class="ph ph-chart-donut"></i> Topics by Subject</h3>
-                <div id="stats-subjects-container" class="space-y-4">
+            <div class="bg-white dark:bg-zinc-900/80 p-8 rounded-[2rem] border border-zinc-100 dark:border-zinc-800/60 shadow-sm">
+                <h3 class="text-lg font-extrabold mb-6 flex items-center gap-2"><i class="ph-fill ph-chart-donut text-primary-500"></i> Topics by Subject</h3>
+                <div id="stats-subjects-container" class="space-y-5">
                     <!-- Subject bars injected here -->
                 </div>
             </div>
@@ -273,7 +285,7 @@
     </main>
 
     <!-- Bottom Action Bar (Mobile Oriented) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 glass-effect border-t border-slate-200 dark:border-slate-800 pb-[var(--safe-area-inset-bottom)] md:hidden">
+    <nav class="fixed bottom-0 left-0 right-0 z-40 glass-effect border-t border-zinc-200/50 dark:border-zinc-800/50 pb-[var(--safe-area-inset-bottom)] md:hidden">
         <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
             <button id="nav-mobile-home" class="nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors">
                 <i class="ph-bold ph-house text-2xl"></i>
@@ -281,11 +293,11 @@
             </button>
             
             <!-- Central Action Button -->
-            <button id="btn-add-topic" class="w-14 h-14 -mt-10 bg-primary-500 text-white rounded-2xl shadow-xl shadow-primary-500/30 flex items-center justify-center transition-transform active:scale-90 border-4 border-slate-50 dark:border-slate-950">
-                <i class="ph-bold ph-plus text-2xl"></i>
+            <button id="btn-add-topic" class="w-14 h-14 -mt-8 bg-gradient-to-tr from-primary-600 to-primary-400 text-white rounded-2xl shadow-xl shadow-primary-500/40 flex items-center justify-center transition-all hover:-translate-y-1 active:scale-90 border-[3px] border-zinc-50 dark:border-zinc-950 relative group">
+                <i class="ph-bold ph-plus text-2xl group-hover:rotate-90 transition-transform duration-300"></i>
             </button>
 
-            <button id="nav-mobile-stats" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary-500 transition-colors">
+            <button id="nav-mobile-stats" class="nav-btn flex flex-col items-center gap-1 text-zinc-400 hover:text-primary-500 transition-colors">
                 <i class="ph-bold ph-chart-line-up text-2xl"></i>
                 <span class="text-[10px] font-bold uppercase tracking-wider">Stats</span>
             </button>
@@ -293,29 +305,28 @@
     </nav>
 
     <!-- Modal: Add/Edit Topic -->
-    <!-- Added 'modal-overlay' class to enable close-on-backdrop-click -->
-    <div id="modal-topic" class="modal-overlay fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl transition-transform duration-300 translate-y-full sm:translate-y-10 overflow-hidden flex flex-col max-h-[90vh]" onclick="event.stopPropagation()">
+    <div id="modal-topic" class="modal-overlay fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-lg rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl transition-all duration-400 translate-y-full sm:translate-y-10 sm:scale-95 overflow-hidden flex flex-col max-h-[90vh] border border-zinc-200 dark:border-zinc-800" onclick="event.stopPropagation()">
             
-            <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <h3 id="modal-topic-title" class="text-xl font-bold">New Revision Topic</h3>
-                <button onclick="window.closeModal('topic')" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <i class="ph ph-x text-xl"></i>
+            <div class="p-6 border-b border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
+                <h3 id="modal-topic-title" class="text-xl font-extrabold tracking-tight">New Revision Topic</h3>
+                <button onclick="window.closeModal('topic')" class="p-2 rounded-full bg-zinc-50 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white transition-all">
+                    <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
 
-            <div class="p-6 space-y-5 overflow-y-auto custom-scrollbar">
+            <div class="p-6 space-y-6 overflow-y-auto custom-scrollbar">
                 <input type="hidden" id="topic-id">
                 
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Topic Name</label>
-                    <input type="text" id="topic-name" placeholder="e.g. Electric Fields & Potential" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium">
+                    <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-1">Topic Name</label>
+                    <input type="text" id="topic-name" placeholder="e.g. Electric Fields & Potential / විද්‍යුත් ක්ෂේත්‍ර" class="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-semibold placeholder-zinc-400 dark:placeholder-zinc-600">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div class="space-y-2">
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Subject</label>
-                        <select id="topic-subject" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium appearance-none">
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-1">Subject</label>
+                        <select id="topic-subject" class="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-semibold appearance-none">
                             <option value="Physics">Physics</option>
                             <option value="Chemistry">Chemistry</option>
                             <option value="Biology">Biology</option>
@@ -324,77 +335,77 @@
                         </select>
                     </div>
                     <div class="space-y-2">
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Next Review</label>
-                        <input type="date" id="topic-date" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium">
+                        <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-1">Next Review</label>
+                        <input type="date" id="topic-date" class="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-4 py-4 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-semibold">
                     </div>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Quick Notes</label>
-                    <textarea id="topic-notes" placeholder="Focus on Gauss's Law applications..." rows="3" class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium resize-none"></textarea>
+                    <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-1">Quick Notes</label>
+                    <textarea id="topic-notes" placeholder="Focus on Gauss's Law applications..." rows="3" class="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-semibold resize-none placeholder-zinc-400 dark:placeholder-zinc-600"></textarea>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-widest px-1">Resource Link (Optional)</label>
-                    <input type="url" id="topic-link" placeholder="https://youtube.com/..." class="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500 outline-none transition-all font-medium">
+                    <label class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-1">Resource Link (Optional)</label>
+                    <input type="url" id="topic-link" placeholder="https://youtube.com/..." class="w-full bg-zinc-50 dark:bg-zinc-950/50 border border-zinc-200 dark:border-zinc-800 rounded-2xl px-5 py-4 focus:ring-2 focus:ring-primary-500/50 outline-none transition-all font-semibold placeholder-zinc-400 dark:placeholder-zinc-600">
                 </div>
             </div>
 
-            <div class="p-6 bg-slate-50 dark:bg-slate-800/30 flex gap-3">
-                <button id="btn-delete-topic" class="hidden flex-1 bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400 py-4 rounded-2xl font-bold hover:bg-red-100 transition-all flex items-center justify-center gap-2">
-                    <i class="ph ph-trash"></i> Delete
+            <div class="p-6 bg-zinc-50/50 dark:bg-zinc-950/50 flex gap-3 border-t border-zinc-100 dark:border-zinc-800/60">
+                <button id="btn-delete-topic" class="hidden flex-1 bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-400 py-4 rounded-2xl font-bold hover:bg-red-100 dark:hover:bg-red-500/20 transition-all flex items-center justify-center gap-2">
+                    <i class="ph-bold ph-trash"></i> Delete
                 </button>
-                <button id="btn-save-topic" class="flex-[2] bg-primary-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary-500/20 hover:bg-primary-600 transition-all">Save Topic</button>
+                <button id="btn-save-topic" class="flex-[2] bg-primary-500 text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary-500/25 hover:bg-primary-600 hover:-translate-y-0.5 transition-all">Save Topic</button>
             </div>
         </div>
     </div>
 
     <!-- Modal: Settings & Profile -->
-    <div id="modal-settings" class="modal-overlay fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/40 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
-        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-t-3xl sm:rounded-3xl shadow-2xl transition-transform duration-300 translate-y-full sm:translate-y-10 overflow-hidden flex flex-col" onclick="event.stopPropagation()">
+    <div id="modal-settings" class="modal-overlay fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-zinc-950/60 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white dark:bg-zinc-900 w-full max-w-sm rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl transition-all duration-400 translate-y-full sm:translate-y-10 sm:scale-95 overflow-hidden flex flex-col border border-zinc-200 dark:border-zinc-800" onclick="event.stopPropagation()">
             
-            <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <h3 class="text-xl font-bold flex items-center gap-2"><i class="ph-fill ph-gear"></i> Settings</h3>
-                <button onclick="window.closeModal('settings')" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                    <i class="ph ph-x text-xl"></i>
+            <div class="p-5 border-b border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
+                <h3 class="text-xl font-extrabold flex items-center gap-2"><i class="ph-fill ph-gear text-primary-500"></i> Settings</h3>
+                <button onclick="window.closeModal('settings')" class="p-2 rounded-full bg-zinc-50 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-700 hover:text-zinc-900 dark:hover:text-white transition-all">
+                    <i class="ph-bold ph-x text-lg"></i>
                 </button>
             </div>
 
             <div class="p-6 space-y-6">
                 <!-- User Details Area -->
-                <div class="flex flex-col items-center text-center pb-6 border-b border-slate-100 dark:border-slate-800">
-                    <div class="w-20 h-20 rounded-full bg-slate-200 dark:bg-slate-800 mb-3 overflow-hidden border-4 border-slate-50 dark:border-slate-950 shadow-md">
+                <div class="flex flex-col items-center text-center pb-6 border-b border-zinc-100 dark:border-zinc-800/60">
+                    <div class="w-24 h-24 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-4 overflow-hidden border-[4px] border-white dark:border-zinc-900 shadow-xl">
                         <img id="settings-profile-img" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" alt="User" class="w-full h-full object-cover">
                     </div>
-                    <h4 id="settings-user-name" class="text-lg font-bold text-slate-900 dark:text-white">Guest User</h4>
-                    <p id="settings-user-email" class="text-xs text-slate-500 mb-4">Local Mode (Not Synced)</p>
+                    <h4 id="settings-user-name" class="text-xl font-extrabold text-zinc-900 dark:text-white">Guest User</h4>
+                    <p id="settings-user-email" class="text-xs font-medium text-zinc-500 mb-5">Local Mode (Not Synced)</p>
                     
-                    <button id="btn-auth" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-white py-3 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
+                    <button id="btn-auth" class="w-full bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-white py-3.5 rounded-2xl font-bold transition-all flex items-center justify-center gap-2">
                         <i class="ph-bold ph-google-logo text-xl"></i> <span id="btn-auth-text">Sign in with Google</span>
                     </button>
                 </div>
 
                 <!-- Appearance Options -->
-                <div class="space-y-4">
-                    <h5 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Appearance</h5>
+                <div class="space-y-5">
+                    <h5 class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Appearance</h5>
                     
-                    <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center justify-between bg-zinc-50 dark:bg-zinc-950/50 p-4 rounded-2xl border border-zinc-100 dark:border-zinc-800/80">
                         <div class="flex items-center gap-3">
-                            <i class="ph-fill ph-moon text-xl text-slate-600 dark:text-slate-300"></i>
-                            <span class="font-semibold text-sm">Dark Mode</span>
+                            <i class="ph-fill ph-moon text-xl text-zinc-600 dark:text-zinc-300"></i>
+                            <span class="font-bold text-sm">Dark Mode</span>
                         </div>
-                        <button id="theme-toggle" class="w-12 h-6 rounded-full bg-slate-300 dark:bg-primary-500 relative transition-colors duration-300 focus:outline-none">
-                            <div id="theme-toggle-knob" class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 transform dark:translate-x-6"></div>
+                        <button id="theme-toggle" class="w-12 h-6 rounded-full bg-zinc-300 dark:bg-primary-500 relative transition-colors duration-300 focus:outline-none shadow-inner">
+                            <div id="theme-toggle-knob" class="absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 transform dark:translate-x-6 shadow-sm"></div>
                         </button>
                     </div>
 
-                    <div class="space-y-3">
-                        <span class="text-xs font-semibold text-slate-500">Theme Color</span>
-                        <div class="flex items-center gap-3">
-                            <button class="color-btn w-8 h-8 rounded-full bg-[#0ea5e9] border-2 border-transparent hover:scale-110 transition-transform active-color ring-2 ring-offset-2 ring-[#0ea5e9] dark:ring-offset-slate-900" data-color="blue"></button>
-                            <button class="color-btn w-8 h-8 rounded-full bg-[#10b981] border-2 border-transparent hover:scale-110 transition-transform" data-color="emerald"></button>
-                            <button class="color-btn w-8 h-8 rounded-full bg-[#8b5cf6] border-2 border-transparent hover:scale-110 transition-transform" data-color="violet"></button>
-                            <button class="color-btn w-8 h-8 rounded-full bg-[#f43f5e] border-2 border-transparent hover:scale-110 transition-transform" data-color="rose"></button>
+                    <div class="space-y-3 px-1">
+                        <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Accent Color</span>
+                        <div class="flex items-center gap-4">
+                            <button class="color-btn w-9 h-9 rounded-full bg-[#0ea5e9] border-2 border-transparent hover:scale-110 transition-transform active-color ring-2 ring-offset-4 ring-[#0ea5e9] dark:ring-offset-zinc-900 shadow-md" data-color="blue"></button>
+                            <button class="color-btn w-9 h-9 rounded-full bg-[#10b981] border-2 border-transparent hover:scale-110 transition-transform shadow-md" data-color="emerald"></button>
+                            <button class="color-btn w-9 h-9 rounded-full bg-[#8b5cf6] border-2 border-transparent hover:scale-110 transition-transform shadow-md" data-color="violet"></button>
+                            <button class="color-btn w-9 h-9 rounded-full bg-[#f43f5e] border-2 border-transparent hover:scale-110 transition-transform shadow-md" data-color="rose"></button>
                         </div>
                     </div>
                 </div>
@@ -429,11 +440,11 @@
         let tasks = [];
         let currentSubjectFilter = 'All';
         let currentStatusFilter = 'All';
+        let searchQuery = '';
         let currentUser = null;
         let unsubscribeTasks = null;
         let activeView = 'dashboard';
 
-        // --- Initial Data: Empty (no sample reminders) ---
         const getInitialData = () => [];
 
         // --- Initialization ---
@@ -442,7 +453,6 @@
             setupUIEventListeners();
             loadLocalData();
             
-            // Listen to Auth State
             onAuthStateChanged(auth, (user) => {
                 currentUser = user;
                 updateProfileUI();
@@ -462,7 +472,7 @@
         async function handleAuthClick() {
             if (currentUser) {
                 await signOut(auth);
-                tasks = []; // Clear tasks on sign out, no sample reminders
+                tasks = []; 
                 saveLocalData();
                 renderTasks();
                 showToast("Signed out successfully.");
@@ -488,7 +498,7 @@
                     await setDoc(doc(userRef, task.id), task, { merge: true });
                 }
             }
-            localStorage.removeItem('studyflow_tasks'); // Clean up local once synced
+            localStorage.removeItem('studyflow_tasks');
         }
 
         function subscribeToCloudTasks(userId) {
@@ -510,7 +520,6 @@
         function saveData() {
             if (currentUser) {
                 setSyncStatus('syncing');
-                // Firestore updates happen in individual actions
             } else {
                 saveLocalData();
                 renderTasks();
@@ -527,7 +536,7 @@
             if (stored) {
                 tasks = JSON.parse(stored);
             } else {
-                tasks = getInitialData(); // empty array
+                tasks = getInitialData(); 
                 saveLocalData();
             }
             renderTasks();
@@ -543,10 +552,10 @@
                 wrapper.classList.remove('hidden');
                 wrapper.classList.add('flex');
                 if (status === 'syncing') {
-                    dot.className = 'w-2 h-2 rounded-full bg-blue-500 animate-pulse';
+                    dot.className = 'w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.6)]';
                     text.textContent = 'Syncing...';
                 } else {
-                    dot.className = 'w-2 h-2 rounded-full bg-green-500';
+                    dot.className = 'w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
                     text.textContent = 'Saved to Cloud';
                 }
             } else {
@@ -573,9 +582,9 @@
                 firstNameEl.textContent = (currentUser.displayName || "Scholar").split(' ')[0];
                 emailEl.textContent = currentUser.email;
                 btnText.textContent = "Sign Out";
-                btnEl.classList.replace('bg-slate-100', 'bg-red-50');
-                btnEl.classList.replace('dark:bg-slate-800', 'dark:bg-red-900/20');
-                btnEl.classList.replace('text-slate-800', 'text-red-600');
+                btnEl.classList.replace('bg-zinc-100', 'bg-red-50');
+                btnEl.classList.replace('dark:bg-zinc-800', 'dark:bg-red-500/10');
+                btnEl.classList.replace('text-zinc-800', 'text-red-600');
                 btnEl.querySelector('i').className = 'ph-bold ph-sign-out text-xl';
             } else {
                 imgEl.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Guest";
@@ -584,9 +593,9 @@
                 firstNameEl.textContent = "Scholar";
                 emailEl.textContent = "Local Mode (Not Synced)";
                 btnText.textContent = "Sign in with Google";
-                btnEl.classList.replace('bg-red-50', 'bg-slate-100');
-                btnEl.classList.replace('dark:bg-red-900/20', 'dark:bg-slate-800');
-                btnEl.classList.replace('text-red-600', 'text-slate-800');
+                btnEl.classList.replace('bg-red-50', 'bg-zinc-100');
+                btnEl.classList.replace('dark:bg-red-500/10', 'dark:bg-zinc-800');
+                btnEl.classList.replace('text-red-600', 'text-zinc-800');
                 btnEl.querySelector('i').className = 'ph-bold ph-google-logo text-xl';
             }
         }
@@ -595,16 +604,16 @@
             const grid = document.getElementById('task-grid');
             let filteredTasks = tasks.filter(t => !t._deleted);
 
-            // Update stats
+            // Calculate Stats before deeply filtering
             const doneCount = filteredTasks.filter(t => t.completed && t.nextReviewDate === new Date().toISOString().split('T')[0]).length;
             const totalDue = filteredTasks.filter(t => !t.completed && t.nextReviewDate <= new Date().toISOString().split('T')[0]).length;
             document.getElementById('stat-done').textContent = doneCount;
             document.getElementById('stat-total').textContent = totalDue || filteredTasks.length;
 
+            // Apply Filters
             if (currentSubjectFilter !== 'All') {
                 filteredTasks = filteredTasks.filter(t => t.subject === currentSubjectFilter);
             }
-
             if (currentStatusFilter === 'Due') {
                 const today = new Date().toISOString().split('T')[0];
                 filteredTasks = filteredTasks.filter(t => t.nextReviewDate <= today && !t.completed);
@@ -612,68 +621,78 @@
                 filteredTasks = filteredTasks.filter(t => t.completed);
             }
 
+            // Apply Search Query
+            if (searchQuery) {
+                filteredTasks = filteredTasks.filter(t => 
+                    t.topic.toLowerCase().includes(searchQuery) || 
+                    (t.notes && t.notes.toLowerCase().includes(searchQuery))
+                );
+            }
+
             filteredTasks.sort((a, b) => new Date(a.nextReviewDate) - new Date(b.nextReviewDate));
 
             if (filteredTasks.length === 0) {
                 grid.innerHTML = `
-                    <div class="col-span-full py-20 flex flex-col items-center justify-center text-slate-400">
-                        <i class="ph ph-mask-sad text-6xl mb-4"></i>
-                        <p class="font-bold">No topics found.</p>
-                        <p class="text-sm">Time to add something new!</p>
+                    <div class="col-span-full py-24 flex flex-col items-center justify-center text-zinc-400 opacity-80 animate-slide-up">
+                        <div class="w-24 h-24 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                            <i class="ph-fill ph-magnifying-glass text-4xl text-zinc-300 dark:text-zinc-600"></i>
+                        </div>
+                        <p class="font-extrabold text-lg text-zinc-600 dark:text-zinc-300">Nothing found here.</p>
+                        <p class="text-sm mt-1">Try adjusting filters or adding a new topic.</p>
                     </div>
                 `;
                 return;
             }
 
-            grid.innerHTML = filteredTasks.map(task => {
+            grid.innerHTML = filteredTasks.map((task, index) => {
                 const today = new Date().toISOString().split('T')[0];
                 const isOverdue = task.nextReviewDate < today && !task.completed;
                 const isDueToday = task.nextReviewDate === today && !task.completed;
                 
                 let statusBadge = '';
-                if (task.completed) statusBadge = `<span class="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Mastered</span>`;
-                else if (isOverdue) statusBadge = `<span class="bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Overdue</span>`;
-                else if (isDueToday) statusBadge = `<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Due Today</span>`;
-                else statusBadge = `<span class="bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] px-2 py-1 rounded-md font-bold uppercase">Upcoming</span>`;
+                if (task.completed) statusBadge = `<span class="bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider border border-green-200/50 dark:border-green-800/50">Mastered</span>`;
+                else if (isOverdue) statusBadge = `<span class="bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider border border-red-200/50 dark:border-red-800/50 animate-pulse">Overdue</span>`;
+                else if (isDueToday) statusBadge = `<span class="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider border border-blue-200/50 dark:border-blue-800/50">Due Today</span>`;
+                else statusBadge = `<span class="bg-zinc-100 dark:bg-zinc-800 text-zinc-500 text-[10px] px-2.5 py-1 rounded-md font-bold uppercase tracking-wider border border-zinc-200/50 dark:border-zinc-700/50">Upcoming</span>`;
 
-                const subjectColors = { Physics: 'bg-indigo-500', Chemistry: 'bg-emerald-500', Biology: 'bg-rose-500', Math: 'bg-amber-500', Other: 'bg-slate-500' };
+                const subjectColors = { Physics: 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]', Chemistry: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]', Biology: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]', Math: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]', Other: 'bg-zinc-400 shadow-[0_0_8px_rgba(161,161,170,0.5)]' };
 
                 return `
-                <div class="group relative bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-5 hover:border-primary-400 dark:hover:border-primary-500 transition-all card-shadow flex flex-col justify-between">
-                    <div class="absolute top-0 left-8 w-10 h-1 ${subjectColors[task.subject] || 'bg-slate-500'} rounded-b-full"></div>
+                <div class="group relative bg-white dark:bg-zinc-900/90 rounded-[1.5rem] border border-zinc-200/80 dark:border-zinc-800 p-6 hover:border-primary-400 dark:hover:border-primary-500/50 transition-all duration-300 card-shadow flex flex-col justify-between hover:-translate-y-1 hover:shadow-xl dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.5)]" style="animation: fadeInUp 0.4s ease-out forwards; opacity: 0; animation-delay: ${index * 50}ms">
+                    
                     <div>
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex items-center gap-2">
-                                <span class="w-2 h-2 rounded-full ${subjectColors[task.subject] || 'bg-slate-500'}"></span>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${task.subject}</span>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-2.5 bg-zinc-50 dark:bg-zinc-950/50 px-2.5 py-1 rounded-lg border border-zinc-100 dark:border-zinc-800/50">
+                                <span class="w-2 h-2 rounded-full ${subjectColors[task.subject] || 'bg-zinc-500'}"></span>
+                                <span class="text-[10px] font-extrabold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">${task.subject}</span>
                             </div>
                             ${statusBadge}
                         </div>
-                        <h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2 leading-tight">${task.topic}</h4>
-                        ${task.notes ? `<p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">${task.notes}</p>` : ''}
+                        <h4 class="text-lg font-extrabold text-zinc-800 dark:text-zinc-100 mb-2.5 leading-snug">${task.topic}</h4>
+                        ${task.notes ? `<p class="text-sm font-medium text-zinc-500 dark:text-zinc-400 line-clamp-2 mb-4 leading-relaxed">${task.notes}</p>` : ''}
                         
                         ${task.summaryLink ? `
-                            <a href="${task.summaryLink}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold hover:text-primary-500 hover:border-primary-300 dark:hover:border-primary-700 transition-all w-fit mb-2">
-                                <i class="ph-bold ph-link text-sm"></i> Open Resource
+                            <a href="${task.summaryLink}" target="_blank" onclick="event.stopPropagation()" class="inline-flex items-center gap-1.5 bg-zinc-50 hover:bg-primary-50 dark:bg-zinc-800/50 dark:hover:bg-primary-500/10 text-zinc-600 dark:text-zinc-300 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs font-bold hover:text-primary-600 dark:hover:text-primary-400 hover:border-primary-300 dark:hover:border-primary-700 transition-all w-fit mb-2">
+                                <i class="ph-bold ph-link text-sm"></i> Resource
                             </a>
                         ` : ''}
                     </div>
 
-                    <div class="mt-2 pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                        <div class="flex items-center gap-1.5 text-slate-400">
+                    <div class="mt-4 pt-4 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between">
+                        <div class="flex items-center gap-1.5 text-zinc-400 dark:text-zinc-500">
                             <i class="ph-fill ph-calendar-blank"></i>
-                            <span class="text-xs font-bold">${formatDate(task.nextReviewDate)}</span>
+                            <span class="text-xs font-bold tracking-wide">${formatDate(task.nextReviewDate)}</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <button onclick="window.handleTaskAction('${task.id}', 'edit')" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-primary-500 transition-all">
+                            <button onclick="window.handleTaskAction('${task.id}', 'edit')" class="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-primary-500 transition-all">
                                 <i class="ph-bold ph-pencil-simple text-lg"></i>
                             </button>
                             ${!task.completed ? `
-                                <button onclick="window.handleTaskAction('${task.id}', 'review')" class="btn-review flex items-center gap-2 bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary-500 hover:text-white transition-all">
+                                <button onclick="window.handleTaskAction('${task.id}', 'review')" class="btn-review flex items-center gap-2 bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400 px-4 py-2 rounded-xl text-xs font-bold hover:bg-primary-500 hover:text-white transition-all shadow-sm">
                                     <i class="ph-bold ph-brain"></i> Review
                                 </button>
                             ` : `
-                                <button onclick="window.handleTaskAction('${task.id}', 'reset')" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-green-500 transition-all" title="Reset">
+                                <button onclick="window.handleTaskAction('${task.id}', 'reset')" class="p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-green-500 transition-all" title="Reset Progress">
                                     <i class="ph-bold ph-arrow-counter-clockwise text-lg"></i>
                                 </button>
                             `}
@@ -695,25 +714,25 @@
 
             const subjects = ['Physics', 'Chemistry', 'Biology', 'Math', 'Other'];
             const container = document.getElementById('stats-subjects-container');
-            const total = activeTasks.length || 1; // prevent div by zero
+            const total = activeTasks.length || 1; 
 
-            const subjectColors = { Physics: 'bg-indigo-500', Chemistry: 'bg-emerald-500', Biology: 'bg-rose-500', Math: 'bg-amber-500', Other: 'bg-slate-500' };
+            const subjectColors = { Physics: 'bg-indigo-500', Chemistry: 'bg-emerald-500', Biology: 'bg-rose-500', Math: 'bg-amber-500', Other: 'bg-zinc-500' };
 
             container.innerHTML = subjects.map(sub => {
                 const count = activeTasks.filter(t => t.subject === sub).length;
                 const percent = Math.round((count / total) * 100);
                 if (count === 0) return '';
                 return `
-                    <div class="mb-2">
-                        <div class="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
+                    <div class="mb-3">
+                        <div class="flex justify-between text-xs font-bold text-zinc-600 dark:text-zinc-400 mb-2">
                             <span>${sub}</span><span>${count} (${percent}%)</span>
                         </div>
-                        <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
-                            <div class="${subjectColors[sub]} h-2.5 rounded-full transition-all duration-1000" style="width: ${percent}%"></div>
+                        <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2.5 overflow-hidden shadow-inner">
+                            <div class="${subjectColors[sub]} h-full rounded-full transition-all duration-1000 ease-out" style="width: ${percent}%"></div>
                         </div>
                     </div>
                 `;
-            }).join('') || '<p class="text-sm text-slate-400">No data available yet.</p>';
+            }).join('') || '<p class="text-sm font-medium text-zinc-400">No data available yet. Start adding topics!</p>';
         }
 
         function switchView(view) {
@@ -724,48 +743,51 @@
             
             // Desktop Nav highlight
             document.getElementById('nav-desktop-home').className = view === 'dashboard' 
-                ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all'
-                : 'nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl font-bold transition-all';
+                ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all hover:scale-[1.02]'
+                : 'nav-btn w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-2xl font-bold transition-all hover:scale-[1.02]';
             
             document.getElementById('nav-desktop-stats').className = view === 'stats' 
-                ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all'
-                : 'nav-btn w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-2xl font-bold transition-all';
+                ? 'nav-btn w-full flex items-center gap-3 px-4 py-3 bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 rounded-2xl font-bold transition-all hover:scale-[1.02]'
+                : 'nav-btn w-full flex items-center gap-3 px-4 py-3 text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-2xl font-bold transition-all hover:scale-[1.02]';
 
             // Mobile Nav highlight
-            document.getElementById('nav-mobile-home').className = view === 'dashboard' ? 'nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors' : 'nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary-500 transition-colors';
-            document.getElementById('nav-mobile-stats').className = view === 'stats' ? 'nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors' : 'nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-primary-500 transition-colors';
+            document.getElementById('nav-mobile-home').className = view === 'dashboard' ? 'nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors' : 'nav-btn flex flex-col items-center gap-1 text-zinc-400 hover:text-primary-500 transition-colors';
+            document.getElementById('nav-mobile-stats').className = view === 'stats' ? 'nav-btn flex flex-col items-center gap-1 text-primary-500 transition-colors' : 'nav-btn flex flex-col items-center gap-1 text-zinc-400 hover:text-primary-500 transition-colors';
 
             if (view === 'dashboard') {
-                stats.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                stats.classList.add('opacity-0', 'translate-y-8', 'pointer-events-none');
                 setTimeout(() => {
                     stats.classList.add('hidden');
                     dashboard.classList.remove('hidden');
-                    // Force reflow
                     void dashboard.offsetWidth;
-                    dashboard.classList.remove('opacity-0', 'scale-95');
-                }, 300);
+                    dashboard.classList.remove('opacity-0', 'scale-95', 'translate-y-4');
+                }, 400);
                 title.textContent = 'Dashboard';
             } else {
-                dashboard.classList.add('opacity-0', 'scale-95');
+                dashboard.classList.add('opacity-0', 'scale-95', 'translate-y-4');
                 setTimeout(() => {
                     dashboard.classList.add('hidden');
                     stats.classList.remove('hidden');
                     void stats.offsetWidth;
-                    stats.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                }, 300);
+                    stats.classList.remove('opacity-0', 'translate-y-8', 'pointer-events-none');
+                }, 400);
                 title.textContent = 'Statistics';
                 renderStatistics();
             }
             window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-
         // --- Event Listeners & Interactions ---
         function setupUIEventListeners() {
-            // Theme setup is handled in initTheme
             document.getElementById('theme-toggle').onclick = toggleDarkMode;
             document.getElementById('btn-auth').onclick = handleAuthClick;
             document.getElementById('btn-profile').onclick = () => window.openModal('settings');
+
+            // Search Filter
+            document.getElementById('search-tasks').addEventListener('input', (e) => {
+                searchQuery = e.target.value.toLowerCase();
+                renderTasks();
+            });
 
             // View Switchers
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -775,34 +797,35 @@
                 };
             });
 
-            // Filters
+            // Subject Filters
             document.querySelectorAll('.subject-filter').forEach(btn => {
                 btn.onclick = () => {
                     document.querySelectorAll('.subject-filter').forEach(b => {
-                        b.classList.remove('active', 'bg-primary-500', 'text-white');
-                        b.classList.add('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-400', 'border');
+                        b.classList.remove('active', 'bg-primary-500', 'text-white', 'shadow-lg', 'shadow-primary-500/25');
+                        b.classList.add('bg-white', 'dark:bg-zinc-900', 'text-zinc-600', 'dark:text-zinc-400', 'border');
                     });
-                    btn.classList.add('active', 'bg-primary-500', 'text-white');
-                    btn.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-400', 'border');
+                    btn.classList.add('active', 'bg-primary-500', 'text-white', 'shadow-lg', 'shadow-primary-500/25');
+                    btn.classList.remove('bg-white', 'dark:bg-zinc-900', 'text-zinc-600', 'dark:text-zinc-400', 'border');
                     currentSubjectFilter = btn.dataset.subject;
                     renderTasks();
                 };
             });
 
+            // Status Tabs
             document.querySelectorAll('.status-tab').forEach(tab => {
                 tab.onclick = () => {
                     document.querySelectorAll('.status-tab').forEach(t => {
-                        t.classList.remove('tab-active', 'text-slate-900', 'dark:text-white');
-                        t.classList.add('text-slate-500');
+                        t.classList.remove('tab-active', 'text-zinc-900', 'dark:text-white');
+                        t.classList.add('text-zinc-400');
                     });
-                    tab.classList.add('tab-active', 'text-slate-900', 'dark:text-white');
-                    tab.classList.remove('text-slate-500');
+                    tab.classList.add('tab-active', 'text-zinc-900', 'dark:text-white');
+                    tab.classList.remove('text-zinc-400');
                     currentStatusFilter = tab.dataset.status;
                     renderTasks();
                 };
             });
 
-            // Modal Backdrop Clicks (Fixing the bug)
+            // Modal Backdrop Clicks
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
                 overlay.addEventListener('click', (e) => {
                     if (e.target === overlay) {
@@ -848,7 +871,6 @@
                 };
 
                 if (id) {
-                    // Update
                     if (currentUser) {
                         const ref = doc(db, 'artifacts', 'studyflow-pro', 'users', currentUser.uid, 'tasks', id);
                         await setDoc(ref, taskData, { merge: true });
@@ -858,7 +880,6 @@
                         saveData();
                     }
                 } else {
-                    // Create
                     const newId = Date.now().toString();
                     taskData.id = newId;
                     taskData.interval = 1;
@@ -874,7 +895,7 @@
                 }
                 
                 window.closeModal('topic');
-                if(!currentUser) renderTasks(); // Firestore listener handles this if logged in
+                if(!currentUser) renderTasks(); 
             };
 
             // Delete Topic
@@ -905,12 +926,16 @@
         window.openModal = function(id) {
             const el = document.getElementById(`modal-${id}`);
             el.classList.remove('pointer-events-none', 'opacity-0');
-            el.firstElementChild.classList.remove('translate-y-full', 'sm:translate-y-10');
+            const inner = el.firstElementChild;
+            inner.classList.remove('translate-y-full', 'sm:translate-y-10', 'sm:scale-95');
+            inner.classList.add('sm:scale-100');
         };
 
         window.closeModal = function(id) {
             const el = document.getElementById(`modal-${id}`);
-            el.firstElementChild.classList.add('translate-y-full', 'sm:translate-y-10');
+            const inner = el.firstElementChild;
+            inner.classList.remove('sm:scale-100');
+            inner.classList.add('translate-y-full', 'sm:translate-y-10', 'sm:scale-95');
             setTimeout(() => {
                 el.classList.add('opacity-0', 'pointer-events-none');
             }, 300);
@@ -951,12 +976,11 @@
                 
                 if (nextInterval >= 14) {
                     updates.completed = true;
-                    showToast('Topic Mastered! 🏆');
+                    showToast('Topic Mastered! 🎓');
                 } else {
-                    showToast('Revision Scheduled! 🧠');
+                    showToast('Revision Scheduled! 📅');
                 }
                 
-                // Update Streak visually
                 const streak = parseInt(document.getElementById('stat-streak').textContent);
                 document.getElementById('stat-streak').textContent = streak + 1;
                 
@@ -1000,8 +1024,8 @@
 
         function showToast(msg) {
             const toast = document.createElement('div');
-            toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-full font-bold text-sm shadow-2xl animate-slide-up flex items-center gap-2';
-            toast.innerHTML = `<i class="ph-bold ph-check-circle text-primary-500"></i> ${msg}`;
+            toast.className = 'fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 px-6 py-3 rounded-full font-bold text-sm shadow-2xl animate-slide-up flex items-center gap-2 border border-zinc-800 dark:border-zinc-200';
+            toast.innerHTML = `<i class="ph-fill ph-check-circle text-primary-500 text-lg"></i> ${msg}`;
             document.body.appendChild(toast);
             setTimeout(() => {
                 toast.style.opacity = '0';
@@ -1012,12 +1036,10 @@
         }
 
         function initTheme() {
-            // Dark Mode
             const isDark = localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches);
             if (isDark) document.documentElement.classList.add('dark');
             updateThemeToggleUI(isDark);
 
-            // Color Theme
             const color = localStorage.getItem('studyflow_color') || 'blue';
             setThemeColor(color);
         }
@@ -1034,11 +1056,11 @@
             if (isDark) {
                 knob.classList.add('translate-x-6');
                 bg.classList.add('bg-primary-500');
-                bg.classList.remove('bg-slate-300');
+                bg.classList.remove('bg-zinc-300');
             } else {
                 knob.classList.remove('translate-x-6');
                 bg.classList.remove('bg-primary-500');
-                bg.classList.add('bg-slate-300');
+                bg.classList.add('bg-zinc-300');
             }
         }
 
@@ -1046,16 +1068,15 @@
             document.body.setAttribute('data-theme', color);
             localStorage.setItem('studyflow_color', color);
             
-            // Update active ring on buttons
             document.querySelectorAll('.color-btn').forEach(btn => {
                 if(btn.dataset.color === color) {
-                    btn.classList.add('ring-2', 'ring-offset-2', 'dark:ring-offset-slate-900');
+                    btn.classList.add('ring-2', 'ring-offset-4', 'dark:ring-offset-zinc-900', 'scale-110');
                     if (color === 'blue') btn.classList.add('ring-[#0ea5e9]');
                     else if (color === 'emerald') btn.classList.add('ring-[#10b981]');
                     else if (color === 'violet') btn.classList.add('ring-[#8b5cf6]');
                     else if (color === 'rose') btn.classList.add('ring-[#f43f5e]');
                 } else {
-                    btn.classList.remove('ring-2', 'ring-offset-2', 'dark:ring-offset-slate-900', 'ring-[#0ea5e9]', 'ring-[#10b981]', 'ring-[#8b5cf6]', 'ring-[#f43f5e]');
+                    btn.classList.remove('ring-2', 'ring-offset-4', 'dark:ring-offset-zinc-900', 'ring-[#0ea5e9]', 'ring-[#10b981]', 'ring-[#8b5cf6]', 'ring-[#f43f5e]', 'scale-110');
                 }
             });
         }
