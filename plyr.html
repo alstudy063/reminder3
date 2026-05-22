@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Video Player - View From A Blue Moon</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #030712;
+        }
+        .serif-title {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.3em;
+        }
+        
+        /* Custom styling for the volume and timeline range inputs */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            /* Beautiful translucent outer ring matching the mockup exactly */
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.22);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.35);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border: none;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.22);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.35);
+        }
+        
+        input[type="range"]::-webkit-slider-runnable-track {
+            background: transparent;
+        }
+
+        input[type="range"]::-moz-range-track {
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 overflow-hidden select-none">
+
+    <!-- Player Container -->
+    <div id="player-container" class="relative w-full max-w-5xl aspect-video rounded-2xl overflow-hidden shadow-2xl shadow-sky-950/40 border border-slate-800 bg-black group/player">
+        
+        <!-- Video Element -->
+        <video id="main-video" class="w-full h-full object-cover" loop playsinline>
+            <source src="https://player.vimeo.com/external/371433846.sd.mp4?s=236da2f3c0227e339f4c340ebd9b1cf7c3541617&profile_id=165&oauth2_token_id=57447761" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
+        <!-- Title / Intro Overlay -->
+        <div id="video-overlay" class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-slate-950/50 flex flex-col justify-between p-8 transition-opacity duration-700 ease-in-out">
+            <div></div>
+
+            <!-- Title Layout -->
+            <div class="flex flex-col items-center justify-center text-white text-center">
+                <h1 class="serif-title text-4xl md:text-6xl lg:text-7xl font-light mb-4 md:mb-6 tracking-[0.4em] translate-x-[0.2em]">
+                    V I E W
+                </h1>
+                <p class="text-[9px] md:text-xs tracking-[0.6em] font-medium text-sky-200/80 mb-6 md:mb-10 uppercase">
+                    F r o m &nbsp; a &nbsp; b l u e
+                </p>
+                
+                <div class="flex items-center justify-center gap-6 md:gap-8 my-2">
+                    <span class="serif-title text-3xl md:text-5xl font-light tracking-widest">M</span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-white opacity-90"></span>
+                    
+                    <button id="overlay-play-btn" class="w-14 h-14 md:w-16 md:h-16 rounded-full bg-sky-500 hover:bg-sky-400 text-white flex items-center justify-center shadow-lg shadow-sky-500/30 hover:scale-110 active:scale-95 transition-all duration-300 ease-out focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6 translate-x-[2px]">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                    </button>
+                    
+                    <span class="w-2.5 h-2.5 rounded-full bg-white opacity-90"></span>
+                    <span class="serif-title text-3xl md:text-5xl font-light tracking-widest">N</span>
+                </div>
+
+                <div class="mt-8 md:mt-12 text-center">
+                    <p class="text-[8px] md:text-[10px] tracking-[0.3em] font-medium text-slate-300/95 uppercase mb-1">
+                        A film by John Florence
+                    </p>
+                    <p class="text-[8px] md:text-[10px] tracking-[0.3em] font-medium text-slate-300/95 uppercase mb-3">
+                        and Blake Vincent Kueny
+                    </p>
+                    <p class="text-[7px] md:text-[8px] tracking-[0.2em] font-semibold text-sky-400/80 uppercase">
+                        In association with Brain Farm
+                    </p>
+                </div>
+            </div>
+
+            <div></div>
+        </div>
+
+        <!-- Single Row Controls Overlay -->
+        <div id="controls-container" class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/95 via-slate-950/70 to-transparent pt-16 pb-6 px-6 transition-all duration-500 transform translate-y-1 opacity-0 group-hover/player:translate-y-0 group-hover/player:opacity-100">
+            
+            <div class="flex items-center gap-3 md:gap-4 text-white w-full">
+                
+                <!-- Play / Pause Button -->
+                <div class="relative group">
+                    <button id="ctrl-play-btn" class="text-white hover:scale-110 active:scale-95 transition-all duration-200">
+                        <svg id="play-svg" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                            <path d="M8 5v14l11-7z"/>
+                        </svg>
+                        <svg id="pause-svg" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5 hidden">
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                        </svg>
+                    </button>
+                    <!-- Tooltip -->
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[11px] font-bold px-2.5 py-1 rounded-[4px] shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-30">
+                        Play
+                        <span class="absolute bottom-[-3px] left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45"></span>
+                    </span>
+                </div>
+
+                <!-- Custom Timeline Progression Track -->
+                <div class="relative flex-1 h-1 bg-slate-600/40 rounded-full cursor-pointer group/timeline mx-2" id="timeline-bg">
+                    <div id="timeline-progress" class="absolute top-0 left-0 h-full bg-white rounded-full w-0"></div>
+                    
+                    <!-- Segment Markers -->
+                    <div class="absolute top-0 left-[8%] w-[2px] h-full bg-slate-950"></div>
+                    <div class="absolute top-0 left-[18%] w-[2px] h-full bg-slate-950"></div>
+                    <div class="absolute top-0 left-[39%] w-[2px] h-full bg-slate-950"></div>
+                    <div class="absolute top-0 left-[55%] w-[2px] h-full bg-slate-950"></div>
+                    <div class="absolute top-0 left-[80%] w-[2px] h-full bg-slate-950"></div>
+
+                    <div id="timeline-handle" class="absolute -top-[4px] w-3 h-3 rounded-full bg-white shadow-lg border border-slate-300 opacity-0 group-hover/timeline:opacity-100 transition-opacity duration-150 transform -translate-x-1/2"></div>
+                </div>
+
+                <!-- Time Counter -->
+                <span id="time-display" class="text-[13px] font-medium text-white/90 select-none mr-1">
+                    00:00
+                </span>
+
+                <!-- Volume Controls -->
+                <div class="flex items-center gap-1.5 group/volume">
+                    <button id="mute-btn" class="text-white hover:scale-105 transition-all duration-200">
+                        <svg id="volume-high-svg" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5">
+                            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                        </svg>
+                        <svg id="volume-mute-svg" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" class="w-5 h-5 hidden">
+                            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Volume Track -->
+                    <div class="relative flex items-center h-5 w-14 md:w-16">
+                        <!-- Background native track (grey) -->
+                        <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-600/50 rounded-full pointer-events-none z-0"></div>
+                        <!-- Blue track foreground -->
+                        <div id="volume-blue-track" class="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-[#0ea5e9] rounded-full pointer-events-none z-0" style="width: calc(80% - 4.2px);"></div>
+                        <!-- Invisible native range input for interactivity -->
+                        <input id="volume-slider" type="range" min="0" max="1" step="0.05" value="0.8" class="absolute inset-0 w-full h-full m-0 appearance-none bg-transparent cursor-pointer outline-none z-10">
+                    </div>
+                </div>
+
+                <!-- CC / Captions Button -->
+                <div class="relative group ml-2">
+                    <button id="cc-btn" class="p-1.5 text-white/90 hover:text-white hover:scale-115 transition-all duration-200">
+                        <!-- Rounded CC speech bubble matching mockup exactly -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" />
+                        </svg>
+                    </button>
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[11px] font-bold px-2.5 py-1 rounded-[4px] shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-30">
+                        Captions
+                        <span class="absolute bottom-[-3px] left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45"></span>
+                    </span>
+                </div>
+
+                <!-- Settings Button -->
+                <div class="relative" id="settings-wrapper">
+                    <button id="settings-btn" class="p-1.5 text-white/90 hover:text-white hover:scale-115 transition-all duration-200 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.3" stroke="currentColor" class="w-5 h-5 transition-transform duration-300" id="settings-icon">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                    </button>
+                    
+                    <span id="settings-tooltip" class="absolute -top-11 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-xs font-bold px-3 py-1 rounded-[5px] shadow-xl opacity-0 translate-y-1 transition-all duration-200 whitespace-nowrap z-30 pointer-events-none">
+                        Settings
+                        <span class="absolute bottom-[-4px] left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-white rotate-45"></span>
+                    </span>
+
+                    <!-- Premium Light-Themed Menu -->
+                    <div id="settings-menu" class="absolute bottom-[44px] right-[-8px] w-56 bg-[#e9ecf1] rounded-xl shadow-2xl opacity-0 scale-90 pointer-events-none transition-all duration-300 ease-out transform origin-bottom-right z-50 font-sans border border-[#dce1e8]/50">
+                        <!-- Caret pointing to button -->
+                        <div class="absolute -bottom-1.5 right-[16px] w-4 h-4 bg-[#e9ecf1] transform rotate-45 rounded-[2px] shadow-sm border-b border-r border-[#dce1e8]/50"></div>
+
+                        <!-- Main Settings View -->
+                        <div id="settings-main-view" class="relative z-10 py-1.5">
+                            <button class="flex items-center justify-between w-full px-4 py-2 hover:bg-[#dce1e8]/70 transition-colors group">
+                                <span class="text-[14px] font-semibold text-[#515b6b]">Captions</span>
+                                <div class="flex items-center text-[14px] font-medium text-[#64748b]">
+                                    <span class="mr-1">Disabled</span>
+                                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-70"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                                </div>
+                            </button>
+                            <button class="flex items-center justify-between w-full px-4 py-2 hover:bg-[#dce1e8]/70 transition-colors group">
+                                <span class="text-[14px] font-semibold text-[#515b6b]">Quality</span>
+                                <div class="flex items-center text-[14px] font-medium text-[#64748b]">
+                                    <span class="mr-1">576p</span>
+                                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-70"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                                </div>
+                            </button>
+                            <button id="open-speed-view" class="flex items-center justify-between w-full px-4 py-2 hover:bg-[#dce1e8]/70 transition-colors group">
+                                <span class="text-[14px] font-semibold text-[#515b6b]">Speed</span>
+                                <div class="flex items-center text-[14px] font-medium text-[#64748b]">
+                                    <span id="current-speed-text" class="mr-1">Normal</span>
+                                    <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-70"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Speed Options View -->
+                        <div id="settings-speed-view" class="relative z-10 py-1.5 hidden">
+                            <button id="close-speed-view" class="flex items-center w-full px-4 py-2 hover:bg-[#dce1e8]/70 transition-colors group border-b border-[#dce1e8] mb-1">
+                                <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 opacity-70 mr-1"><path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/></svg>
+                                <span class="text-[14px] font-semibold text-[#515b6b]">Speed</span>
+                            </button>
+                            <div class="flex flex-col">
+                                <button class="speed-opt flex items-center justify-between text-[14px] font-medium px-4 py-2 hover:bg-[#dce1e8]/70 text-[#515b6b] transition-colors" data-speed="0.5" data-label="0.5x">
+                                    <span>0.5x</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#0ea5e9] hidden"></span>
+                                </button>
+                                <button class="speed-opt flex items-center justify-between text-[14px] font-medium px-4 py-2 hover:bg-[#dce1e8]/70 text-[#515b6b] transition-colors" data-speed="1" data-label="Normal">
+                                    <span>Normal</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#0ea5e9]"></span>
+                                </button>
+                                <button class="speed-opt flex items-center justify-between text-[14px] font-medium px-4 py-2 hover:bg-[#dce1e8]/70 text-[#515b6b] transition-colors" data-speed="1.5" data-label="1.5x">
+                                    <span>1.5x</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#0ea5e9] hidden"></span>
+                                </button>
+                                <button class="speed-opt flex items-center justify-between text-[14px] font-medium px-4 py-2 hover:bg-[#dce1e8]/70 text-[#515b6b] transition-colors" data-speed="2" data-label="2x">
+                                    <span>2x</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#0ea5e9] hidden"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Picture-in-Picture (Pop-out) -->
+                <div class="relative group">
+                    <button id="pip-btn" class="p-1.5 text-white hover:scale-110 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                        </svg>
+                    </button>
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[11px] font-bold px-2.5 py-1 rounded-[4px] shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-30">
+                        Pop-out
+                        <span class="absolute bottom-[-3px] left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45"></span>
+                    </span>
+                </div>
+
+                <!-- Fullscreen Button -->
+                <div class="relative group">
+                    <button id="fullscreen-btn" class="p-1.5 text-white hover:scale-110 transition-all duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+                        </svg>
+                    </button>
+                    <span class="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-slate-900 text-[11px] font-bold px-2.5 py-1 rounded-[4px] shadow-md opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-200 pointer-events-none whitespace-nowrap z-30">
+                        Fullscreen
+                        <span class="absolute bottom-[-3px] left-1/2 -translate-x-1/2 w-2 h-2 bg-white rotate-45"></span>
+                    </span>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Scripting Logic -->
+    <script>
+        const playerContainer = document.getElementById('player-container');
+        const video = document.getElementById('main-video');
+        const overlay = document.getElementById('video-overlay');
+        const overlayPlayBtn = document.getElementById('overlay-play-btn');
+        const ctrlPlayBtn = document.getElementById('ctrl-play-btn');
+        const playSvg = document.getElementById('play-svg');
+        const pauseSvg = document.getElementById('pause-svg');
+        const timelineBg = document.getElementById('timeline-bg');
+        const timelineProgress = document.getElementById('timeline-progress');
+        const timelineHandle = document.getElementById('timeline-handle');
+        const timeDisplay = document.getElementById('time-display');
+        const muteBtn = document.getElementById('mute-btn');
+        const volumeHighSvg = document.getElementById('volume-high-svg');
+        const volumeMuteSvg = document.getElementById('volume-mute-svg');
+        const volumeSlider = document.getElementById('volume-slider');
+        const volumeBlueTrack = document.getElementById('volume-blue-track');
+        
+        const settingsWrapper = document.getElementById('settings-wrapper');
+        const settingsBtn = document.getElementById('settings-btn');
+        const settingsIcon = document.getElementById('settings-icon');
+        const settingsMenu = document.getElementById('settings-menu');
+        const settingsTooltip = document.getElementById('settings-tooltip');
+        
+        const settingsMainView = document.getElementById('settings-main-view');
+        const settingsSpeedView = document.getElementById('settings-speed-view');
+        const openSpeedViewBtn = document.getElementById('open-speed-view');
+        const closeSpeedViewBtn = document.getElementById('close-speed-view');
+        const currentSpeedText = document.getElementById('current-speed-text');
+        
+        const pipBtn = document.getElementById('pip-btn');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        
+        let isSettingsOpen = false;
+
+        // Play/Pause execution
+        function togglePlay() {
+            if (video.paused) {
+                video.play();
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                playSvg.classList.add('hidden');
+                pauseSvg.classList.remove('hidden');
+            } else {
+                video.pause();
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                playSvg.classList.remove('hidden');
+                pauseSvg.classList.add('hidden');
+            }
+        }
+
+        overlayPlayBtn.addEventListener('click', togglePlay);
+        ctrlPlayBtn.addEventListener('click', togglePlay);
+        video.addEventListener('click', togglePlay);
+
+        // Settings tooltip interactions
+        settingsWrapper.addEventListener('mouseenter', () => {
+            if (!isSettingsOpen) {
+                settingsTooltip.classList.remove('opacity-0', 'translate-y-1');
+                settingsTooltip.classList.add('opacity-100', 'translate-y-0');
+            }
+        });
+
+        settingsWrapper.addEventListener('mouseleave', () => {
+            settingsTooltip.classList.add('opacity-0', 'translate-y-1');
+            settingsTooltip.classList.remove('opacity-100', 'translate-y-0');
+        });
+
+        // Track and time updating
+        video.addEventListener('timeupdate', () => {
+            const percentage = (video.currentTime / video.duration) * 100;
+            timelineProgress.style.width = `${percentage}%`;
+            timelineHandle.style.left = `${percentage}%`;
+            
+            const currentMin = Math.floor(video.currentTime / 60).toString().padStart(2, '0');
+            const currentSec = Math.floor(video.currentTime % 60).toString().padStart(2, '0');
+            timeDisplay.textContent = `${currentMin}:${currentSec}`;
+        });
+
+        // Progress scrubbing
+        timelineBg.addEventListener('click', (e) => {
+            const rect = timelineBg.getBoundingClientRect();
+            const clickPosition = (e.clientX - rect.left) / rect.width;
+            video.currentTime = clickPosition * video.duration;
+        });
+
+        // Volume adjustment
+        function updateVolume(value) {
+            const numValue = parseFloat(value);
+            video.volume = numValue;
+            
+            // Adjust the width relative to the thumb size (14px) so it never overshoots the visual center of the thumb
+            const offset = 7 - (numValue * 14);
+            volumeBlueTrack.style.width = `calc(${numValue * 100}% + ${offset}px)`;
+            
+            if (numValue === 0) {
+                volumeHighSvg.classList.add('hidden');
+                volumeMuteSvg.classList.remove('hidden');
+            } else {
+                volumeHighSvg.classList.remove('hidden');
+                volumeMuteSvg.classList.add('hidden');
+            }
+        }
+
+        volumeSlider.addEventListener('input', (e) => {
+            updateVolume(e.target.value);
+        });
+
+        muteBtn.addEventListener('click', () => {
+            if (video.volume > 0) {
+                video.dataset.lastVolume = video.volume;
+                volumeSlider.value = 0;
+                updateVolume(0);
+            } else {
+                const restoreVol = video.dataset.lastVolume || 0.8;
+                volumeSlider.value = restoreVol;
+                updateVolume(restoreVol);
+            }
+        });
+
+        // Open/Close settings container
+        settingsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isSettingsOpen = !isSettingsOpen;
+            if (isSettingsOpen) {
+                settingsIcon.classList.add('rotate-45');
+                settingsMenu.classList.remove('opacity-0', 'scale-90', 'pointer-events-none');
+                settingsMenu.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+                settingsTooltip.classList.add('opacity-0', 'translate-y-1');
+                settingsTooltip.classList.remove('opacity-100', 'translate-y-0');
+            } else {
+                settingsIcon.classList.remove('rotate-45');
+                settingsMenu.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+                settingsMenu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) {
+                isSettingsOpen = false;
+                settingsIcon.classList.remove('rotate-45');
+                settingsMenu.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+                settingsMenu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                
+                // Return to main menu pane on exit
+                setTimeout(() => {
+                    settingsSpeedView.classList.add('hidden');
+                    settingsMainView.classList.remove('hidden');
+                }, 300);
+            }
+        });
+
+        // View changing to submenus (Playback Speed)
+        openSpeedViewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsMainView.classList.add('hidden');
+            settingsSpeedView.classList.remove('hidden');
+        });
+
+        closeSpeedViewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            settingsSpeedView.classList.add('hidden');
+            settingsMainView.classList.remove('hidden');
+        });
+
+        // Apply speed selection changes
+        const speedOptions = document.querySelectorAll('.speed-opt');
+        speedOptions.forEach(opt => {
+            opt.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const speed = parseFloat(opt.dataset.speed);
+                video.playbackRate = speed;
+                
+                // Update text selection label
+                currentSpeedText.textContent = opt.dataset.label;
+                
+                speedOptions.forEach(o => o.querySelector('span:last-child').classList.add('hidden'));
+                opt.querySelector('span:last-child').classList.remove('hidden');
+                
+                // Gracefully hide menu
+                isSettingsOpen = false;
+                settingsIcon.classList.remove('rotate-45');
+                settingsMenu.classList.add('opacity-0', 'scale-90', 'pointer-events-none');
+                settingsMenu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+                
+                // Reset views after menu finishes transitions
+                setTimeout(() => {
+                    settingsSpeedView.classList.add('hidden');
+                    settingsMainView.classList.remove('hidden');
+                }, 300);
+            });
+        });
+
+        // Picture-in-Picture logic with readiness check
+        pipBtn.addEventListener('click', async () => {
+            try {
+                // Ensure video metadata is loaded before requesting PiP
+                if (video.readyState < 1) { 
+                    console.warn("Video metadata not loaded yet. Cannot enter PiP.");
+                    // Optionally alert the user or trigger a play to load metadata
+                    return;
+                }
+
+                if (video !== document.pictureInPictureElement) {
+                    await video.requestPictureInPicture();
+                } else {
+                    await document.exitPictureInPicture();
+                }
+            } catch (error) {
+                console.error("Picture-in-Picture error:", error);
+            }
+        });
+
+        // Fullscreen view toggle with CSS fallback for iframe permission limitations
+        function toggleFallbackFullscreen() {
+            const isFakeFs = playerContainer.classList.contains('!fixed');
+            if (!isFakeFs) {
+                // Enter CSS Fullscreen Mode
+                playerContainer.classList.add('!fixed', '!inset-0', '!z-[100]', '!max-w-full', '!h-[100dvh]', '!w-[100dvw]', '!rounded-none', '!border-none');
+                playerContainer.classList.remove('aspect-video', 'rounded-2xl', 'max-w-5xl', 'relative');
+            } else {
+                // Exit CSS Fullscreen Mode
+                playerContainer.classList.remove('!fixed', '!inset-0', '!z-[100]', '!max-w-full', '!h-[100dvh]', '!w-[100dvw]', '!rounded-none', '!border-none');
+                playerContainer.classList.add('aspect-video', 'rounded-2xl', 'max-w-5xl', 'relative');
+            }
+        }
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                if (document.fullscreenEnabled) {
+                    playerContainer.requestFullscreen().catch(err => {
+                        console.warn("Native fullscreen request failed (likely due to iframe permissions). Falling back to CSS fullscreen.");
+                        toggleFallbackFullscreen();
+                    });
+                } else {
+                    console.warn("Native fullscreen disabled in this environment. Falling back to CSS fullscreen.");
+                    toggleFallbackFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen && document.fullscreenEnabled) {
+                    document.exitFullscreen().catch(err => {
+                        toggleFallbackFullscreen();
+                    });
+                } else {
+                    toggleFallbackFullscreen();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
