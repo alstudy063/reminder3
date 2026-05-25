@@ -245,6 +245,10 @@
         const contextMenu = document.getElementById('contextMenu');
 
         async function init() {
+            if (!window.showDirectoryPicker) {
+                alert("අයියෝ මචං! ඔයාගේ Browser එකෙන් මේකට සපෝට් කරන්නේ නෑ 😢 කරුණාකරලා PC එකේ Google Chrome හරි Microsoft Edge හරි පාවිච්චි කරන්න.");
+                return;
+            }
             try {
                 const storedHandle = await idbKeyval.get('telegram_folder_handle');
                 if (storedHandle) {
@@ -272,12 +276,23 @@
 
         async function selectNewFolder() {
             try {
+                if (!window.showDirectoryPicker) {
+                    alert("Please use Google Chrome or Microsoft Edge for this app.");
+                    return;
+                }
                 const handle = await window.showDirectoryPicker({ mode: 'read' });
                 directoryHandle = handle;
                 await idbKeyval.set('telegram_folder_handle', handle);
                 await loadFiles(true);
             } catch (error) {
-                console.log("Cancelled");
+                console.error("Folder selection error:", error);
+                if (error.name === 'AbortError') {
+                    console.log("Cancelled by user");
+                } else if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
+                    alert("අවසර නෑ මචං! 🛑 මුළු 'Downloads' ෆෝල්ඩරයම නැතුව 'Telegram Desktop' වගේ ඇතුලේ තියෙන ෆෝල්ඩරයක්ම හරියටම තෝරන්න.");
+                } else {
+                    alert("Error: " + error.message);
+                }
             }
         }
 
@@ -297,27 +312,44 @@
             virtualFileSystem = { folders: {}, files: [] };
 
             try {
-                for await (const entry of directoryHandle.values()) {
-                    if (entry.kind === 'file' && entry.name.match(/\.(pdf|html|jpg|png|jpeg)$/i)) {
-                        const file = await entry.getFile();
-                        allFiles.push({
-                            name: entry.name,
-                            sizeStr: formatSize(file.size),
-                            timestamp: file.lastModified,
-                            date: formatDate(file.lastModified),
-                            virtualPathStr: 'Root'
-                        });
-                    }
-                }
+                // Sub-folders ඇතුලෙත් හොයන්න recursive function එක කෝල් කරනවා
+                await readDirectoryRecursively(directoryHandle);
                 
+                if (allFiles.length === 0) {
+                    alert("ඔයා තේරුව ෆෝල්ඩරේ එක PDF එකක්වත් නෑනේ මචං! වෙන ෆෝල්ඩරයක් තෝරලා බලන්න. 📂");
+                    connectScreen.classList.remove('hidden');
+                    loadingOverlay.classList.add('hidden');
+                    return;
+                }
+
                 await idbKeyval.set('cached_files', allFiles);
                 buildNestedTree();
                 goHome(false); 
                 mainView.classList.remove('hidden');
             } catch (error) {
                 console.error("Error reading directory:", error);
+                alert("ෆයිල් කියවන්න ගියාම අවුලක් ආවා මචං: " + error.message);
+                connectScreen.classList.remove('hidden');
             } finally {
                 loadingOverlay.classList.add('hidden');
+            }
+        }
+
+        // Recursive directory reading (ෆෝල්ඩර්ස් ඇතුලේ තියෙන ඒවත් කියවන්න)
+        async function readDirectoryRecursively(dirHandle) {
+            for await (const entry of dirHandle.values()) {
+                if (entry.kind === 'file' && entry.name.match(/\.(pdf|html|jpg|png|jpeg)$/i)) {
+                    const file = await entry.getFile();
+                    allFiles.push({
+                        name: entry.name,
+                        sizeStr: formatSize(file.size),
+                        timestamp: file.lastModified,
+                        date: formatDate(file.lastModified),
+                        virtualPathStr: 'Root'
+                    });
+                } else if (entry.kind === 'directory') {
+                    await readDirectoryRecursively(entry);
+                }
             }
         }
 
