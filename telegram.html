@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram File Manager - Nested Organizer</title>
+    <title>Telegram File Manager - Stable Organizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
@@ -37,19 +37,19 @@
             to { opacity: 1; transform: translateY(0); filter: blur(0); }
         }
         .animate-slide-up {
-            animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
         
-        /* Beautiful Custom Scrollbars */
+        /* Custom Scrollbars */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Micro context menu animation */
+        /* Context Menu Animation */
         .context-menu-enter {
-            animation: contextScale 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: contextScale 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             transform-origin: top left;
         }
         @keyframes contextScale {
@@ -58,7 +58,6 @@
         }
     </style>
     <script>
-        // Tailwind config for dark mode supporting classes
         tailwind.config = {
             darkMode: 'class',
             theme: {
@@ -79,13 +78,13 @@
     <aside class="w-68 bg-white dark:bg-darkPanel border-r border-slate-200/80 dark:border-darkBorder flex flex-col justify-between hidden md:flex z-20 shadow-sm transition-colors duration-300">
         <div>
             <!-- Header Logo -->
-            <div class="p-6 flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+            <div class="p-6 flex items-center space-x-3 cursor-pointer" id="btnLogoHome">
                 <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/30">
                     <i class="fa-solid fa-cloud-bolt text-lg"></i>
                 </div>
                 <div>
                     <h1 class="text-lg font-bold text-slate-800 dark:text-white leading-tight">File Explorer</h1>
-                    <span class="text-[10px] text-blue-500 font-semibold uppercase tracking-wider">Premium Edition</span>
+                    <span class="text-[10px] text-blue-500 font-semibold uppercase tracking-wider">Stable Edition</span>
                 </div>
             </div>
 
@@ -99,59 +98,49 @@
 
             <!-- Navigation Links -->
             <nav class="px-3 space-y-1">
-                <a href="#" id="navDrives" class="flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200" onclick="goHome()">
-                    <i class="fa-solid fa-folder-tree text-lg w-5 text-slate-400 group-hover:text-blue-500 transition-colors"></i>
+                <a href="#" id="navHome" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 bg-blue-50 text-blue-700 dark:bg-slate-800/60 dark:text-blue-400">
+                    <i class="fa-solid fa-folder-tree text-lg w-5 transition-colors"></i>
                     <span>My Workspace</span>
                 </a>
-                <a href="#" id="navRecent" class="flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200">
+                <a href="#" id="navRecent" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40">
                     <i class="fa-regular fa-clock text-lg w-5 text-slate-400 group-hover:text-indigo-500 transition-colors"></i>
                     <span>Recent Files</span>
                 </a>
-                <a href="#" id="navStarred" class="flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200">
+                <a href="#" id="navStarred" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40">
                     <i class="fa-regular fa-star text-lg w-5 text-slate-400 group-hover:text-yellow-500 transition-colors"></i>
                     <span>Starred Files</span>
                 </a>
             </nav>
         </div>
 
-        <!-- Sidebar footer: Customization Tools -->
-        <div class="p-4 border-t border-slate-100 dark:border-darkBorder space-y-4">
-            <!-- Theme Changer Widget -->
-            <div class="bg-slate-50 dark:bg-slate-900/40 p-3 rounded-2xl border border-slate-100 dark:border-darkBorder">
-                <div class="flex justify-between items-center mb-2.5">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Custom Style</span>
-                    <button onclick="toggleDarkMode()" class="text-slate-500 dark:text-yellow-400 hover:scale-110 transition-transform">
-                        <i id="themeBtnIcon" class="fa-solid fa-moon"></i>
-                    </button>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="changeAccent('#2563eb', 'blue')" class="w-5 h-5 rounded-full bg-blue-600 ring-2 ring-offset-2 ring-transparent active:scale-90 transition-transform" id="theme-blue"></button>
-                    <button onclick="changeAccent('#10b981', 'emerald')" class="w-5 h-5 rounded-full bg-emerald-500 ring-2 ring-offset-2 ring-transparent active:scale-90 transition-transform" id="theme-emerald"></button>
-                    <button onclick="changeAccent('#8b5cf6', 'purple')" class="w-5 h-5 rounded-full bg-purple-500 ring-2 ring-offset-2 ring-transparent active:scale-90 transition-transform" id="theme-purple"></button>
-                    <button onclick="changeAccent('#f43f5e', 'rose')" class="w-5 h-5 rounded-full bg-rose-500 ring-2 ring-offset-2 ring-transparent active:scale-90 transition-transform" id="theme-rose"></button>
-                </div>
-            </div>
-
+        <!-- Sidebar footer -->
+        <div class="p-4 border-t border-slate-100 dark:border-darkBorder space-y-2">
+            <!-- Settings Button -->
+            <button onclick="openSettings()" class="w-full flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition-colors font-medium">
+                <i class="fa-solid fa-gear text-lg w-5 text-slate-400"></i>
+                <span>Settings</span>
+            </button>
+            
             <!-- Connected state indicator -->
-            <div class="flex items-center space-x-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-3 py-2.5 rounded-xl border border-emerald-100 dark:border-emerald-950/40">
+            <div id="connectionStatus" class="hidden items-center space-x-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-3 py-2.5 rounded-xl border border-emerald-100 dark:border-emerald-950/40 mt-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                <span>Workspace Active</span>
+                <span>Workspace Connected</span>
             </div>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-[#f8fafc] dark:bg-darkBg transition-colors duration-300" id="mainContainer">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-[#f8fafc] dark:bg-darkBg transition-colors duration-300">
         
         <!-- Header -->
         <header class="glass-panel p-4 flex items-center justify-between z-10 border-b border-slate-200/60 dark:border-darkBorder bg-white/80 dark:bg-darkPanel/80">
             <div class="flex-1 max-w-3xl flex items-center bg-slate-100 dark:bg-slate-900/60 rounded-full px-5 py-2.5 border border-transparent focus-within:bg-white focus-within:border-blue-500 focus-within:shadow-sm dark:focus-within:bg-darkPanel transition-all duration-300">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 mr-3"></i>
-                <input type="text" id="searchInput" placeholder="Type to search educational materials..." class="bg-transparent border-none outline-none w-full text-slate-700 dark:text-slate-200 placeholder-slate-400 text-sm">
+                <input type="text" id="searchInput" placeholder="Search across all files..." class="bg-transparent border-none outline-none w-full text-slate-700 dark:text-slate-200 placeholder-slate-400 text-sm">
             </div>
             
             <div class="flex items-center space-x-3 ml-4">
-                <button class="text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-xl transition-all duration-300 active:rotate-180" onclick="loadFiles(true)" title="Force Refresh">
+                <button class="text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-xl transition-all duration-300 active:rotate-180" id="btnRefresh" title="Force Refresh">
                     <i class="fa-solid fa-arrow-rotate-right"></i>
                 </button>
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:scale-105 transition-transform border border-white/20">
@@ -162,16 +151,10 @@
 
         <!-- Breadcrumb Tracker -->
         <div class="px-8 py-3.5 flex items-center text-sm text-slate-500 dark:text-slate-400 font-medium bg-white/40 dark:bg-darkPanel/20 border-b border-slate-200/40 dark:border-darkBorder min-h-[48px] overflow-x-auto whitespace-nowrap" id="breadcrumbContainer">
-            <button onclick="goHome()" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
-                <i class="fa-solid fa-house-user mr-2 text-blue-500"></i> Workspace 
-            </button>
-            <i class="fa-solid fa-chevron-right text-[10px] mx-3 text-slate-400"></i>
-            <span class="bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-lg border border-blue-100/60 dark:border-blue-900/40 cursor-pointer hover:bg-blue-100" onclick="goHome()">Root</span>
-            
-            <span id="dynamicBreadcrumbs" class="flex items-center"></span>
+            <!-- Injected by JS -->
         </div>
 
-        <!-- Connection / Welcome Screen -->
+        <!-- Connection Screen -->
         <div id="connectScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-slide-up bg-white/40 dark:bg-darkBg">
             <div class="relative w-28 h-28 mb-8">
                 <div class="absolute inset-0 bg-blue-100 dark:bg-blue-950/40 rounded-3xl animate-pulse"></div>
@@ -180,7 +163,7 @@
                 </div>
             </div>
             <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white mb-3 tracking-tight">Connect Telegram Workspace</h2>
-            <p class="text-slate-500 dark:text-slate-400 max-w-md mb-8 text-sm leading-relaxed">Virtually organize your PDF study materials into clean, nested categories automatically.</p>
+            <p class="text-slate-500 dark:text-slate-400 max-w-md mb-8 text-sm leading-relaxed">Select your local folder to virtually organize your PDF study materials.</p>
             
             <button id="selectFolderBtn" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-10 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center space-x-3 active:scale-95">
                 <i class="fa-regular fa-folder-open text-xl"></i>
@@ -188,55 +171,61 @@
             </button>
             <button id="restoreAccessBtn" class="hidden mt-5 bg-white dark:bg-darkPanel border border-slate-200 dark:border-darkBorder hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold py-3.5 px-8 rounded-2xl shadow-sm transition-all duration-300 flex items-center space-x-3 active:scale-95">
                 <i class="fa-solid fa-unlock-keyhole text-blue-500"></i>
-                <span>Load Last Workspace</span>
+                <span>Load Saved Workspace</span>
             </button>
         </div>
 
-        <!-- Dashboard / Workspace View -->
+        <!-- Main View Container -->
         <div id="mainView" class="flex-1 overflow-y-auto px-8 pb-10 hidden scroll-smooth">
             
-            <!-- Stats Dashboard Widget (WOW feature) -->
-            <div id="dashboardStatsSection" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8">
-                <!-- Injected dynamically via JS -->
+            <!-- Dashboard Stats -->
+            <div id="dashboardStatsSection" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8 hidden">
+                <!-- Injected via JS -->
             </div>
 
-            <!-- Pinned Folders Section -->
+            <!-- Pinned Folders -->
             <div id="pinnedFoldersSection" class="mb-8 pt-2 hidden">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center">
                         <i class="fa-solid fa-thumbtack mr-2 text-red-500"></i> Pinned Folders
                     </h3>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 animate-slide-up" id="pinnedFoldersContainer"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="pinnedFoldersContainer"></div>
             </div>
 
-            <!-- Folders Section -->
+            <!-- Folders -->
             <div id="foldersSection" class="mb-8 pt-2 hidden">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center">
-                        <i class="fa-solid fa-folder-tree mr-2 text-amber-500"></i> Sub-folders
+                        <i class="fa-solid fa-folder-tree mr-2 text-amber-500"></i> Folders
                     </h3>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 animate-slide-up" id="foldersContainer"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="foldersContainer"></div>
             </div>
 
-            <!-- Files Section -->
-            <div class="pt-2">
+            <!-- Files -->
+            <div id="filesSection" class="pt-2 hidden">
                 <div class="flex items-center justify-between mb-5 border-b border-slate-200/80 dark:border-darkBorder pb-3">
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center" id="filesHeader">
                         <i class="fa-solid fa-file-lines mr-2 text-blue-500"></i> Files
                     </h3>
                     <div id="backBtnContainer" class="hidden">
-                        <button onclick="goBack()" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-darkPanel dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold transition-all flex items-center active:scale-95 shadow-sm">
+                        <button id="btnGoBack" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-darkPanel dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold transition-all flex items-center active:scale-95 shadow-sm">
                             <i class="fa-solid fa-arrow-left mr-2"></i> Go Back
                         </button>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5 animate-slide-up" id="filesContainer"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="filesContainer"></div>
+                
+                <!-- Empty State -->
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
+                    <div class="text-5xl text-slate-200 dark:text-slate-700 mb-4"><i class="fa-solid fa-folder-open"></i></div>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium">No files found here.</p>
+                </div>
             </div>
         </div>
         
-        <!-- Premium Shimmer Loading Overlay -->
+        <!-- Loading Overlay -->
         <div id="loadingOverlay" class="absolute inset-0 bg-white/95 dark:bg-darkBg/95 backdrop-blur-md z-[60] flex flex-col items-center justify-center hidden">
             <div class="relative w-24 h-24 mb-6">
                 <div class="absolute inset-0 rounded-full border-4 border-slate-100 dark:border-slate-800"></div>
@@ -245,101 +234,97 @@
                     <i class="fa-solid fa-wand-magic-sparkles text-2xl text-blue-500 animate-pulse"></i>
                 </div>
             </div>
-            <p class="text-slate-800 dark:text-white font-bold text-xl tracking-wide">Virtually Organizing...</p>
-            <p class="text-slate-400 dark:text-slate-500 text-sm mt-2">Structuring subjects & creating sub-folders</p>
-        </div>
-
-        <!-- Details Modal -->
-        <div id="detailsModal" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-            <div class="bg-white dark:bg-darkPanel rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 dark:border-darkBorder transform scale-95 transition-transform duration-300" id="detailsContent">
-                <div class="flex justify-between items-start mb-5">
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white">File Details</h3>
-                    <button onclick="closeDetails()" class="text-slate-400 hover:text-red-500 transition-colors">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-                <div class="space-y-4">
-                    <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-darkBorder">
-                        <i class="fa-solid fa-file-pdf text-red-500 text-3xl mr-4 w-6 text-center" id="detailIcon"></i>
-                        <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold text-slate-800 dark:text-white truncate" id="detailName">Filename.pdf</p>
-                            <p class="text-xs text-slate-400">Standard Name</p>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
-                            <p class="text-xs text-slate-400 mb-1">Size</p>
-                            <p class="font-bold text-slate-800 dark:text-white" id="detailSize">0 MB</p>
-                        </div>
-                        <div class="p-3 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
-                            <p class="text-xs text-slate-400 mb-1">Modified Date</p>
-                            <p class="font-bold text-slate-800 dark:text-white" id="detailDate">Today</p>
-                        </div>
-                    </div>
-                    <div class="p-4 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
-                        <p class="text-xs text-slate-400 mb-1">Virtual Path</p>
-                        <p class="font-semibold text-slate-800 dark:text-white text-sm break-all" id="detailLocation">Root</p>
-                    </div>
-                </div>
-                <div class="mt-6">
-                    <button onclick="closeDetails()" class="w-full py-3.5 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl font-bold hover:shadow-lg transition-all duration-200">Close Panel</button>
-                </div>
-            </div>
+            <p class="text-slate-800 dark:text-white font-bold text-xl tracking-wide">Scanning Files...</p>
         </div>
 
     </main>
 
-    <!-- Context Menu: Slide Enter Animation -->
-    <div id="contextMenu" class="hidden fixed z-[100] bg-white/95 dark:bg-darkPanel/95 backdrop-blur-sm rounded-2xl shadow-xl py-2.5 w-52 border border-slate-200 dark:border-darkBorder text-sm context-menu-enter text-slate-700 dark:text-slate-300">
+    <!-- Settings Modal (New Clean Design) -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-darkPanel rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-darkBorder transform scale-95 transition-transform duration-300" id="settingsContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center">
+                    <i class="fa-solid fa-gear text-blue-500 mr-2"></i> Settings
+                </h3>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Dark Mode Toggle -->
+                <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-darkBorder">
+                    <div>
+                        <p class="font-bold text-slate-800 dark:text-white">Dark Mode</p>
+                        <p class="text-xs text-slate-500">Toggle dark appearance</p>
+                    </div>
+                    <button onclick="toggleDarkMode()" class="w-12 h-12 rounded-xl bg-white dark:bg-darkPanel border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:scale-105 transition-transform shadow-sm text-slate-600 dark:text-yellow-400">
+                        <i id="themeBtnIconModal" class="fa-solid fa-moon text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Accent Color Picker -->
+                <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-darkBorder">
+                    <p class="font-bold text-slate-800 dark:text-white mb-1">Theme Color</p>
+                    <p class="text-xs text-slate-500 mb-4">Choose your accent color</p>
+                    <div class="flex justify-between">
+                        <button onclick="changeAccent('#2563eb', 'blue')" class="w-10 h-10 rounded-full bg-blue-600 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-blue"></button>
+                        <button onclick="changeAccent('#10b981', 'emerald')" class="w-10 h-10 rounded-full bg-emerald-500 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-emerald"></button>
+                        <button onclick="changeAccent('#8b5cf6', 'purple')" class="w-10 h-10 rounded-full bg-purple-500 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-purple"></button>
+                        <button onclick="changeAccent('#f43f5e', 'rose')" class="w-10 h-10 rounded-full bg-rose-500 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-rose"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="contextMenu" class="hidden fixed z-[100] bg-white/95 dark:bg-darkPanel/95 backdrop-blur-sm rounded-2xl shadow-xl py-2 w-48 border border-slate-200 dark:border-darkBorder text-sm context-menu-enter text-slate-700 dark:text-slate-300">
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-darkPanel rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 dark:border-darkBorder transform scale-95 transition-transform duration-300" id="detailsContent">
+            <!-- Injected by JS -->
+        </div>
     </div>
 
     <script>
+        // --- CORE STATE MANAGEMENT (Avastha) ---
+        // This makes the app perfectly stable. No overlapping views!
+        let appState = {
+            mode: 'home', // 'home', 'recent', 'starred', 'search'
+            path: [],     // Array of folder names for nesting
+            query: ''     // Search query string
+        };
+
         let directoryHandle = null;
         let allFiles = []; 
-        let pinnedFolders = []; // Pinned virtual folders
-        let starredFiles = [];  // Starred file names
-        
-        // Root of nested file system
+        let pinnedFolders = []; 
+        let starredFiles = [];  
         let virtualFileSystem = { folders: {}, files: [] };
-        let currentPathArray = []; 
-        let viewMode = 'home'; // home, recent, search, starred
-        
         let selectedFileForDetails = null;
 
-        // Dom Connections
-        const connectScreen = document.getElementById('connectScreen');
+        // Elements
         const mainView = document.getElementById('mainView');
-        const foldersContainer = document.getElementById('foldersContainer');
-        const filesContainer = document.getElementById('filesContainer');
-        const searchInput = document.getElementById('searchInput');
+        const connectScreen = document.getElementById('connectScreen');
         const loadingOverlay = document.getElementById('loadingOverlay');
-        const filesHeader = document.getElementById('filesHeader');
-        const foldersSection = document.getElementById('foldersSection');
-        const dynamicBreadcrumbs = document.getElementById('dynamicBreadcrumbs');
-        const backBtnContainer = document.getElementById('backBtnContainer');
+        const searchInput = document.getElementById('searchInput');
+        const breadcrumbContainer = document.getElementById('breadcrumbContainer');
         const contextMenu = document.getElementById('contextMenu');
-        const pinnedFoldersSection = document.getElementById('pinnedFoldersSection');
-        const pinnedFoldersContainer = document.getElementById('pinnedFoldersContainer');
-        const dashboardStatsSection = document.getElementById('dashboardStatsSection');
 
         async function init() {
-            // Theme settings
+            // Restore Settings
             const isDark = await idbKeyval.get('theme_dark');
             if (isDark) document.documentElement.classList.add('dark');
-            updateThemeToggleButton();
+            updateThemeIcons();
 
-            const storedAccent = await idbKeyval.get('theme_accent');
-            const storedAccentName = await idbKeyval.get('theme_accent_name');
-            if (storedAccent) {
-                document.documentElement.style.setProperty('--accent', storedAccent);
-                document.documentElement.style.setProperty('--accent-glow', `${storedAccent}26`);
-                highlightActiveThemePill(storedAccentName);
-            } else {
-                highlightActiveThemePill('blue');
-            }
+            const storedAccent = await idbKeyval.get('theme_accent') || '#2563eb';
+            const storedAccentName = await idbKeyval.get('theme_accent_name') || 'blue';
+            applyAccentColor(storedAccent, storedAccentName);
 
             if (!window.showDirectoryPicker) {
-                alert("Please use Google Chrome or Microsoft Edge for proper execution.");
+                alert("Browser not supported. Please use Chrome or Edge.");
                 return;
             }
             
@@ -353,65 +338,423 @@
                 
                 if (storedHandle) {
                     directoryHandle = storedHandle;
+                    document.getElementById('restoreAccessBtn').classList.remove('hidden');
+                    document.getElementById('connectionStatus').classList.remove('hidden');
+                    
                     const cachedFiles = await idbKeyval.get('cached_files');
                     if (cachedFiles && cachedFiles.length > 0) {
                         allFiles = cachedFiles;
                         buildNestedTree();
-                        goHome(false); 
                         connectScreen.classList.add('hidden');
                         mainView.classList.remove('hidden');
+                        updateState({ mode: 'home', path: [], query: '' }); // Render UI
                         return; 
                     }
-                    document.getElementById('restoreAccessBtn').classList.remove('hidden');
                 }
             } catch (err) {
-                console.error("IDB startup error:", err);
+                console.error("Initialization error:", err);
             }
         }
 
-        // Color Accent Controller
-        window.changeAccent = async function(hexColor, name) {
-            document.documentElement.style.setProperty('--accent', hexColor);
-            document.documentElement.style.setProperty('--accent-glow', `${hexColor}26`);
-            await idbKeyval.set('theme_accent', hexColor);
-            await idbKeyval.set('theme_accent_name', name);
-            highlightActiveThemePill(name);
-            renderView();
+        // --- STATE CONTROLLER ---
+        function updateState(newState) {
+            appState = { ...appState, ...newState };
+            renderApp();
         }
 
-        function highlightActiveThemePill(name) {
-            ['blue', 'emerald', 'purple', 'rose'].forEach(color => {
-                const btn = document.getElementById(`theme-${color}`);
-                if (btn) {
-                    if (color === name) {
-                        btn.classList.add('ring-blue-500', 'scale-110');
-                    } else {
-                        btn.classList.remove('ring-blue-500', 'scale-110');
+        // --- UI RENDERER (Darshava) ---
+        // Single source of truth for UI. Eliminates bugs where multiple sections show at once.
+        function renderApp() {
+            // 1. Reset all visibility
+            document.getElementById('dashboardStatsSection').classList.add('hidden');
+            document.getElementById('pinnedFoldersSection').classList.add('hidden');
+            document.getElementById('foldersSection').classList.add('hidden');
+            document.getElementById('filesSection').classList.remove('hidden');
+            document.getElementById('emptyState').classList.add('hidden');
+            document.getElementById('backBtnContainer').classList.add('hidden');
+            
+            const foldersContainer = document.getElementById('foldersContainer');
+            const filesContainer = document.getElementById('filesContainer');
+            const filesHeader = document.getElementById('filesHeader');
+            
+            foldersContainer.innerHTML = '';
+            filesContainer.innerHTML = '';
+            
+            // Re-trigger animations
+            mainView.classList.remove('animate-slide-up');
+            void mainView.offsetWidth; 
+            mainView.classList.add('animate-slide-up');
+
+            // 2. Update Sidebar active states
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.className = "nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40";
+                const icon = el.querySelector('i');
+                icon.className = icon.className.replace('text-lg w-5 transition-colors', 'text-lg w-5 text-slate-400 group-hover:text-blue-500 transition-colors');
+            });
+
+            const activeClass = "nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 bg-blue-50 text-blue-700 dark:bg-slate-800/60 dark:text-blue-400";
+            
+            let displayFiles = [];
+
+            // 3. Render based on MODE
+            if (appState.mode === 'search') {
+                document.getElementById('navHome').className = activeClass;
+                renderBreadcrumbs([{ name: 'Search Results', click: null }]);
+                
+                const term = appState.query.toLowerCase();
+                displayFiles = allFiles.filter(f => f.name.toLowerCase().includes(term));
+                filesHeader.innerHTML = `<i class="fa-solid fa-magnifying-glass mr-2 text-blue-500"></i> Search Results (${displayFiles.length})`;
+                
+            } else if (appState.mode === 'recent') {
+                document.getElementById('navRecent').className = activeClass;
+                renderBreadcrumbs([{ name: 'Workspace', click: () => updateState({mode: 'home', path: [], query: ''}) }, { name: 'Recent Files', click: null }]);
+                
+                displayFiles = [...allFiles].sort((a,b) => b.timestamp - a.timestamp).slice(0, 50);
+                filesHeader.innerHTML = `<i class="fa-regular fa-clock mr-2 text-indigo-500"></i> Recent Uploads (${displayFiles.length})`;
+                
+            } else if (appState.mode === 'starred') {
+                document.getElementById('navStarred').className = activeClass;
+                renderBreadcrumbs([{ name: 'Workspace', click: () => updateState({mode: 'home', path: [], query: ''}) }, { name: 'Starred Files', click: null }]);
+                
+                displayFiles = allFiles.filter(f => starredFiles.includes(f.name));
+                filesHeader.innerHTML = `<i class="fa-solid fa-star mr-2 text-yellow-500"></i> Starred Materials (${displayFiles.length})`;
+                
+            } else if (appState.mode === 'home') {
+                document.getElementById('navHome').className = activeClass;
+                
+                // Root Level UI
+                if (appState.path.length === 0) {
+                    renderBreadcrumbs([{ name: 'Root', click: null }]);
+                    document.getElementById('dashboardStatsSection').classList.remove('hidden');
+                    renderDashboardStats();
+                    
+                    if (pinnedFolders.length > 0) {
+                        document.getElementById('pinnedFoldersSection').classList.remove('hidden');
+                        renderPinnedFolders();
                     }
+                } else {
+                    // Nested Folder UI
+                    document.getElementById('backBtnContainer').classList.remove('hidden');
+                    let crumbs = [{ name: 'Root', click: () => updateState({path: []}) }];
+                    appState.path.forEach((p, idx) => {
+                        crumbs.push({
+                            name: p,
+                            click: idx === appState.path.length - 1 ? null : () => updateState({path: appState.path.slice(0, idx + 1)})
+                        });
+                    });
+                    renderBreadcrumbs(crumbs);
+                }
+
+                // Get current directory node
+                let currentNode = virtualFileSystem;
+                for (let folder of appState.path) {
+                    if(currentNode.folders[folder]) currentNode = currentNode.folders[folder];
+                }
+
+                // Render Sub-folders
+                const folderNames = Object.keys(currentNode.folders);
+                if (folderNames.length > 0) {
+                    document.getElementById('foldersSection').classList.remove('hidden');
+                    folderNames.forEach((name, idx) => {
+                        const childCount = getFileCount(currentNode.folders[name]);
+                        foldersContainer.appendChild(createFolderCard(name, `${childCount} items`, idx));
+                    });
+                }
+                
+                displayFiles = currentNode.files;
+                filesHeader.innerHTML = `<i class="fa-solid fa-file-lines mr-2 text-blue-500"></i> Files (${displayFiles.length})`;
+            }
+
+            // 4. Render Files List
+            if (displayFiles.length > 0) {
+                displayFiles.forEach((file, idx) => {
+                    filesContainer.appendChild(createFileCard(file, idx));
+                });
+            } else if (appState.mode !== 'home' || Object.keys(getCurrentNode().folders).length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+            }
+        }
+
+        function getCurrentNode() {
+            let current = virtualFileSystem;
+            for (let folder of appState.path) {
+                if(current.folders[folder]) current = current.folders[folder];
+            }
+            return current;
+        }
+
+        // --- COMPONENT CREATORS ---
+        function renderBreadcrumbs(crumbs) {
+            breadcrumbContainer.innerHTML = `
+                <button onclick="updateState({mode: 'home', path: [], query: ''})" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
+                    <i class="fa-solid fa-house-user mr-2 text-blue-500"></i> Workspace 
+                </button>
+            `;
+            
+            crumbs.forEach((crumb, idx) => {
+                breadcrumbContainer.innerHTML += `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-slate-400"></i>`;
+                if (crumb.click) {
+                    const span = document.createElement('span');
+                    span.className = "text-slate-500 dark:text-slate-400 hover:text-blue-600 cursor-pointer transition-colors";
+                    span.innerText = crumb.name;
+                    span.onclick = crumb.click;
+                    breadcrumbContainer.appendChild(span);
+                } else {
+                    breadcrumbContainer.innerHTML += `<span class="bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-950 font-bold">${crumb.name}</span>`;
                 }
             });
+        }
+
+        function renderDashboardStats() {
+            const section = document.getElementById('dashboardStatsSection');
+            section.innerHTML = '';
+            const stats = [
+                { name: "Exam Papers", icon: "fa-file-signature", color: "from-orange-500 to-amber-500", key: "Exam Papers 📄" },
+                { name: "Physics", icon: "fa-magnet", color: "from-blue-500 to-cyan-500", key: "Physics 🧲" },
+                { name: "Chemistry", icon: "fa-flask-vial", color: "from-emerald-500 to-teal-500", key: "Chemistry 🧪" },
+                { name: "Biology", icon: "fa-dna", color: "from-purple-500 to-pink-500", key: "Biology 🧬" }
+            ];
+
+            stats.forEach(stat => {
+                const count = virtualFileSystem.folders[stat.key] ? getFileCount(virtualFileSystem.folders[stat.key]) : 0;
+                const card = document.createElement('div');
+                card.className = "p-5 bg-white dark:bg-darkPanel border border-slate-100 dark:border-darkBorder rounded-2xl flex items-center justify-between shadow-sm cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 transform active:scale-95";
+                card.onclick = () => updateState({ path: [stat.key] });
+                
+                card.innerHTML = `
+                    <div>
+                        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">${stat.name}</p>
+                        <h4 class="text-2xl font-black text-slate-800 dark:text-white mt-1">${count} <span class="text-xs font-semibold text-slate-400">files</span></h4>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${stat.color} text-white flex items-center justify-center shadow-md">
+                        <i class="fa-solid ${stat.icon} text-lg"></i>
+                    </div>
+                `;
+                section.appendChild(card);
+            });
+        }
+
+        function renderPinnedFolders() {
+            const container = document.getElementById('pinnedFoldersContainer');
+            container.innerHTML = '';
+            pinnedFolders.forEach((pathArr, index) => {
+                const title = pathArr[pathArr.length - 1]; 
+                const style = getFolderStyling(title);
+                
+                const el = document.createElement('div');
+                el.className = `file-card bg-white dark:bg-darkPanel p-5 rounded-2xl border border-red-100 dark:border-red-950/40 shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
+                el.style.animationDelay = `${index * 15}ms`;
+                el.onclick = () => updateState({ path: [...pathArr] });
+                el.oncontextmenu = (e) => showContextMenu(e, 'folder', pathArr);
+
+                el.innerHTML = `
+                    <div class="absolute top-2.5 right-2.5 text-red-500 transform rotate-45 opacity-80 animate-pulse">
+                        <i class="fa-solid fa-thumbtack text-xs"></i>
+                    </div>
+                    <div class="text-4xl text-red-500 mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative">
+                        <i class="fa-solid ${style.icon}"></i>
+                    </div>
+                    <h4 class="font-extrabold text-slate-800 dark:text-slate-200 text-center text-sm leading-tight px-2 line-clamp-2">${title}</h4>
+                    <p class="text-[10px] text-red-500 font-bold bg-red-50 dark:bg-red-950/20 px-2.5 py-0.5 rounded-full mt-1.5 truncate max-w-full" title="${pathArr.join(' > ')}">${pathArr.length > 1 ? pathArr.slice(0, -1).join('/') : 'Root'}</p>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        function createFolderCard(title, subtitle, index) {
+            const el = document.createElement('div');
+            el.className = `file-card bg-white dark:bg-darkPanel p-5 rounded-2xl border border-slate-100 dark:border-darkBorder shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
+            el.style.animationDelay = `${index * 15}ms`;
+            
+            const fullPath = [...appState.path, title];
+            el.onclick = () => updateState({ path: fullPath });
+            el.oncontextmenu = (e) => showContextMenu(e, 'folder', fullPath);
+            
+            const style = getFolderStyling(title);
+            el.innerHTML = `
+                <div class="text-4xl ${style.color} mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative">
+                    <i class="fa-solid ${style.icon}"></i>
+                </div>
+                <h4 class="font-extrabold text-slate-800 dark:text-slate-200 text-center text-sm leading-tight px-2 line-clamp-2">${title}</h4>
+                <p class="text-[11px] text-slate-400 mt-1.5 font-bold ${style.bg} px-2.5 py-0.5 rounded-full">${subtitle}</p>
+            `;
+            return el;
+        }
+
+        function createFileCard(file, index) {
+            const isPdf = file.name.toLowerCase().endsWith('.pdf');
+            const isImg = file.name.match(/\.(jpg|png|jpeg)$/i);
+            
+            let iconColor = 'text-blue-500';
+            let iconClass = 'fa-file-lines';
+            let bgIcon = 'bg-blue-50 dark:bg-blue-950/40';
+            
+            if(isPdf) { iconColor = 'text-red-500'; iconClass = 'fa-file-pdf'; bgIcon = 'bg-red-50 dark:bg-red-950/40'; }
+            if(isImg) { iconColor = 'text-emerald-500'; iconClass = 'fa-file-image'; bgIcon = 'bg-emerald-50 dark:bg-emerald-950/40'; }
+
+            const isStarred = starredFiles.includes(file.name);
+            const el = document.createElement('div');
+            el.className = `file-card bg-white dark:bg-darkPanel p-4 rounded-2xl border border-slate-100 dark:border-darkBorder shadow-sm cursor-pointer relative overflow-hidden`;
+            el.style.animationDelay = `${(index % 20) * 15}ms`;
+            el.onclick = () => openFile(file.name);
+            el.oncontextmenu = (e) => showContextMenu(e, 'file', file);
+            
+            const displayName = file.name.length > 35 ? file.name.substring(0, 32) + '...' : file.name;
+
+            el.innerHTML = `
+                <div class="flex flex-col h-full justify-between relative z-10">
+                    <div>
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="${iconColor} text-3xl w-12 h-12 flex items-center justify-center rounded-xl ${bgIcon} group-hover:scale-110 transition-transform duration-300">
+                                <i class="fa-solid ${iconClass}"></i>
+                            </div>
+                            <button onclick="event.stopPropagation(); toggleStarFile('${file.name}')" class="text-slate-300 hover:text-yellow-500 transition-colors duration-200 focus:outline-none">
+                                <i class="${isStarred ? 'fa-solid text-yellow-400' : 'fa-regular'} fa-star"></i>
+                            </button>
+                        </div>
+                        <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 mb-1 leading-snug break-all" title="${file.name}">${displayName}</h4>
+                    </div>
+                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-50 dark:border-slate-800/40">
+                        <span class="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-md">${file.sizeStr}</span>
+                        <span class="text-[10px] text-slate-400 font-medium">${file.date}</span>
+                    </div>
+                </div>
+            `;
+            return el;
+        }
+
+        function getFolderStyling(title) {
+            let n = title.toLowerCase();
+            if (n.includes("physics")) return { icon: "fa-magnet", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/40" };
+            if (n.includes("chemistry")) return { icon: "fa-flask-vial", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/40" };
+            if (n.includes("biology")) return { icon: "fa-dna", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/40" };
+            if (n.includes("exam")) return { icon: "fa-file-signature", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/40" };
+            return { icon: "fa-folder", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/40" };
+        }
+
+        // --- USER ACTIONS ---
+        async function toggleStarFile(fileName) {
+            const idx = starredFiles.indexOf(fileName);
+            if (idx === -1) starredFiles.push(fileName);
+            else starredFiles.splice(idx, 1);
+            
+            await idbKeyval.set('starred_files', starredFiles);
+            renderApp(); // Live update UI
+        }
+
+        async function actionPinFolder(pathArr) {
+            pinnedFolders.push(pathArr);
+            await idbKeyval.set('pinned_folders', pinnedFolders);
+            renderApp(); 
+        }
+
+        async function actionUnpinFolder(pathArr) {
+            pinnedFolders = pinnedFolders.filter(p => JSON.stringify(p) !== JSON.stringify(pathArr));
+            await idbKeyval.set('pinned_folders', pinnedFolders);
+            renderApp();
+        }
+
+        // --- CONTEXT MENU ---
+        function showContextMenu(e, type, itemData) {
+            e.preventDefault(); e.stopPropagation();
+            contextMenu.innerHTML = '';
+            
+            if (type === 'folder') {
+                const isPinned = pinnedFolders.some(p => JSON.stringify(p) === JSON.stringify(itemData));
+                const pinBtn = document.createElement('div');
+                pinBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 cursor-pointer flex items-center transition-colors font-medium";
+                pinBtn.innerHTML = isPinned 
+                    ? `<i class="fa-solid fa-link-slash w-6 text-slate-400 text-center mr-2"></i> <span>Unpin Folder</span>`
+                    : `<i class="fa-solid fa-thumbtack w-6 text-slate-400 text-center mr-2 text-red-500"></i> <span>Pin Folder</span>`;
+                pinBtn.onclick = () => { contextMenu.classList.add('hidden'); isPinned ? actionUnpinFolder(itemData) : actionPinFolder(itemData); };
+                contextMenu.appendChild(pinBtn);
+
+            } else if (type === 'file') {
+                selectedFileForDetails = itemData; 
+                const isStarred = starredFiles.includes(itemData.name);
+                
+                const starBtn = document.createElement('div');
+                starBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-medium border-b border-slate-100 dark:border-darkBorder";
+                starBtn.innerHTML = isStarred 
+                    ? `<i class="fa-solid fa-star w-6 text-yellow-500 text-center mr-2"></i> <span>Unstar</span>`
+                    : `<i class="fa-regular fa-star w-6 text-slate-400 text-center mr-2"></i> <span>Star File</span>`;
+                starBtn.onclick = () => { contextMenu.classList.add('hidden'); toggleStarFile(itemData.name); };
+
+                const detailBtn = document.createElement('div');
+                detailBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-medium";
+                detailBtn.innerHTML = `<i class="fa-solid fa-circle-info w-6 text-slate-400 text-center mr-2"></i> <span>Details</span>`;
+                detailBtn.onclick = () => { contextMenu.classList.add('hidden'); showFileDetails(); };
+
+                contextMenu.appendChild(starBtn);
+                contextMenu.appendChild(detailBtn);
+            }
+            
+            let x = e.clientX; let y = e.clientY;
+            if (x + 200 > window.innerWidth) x = window.innerWidth - 200;
+            if (y + 120 > window.innerHeight) y = window.innerHeight - 120;
+            contextMenu.style.left = `${x}px`; contextMenu.style.top = `${y}px`;
+            contextMenu.classList.remove('hidden');
+        }
+
+        document.addEventListener('click', () => contextMenu.classList.add('hidden'));
+
+        // --- SETTINGS MODAL ---
+        function openSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('settingsContent').classList.remove('scale-95'); }, 10);
+        }
+
+        function closeSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.classList.add('opacity-0'); document.getElementById('settingsContent').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
         window.toggleDarkMode = async function() {
             const isDark = document.documentElement.classList.toggle('dark');
             await idbKeyval.set('theme_dark', isDark);
-            updateThemeToggleButton();
+            updateThemeIcons();
         }
 
-        function updateThemeToggleButton() {
-            const icon = document.getElementById('themeBtnIcon');
-            if (icon) {
-                if (document.documentElement.classList.contains('dark')) {
-                    icon.className = "fa-solid fa-sun text-yellow-400";
-                } else {
-                    icon.className = "fa-solid fa-moon text-slate-600";
-                }
-            }
+        function updateThemeIcons() {
+            const iconModal = document.getElementById('themeBtnIconModal');
+            const isDark = document.documentElement.classList.contains('dark');
+            if(iconModal) iconModal.className = isDark ? "fa-solid fa-sun text-xl" : "fa-solid fa-moon text-xl";
         }
 
+        window.changeAccent = async function(hexColor, name) {
+            applyAccentColor(hexColor, name);
+            await idbKeyval.set('theme_accent', hexColor);
+            await idbKeyval.set('theme_accent_name', name);
+        }
+
+        function applyAccentColor(hex, name) {
+            document.documentElement.style.setProperty('--accent', hex);
+            document.documentElement.style.setProperty('--accent-glow', `${hex}26`);
+            document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('ring-slate-400', 'scale-110'));
+            const btn = document.getElementById(`theme-${name}`);
+            if (btn) btn.classList.add('ring-slate-400', 'scale-110');
+        }
+
+        // --- FILE SYSTEM LOGIC ---
         document.getElementById('selectFolderBtn').addEventListener('click', selectNewFolder);
         document.getElementById('btnNew').addEventListener('click', selectNewFolder);
         document.getElementById('restoreAccessBtn').addEventListener('click', () => loadFiles(true));
+        document.getElementById('btnRefresh').addEventListener('click', () => loadFiles(true));
+        
+        // Setup listeners mapping to State
+        document.getElementById('navHome').addEventListener('click', () => updateState({mode: 'home', path: [], query: ''}));
+        document.getElementById('navRecent').addEventListener('click', () => updateState({mode: 'recent', path: [], query: ''}));
+        document.getElementById('navStarred').addEventListener('click', () => updateState({mode: 'starred', path: [], query: ''}));
+        document.getElementById('btnGoBack').addEventListener('click', () => {
+            if(appState.path.length > 0) updateState({ path: appState.path.slice(0, -1) });
+        });
+        searchInput.addEventListener('input', (e) => {
+            if(e.target.value === '') updateState({mode: 'home', query: ''});
+            else updateState({mode: 'search', query: e.target.value});
+        });
+        document.getElementById('btnLogoHome').addEventListener('click', () => updateState({mode: 'home', path: [], query: ''}));
 
         async function selectNewFolder() {
             try {
@@ -420,9 +763,7 @@
                 directoryHandle = handle;
                 await idbKeyval.set('telegram_folder_handle', handle);
                 await loadFiles(true);
-            } catch (error) {
-                console.error("Folder selection error:", error);
-            }
+            } catch (error) { console.error("Error:", error); }
         }
 
         async function loadFiles(forceSync = false) {
@@ -434,32 +775,22 @@
                 }
             } else if (!directoryHandle) return;
 
-            connectScreen.classList.add('hidden');
-            loadingOverlay.classList.remove('hidden');
-            
-            allFiles = [];
-            virtualFileSystem = { folders: {}, files: [] };
+            connectScreen.classList.add('hidden'); loadingOverlay.classList.remove('hidden');
+            allFiles = []; virtualFileSystem = { folders: {}, files: [] };
 
             try {
                 await readDirectoryRecursively(directoryHandle);
-                
                 if (allFiles.length === 0) {
-                    alert("No educational materials discovered in this directory 📂");
-                    connectScreen.classList.remove('hidden');
-                    loadingOverlay.classList.add('hidden');
-                    return;
+                    alert("No educational materials found.");
+                    connectScreen.classList.remove('hidden'); loadingOverlay.classList.add('hidden'); return;
                 }
-
                 await idbKeyval.set('cached_files', allFiles);
                 buildNestedTree();
-                goHome(false); 
+                document.getElementById('connectionStatus').classList.remove('hidden');
+                updateState({ mode: 'home', path: [], query: '' });
                 mainView.classList.remove('hidden');
-            } catch (error) {
-                console.error("Scanning Error:", error);
-                connectScreen.classList.remove('hidden');
-            } finally {
-                loadingOverlay.classList.add('hidden');
-            }
+            } catch (error) { console.error(error); connectScreen.classList.remove('hidden'); } 
+            finally { loadingOverlay.classList.add('hidden'); }
         }
 
         async function readDirectoryRecursively(dirHandle) {
@@ -467,549 +798,107 @@
                 if (entry.kind === 'file' && entry.name.match(/\.(pdf|html|jpg|png|jpeg)$/i)) {
                     const file = await entry.getFile();
                     allFiles.push({
-                        name: entry.name,
-                        sizeStr: formatSize(file.size),
-                        timestamp: file.lastModified,
-                        date: formatDate(file.lastModified),
-                        virtualPathStr: 'Root'
+                        name: entry.name, sizeStr: formatSize(file.size), timestamp: file.lastModified,
+                        date: formatDate(file.lastModified), virtualPathStr: 'Root'
                     });
-                } else if (entry.kind === 'directory') {
-                    await readDirectoryRecursively(entry);
-                }
+                } else if (entry.kind === 'directory') await readDirectoryRecursively(entry);
             }
         }
 
-        // --- THE MAGIC NESTED FOLDER LOGIC ---
         function determineNestedPath(filename) {
-            let n = filename.toLowerCase();
-            let path = [];
-
-            // 1. Exam Papers Classification
+            let n = filename.toLowerCase(); let path = [];
             if (n.includes("fast track") || n.includes("ft 0") || n.includes("ft 1") || n.includes("ft ")) {
-                path.push("Exam Papers 📄");
-                path.push("FAST TRACK");
-                let match = n.match(/0[1-9]|[1-9][0-9]/);
-                if (match) path.push(`Paper ${match[0]}`);
-                else path.push("General Papers");
-            } 
-            else if (n.includes("legendary")) {
-                path.push("Exam Papers 📄");
-                path.push("Legendary Papers");
-                let match = n.match(/0[1-9]|[1-9][0-9]/);
-                if (match) path.push(`Paper ${match[0]}`);
-            } 
-            else if (n.includes("mission") || n.includes("final paper") || n.includes("mp ")) {
-                path.push("Exam Papers 📄");
-                path.push("Mission A+ & Final Papers");
-            } 
-            // 2. Physics Classification
-            else if (n.includes("physics") || n.includes("thermal") || n.includes("magnetic") || n.includes("prism") || n.includes("fields") || n.includes("භෞතික") || n.includes("තාප") || n.includes("චුම්භක") || n.includes("මිනුම්") || n.includes("dolana")) {
+                path.push("Exam Papers 📄"); path.push("FAST TRACK");
+                let match = n.match(/0[1-9]|[1-9][0-9]/); if (match) path.push(`Paper ${match[0]}`); else path.push("General Papers");
+            } else if (n.includes("legendary")) {
+                path.push("Exam Papers 📄"); path.push("Legendary Papers");
+                let match = n.match(/0[1-9]|[1-9][0-9]/); if (match) path.push(`Paper ${match[0]}`);
+            } else if (n.includes("mission") || n.includes("final paper") || n.includes("mp ")) {
+                path.push("Exam Papers 📄"); path.push("Mission A+ & Final Papers");
+            } else if (n.includes("physics") || n.includes("thermal") || n.includes("magnetic") || n.includes("prism") || n.includes("fields") || n.includes("භෞතික") || n.includes("තාප") || n.includes("චුම්භක") || n.includes("මිනුම්") || n.includes("dolana")) {
                 path.push("Physics 🧲");
-                if (n.includes("thermal") || n.includes("තාප") || n.includes("heat")) path.push("Thermal Physics");
+                if (n.includes("thermal") || n.includes("තාප")) path.push("Thermal Physics");
                 else if (n.includes("magnetic") || n.includes("චුම්භක") || n.includes("fields")) path.push("Magnetic Fields");
                 else if (n.includes("prism") || n.includes("lenses")) path.push("Optics");
                 else if (n.includes("මිනුම්")) path.push("Measurements");
                 else if (n.includes("dolana")) path.push("Oscillations");
-            } 
-            // 3. Chemistry Classification
-            else if (n.includes("chemistry") || n.includes("alkeane") || n.includes("රසායන") || n.includes("සමාවයවික") || n.includes("පරිවර්තන") || n.includes("chemical")) {
+            } else if (n.includes("chemistry") || n.includes("alkeane") || n.includes("රසායන") || n.includes("සමාවයවික") || n.includes("පරිවර්තන") || n.includes("chemical")) {
                 path.push("Chemistry 🧪");
                 if (n.includes("alkeane") || n.includes("සමාවයවික") || n.includes("hydro carbon")) path.push("Organic Chemistry");
                 else if (n.includes("පරිවර්තන")) path.push("Conversions");
-            } 
-            // 4. Biology Classification
-            else if (n.includes("biology") || n.includes("gene") || n.includes("molecular") || n.includes("සත්ව") || n.includes("ජීව")) {
+            } else if (n.includes("biology") || n.includes("gene") || n.includes("molecular") || n.includes("සත්ව") || n.includes("ජීව")) {
                 path.push("Biology 🧬");
                 if(n.includes("gene") || n.includes("molecular")) path.push("Genetics & Molecular");
-            } 
-            // 5. Catch All
-            else {
-                path.push("Other Documents 📂");
-            }
-
+            } else { path.push("Other Documents 📂"); }
             return path;
         }
 
         function buildNestedTree() {
             virtualFileSystem = { folders: {}, files: [] };
-
             allFiles.forEach(fileObj => {
                 let path = determineNestedPath(fileObj.name);
                 fileObj.virtualPathStr = "Root > " + path.join(" > ");
-                
                 let currentLevel = virtualFileSystem;
-                for (let i = 0; i < path.length; i++) {
-                    let folderName = path[i];
-                    if (!currentLevel.folders[folderName]) {
-                        currentLevel.folders[folderName] = { folders: {}, files: [] };
-                    }
+                for (let folderName of path) {
+                    if (!currentLevel.folders[folderName]) currentLevel.folders[folderName] = { folders: {}, files: [] };
                     currentLevel = currentLevel.folders[folderName];
                 }
                 currentLevel.files.push(fileObj);
             });
         }
 
-        function getCurrentNode() {
-            let current = virtualFileSystem;
-            for (let i = 0; i < currentPathArray.length; i++) {
-                if(current.folders[currentPathArray[i]]) {
-                    current = current.folders[currentPathArray[i]];
-                }
-            }
-            return current;
-        }
-
-        // Render Dashboard Stats (WOW feature)
-        function renderDashboardStats() {
-            dashboardStatsSection.innerHTML = '';
-            
-            const stats = [
-                { name: "Exam Papers", icon: "fa-file-signature", color: "from-orange-500 to-amber-500", key: "Exam Papers 📄" },
-                { name: "Physics", icon: "fa-magnet", color: "from-blue-500 to-cyan-500", key: "Physics 🧲" },
-                { name: "Chemistry", icon: "fa-flask-vial", color: "from-emerald-500 to-teal-500", key: "Chemistry 🧪" },
-                { name: "Biology", icon: "fa-dna", color: "from-purple-500 to-pink-500", key: "Biology 🧬" }
-            ];
-
-            stats.forEach(stat => {
-                const count = virtualFileSystem.folders[stat.key] ? getFileCountInNode(virtualFileSystem.folders[stat.key]) : 0;
-                
-                const card = document.createElement('div');
-                card.className = "p-5 bg-white dark:bg-darkPanel border border-slate-100 dark:border-darkBorder rounded-2xl flex items-center justify-between shadow-sm cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 transform active:scale-95";
-                card.onclick = () => {
-                    if (virtualFileSystem.folders[stat.key]) {
-                        navigateIntoFolder(stat.key);
-                    }
-                };
-
-                card.innerHTML = `
-                    <div>
-                        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">${stat.name}</p>
-                        <h4 class="text-2xl font-black text-slate-800 dark:text-white mt-1">${count} <span class="text-xs font-semibold text-slate-400">files</span></h4>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${stat.color} text-white flex items-center justify-center shadow-md">
-                        <i class="fa-solid ${stat.icon} text-lg"></i>
-                    </div>
-                `;
-                dashboardStatsSection.appendChild(card);
-            });
-        }
-
-        // --- RENDER MAIN UI VIEW ---
-        function renderView(searchTerm = "") {
-            foldersContainer.innerHTML = '';
-            filesContainer.innerHTML = '';
-            
-            // Clean sidebar link highlights
-            document.querySelectorAll('nav a').forEach(el => {
-                el.classList.remove('bg-blue-50', 'text-blue-700', 'dark:bg-slate-800/60', 'dark:text-blue-400');
-                el.classList.add('text-slate-600', 'dark:text-slate-300');
-            });
-
-            // Smooth content enter animation helper
-            const container = document.getElementById('mainView');
-            container.classList.remove('animate-slide-up');
-            void container.offsetWidth; // Trigger reflow for animation restart
-            container.classList.add('animate-slide-up');
-
-            // Handle Search mode
-            if (searchTerm !== "") {
-                viewMode = 'search';
-                foldersSection.classList.add('hidden');
-                pinnedFoldersSection.classList.add('hidden');
-                dashboardStatsSection.classList.add('hidden');
-                backBtnContainer.classList.add('hidden');
-                dynamicBreadcrumbs.innerHTML = `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-slate-400"></i><span class="text-slate-500">Search Results</span>`;
-                
-                const term = searchTerm.toLowerCase();
-                let filesToRender = allFiles.filter(f => f.name.toLowerCase().includes(term));
-                filesHeader.innerHTML = `<i class="fa-solid fa-magnifying-glass mr-2 text-blue-500"></i> Search Results (${filesToRender.length})`;
-                renderFilesList(filesToRender);
-                return;
-            } 
-            
-            // Handle Recent Files mode
-            if (viewMode === 'recent') {
-                const navRecent = document.getElementById('navRecent');
-                navRecent.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-slate-800/60', 'dark:text-blue-400');
-                foldersSection.classList.add('hidden');
-                pinnedFoldersSection.classList.add('hidden');
-                dashboardStatsSection.classList.add('hidden');
-                backBtnContainer.classList.add('hidden');
-                dynamicBreadcrumbs.innerHTML = `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-slate-400"></i><span class="text-slate-500">Recent Files</span>`;
-                
-                let filesToRender = [...allFiles].sort((a,b) => b.timestamp - a.timestamp).slice(0, 50); 
-                filesHeader.innerHTML = `<i class="fa-regular fa-clock mr-2 text-indigo-500"></i> Recent Uploads`;
-                renderFilesList(filesToRender);
-                return;
-            }
-
-            // Handle Starred Files Mode
-            if (viewMode === 'starred') {
-                const navStarred = document.getElementById('navStarred');
-                navStarred.classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-slate-800/60', 'dark:text-blue-400');
-                foldersSection.classList.add('hidden');
-                pinnedFoldersSection.classList.add('hidden');
-                dashboardStatsSection.classList.add('hidden');
-                backBtnContainer.classList.add('hidden');
-                dynamicBreadcrumbs.innerHTML = `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-slate-400"></i><span class="text-slate-500">Starred Files</span>`;
-                
-                let filesToRender = allFiles.filter(f => starredFiles.includes(f.name));
-                filesHeader.innerHTML = `<i class="fa-solid fa-star mr-2 text-yellow-500"></i> Starred Materials (${filesToRender.length})`;
-                renderFilesList(filesToRender);
-                return;
-            }
-            
-            // NORMAL NESTED NAVIGATION VIEW
-            document.getElementById('navDrives').classList.add('bg-blue-50', 'text-blue-700', 'dark:bg-slate-800/60', 'dark:text-blue-400');
-            viewMode = 'home';
-            
-            // Render Pinned Folders at Root level
-            if (currentPathArray.length === 0 && pinnedFolders.length > 0) {
-                pinnedFoldersSection.classList.remove('hidden');
-                pinnedFoldersContainer.innerHTML = '';
-                pinnedFolders.forEach((pathArr, idx) => {
-                    const title = pathArr[pathArr.length - 1]; 
-                    renderPinnedFolderCard(title, pathArr, idx);
-                });
-            } else {
-                pinnedFoldersSection.classList.add('hidden');
-            }
-
-            // Toggle Dashboard visibility only on Home/Root level
-            if (currentPathArray.length === 0) {
-                dashboardStatsSection.classList.remove('hidden');
-                renderDashboardStats();
-            } else {
-                dashboardStatsSection.classList.add('hidden');
-            }
-            
-            // Build Dynamic Breadcrumbs
-            dynamicBreadcrumbs.innerHTML = '';
-            let tempPath = [];
-            currentPathArray.forEach((step, index) => {
-                tempPath.push(step);
-                let pathClone = [...tempPath]; 
-                let isLast = index === currentPathArray.length - 1;
-                
-                dynamicBreadcrumbs.innerHTML += `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-slate-400"></i>`;
-                if(isLast) {
-                    dynamicBreadcrumbs.innerHTML += `<span class="bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-950 font-bold">${step}</span>`;
-                } else {
-                    let span = document.createElement('span');
-                    span.className = "text-slate-500 dark:text-slate-400 hover:text-blue-600 cursor-pointer transition-colors";
-                    span.innerText = step;
-                    span.onclick = () => jumpToPath(pathClone);
-                    dynamicBreadcrumbs.appendChild(span);
-                }
-            });
-
-            // Back button toggle state
-            if (currentPathArray.length > 0) backBtnContainer.classList.remove('hidden');
-            else backBtnContainer.classList.add('hidden');
-
-            let currentNode = getCurrentNode();
-            
-            // Render Sub-folders
-            let folderNames = Object.keys(currentNode.folders);
-            if (folderNames.length > 0) {
-                foldersSection.classList.remove('hidden');
-                folderNames.forEach((folderName, idx) => {
-                    let childCount = getFileCountInNode(currentNode.folders[folderName]);
-                    renderFolderCard(folderName, `${childCount} items`, () => navigateIntoFolder(folderName), idx);
-                });
-            } else {
-                foldersSection.classList.add('hidden');
-            }
-
-            // Render Files List
-            filesHeader.innerHTML = `<i class="fa-solid fa-file-lines mr-2 text-blue-500"></i> Files (${currentNode.files.length})`;
-            renderFilesList(currentNode.files);
-        }
-
-        function getFileCountInNode(node) {
+        function getFileCount(node) {
             let count = node.files.length;
-            for(let sub in node.folders) {
-                count += getFileCountInNode(node.folders[sub]);
-            }
+            for(let sub in node.folders) count += getFileCount(node.folders[sub]);
             return count;
         }
 
-        // Render Files List Loop
-        function renderFilesList(filesArray) {
-            filesArray.forEach((file, index) => {
-                const isPdf = file.name.toLowerCase().endsWith('.pdf');
-                const isImg = file.name.match(/\.(jpg|png|jpeg)$/i);
-                
-                let iconColor = 'text-blue-500';
-                let iconClass = 'fa-file-lines';
-                let bgIcon = 'bg-blue-50 dark:bg-blue-950/40';
-                
-                if(isPdf) { iconColor = 'text-red-500'; iconClass = 'fa-file-pdf'; bgIcon = 'bg-red-50 dark:bg-red-950/40'; }
-                if(isImg) { iconColor = 'text-emerald-500'; iconClass = 'fa-file-image'; bgIcon = 'bg-emerald-50 dark:bg-emerald-950/40'; }
-
-                const isStarred = starredFiles.includes(file.name);
-
-                const fileEl = document.createElement('div');
-                fileEl.className = `file-card bg-white dark:bg-darkPanel p-4 rounded-2xl border border-slate-100 dark:border-darkBorder shadow-sm cursor-pointer relative overflow-hidden`;
-                fileEl.style.animationDelay = `${(index % 20) * 15}ms`;
-                fileEl.onclick = () => openFile(file.name);
-                fileEl.oncontextmenu = (e) => showContextMenu(e, 'file', file);
-                
-                const displayName = file.name.length > 35 ? file.name.substring(0, 32) + '...' : file.name;
-
-                fileEl.innerHTML = `
-                    <div class="flex flex-col h-full justify-between relative z-10">
-                        <div>
-                            <div class="flex items-start justify-between mb-3">
-                                <div class="${iconColor} text-3xl w-12 h-12 flex items-center justify-center rounded-xl ${bgIcon} group-hover:scale-110 transition-transform duration-300">
-                                    <i class="fa-solid ${iconClass}"></i>
-                                </div>
-                                <button onclick="event.stopPropagation(); toggleStarFile('${file.name}')" class="text-slate-300 hover:text-yellow-500 transition-colors duration-200">
-                                    <i class="${isStarred ? 'fa-solid text-yellow-400' : 'fa-regular'} fa-star"></i>
-                                </button>
-                            </div>
-                            <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 mb-1 leading-snug break-all" title="${file.name}">${displayName}</h4>
-                        </div>
-                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-50 dark:border-slate-800/40">
-                            <span class="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-md">${file.sizeStr}</span>
-                            <span class="text-[10px] text-slate-400 font-medium">${file.date}</span>
-                        </div>
-                    </div>
-                `;
-                filesContainer.appendChild(fileEl);
-            });
-        }
-
-        // Smart Thematic Folder Icons and Colors
-        function getFolderStyling(title) {
-            let n = title.toLowerCase();
-            if (n.includes("physics")) return { icon: "fa-magnet", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/40" };
-            if (n.includes("chemistry")) return { icon: "fa-flask-vial", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/40" };
-            if (n.includes("biology")) return { icon: "fa-dna", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/40" };
-            if (n.includes("exam")) return { icon: "fa-file-signature", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/40" };
-            return { icon: "fa-folder", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/40" };
-        }
-
-        function renderFolderCard(title, subtitle, onClickFn, index) {
-            const folderEl = document.createElement('div');
-            folderEl.className = `file-card bg-white dark:bg-darkPanel p-5 rounded-2xl border border-slate-100 dark:border-darkBorder shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
-            folderEl.style.animationDelay = `${index * 15}ms`;
-            folderEl.onclick = onClickFn;
-            
-            const fullPath = [...currentPathArray, title];
-            folderEl.oncontextmenu = (e) => showContextMenu(e, 'folder', fullPath);
-            
-            const style = getFolderStyling(title);
-            
-            folderEl.innerHTML = `
-                <div class="text-4xl ${style.color} mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative">
-                    <i class="fa-solid ${style.icon}"></i>
-                </div>
-                <h4 class="font-extrabold text-slate-800 dark:text-slate-200 text-center text-sm leading-tight px-2 line-clamp-2">${title}</h4>
-                <p class="text-[11px] text-slate-400 mt-1.5 font-bold ${style.bg} px-2.5 py-0.5 rounded-full">${subtitle}</p>
-            `;
-            foldersContainer.appendChild(folderEl);
-        }
-
-        // Dedicated Pinned Virtual Folder Renderer
-        function renderPinnedFolderCard(title, pathArr, index) {
-            const folderEl = document.createElement('div');
-            folderEl.className = `file-card bg-white dark:bg-darkPanel p-5 rounded-2xl border border-red-100 dark:border-red-950/40 shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
-            folderEl.style.animationDelay = `${index * 15}ms`;
-            folderEl.onclick = () => jumpToPath([...pathArr]);
-            folderEl.oncontextmenu = (e) => showContextMenu(e, 'folder', pathArr);
-
-            const style = getFolderStyling(title);
-
-            folderEl.innerHTML = `
-                <div class="absolute top-2.5 right-2.5 text-red-500 transform rotate-45 opacity-80 animate-pulse">
-                    <i class="fa-solid fa-thumbtack text-xs"></i>
-                </div>
-                <div class="text-4xl text-red-500 mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative">
-                    <i class="fa-solid ${style.icon}"></i>
-                </div>
-                <h4 class="font-extrabold text-slate-800 dark:text-slate-200 text-center text-sm leading-tight px-2 line-clamp-2">${title}</h4>
-                <p class="text-[10px] text-red-500 font-bold bg-red-50 dark:bg-red-950/20 px-2.5 py-0.5 rounded-full truncate max-w-full" title="${pathArr.join(' > ')}">${pathArr.length > 1 ? pathArr.slice(0, -1).join('/') : 'Root'}</p>
-            `;
-            pinnedFoldersContainer.appendChild(folderEl);
-        }
-
-        // --- NAVIGATION CONTROLLERS ---
-        function navigateIntoFolder(folderName) {
-            currentPathArray.push(folderName);
-            history.pushState({ path: currentPathArray }, "", `#${folderName.replace(/\s/g, '')}`);
-            searchInput.value = '';
-            renderView();
-        }
-
-        function jumpToPath(pathArr) {
-            currentPathArray = pathArr;
-            renderView();
-        }
-
-        function goBack() {
-            if(currentPathArray.length > 0) {
-                currentPathArray.pop();
-                renderView();
-            }
-        }
-
-        function goHome(pushState = true) {
-            currentPathArray = [];
-            viewMode = 'home';
-            searchInput.value = '';
-            if(pushState) history.pushState({ path: [] }, "", " ");
-            renderView();
-        }
-
-        window.addEventListener('popstate', (event) => {
-            if (event.state && event.state.path) {
-                currentPathArray = event.state.path;
-            } else {
-                currentPathArray = [];
-            }
-            viewMode = 'home';
-            searchInput.value = '';
-            renderView();
-        });
-
-        // Sidebar Navigation hooks
-        document.getElementById('navRecent').addEventListener('click', () => {
-            viewMode = 'recent';
-            searchInput.value = '';
-            renderView();
-        });
-
-        document.getElementById('navStarred').addEventListener('click', () => {
-            viewMode = 'starred';
-            searchInput.value = '';
-            renderView();
-        });
-
-        // --- FAVORITES / STARS LOGIC ---
-        window.toggleStarFile = async function(fileName) {
-            const idx = starredFiles.indexOf(fileName);
-            if (idx === -1) {
-                starredFiles.push(fileName);
-            } else {
-                starredFiles.splice(idx, 1);
-            }
-            await idbKeyval.set('starred_files', starredFiles);
-            renderView();
-        }
-
-        // --- RIGHT CLICK CONTEXT MENUS ---
-        function showContextMenu(e, type, itemData) {
-            e.preventDefault(); 
-            e.stopPropagation();
-            
-            contextMenu.innerHTML = '';
-            
-            if (type === 'folder') {
-                const isPinned = pinnedFolders.some(p => JSON.stringify(p) === JSON.stringify(itemData));
-                const pinBtn = document.createElement('div');
-                pinBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 cursor-pointer flex items-center transition-colors font-medium";
-                
-                pinBtn.innerHTML = isPinned 
-                    ? `<i class="fa-solid fa-link-slash w-6 text-slate-400 text-center mr-2"></i> <span>Unpin Folder</span>`
-                    : `<i class="fa-solid fa-thumbtack w-6 text-slate-400 text-center mr-2 text-red-500"></i> <span>Pin Folder</span>`;
-                
-                pinBtn.onclick = () => {
-                    contextMenu.classList.add('hidden');
-                    if (isPinned) actionUnpinFolder(itemData);
-                    else actionPinFolder(itemData);
-                };
-                contextMenu.appendChild(pinBtn);
-
-            } else if (type === 'file') {
-                selectedFileForDetails = itemData; 
-                const isStarred = starredFiles.includes(itemData.name);
-                
-                const starBtn = document.createElement('div');
-                starBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-medium border-b border-slate-100 dark:border-darkBorder";
-                starBtn.innerHTML = isStarred 
-                    ? `<i class="fa-solid fa-star w-6 text-yellow-500 text-center mr-2"></i> <span>Starred</span>`
-                    : `<i class="fa-regular fa-star w-6 text-slate-400 text-center mr-2"></i> <span>Star File</span>`;
-                
-                starBtn.onclick = () => { 
-                    contextMenu.classList.add('hidden'); 
-                    toggleStarFile(itemData.name); 
-                };
-
-                const detailBtn = document.createElement('div');
-                detailBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-medium";
-                detailBtn.innerHTML = `<i class="fa-solid fa-circle-info w-6 text-slate-400 text-center mr-2"></i> <span>Details</span>`;
-                detailBtn.onclick = () => { 
-                    contextMenu.classList.add('hidden'); 
-                    showFileDetails(); 
-                };
-
-                contextMenu.appendChild(starBtn);
-                contextMenu.appendChild(detailBtn);
-            }
-            
-            // Context menu coordinate resolution
-            let x = e.clientX;
-            let y = e.clientY;
-            
-            if (x + 200 > window.innerWidth) x = window.innerWidth - 200;
-            if (y + 120 > window.innerHeight) y = window.innerHeight - 120;
-
-            contextMenu.style.left = `${x}px`;
-            contextMenu.style.top = `${y}px`;
-            contextMenu.classList.remove('hidden');
-        }
-
-        async function actionPinFolder(pathArr) {
-            pinnedFolders.push(pathArr);
-            await idbKeyval.set('pinned_folders', pinnedFolders);
-            renderView(); 
-        }
-
-        async function actionUnpinFolder(pathArr) {
-            pinnedFolders = pinnedFolders.filter(p => JSON.stringify(p) !== JSON.stringify(pathArr));
-            await idbKeyval.set('pinned_folders', pinnedFolders);
-            renderView();
-        }
-
-        document.addEventListener('click', () => {
-            contextMenu.classList.add('hidden');
-        });
-
+        // --- FILE DETAILS MODAL ---
         function showFileDetails() {
             if(!selectedFileForDetails) return;
             const file = selectedFileForDetails;
-            
             const isPdf = file.name.toLowerCase().endsWith('.pdf');
-            const iconEl = document.getElementById('detailIcon');
-            iconEl.className = isPdf ? "fa-solid fa-file-pdf text-red-500 text-3xl mr-4 w-6 text-center" : "fa-solid fa-file-image text-emerald-500 text-3xl mr-4 w-6 text-center";
-
-            document.getElementById('detailName').innerText = file.name;
-            document.getElementById('detailName').title = file.name;
-            document.getElementById('detailSize').innerText = file.sizeStr;
-            document.getElementById('detailDate').innerText = file.date;
-            document.getElementById('detailLocation').innerText = file.virtualPathStr;
-
-            const modal = document.getElementById('detailsModal');
-            const content = document.getElementById('detailsContent');
             
+            document.getElementById('detailsContent').innerHTML = `
+                <div class="flex justify-between items-start mb-5">
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white">File Details</h3>
+                    <button onclick="closeDetails()" class="text-slate-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-darkBorder">
+                        <i class="fa-solid ${isPdf ? 'fa-file-pdf text-red-500' : 'fa-file-image text-emerald-500'} text-3xl mr-4 w-6 text-center"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-bold text-slate-800 dark:text-white truncate" title="${file.name}">${file.name}</p>
+                            <p class="text-xs text-slate-400">File Name</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
+                            <p class="text-xs text-slate-400 mb-1">Size</p>
+                            <p class="font-bold text-slate-800 dark:text-white">${file.sizeStr}</p>
+                        </div>
+                        <div class="p-3 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
+                            <p class="text-xs text-slate-400 mb-1">Modified Date</p>
+                            <p class="font-bold text-slate-800 dark:text-white">${file.date}</p>
+                        </div>
+                    </div>
+                    <div class="p-4 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
+                        <p class="text-xs text-slate-400 mb-1">Virtual Path</p>
+                        <p class="font-semibold text-slate-800 dark:text-white text-sm break-all">${file.virtualPathStr}</p>
+                    </div>
+                </div>
+            `;
+            const modal = document.getElementById('detailsModal');
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                content.classList.remove('scale-95');
-            }, 10);
+            setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('detailsContent').classList.remove('scale-95'); }, 10);
         }
 
         window.closeDetails = function() {
             const modal = document.getElementById('detailsModal');
-            const content = document.getElementById('detailsContent');
-            
-            modal.classList.add('opacity-0');
-            content.classList.add('scale-95');
+            modal.classList.add('opacity-0'); document.getElementById('detailsContent').classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // --- FILE ACCESS & PARSING ---
         async function openFile(fileName) {
             try {
                 if (!directoryHandle) return;
@@ -1023,27 +912,15 @@
                 const url = URL.createObjectURL(file);
                 window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 5000); 
-            } catch (err) {
-                alert("Could not access standard file. Ensure read permissions are granted.");
-            }
+            } catch (err) { alert("Could not access standard file. Ensure read permissions are granted."); }
         }
 
-        searchInput.addEventListener('input', (e) => {
-            renderView(e.target.value);
-        });
-
-        // Utils
         function formatSize(bytes) {
-            if (bytes === 0) return '0 B';
-            const k = 1024;
-            const sizes = ['B', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            if (bytes === 0) return '0 B'; const k = 1024; const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k)); return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
-
         function formatDate(timestamp) {
-            const date = new Date(timestamp);
-            const today = new Date();
+            const date = new Date(timestamp); const today = new Date();
             if(date.toDateString() === today.toDateString()) return 'Today';
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             return `${months[date.getMonth()]} ${date.getDate()}`;
