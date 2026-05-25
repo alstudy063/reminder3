@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram File Manager - Virtual Organizer</title>
+    <title>Telegram File Manager - Nested Organizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
-        /* Qillqa jark'aña (Disable text selection) */
         body { 
             font-family: 'Inter', sans-serif; 
             user-select: none;
             -webkit-user-select: none;
-            -moz-user-select: none;
         }
         input { user-select: text; -webkit-user-select: text; }
         
@@ -32,13 +30,11 @@
         }
         .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
         
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-        /* Context Menu Animation */
+        
         .context-menu-enter {
             animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             transform-origin: top left;
@@ -62,40 +58,31 @@
             </div>
 
             <div class="px-4">
-                <!-- Navin folder ughadnyasathi button -->
                 <button id="btnNew" class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300 py-3 rounded-2xl text-gray-700 font-medium mb-6 hover:bg-blue-50 active:scale-95">
-                    <i class="fa-solid fa-plus text-blue-600"></i>
-                    <span>Select Folder</span>
+                    <i class="fa-solid fa-folder-open text-blue-600"></i>
+                    <span>Select Telegram Folder</span>
                 </button>
             </div>
 
             <nav class="px-2 space-y-1">
                 <a href="#" id="navDrives" class="flex items-center space-x-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium transition-colors" onclick="goHome()">
                     <i class="fa-solid fa-laptop text-lg w-5"></i>
-                    <span>Computers (Drives)</span>
+                    <span>My Workspace</span>
                 </a>
                 <a href="#" id="navRecent" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium">
                     <i class="fa-regular fa-clock text-lg w-5"></i>
                     <span>Recent Files</span>
-                </a>
-                <a href="#" id="navStarred" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium relative overflow-hidden group">
-                    <i class="fa-regular fa-star text-lg w-5 group-hover:text-yellow-500 transition-colors"></i>
-                    <span>Starred</span>
                 </a>
             </nav>
         </div>
 
         <div class="p-4">
             <div class="px-4 mb-4">
-                <div class="flex items-center space-x-2 text-sm text-purple-600 font-medium bg-purple-50 px-3 py-2 rounded-lg border border-purple-100">
-                    <i class="fa-solid fa-vr-cardboard"></i>
-                    <span>Virtual Mode Active</span>
+                <div class="flex items-center space-x-2 text-sm text-indigo-600 font-medium bg-indigo-50 px-3 py-2 rounded-lg border border-indigo-100">
+                    <i class="fa-solid fa-network-wired"></i>
+                    <span>Nested Mode Active</span>
                 </div>
             </div>
-            <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium mb-2">
-                <i class="fa-solid fa-gear text-lg w-5"></i>
-                <span>Settings</span>
-            </a>
         </div>
     </aside>
 
@@ -106,29 +93,29 @@
         <header class="glass-panel p-4 flex items-center justify-between z-10 border-b border-gray-100">
             <div class="flex-1 max-w-3xl flex items-center bg-gray-100/80 rounded-full px-4 py-2 border border-transparent focus-within:bg-white focus-within:border-blue-300 focus-within:shadow-sm transition-all duration-300">
                 <i class="fa-solid fa-magnifying-glass text-gray-400 mr-3"></i>
-                <input type="text" id="searchInput" placeholder="Search files... (Supports Sinhala/English)" class="bg-transparent border-none outline-none w-full text-gray-700 placeholder-gray-400 text-sm">
+                <input type="text" id="searchInput" placeholder="Search across all files..." class="bg-transparent border-none outline-none w-full text-gray-700 placeholder-gray-400 text-sm">
             </div>
             
             <div class="flex items-center space-x-3 ml-4">
-                <button class="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-full transition-all duration-200 active:rotate-180" onclick="loadFiles(true)" title="Refresh">
+                <button class="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-full transition-all duration-200 active:rotate-180" onclick="loadFiles(true)" title="Force Refresh">
                     <i class="fa-solid fa-arrow-rotate-right"></i>
                 </button>
-                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:scale-105 transition-transform border-2 border-white">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:scale-105 transition-transform border-2 border-white">
                     U
                 </div>
             </div>
         </header>
 
-        <!-- Breadcrumb -->
-        <div class="px-8 py-3 flex items-center text-sm text-gray-600 font-medium bg-white/50 border-b border-gray-100 min-h-[48px]">
+        <!-- Breadcrumb (Dynamic) -->
+        <div class="px-8 py-3 flex items-center text-sm text-gray-600 font-medium bg-white/50 border-b border-gray-100 min-h-[48px] overflow-x-auto whitespace-nowrap" id="breadcrumbContainer">
             <button onclick="goHome()" class="hover:text-blue-600 transition-colors flex items-center">
-                <i class="fa-solid fa-server mr-2"></i> Computers 
+                <i class="fa-solid fa-server mr-2"></i> Workspace 
             </button>
             <i class="fa-solid fa-chevron-right text-[10px] mx-3 text-gray-400"></i>
-            <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm cursor-pointer hover:bg-blue-100" onclick="goHome()">Telegram Desktop</span>
-            <span id="breadcrumbCategory" class="hidden items-center">
-                <i class="fa-solid fa-chevron-right text-[10px] mx-3 text-gray-400"></i>
-                <span class="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-100 shadow-sm" id="breadcrumbText">Category</span>
+            <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm cursor-pointer hover:bg-blue-100" onclick="goHome()">Root</span>
+            
+            <span id="dynamicBreadcrumbs" class="flex items-center">
+                <!-- Javascript will inject nested paths here -->
             </span>
         </div>
 
@@ -138,30 +125,29 @@
                 <i class="fa-brands fa-telegram text-5xl text-blue-500 relative z-10 animate-bounce" style="animation-duration: 2s;"></i>
             </div>
             <h2 class="text-3xl font-bold text-gray-800 mb-3 tracking-tight">Connect Telegram Folder</h2>
-            <p class="text-gray-500 max-w-md mb-8 text-sm leading-relaxed">Auto-organize your educational PDFs based on keywords. (Virtual mode: Your actual files are safe and will not be moved).</p>
+            <p class="text-gray-500 max-w-md mb-8 text-sm leading-relaxed">Files will be virtually organized into nested sub-folders (e.g. Fast Track > FT 04 > Paper).</p>
             
-            <button id="selectFolderBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-8 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center space-x-3 active:scale-95">
+            <button id="selectFolderBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-8 rounded-xl shadow-lg shadow-blue-500/30 transition-all duration-300 flex items-center space-x-3 active:scale-95">
                 <i class="fa-regular fa-folder-open text-xl"></i>
                 <span>Select Folder</span>
             </button>
-            <button id="restoreAccessBtn" class="hidden mt-5 bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700 font-medium py-3 px-8 rounded-xl shadow-sm transition-all duration-300 flex items-center space-x-3 active:scale-95">
+            <button id="restoreAccessBtn" class="hidden mt-5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium py-3 px-8 rounded-xl shadow-sm transition-all duration-300 flex items-center space-x-3 active:scale-95">
                 <i class="fa-solid fa-unlock-keyhole text-blue-500"></i>
-                <span>Load Saved Files</span>
+                <span>Load Saved Workspace</span>
             </button>
         </div>
 
         <!-- Files Grid -->
         <div id="mainView" class="flex-1 overflow-y-auto px-8 pb-10 hidden scroll-smooth">
             
-            <!-- Dynamic Folders Section -->
+            <!-- Folders Section -->
             <div id="foldersSection" class="mb-10 pt-4 hidden">
                 <div class="flex items-center justify-between mb-5">
                     <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center">
-                        <i class="fa-solid fa-layer-group mr-2 text-blue-400"></i> Virtual Folders
+                        <i class="fa-solid fa-folder-tree mr-2 text-yellow-500"></i> Sub-Folders
                     </h3>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="foldersContainer">
-                    <!-- Folders rendered here via JS -->
                 </div>
             </div>
 
@@ -169,33 +155,30 @@
             <div>
                 <div class="flex items-center justify-between mb-5 border-b border-gray-200 pb-2">
                     <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center" id="filesHeader">
-                        <i class="fa-solid fa-file-lines mr-2 text-blue-400"></i> All Files
+                        <i class="fa-solid fa-file-lines mr-2 text-blue-400"></i> Files
                     </h3>
                     <div id="backBtnContainer" class="hidden">
                         <button onclick="goBack()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full font-medium transition-colors flex items-center">
-                            <i class="fa-solid fa-arrow-left mr-2"></i> Go Back
+                            <i class="fa-solid fa-arrow-left mr-2"></i> Back
                         </button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="filesContainer">
-                    <!-- Files rendered here via JS -->
                 </div>
             </div>
         </div>
         
-        <!-- Loading Overlay -->
+        <!-- Loading -->
         <div id="loadingOverlay" class="absolute inset-0 bg-white/90 backdrop-blur-md z-[60] flex flex-col items-center justify-center hidden">
             <div class="relative w-20 h-20">
                 <div class="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-                <i class="fa-solid fa-folder-tree absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-500 text-xl"></i>
             </div>
-            <p class="text-gray-700 font-semibold mt-6 text-lg tracking-wide">Organizing files virtually...</p>
+            <p class="text-gray-700 font-semibold mt-6 text-lg tracking-wide">Building Nested Folders...</p>
         </div>
 
-        <!-- Right Click Context Menu (Ujvi click menu) -->
+        <!-- Context Menu -->
         <div id="contextMenu" class="hidden absolute z-[100] bg-white/95 backdrop-blur-sm rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] py-2 w-48 border border-gray-200 text-sm context-menu-enter">
-            <!-- Items injected by JS -->
         </div>
 
         <!-- Details Modal -->
@@ -215,25 +198,23 @@
                             <p class="text-xs text-gray-500">Name</p>
                         </div>
                     </div>
-                    
                     <div class="grid grid-cols-2 gap-4">
                         <div class="p-3 border border-gray-100 rounded-xl">
                             <p class="text-xs text-gray-500 mb-1">Size</p>
                             <p class="font-semibold text-gray-800" id="detailSize">0 MB</p>
                         </div>
                         <div class="p-3 border border-gray-100 rounded-xl">
-                            <p class="text-xs text-gray-500 mb-1">Date Modified</p>
+                            <p class="text-xs text-gray-500 mb-1">Date</p>
                             <p class="font-semibold text-gray-800" id="detailDate">Today</p>
                         </div>
                     </div>
-                    
                     <div class="p-3 border border-gray-100 rounded-xl">
-                        <p class="text-xs text-gray-500 mb-1">Virtual Location</p>
-                        <p class="font-medium text-gray-800 text-sm truncate" id="detailLocation">Category</p>
+                        <p class="text-xs text-gray-500 mb-1">Virtual Path</p>
+                        <p class="font-medium text-gray-800 text-sm break-all" id="detailLocation">Root</p>
                     </div>
                 </div>
                 <div class="mt-6">
-                    <button onclick="closeDetails()" class="w-full py-2.5 text-white bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/30 rounded-xl font-medium transition-colors">Close</button>
+                    <button onclick="closeDetails()" class="w-full py-2.5 text-white bg-blue-600 hover:bg-blue-700 rounded-xl font-medium transition-colors">Close</button>
                 </div>
             </div>
         </div>
@@ -241,16 +222,16 @@
     </main>
 
     <script>
-        // Yatiqawi (Variables)
         let directoryHandle = null;
         let allFiles = []; 
-        let dynamicFolders = {}; 
-        let currentCategory = null; 
-        let viewMode = 'home'; // home, recent
+        
+        // The Root of our Nested Virtual File System
+        let virtualFileSystem = { folders: {}, files: [] };
+        let currentPathArray = []; // e.g. ["Exams", "Fast Track", "Paper 01"]
+        let viewMode = 'home'; // home, recent, search
         
         let selectedFileForDetails = null;
 
-        // Ceebe (Elements)
         const connectScreen = document.getElementById('connectScreen');
         const mainView = document.getElementById('mainView');
         const foldersContainer = document.getElementById('foldersContainer');
@@ -259,17 +240,25 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const filesHeader = document.getElementById('filesHeader');
         const foldersSection = document.getElementById('foldersSection');
-        const breadcrumbCategory = document.getElementById('breadcrumbCategory');
-        const breadcrumbText = document.getElementById('breadcrumbText');
+        const dynamicBreadcrumbs = document.getElementById('dynamicBreadcrumbs');
         const backBtnContainer = document.getElementById('backBtnContainer');
         const contextMenu = document.getElementById('contextMenu');
 
-        // Initializer
         async function init() {
             try {
                 const storedHandle = await idbKeyval.get('telegram_folder_handle');
                 if (storedHandle) {
                     directoryHandle = storedHandle;
+                    
+                    const cachedFiles = await idbKeyval.get('cached_files');
+                    if (cachedFiles && cachedFiles.length > 0) {
+                        allFiles = cachedFiles;
+                        buildNestedTree();
+                        goHome(false); 
+                        connectScreen.classList.add('hidden');
+                        mainView.classList.remove('hidden');
+                        return; 
+                    }
                     document.getElementById('restoreAccessBtn').classList.remove('hidden');
                 }
             } catch (err) {
@@ -277,134 +266,147 @@
             }
         }
 
-        // Folder Select Handlers (Fakt read permission purti - Only read mode)
         document.getElementById('selectFolderBtn').addEventListener('click', selectNewFolder);
         document.getElementById('btnNew').addEventListener('click', selectNewFolder);
+        document.getElementById('restoreAccessBtn').addEventListener('click', () => loadFiles(true));
 
         async function selectNewFolder() {
             try {
                 const handle = await window.showDirectoryPicker({ mode: 'read' });
                 directoryHandle = handle;
                 await idbKeyval.set('telegram_folder_handle', handle);
-                await loadFiles();
+                await loadFiles(true);
             } catch (error) {
-                console.log("User cancelled selection", error);
+                console.log("Cancelled");
             }
         }
 
-        document.getElementById('restoreAccessBtn').addEventListener('click', async () => {
-            try {
-                const permission = await directoryHandle.verifyPermission({ mode: 'read' });
-                if (permission !== 'granted') {
-                    const request = await directoryHandle.requestPermission({ mode: 'read' });
-                    if (request !== 'granted') return;
+        async function loadFiles(forceSync = false) {
+            if (forceSync && directoryHandle) {
+                let perm = await directoryHandle.verifyPermission({ mode: 'read' });
+                if (perm !== 'granted') {
+                    perm = await directoryHandle.requestPermission({ mode: 'read' });
+                    if (perm !== 'granted') return;
                 }
-                await loadFiles();
-            } catch (error) {
-                alert("Failed to restore access. Please select the folder again.");
-            }
-        });
+            } else if (!directoryHandle) return;
 
-        // Load Files (Virtual processing)
-        async function loadFiles() {
             connectScreen.classList.add('hidden');
             loadingOverlay.classList.remove('hidden');
             
             allFiles = [];
-            dynamicFolders = {};
+            virtualFileSystem = { folders: {}, files: [] };
 
             try {
                 for await (const entry of directoryHandle.values()) {
                     if (entry.kind === 'file' && entry.name.match(/\.(pdf|html|jpg|png|jpeg)$/i)) {
                         const file = await entry.getFile();
-                        const fileObj = {
-                            handle: entry,
+                        allFiles.push({
                             name: entry.name,
                             sizeStr: formatSize(file.size),
                             timestamp: file.lastModified,
                             date: formatDate(file.lastModified),
-                            categoryAssigned: 'Root'
-                        };
-                        allFiles.push(fileObj);
+                            virtualPathStr: 'Root'
+                        });
                     }
                 }
                 
-                generateDynamicFolders();
+                await idbKeyval.set('cached_files', allFiles);
+                buildNestedTree();
                 goHome(false); 
                 mainView.classList.remove('hidden');
             } catch (error) {
-                console.error("Error reading dir:", error);
+                console.error("Error reading directory:", error);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
         }
 
-        // Virtual Dynamic File Grouping
-        function generateDynamicFolders() {
-            dynamicFolders = {
-                "Physics 🧲": [],
-                "Chemistry 🧪": [],
-                "Biology 🧬": [],
-                "Exam Papers 📄": []
-            };
+        // --- THE MAGIC NESTED FOLDER LOGIC ---
+        function determineNestedPath(filename) {
+            let n = filename.toLowerCase();
+            let path = [];
 
-            const kwPhysics = ["physics", "thermal", "magnetic", "prism", "vapor", "fields", "භෞතික", "තාප", "චුම්භක", "මිනුම්", "optics"];
-            const kwChemistry = ["chemistry", "solubility", "chemical", "alkeane", "රසායන", "සමාවයවික", "පරිවර්තන"];
-            const kwBiology = ["biology", "gene", "molecular", "සත්ව", "ජීව"];
-            const kwPapers = ["paper", "mcq", "seq", "essay", "fast track", "legendary", "final paper", "විභාග"];
+            // 1. Exam Papers Classification
+            if (n.includes("fast track") || n.includes("ft 0") || n.includes("ft 1") || n.includes("ft ")) {
+                path.push("Exam Papers 📄");
+                path.push("FAST TRACK");
+                
+                // Extract Paper Number (e.g. 04, 05, 01)
+                let match = n.match(/0[1-9]|[1-9][0-9]/);
+                if (match) path.push(`Paper ${match[0]}`);
+                else path.push("General Papers");
+                
+            } 
+            else if (n.includes("legendary")) {
+                path.push("Exam Papers 📄");
+                path.push("Legendary Papers");
+                let match = n.match(/0[1-9]|[1-9][0-9]/);
+                if (match) path.push(`Paper ${match[0]}`);
+            } 
+            else if (n.includes("mission") || n.includes("final paper") || n.includes("mp ")) {
+                path.push("Exam Papers 📄");
+                path.push("Mission A+ & Final Papers");
+            } 
+            // 2. Physics Classification
+            else if (n.includes("physics") || n.includes("thermal") || n.includes("magnetic") || n.includes("prism") || n.includes("fields") || n.includes("භෞතික") || n.includes("තාප") || n.includes("චුම්භක") || n.includes("මිනුම්") || n.includes("dolana")) {
+                path.push("Physics 🧲");
+                if (n.includes("thermal") || n.includes("තාප") || n.includes("heat")) path.push("Thermal Physics");
+                else if (n.includes("magnetic") || n.includes("චුම්භක") || n.includes("fields")) path.push("Magnetic Fields");
+                else if (n.includes("prism") || n.includes("lenses")) path.push("Optics");
+                else if (n.includes("මිනුම්")) path.push("Measurements");
+                else if (n.includes("dolana")) path.push("Oscillations");
+            } 
+            // 3. Chemistry Classification
+            else if (n.includes("chemistry") || n.includes("alkeane") || n.includes("රසායන") || n.includes("සමාවයවික") || n.includes("පරිවර්තන") || n.includes("chemical")) {
+                path.push("Chemistry 🧪");
+                if (n.includes("alkeane") || n.includes("සමාවයවික") || n.includes("hydro carbon")) path.push("Organic Chemistry");
+                else if (n.includes("පරිවර්තන")) path.push("Conversions");
+            } 
+            // 4. Biology Classification
+            else if (n.includes("biology") || n.includes("gene") || n.includes("molecular") || n.includes("සත්ව") || n.includes("ජීව")) {
+                path.push("Biology 🧬");
+                if(n.includes("gene") || n.includes("molecular")) path.push("Genetics & Molecular");
+            } 
+            // 5. Catch All
+            else {
+                path.push("Other Documents 📂");
+            }
 
-            let prefixes = {};
-            allFiles.forEach(f => {
-                let parts = f.name.replace(/_/g, ' ').split('-');
-                if(parts.length > 0) {
-                    let firstWords = parts[0].trim().split(' ').slice(0,2).join(' '); 
-                    if(firstWords.length > 4) {
-                        prefixes[firstWords] = (prefixes[firstWords] || 0) + 1;
-                    }
-                }
-            });
+            return path;
+        }
 
-            Object.keys(prefixes).forEach(prefix => {
-                if(prefixes[prefix] >= 3) {
-                    dynamicFolders[`${prefix} 📁`] = [];
-                }
-            });
+        function buildNestedTree() {
+            virtualFileSystem = { folders: {}, files: [] };
 
             allFiles.forEach(fileObj => {
-                const n = fileObj.name.toLowerCase();
-                let placed = false;
-
-                for(let key of Object.keys(dynamicFolders)) {
-                    if(key.includes('📁')) {
-                        let searchKey = key.replace(' 📁','').toLowerCase();
-                        if(n.includes(searchKey)) {
-                            dynamicFolders[key].push(fileObj);
-                            fileObj.categoryAssigned = key;
-                            placed = true;
-                            break;
-                        }
+                let path = determineNestedPath(fileObj.name);
+                fileObj.virtualPathStr = "Root > " + path.join(" > ");
+                
+                let currentLevel = virtualFileSystem;
+                
+                for (let i = 0; i < path.length; i++) {
+                    let folderName = path[i];
+                    if (!currentLevel.folders[folderName]) {
+                        currentLevel.folders[folderName] = { folders: {}, files: [] };
                     }
+                    currentLevel = currentLevel.folders[folderName];
                 }
-
-                if(!placed) {
-                    if (kwPhysics.some(kw => n.includes(kw))) { dynamicFolders["Physics 🧲"].push(fileObj); fileObj.categoryAssigned = "Physics 🧲"; }
-                    else if (kwChemistry.some(kw => n.includes(kw))) { dynamicFolders["Chemistry 🧪"].push(fileObj); fileObj.categoryAssigned = "Chemistry 🧪"; }
-                    else if (kwBiology.some(kw => n.includes(kw))) { dynamicFolders["Biology 🧬"].push(fileObj); fileObj.categoryAssigned = "Biology 🧬"; }
-                    else if (kwPapers.some(kw => n.includes(kw))) { dynamicFolders["Exam Papers 📄"].push(fileObj); fileObj.categoryAssigned = "Exam Papers 📄"; }
-                    else {
-                        if(!dynamicFolders["Other Files 📂"]) dynamicFolders["Other Files 📂"] = [];
-                        dynamicFolders["Other Files 📂"].push(fileObj);
-                        fileObj.categoryAssigned = "Other Files 📂";
-                    }
-                }
-            });
-
-            Object.keys(dynamicFolders).forEach(k => {
-                if(dynamicFolders[k].length === 0) delete dynamicFolders[k];
+                
+                currentLevel.files.push(fileObj);
             });
         }
 
-        // Render UI
+        function getCurrentNode() {
+            let current = virtualFileSystem;
+            for (let i = 0; i < currentPathArray.length; i++) {
+                if(current.folders[currentPathArray[i]]) {
+                    current = current.folders[currentPathArray[i]];
+                }
+            }
+            return current;
+        }
+
+        // --- RENDER UI ---
         function renderView(searchTerm = "") {
             foldersContainer.innerHTML = '';
             filesContainer.innerHTML = '';
@@ -414,52 +416,88 @@
                 el.classList.add('text-gray-600');
             });
 
-            let filesToRender = [];
-
             if (searchTerm !== "") {
+                viewMode = 'search';
                 foldersSection.classList.add('hidden');
-                breadcrumbCategory.classList.add('hidden');
                 backBtnContainer.classList.add('hidden');
+                dynamicBreadcrumbs.innerHTML = `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-gray-400"></i><span class="text-gray-500">Search</span>`;
+                
                 const term = searchTerm.toLowerCase();
-                filesToRender = allFiles.filter(f => f.name.toLowerCase().includes(term));
+                let filesToRender = allFiles.filter(f => f.name.toLowerCase().includes(term));
                 filesHeader.innerHTML = `<i class="fa-solid fa-magnifying-glass mr-2 text-blue-400"></i> Search Results (${filesToRender.length})`;
+                renderFilesList(filesToRender);
+                return;
             } 
-            else if (viewMode === 'recent') {
+            
+            if (viewMode === 'recent') {
                 document.getElementById('navRecent').classList.add('bg-blue-50', 'text-blue-700');
                 foldersSection.classList.add('hidden');
-                breadcrumbCategory.classList.remove('hidden');
-                breadcrumbText.innerText = "Recent Files";
                 backBtnContainer.classList.add('hidden');
+                dynamicBreadcrumbs.innerHTML = `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-gray-400"></i><span class="text-gray-500">Recent Files</span>`;
                 
-                filesToRender = [...allFiles].sort((a,b) => b.timestamp - a.timestamp).slice(0, 50); 
+                let filesToRender = [...allFiles].sort((a,b) => b.timestamp - a.timestamp).slice(0, 50); 
                 filesHeader.innerHTML = `<i class="fa-regular fa-clock mr-2 text-blue-400"></i> Recent Uploads`;
+                renderFilesList(filesToRender);
+                return;
             }
-            else if (currentCategory !== null) {
-                document.getElementById('navDrives').classList.add('bg-blue-50', 'text-blue-700');
-                foldersSection.classList.add('hidden');
-                breadcrumbCategory.classList.remove('hidden');
-                breadcrumbText.innerText = currentCategory;
-                backBtnContainer.classList.remove('hidden');
+            
+            // NORMAL NESTED VIEW
+            document.getElementById('navDrives').classList.add('bg-blue-50', 'text-blue-700');
+            viewMode = 'home';
+            
+            // Build Breadcrumbs
+            dynamicBreadcrumbs.innerHTML = '';
+            let tempPath = [];
+            currentPathArray.forEach((step, index) => {
+                tempPath.push(step);
+                let pathClone = [...tempPath]; // copy for closure
+                let isLast = index === currentPathArray.length - 1;
                 
-                filesToRender = dynamicFolders[currentCategory] || [];
-                filesHeader.innerHTML = `<i class="fa-solid fa-folder-open mr-2 text-blue-400"></i> ${currentCategory} (${filesToRender.length})`;
-            } 
-            else {
-                document.getElementById('navDrives').classList.add('bg-blue-50', 'text-blue-700');
-                foldersSection.classList.remove('hidden');
-                breadcrumbCategory.classList.add('hidden');
-                backBtnContainer.classList.add('hidden');
-                filesHeader.innerHTML = `<i class="fa-solid fa-file-lines mr-2 text-blue-400"></i> All Virtual Files`;
-                filesToRender = allFiles;
+                dynamicBreadcrumbs.innerHTML += `<i class="fa-solid fa-chevron-right text-[10px] mx-3 text-gray-400"></i>`;
+                if(isLast) {
+                    dynamicBreadcrumbs.innerHTML += `<span class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg border border-indigo-100 font-bold">${step}</span>`;
+                } else {
+                    let span = document.createElement('span');
+                    span.className = "text-gray-600 hover:text-blue-600 cursor-pointer transition-colors";
+                    span.innerText = step;
+                    span.onclick = () => jumpToPath(pathClone);
+                    dynamicBreadcrumbs.appendChild(span);
+                }
+            });
 
-                let idx = 0;
-                Object.keys(dynamicFolders).forEach(category => {
-                    renderFolderCard(category, `${dynamicFolders[category].length} files`, () => navigateToCategory(category), idx++);
+            // Back button toggle
+            if (currentPathArray.length > 0) backBtnContainer.classList.remove('hidden');
+            else backBtnContainer.classList.add('hidden');
+
+            let currentNode = getCurrentNode();
+            
+            // Render Folders
+            let folderNames = Object.keys(currentNode.folders);
+            if (folderNames.length > 0) {
+                foldersSection.classList.remove('hidden');
+                folderNames.forEach((folderName, idx) => {
+                    let childCount = getFileCountInNode(currentNode.folders[folderName]);
+                    renderFolderCard(folderName, `${childCount} items`, () => navigateIntoFolder(folderName), idx);
                 });
+            } else {
+                foldersSection.classList.add('hidden');
             }
 
-            // Render Files Loop
-            filesToRender.forEach((file, index) => {
+            // Render Files
+            filesHeader.innerHTML = `<i class="fa-solid fa-file-lines mr-2 text-blue-400"></i> Files (${currentNode.files.length})`;
+            renderFilesList(currentNode.files);
+        }
+
+        function getFileCountInNode(node) {
+            let count = node.files.length;
+            for(let sub in node.folders) {
+                count += getFileCountInNode(node.folders[sub]);
+            }
+            return count;
+        }
+
+        function renderFilesList(filesArray) {
+            filesArray.forEach((file, index) => {
                 const isPdf = file.name.toLowerCase().endsWith('.pdf');
                 const isImg = file.name.match(/\.(jpg|png|jpeg)$/i);
                 
@@ -473,9 +511,7 @@
                 const fileEl = document.createElement('div');
                 fileEl.className = `file-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm cursor-pointer animate-fade-in group relative overflow-hidden`;
                 fileEl.style.animationDelay = `${(index % 20) * 20}ms`;
-                fileEl.onclick = () => openFile(file.handle);
-                
-                // Right click event for file
+                fileEl.onclick = () => openFile(file.name);
                 fileEl.oncontextmenu = (e) => showContextMenu(e, 'file', file);
                 
                 const displayName = file.name.length > 35 ? file.name.substring(0, 32) + '...' : file.name;
@@ -503,41 +539,87 @@
         function renderFolderCard(title, subtitle, onClickFn, index) {
             const folderEl = document.createElement('div');
             folderEl.className = `file-card bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer flex flex-col items-center justify-center group animate-fade-in relative overflow-hidden`;
-            folderEl.style.animationDelay = `${index * 30}ms`;
+            folderEl.style.animationDelay = `${index * 20}ms`;
             folderEl.onclick = onClickFn;
-            
-            // Right click event for folder
             folderEl.oncontextmenu = (e) => showContextMenu(e, 'folder', title);
             
             folderEl.innerHTML = `
-                <div class="text-4xl text-yellow-400 mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm">
+                <div class="text-4xl text-yellow-400 mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative">
                     <i class="fa-solid fa-folder"></i>
+                    <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm">
+                        <i class="fa-solid fa-layer-group text-[10px] text-blue-400"></i>
+                    </div>
                 </div>
-                <h4 class="font-semibold text-gray-800 text-center text-sm leading-tight px-2">${title}</h4>
-                <p class="text-[11px] text-gray-400 mt-1.5 font-medium">${subtitle}</p>
+                <h4 class="font-semibold text-gray-800 text-center text-sm leading-tight px-2 line-clamp-2">${title}</h4>
+                <p class="text-[11px] text-gray-400 mt-1.5 font-medium bg-gray-50 px-2 py-0.5 rounded-full">${subtitle}</p>
             `;
             foldersContainer.appendChild(folderEl);
         }
 
-        // --- CONTEXT MENU LOGIC (Right Click Menu) ---
-        
+        // --- NAVIGATION ---
+        function navigateIntoFolder(folderName) {
+            currentPathArray.push(folderName);
+            history.pushState({ path: currentPathArray }, "", `#${folderName.replace(/\s/g, '')}`);
+            searchInput.value = '';
+            renderView();
+        }
+
+        function jumpToPath(pathArr) {
+            currentPathArray = pathArr;
+            renderView();
+        }
+
+        function goBack() {
+            if(currentPathArray.length > 0) {
+                currentPathArray.pop();
+                renderView();
+            }
+        }
+
+        function goHome(pushState = true) {
+            currentPathArray = [];
+            viewMode = 'home';
+            searchInput.value = '';
+            if(pushState) history.pushState({ path: [] }, "", " ");
+            renderView();
+        }
+
+        window.addEventListener('popstate', (event) => {
+            if (event.state && event.state.path) {
+                currentPathArray = event.state.path;
+            } else {
+                currentPathArray = [];
+            }
+            viewMode = 'home';
+            searchInput.value = '';
+            renderView();
+        });
+
+        document.getElementById('navRecent').addEventListener('click', () => {
+            viewMode = 'recent';
+            searchInput.value = '';
+            renderView();
+        });
+
+
+        // --- CONTEXT MENU & DETAILS ---
         function showContextMenu(e, type, itemData) {
-            e.preventDefault(); // Default menu band kara (Prevent default menu)
+            e.preventDefault(); 
             e.stopPropagation();
             
             contextMenu.innerHTML = '';
             
             if (type === 'folder') {
                 contextMenu.innerHTML = `
-                    <div class="px-4 py-2.5 hover:bg-gray-50 hover:text-blue-600 cursor-pointer flex items-center text-gray-700 transition-colors" onclick="actionPinFolder('${itemData}')">
+                    <div class="px-4 py-2.5 hover:bg-gray-50 hover:text-blue-600 cursor-pointer flex items-center text-gray-700 transition-colors" onclick="alert('📌 Folder Pinned!')">
                         <i class="fa-solid fa-thumbtack w-6 text-gray-400 text-center"></i> 
                         <span class="font-medium">Pin Folder</span>
                     </div>
                 `;
             } else if (type === 'file') {
-                selectedFileForDetails = itemData; // Store globally for details modal
+                selectedFileForDetails = itemData; 
                 contextMenu.innerHTML = `
-                    <div class="px-4 py-2.5 hover:bg-yellow-50 hover:text-yellow-600 cursor-pointer flex items-center text-gray-700 transition-colors border-b border-gray-100" onclick="actionStarFile('${itemData.name}')">
+                    <div class="px-4 py-2.5 hover:bg-yellow-50 hover:text-yellow-600 cursor-pointer flex items-center text-gray-700 transition-colors border-b border-gray-100" onclick="alert('⭐ Added to Starred!')">
                         <i class="fa-regular fa-star w-6 text-gray-400 text-center"></i> 
                         <span class="font-medium">Star File</span>
                     </div>
@@ -548,11 +630,9 @@
                 `;
             }
             
-            // Positioning menu dynamically
             let x = e.pageX;
             let y = e.pageY;
             
-            // Adjust if menu goes off screen
             if (x + 200 > window.innerWidth) x = window.innerWidth - 200;
             if (y + 100 > window.innerHeight) y = window.innerHeight - 100;
 
@@ -561,39 +641,23 @@
             contextMenu.classList.remove('hidden');
         }
 
-        // Hide context menu when clicking outside
         document.addEventListener('click', () => {
             contextMenu.classList.add('hidden');
         });
 
-        // Context Menu Actions
-        function actionPinFolder(folderName) {
-            alert(`📌 '${folderName}' folder pinned successfully! (Virtual UI Demo)`);
-        }
-
-        function actionStarFile(fileName) {
-            alert(`⭐ '${fileName}' added to Starred!`);
-        }
-
-        // --- DETAILS MODAL LOGIC ---
-        
         function showFileDetails() {
             if(!selectedFileForDetails) return;
             const file = selectedFileForDetails;
             
             const isPdf = file.name.toLowerCase().endsWith('.pdf');
             const iconEl = document.getElementById('detailIcon');
-            if(isPdf) {
-                iconEl.className = "fa-solid fa-file-pdf text-red-500 text-2xl mr-4 w-6 text-center";
-            } else {
-                iconEl.className = "fa-solid fa-file-image text-green-500 text-2xl mr-4 w-6 text-center";
-            }
+            iconEl.className = isPdf ? "fa-solid fa-file-pdf text-red-500 text-2xl mr-4 w-6 text-center" : "fa-solid fa-file-image text-green-500 text-2xl mr-4 w-6 text-center";
 
             document.getElementById('detailName').innerText = file.name;
             document.getElementById('detailName').title = file.name;
             document.getElementById('detailSize').innerText = file.sizeStr;
             document.getElementById('detailDate').innerText = file.date;
-            document.getElementById('detailLocation').innerText = file.categoryAssigned;
+            document.getElementById('detailLocation').innerText = file.virtualPathStr;
 
             const modal = document.getElementById('detailsModal');
             const content = document.getElementById('detailsContent');
@@ -614,59 +678,25 @@
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // Navigation Setup
-        window.addEventListener('popstate', (event) => {
-            if (event.state) {
-                currentCategory = event.state.category || null;
-                viewMode = event.state.viewMode || 'home';
-            } else {
-                currentCategory = null;
-                viewMode = 'home';
-            }
-            searchInput.value = '';
-            renderView();
-        });
-
-        function navigateToCategory(category) {
-            currentCategory = category;
-            viewMode = 'home';
-            history.pushState({ category: category, viewMode: 'home' }, "", `#${category.replace(/[\s📁🧲🧪🧬📄📂]/g, '')}`);
-            searchInput.value = '';
-            renderView();
-        }
-
-        function goHome(pushState = true) {
-            currentCategory = null;
-            viewMode = 'home';
-            searchInput.value = '';
-            if(pushState) history.pushState({ category: null, viewMode: 'home' }, "", " ");
-            renderView();
-        }
-
-        function goBack() { history.back(); }
-
-        document.getElementById('navRecent').addEventListener('click', () => {
-            currentCategory = null;
-            viewMode = 'recent';
-            history.pushState({ category: null, viewMode: 'recent' }, "", "#Recent");
-            searchInput.value = '';
-            renderView();
-        });
-
-        // Open File
-        async function openFile(fileHandle) {
+        // --- FILE OPEN & SEARCH ---
+        async function openFile(fileName) {
             try {
+                if (!directoryHandle) return;
+                let perm = await directoryHandle.verifyPermission({ mode: 'read' });
+                if (perm !== 'granted') {
+                    perm = await directoryHandle.requestPermission({ mode: 'read' });
+                    if (perm !== 'granted') return;
+                }
+                const fileHandle = await directoryHandle.getFileHandle(fileName);
                 const file = await fileHandle.getFile();
                 const url = URL.createObjectURL(file);
                 window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 5000); 
             } catch (err) {
-                console.error("Error opening file", err);
                 alert("Cannot open file. Make sure permission is granted.");
             }
         }
 
-        // Search
         searchInput.addEventListener('input', (e) => {
             renderView(e.target.value);
         });
