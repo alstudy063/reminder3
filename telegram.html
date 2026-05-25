@@ -6,67 +6,80 @@
     <title>Telegram File Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- idb-keyval library ngam huuwa IndexedDB (Fula comment for system prompt) -->
+    <!-- idb-keyval library (Uñt'aña IndexedDB) -->
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
+        
+        /* Qillqa jark'aña (Disable text selection) */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            user-select: none; /* Copy disable karanna */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+        }
+        
         .glass-panel {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
         }
+        
         .file-card {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         .file-card:hover {
             transform: translateY(-4px) scale(1.02);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
-        /* Fade in animation (Fula: Kuugal kadi) */
+        
+        /* Qhananchaña (Animations) */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
         .animate-fade-in {
             animation: fadeIn 0.4s ease-out forwards;
         }
-        /* Custom scrollbar */
+        
+        /* K'añu (Scrollbar) */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
-<body class="bg-[#f4f7fb] text-gray-800 h-screen flex overflow-hidden selection:bg-blue-200">
+<body class="bg-[#f4f7fb] text-gray-800 h-screen flex overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside class="w-64 glass-panel border-r border-gray-200 flex flex-col justify-between hidden md:flex">
+    <!-- K'añu (Sidebar) -->
+    <aside class="w-64 glass-panel border-r border-gray-200 flex flex-col justify-between hidden md:flex z-20 shadow-sm">
         <div>
-            <div class="p-6 flex items-center space-x-3">
-                <div class="bg-blue-600 text-white p-2 rounded-lg">
+            <div class="p-6 flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+                <div class="bg-blue-600 text-white p-2 rounded-lg shadow-md shadow-blue-500/30">
                     <i class="fa-solid fa-cloud"></i>
                 </div>
                 <h1 class="text-xl font-semibold text-gray-700">File Explorer</h1>
             </div>
 
             <div class="px-4">
-                <button class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 shadow-sm hover:shadow-md transition-all duration-300 py-3 rounded-2xl text-gray-700 font-medium mb-6 hover:bg-gray-50">
-                    <i class="fa-solid fa-plus text-blue-500"></i>
-                    <span>New</span>
+                <button id="btnNew" class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-300 py-3 rounded-2xl text-gray-700 font-medium mb-6 hover:bg-blue-50 active:scale-95">
+                    <i class="fa-solid fa-plus text-blue-600"></i>
+                    <span>New Folder Load</span>
                 </button>
             </div>
 
             <nav class="px-2 space-y-1">
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium">
+                <a href="#" id="navDrives" class="flex items-center space-x-3 px-4 py-3 bg-blue-50 text-blue-700 rounded-xl font-medium transition-colors">
                     <i class="fa-solid fa-laptop text-lg w-5"></i>
                     <span>Computers (Drives)</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium">
+                <a href="#" id="navRecent" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium">
                     <i class="fa-regular fa-clock text-lg w-5"></i>
-                    <span>Recent</span>
+                    <span>Recent Files</span>
                 </a>
-                <a href="#" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium">
-                    <i class="fa-regular fa-star text-lg w-5"></i>
+                <a href="#" id="navStarred" class="flex items-center space-x-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors font-medium relative overflow-hidden group">
+                    <i class="fa-regular fa-star text-lg w-5 group-hover:text-yellow-500 transition-colors"></i>
                     <span>Starred</span>
                 </a>
             </nav>
@@ -78,63 +91,78 @@
                 <span>Settings</span>
             </a>
             <div class="px-4">
-                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: 45%"></div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-2 overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-400 to-blue-600 h-1.5 rounded-full" style="width: 65%"></div>
                 </div>
-                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Storage Info</p>
+                <div class="flex justify-between items-center">
+                    <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Storage</p>
+                    <p class="text-xs text-gray-500 font-bold">65%</p>
+                </div>
             </div>
         </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- P'iqinchawi (Main Content) -->
     <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
         
-        <!-- Header -->
-        <header class="glass-panel p-4 flex items-center justify-between z-10">
-            <div class="flex-1 max-w-3xl flex items-center bg-gray-100 rounded-full px-4 py-2 border border-transparent focus-within:bg-white focus-within:border-blue-300 focus-within:shadow-sm transition-all duration-300">
+        <!-- P'iqi (Header) -->
+        <header class="glass-panel p-4 flex items-center justify-between z-10 border-b border-gray-100">
+            <div class="flex-1 max-w-3xl flex items-center bg-gray-100/80 rounded-full px-4 py-2 border border-transparent focus-within:bg-white focus-within:border-blue-300 focus-within:shadow-sm transition-all duration-300">
                 <i class="fa-solid fa-magnifying-glass text-gray-400 mr-3"></i>
-                <input type="text" id="searchInput" placeholder="Search in current view (Supports Sinhala/English)" class="bg-transparent border-none outline-none w-full text-gray-700 placeholder-gray-400 text-sm">
+                <!-- user-select-text ekak damma search eke type karanna puluwan wenna -->
+                <input type="text" id="searchInput" placeholder="Search files... (Supports Sinhala/English)" class="bg-transparent border-none outline-none w-full text-gray-700 placeholder-gray-400 text-sm" style="user-select: text; -webkit-user-select: text;">
             </div>
             <div class="flex items-center space-x-4 ml-4">
-                <button class="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-colors" onclick="loadFiles(true)">
+                <button class="text-gray-500 hover:text-blue-600 hover:bg-blue-50 p-2.5 rounded-full transition-all duration-200 active:rotate-180" onclick="loadFiles(true)" title="Refresh">
                     <i class="fa-solid fa-arrow-rotate-right"></i>
                 </button>
-                <div class="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold shadow-sm cursor-pointer hover:scale-105 transition-transform">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-blue-500 text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:scale-105 transition-transform border-2 border-white">
                     U
                 </div>
             </div>
         </header>
 
-        <!-- Breadcrumb -->
-        <div class="px-8 py-4 flex items-center text-sm text-gray-600 font-medium">
-            <i class="fa-solid fa-server mr-2"></i> Computers 
-            <i class="fa-solid fa-chevron-right text-xs mx-3 text-gray-400"></i>
-            <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg">Telegram Desktop</span>
+        <!-- Thakhinaka (Breadcrumb) -->
+        <div class="px-8 py-4 flex items-center text-sm text-gray-600 font-medium bg-white/50 border-b border-gray-100">
+            <button onclick="goHome()" class="hover:text-blue-600 transition-colors flex items-center">
+                <i class="fa-solid fa-server mr-2"></i> Computers 
+            </button>
+            <i class="fa-solid fa-chevron-right text-[10px] mx-3 text-gray-400"></i>
+            <span class="bg-blue-50 text-blue-700 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm cursor-pointer" onclick="goHome()">Telegram Desktop</span>
+            <span id="breadcrumbCategory" class="hidden items-center">
+                <i class="fa-solid fa-chevron-right text-[10px] mx-3 text-gray-400"></i>
+                <span class="bg-purple-50 text-purple-700 px-3 py-1.5 rounded-lg border border-purple-100 shadow-sm" id="breadcrumbText">Category</span>
+            </span>
         </div>
 
-        <!-- Connection Screen (Fula: Yeeso jokkondiral) -->
-        <div id="connectScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in">
-            <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
-                <i class="fa-brands fa-telegram text-5xl text-blue-500"></i>
+        <!-- Uñt'aña Yeeso (Connection Screen) -->
+        <div id="connectScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-fade-in bg-white/40">
+            <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6 shadow-inner border-4 border-white relative overflow-hidden">
+                <i class="fa-brands fa-telegram text-5xl text-blue-500 relative z-10 animate-bounce" style="animation-duration: 2s;"></i>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Connect Your Telegram Folder</h2>
-            <p class="text-gray-500 max-w-md mb-8">Let's organize your PDF files automatically. Your files remain on your device and are organized virtually.</p>
+            <h2 class="text-3xl font-bold text-gray-800 mb-3 tracking-tight">Connect Telegram Folder</h2>
+            <p class="text-gray-500 max-w-md mb-8 text-sm leading-relaxed">Auto-organize your educational PDFs based on keywords. Real folders and smart categories will be generated dynamically.</p>
             
-            <button id="selectFolderBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center space-x-2">
-                <i class="fa-regular fa-folder-open"></i>
-                <span>Select Telegram Folder</span>
+            <button id="selectFolderBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3.5 px-8 rounded-xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center space-x-3 active:scale-95">
+                <i class="fa-regular fa-folder-open text-xl"></i>
+                <span>Select Folder</span>
             </button>
-            <button id="restoreAccessBtn" class="hidden mt-4 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-3 px-6 rounded-xl shadow-sm transition-all duration-300 flex items-center space-x-2">
-                <i class="fa-solid fa-unlock-keyhole"></i>
-                <span>Load My Files (Saved Access)</span>
+            <button id="restoreAccessBtn" class="hidden mt-5 bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 text-gray-700 font-medium py-3 px-8 rounded-xl shadow-sm transition-all duration-300 flex items-center space-x-3 active:scale-95">
+                <i class="fa-solid fa-unlock-keyhole text-blue-500"></i>
+                <span>Load Saved Files</span>
             </button>
         </div>
 
-        <!-- Files Grid (Fula: Layni fiildeeji) -->
-        <div id="mainView" class="flex-1 overflow-y-auto px-8 pb-8 hidden">
-            <!-- Folders Section -->
-            <div id="foldersSection" class="mb-8">
-                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Smart Categories</h3>
+        <!-- Yänaka Uñjaña (Files Grid) -->
+        <div id="mainView" class="flex-1 overflow-y-auto px-8 pb-10 hidden scroll-smooth">
+            
+            <!-- Dynamic Folders Section -->
+            <div id="foldersSection" class="mb-10 pt-4">
+                <div class="flex items-center justify-between mb-5">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center">
+                        <i class="fa-solid fa-layer-group mr-2 text-blue-400"></i> Organized Folders
+                    </h3>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="foldersContainer">
                     <!-- Folders rendered here via JS -->
                 </div>
@@ -142,45 +170,49 @@
 
             <!-- Files Section -->
             <div>
-                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4" id="filesHeader">All Files</h3>
+                <div class="flex items-center justify-between mb-5 border-b border-gray-200 pb-2">
+                    <h3 class="text-sm font-bold text-gray-500 uppercase tracking-widest flex items-center" id="filesHeader">
+                        <i class="fa-solid fa-file-lines mr-2 text-blue-400"></i> All Files
+                    </h3>
+                    <div id="backBtnContainer" class="hidden">
+                        <button onclick="goBack()" class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full font-medium transition-colors flex items-center">
+                            <i class="fa-solid fa-arrow-left mr-2"></i> Back
+                        </button>
+                    </div>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="filesContainer">
                     <!-- Files rendered here via JS -->
                 </div>
             </div>
         </div>
         
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
-            <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mb-4"></div>
-            <p class="text-gray-600 font-medium">Organizing your files...</p>
+        <!-- Suyt'aña (Loading Overlay) -->
+        <div id="loadingOverlay" class="absolute inset-0 bg-white/90 backdrop-blur-md z-50 flex flex-col items-center justify-center hidden">
+            <div class="relative w-20 h-20">
+                <div class="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+                <i class="fa-solid fa-folder-tree absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-500 text-xl"></i>
+            </div>
+            <p class="text-gray-700 font-semibold mt-6 text-lg tracking-wide">Organizing files dynamically...</p>
+            <p class="text-gray-400 text-sm mt-2">Please wait a moment</p>
         </div>
 
     </main>
 
     <script>
-        // Keywords for smart categorization including Sinhala synonyms (Fula: Kelme keertiiɗe)
-        const categoriesMap = {
-            "Physics 🧲": ["physics", "thermal", "magnetic", "prism", "vapor", "fields", "භෞතික", "තාප", "චුම්භක", "ප්‍රිස්ම", "මිනුම්", "optics", "mechanics"],
-            "Chemistry 🧪": ["chemistry", "solubility", "chemical", "alkeane", "රසායන", "සමාවයවික", "පරිවර්තන", "acid", "base", "organic", "inorganic"],
-            "Biology 🧬": ["biology", "gene", "molecular", "සත්ව", "ජීව", "botany", "zoology", "plant", "animal", "ආකාරය", "ක්‍රියාකාරීත්වය"],
-            "Exams & Papers 📄": ["paper", "mcq", "seq", "essay", "fast track", "legendary", "final paper", "විභාග", "ප්‍රශ්න", "marking", "sm", "answers", "tute", "revision", "ft", "mp"]
-        };
-
+        // Yatiqawi (Variables)
         let directoryHandle = null;
-        let allFiles = [];
-        let organizedData = {
-            "Physics 🧲": [],
-            "Chemistry 🧪": [],
-            "Biology 🧬": [],
-            "Exams & Papers 📄": [],
-            "Other Files 📁": []
-        };
-        let currentCategory = null; // null means showing all
+        let allFiles = []; // All files flat list
+        let dynamicFolders = {}; // Auto generated folders
+        let realDirectories = []; // Actual physical folders
+        let currentCategory = null; 
+        let viewMode = 'home'; // home, recent
 
-        // Elements (Fula: Ceebe)
+        // Ceebe (Elements)
         const connectScreen = document.getElementById('connectScreen');
         const selectFolderBtn = document.getElementById('selectFolderBtn');
         const restoreAccessBtn = document.getElementById('restoreAccessBtn');
+        const btnNew = document.getElementById('btnNew');
         const mainView = document.getElementById('mainView');
         const foldersContainer = document.getElementById('foldersContainer');
         const filesContainer = document.getElementById('filesContainer');
@@ -188,8 +220,16 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         const filesHeader = document.getElementById('filesHeader');
         const foldersSection = document.getElementById('foldersSection');
+        const breadcrumbCategory = document.getElementById('breadcrumbCategory');
+        const breadcrumbText = document.getElementById('breadcrumbText');
+        const backBtnContainer = document.getElementById('backBtnContainer');
+        
+        // Navigation buttons
+        const navDrives = document.getElementById('navDrives');
+        const navRecent = document.getElementById('navRecent');
+        const navStarred = document.getElementById('navStarred');
 
-        // Initialize (Fula: Fuɗɗo)
+        // Qalltaña (Initialize)
         async function init() {
             try {
                 const storedHandle = await idbKeyval.get('telegram_folder_handle');
@@ -198,12 +238,15 @@
                     restoreAccessBtn.classList.remove('hidden');
                 }
             } catch (err) {
-                console.error("IndexedDB error:", err);
+                console.error("IDB error:", err);
             }
         }
 
-        // Handle initial folder selection (Fula: Huuwa suɓaagol fiilde)
-        selectFolderBtn.addEventListener('click', async () => {
+        // Qallta q'ipi ajlliña (Handle File Selection)
+        selectFolderBtn.addEventListener('click', selectNewFolder);
+        btnNew.addEventListener('click', selectNewFolder);
+
+        async function selectNewFolder() {
             try {
                 const handle = await window.showDirectoryPicker({ mode: 'read' });
                 directoryHandle = handle;
@@ -212,148 +255,225 @@
             } catch (error) {
                 console.log("User cancelled selection", error);
             }
-        });
+        }
 
-        // Handle restoring access (Fula: Huuwa artirde jokkondiral)
         restoreAccessBtn.addEventListener('click', async () => {
             try {
                 const permission = await directoryHandle.verifyPermission({ mode: 'read' });
                 if (permission !== 'granted') {
                     const request = await directoryHandle.requestPermission({ mode: 'read' });
-                    if (request !== 'granted') {
-                        alert("Permission needed to read files.");
-                        return;
-                    }
+                    if (request !== 'granted') return;
                 }
                 await loadFiles();
             } catch (error) {
-                console.error("Permission error", error);
                 alert("Failed to restore access. Please select the folder again.");
             }
         });
 
-        async function loadFiles(forceRefresh = false) {
+        // Luraña Yänaka (Load Files Logic)
+        async function loadFiles() {
             connectScreen.classList.add('hidden');
             loadingOverlay.classList.remove('hidden');
             
-            // Reset state
             allFiles = [];
-            Object.keys(organizedData).forEach(k => organizedData[k] = []);
+            dynamicFolders = {};
+            realDirectories = [];
 
             try {
                 for await (const entry of directoryHandle.values()) {
-                    if (entry.kind === 'file' && (entry.name.toLowerCase().endsWith('.pdf') || entry.name.toLowerCase().endsWith('.html') || entry.name.toLowerCase().endsWith('.jpg'))) {
-                        
+                    if (entry.kind === 'directory') {
+                        realDirectories.push(entry);
+                    } 
+                    else if (entry.kind === 'file' && entry.name.match(/\.(pdf|html|jpg|png)$/i)) {
                         const file = await entry.getFile();
                         const fileObj = {
                             handle: entry,
                             name: entry.name,
-                            size: formatSize(file.size),
-                            date: formatDate(file.lastModified),
-                            originalFile: file
+                            sizeStr: formatSize(file.size),
+                            timestamp: file.lastModified,
+                            date: formatDate(file.lastModified)
                         };
                         allFiles.push(fileObj);
-                        categorizeFile(fileObj);
                     }
                 }
                 
-                renderView();
+                generateDynamicFolders();
+                goHome(false); // Render UI without pushing history twice
                 mainView.classList.remove('hidden');
-                mainView.classList.add('animate-fade-in');
             } catch (error) {
-                console.error("Error reading directory:", error);
+                console.error("Error reading dir:", error);
             } finally {
                 loadingOverlay.classList.add('hidden');
             }
         }
 
-        function categorizeFile(fileObj) {
-            const name = fileObj.name.toLowerCase();
-            let categorized = false;
-            
-            for (const [category, keywords] of Object.entries(categoriesMap)) {
-                if (keywords.some(kw => name.includes(kw.toLowerCase()))) {
-                    organizedData[category].push(fileObj);
-                    categorized = true;
-                    // Don't break, a file might belong to Exams AND Physics. But for simplicity, we assign to first match.
-                    break; 
+        // Dynamic File Grouping (Thakhinaka Luraña)
+        function generateDynamicFolders() {
+            // Add Base Categories
+            dynamicFolders = {
+                "Physics 🧲": [],
+                "Chemistry 🧪": [],
+                "Biology 🧬": [],
+                "Exam Papers 📄": []
+            };
+
+            const kwPhysics = ["physics", "thermal", "magnetic", "prism", "vapor", "fields", "භෞතික", "තාප", "චුම්භක"];
+            const kwChemistry = ["chemistry", "solubility", "chemical", "alkeane", "රසායන", "සමාවයවික"];
+            const kwBiology = ["biology", "gene", "molecular", "සත්ව", "ජීව"];
+            const kwPapers = ["paper", "mcq", "seq", "essay", "fast track", "legendary", "final paper", "විභාග"];
+
+            // Find common prefixes for auto-folders (e.g. "FAST TRACK", "2019_Biology")
+            let prefixes = {};
+            allFiles.forEach(f => {
+                let parts = f.name.replace(/_/g, ' ').split('-');
+                if(parts.length > 0) {
+                    let firstWords = parts[0].trim().split(' ').slice(0,2).join(' '); // Take first 2 words
+                    if(firstWords.length > 4) {
+                        prefixes[firstWords] = (prefixes[firstWords] || 0) + 1;
+                    }
                 }
-            }
-            
-            if (!categorized) {
-                organizedData["Other Files 📁"].push(fileObj);
-            }
+            });
+
+            // Create Auto Folders if a prefix has 3 or more files
+            Object.keys(prefixes).forEach(prefix => {
+                if(prefixes[prefix] >= 3) {
+                    dynamicFolders[`${prefix} 📁`] = [];
+                }
+            });
+
+            // Assign files
+            allFiles.forEach(fileObj => {
+                const n = fileObj.name.toLowerCase();
+                let placed = false;
+
+                // Check specific auto-prefixes first
+                for(let key of Object.keys(dynamicFolders)) {
+                    if(key.includes('📁')) {
+                        let searchKey = key.replace(' 📁','').toLowerCase();
+                        if(n.includes(searchKey)) {
+                            dynamicFolders[key].push(fileObj);
+                            placed = true;
+                            break;
+                        }
+                    }
+                }
+
+                if(!placed) {
+                    if (kwPhysics.some(kw => n.includes(kw))) dynamicFolders["Physics 🧲"].push(fileObj);
+                    else if (kwChemistry.some(kw => n.includes(kw))) dynamicFolders["Chemistry 🧪"].push(fileObj);
+                    else if (kwBiology.some(kw => n.includes(kw))) dynamicFolders["Biology 🧬"].push(fileObj);
+                    else if (kwPapers.some(kw => n.includes(kw))) dynamicFolders["Exam Papers 📄"].push(fileObj);
+                    else {
+                        if(!dynamicFolders["Other Files 📂"]) dynamicFolders["Other Files 📂"] = [];
+                        dynamicFolders["Other Files 📂"].push(fileObj);
+                    }
+                }
+            });
+
+            // Remove empty folders
+            Object.keys(dynamicFolders).forEach(k => {
+                if(dynamicFolders[k].length === 0) delete dynamicFolders[k];
+            });
         }
 
+        // UI Uñacht'ayaña (Render View)
         function renderView(searchTerm = "") {
             foldersContainer.innerHTML = '';
             filesContainer.innerHTML = '';
+            
+            // Sidebar UI update
+            document.querySelectorAll('nav a').forEach(el => {
+                el.classList.remove('bg-blue-50', 'text-blue-700');
+                el.classList.add('text-gray-600');
+            });
 
-            // Render Folders (only if not searching and in root view)
-            if (searchTerm === "" && currentCategory === null) {
-                foldersSection.classList.remove('hidden');
-                Object.keys(organizedData).forEach((category, index) => {
-                    const count = organizedData[category].length;
-                    if (count > 0) {
-                        const folderEl = document.createElement('div');
-                        folderEl.className = `file-card bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer flex flex-col items-center justify-center group animate-fade-in`;
-                        folderEl.style.animationDelay = `${index * 50}ms`;
-                        folderEl.onclick = () => {
-                            currentCategory = category;
-                            searchInput.value = '';
-                            renderView();
-                        };
-                        folderEl.innerHTML = `
-                            <div class="text-4xl text-yellow-400 mb-3 group-hover:scale-110 transition-transform"><i class="fa-solid fa-folder"></i></div>
-                            <h4 class="font-semibold text-gray-800 text-center">${category.split(' ')[0]}</h4>
-                            <p class="text-xs text-gray-400 mt-1">${count} files</p>
-                        `;
-                        foldersContainer.appendChild(folderEl);
-                    }
-                });
-            } else {
-                foldersSection.classList.add('hidden');
-            }
-
-            // Render Files
             let filesToRender = [];
+
             if (searchTerm !== "") {
+                // Search Mode
+                foldersSection.classList.add('hidden');
+                breadcrumbCategory.classList.add('hidden');
+                backBtnContainer.classList.add('hidden');
                 const term = searchTerm.toLowerCase();
                 filesToRender = allFiles.filter(f => f.name.toLowerCase().includes(term));
-                filesHeader.innerText = `Search Results (${filesToRender.length})`;
-            } else if (currentCategory !== null) {
-                filesToRender = organizedData[currentCategory];
-                filesHeader.innerHTML = `<span class="cursor-pointer text-blue-500 hover:underline" onclick="goBack()">All Files</span> <i class="fa-solid fa-chevron-right text-xs mx-2"></i> ${currentCategory}`;
-            } else {
+                filesHeader.innerHTML = `<i class="fa-solid fa-magnifying-glass mr-2 text-blue-400"></i> Search Results (${filesToRender.length})`;
+            } 
+            else if (viewMode === 'recent') {
+                // Recent Mode
+                navRecent.classList.add('bg-blue-50', 'text-blue-700');
+                foldersSection.classList.add('hidden');
+                breadcrumbCategory.classList.remove('hidden');
+                breadcrumbText.innerText = "Recent Files";
+                backBtnContainer.classList.add('hidden');
+                
+                // Sort by timestamp newest first
+                filesToRender = [...allFiles].sort((a,b) => b.timestamp - a.timestamp).slice(0, 50); // Show top 50
+                filesHeader.innerHTML = `<i class="fa-regular fa-clock mr-2 text-blue-400"></i> Recent Uploads`;
+            }
+            else if (currentCategory !== null) {
+                // Inside a Category/Folder
+                navDrives.classList.add('bg-blue-50', 'text-blue-700');
+                foldersSection.classList.add('hidden');
+                breadcrumbCategory.classList.remove('hidden');
+                breadcrumbText.innerText = currentCategory;
+                backBtnContainer.classList.remove('hidden');
+                
+                filesToRender = dynamicFolders[currentCategory] || [];
+                filesHeader.innerHTML = `<i class="fa-solid fa-folder-open mr-2 text-blue-400"></i> ${currentCategory} (${filesToRender.length})`;
+            } 
+            else {
+                // Home/Root Mode
+                navDrives.classList.add('bg-blue-50', 'text-blue-700');
+                foldersSection.classList.remove('hidden');
+                breadcrumbCategory.classList.add('hidden');
+                backBtnContainer.classList.add('hidden');
+                filesHeader.innerHTML = `<i class="fa-solid fa-file-lines mr-2 text-blue-400"></i> Uncategorized / All Files`;
                 filesToRender = allFiles;
-                filesHeader.innerText = "All Files";
+
+                // Render Physical Folders first
+                realDirectories.forEach((dir, i) => {
+                    renderFolderCard(dir.name, "System Folder", () => alert("Sub-folder loading is currently limited to smart categories for security."), i, true);
+                });
+
+                // Render Smart Folders
+                let idx = realDirectories.length;
+                Object.keys(dynamicFolders).forEach(category => {
+                    renderFolderCard(category, `${dynamicFolders[category].length} files`, () => navigateToCategory(category), idx++, false);
+                });
             }
 
+            // Render Files Loop
             filesToRender.forEach((file, index) => {
                 const isPdf = file.name.toLowerCase().endsWith('.pdf');
-                const iconColor = isPdf ? 'text-red-500' : 'text-blue-500';
-                const iconClass = isPdf ? 'fa-file-pdf' : 'fa-file-lines';
+                const isImg = file.name.match(/\.(jpg|png)$/i);
+                
+                let iconColor = 'text-blue-500';
+                let iconClass = 'fa-file-lines';
+                let bgIcon = 'bg-blue-50';
+                
+                if(isPdf) { iconColor = 'text-red-500'; iconClass = 'fa-file-pdf'; bgIcon = 'bg-red-50'; }
+                if(isImg) { iconColor = 'text-green-500'; iconClass = 'fa-file-image'; bgIcon = 'bg-green-50'; }
 
                 const fileEl = document.createElement('div');
-                fileEl.className = `file-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm cursor-pointer animate-fade-in`;
-                fileEl.style.animationDelay = `${index * 20}ms`;
+                fileEl.className = `file-card bg-white p-4 rounded-2xl border border-gray-100 shadow-sm cursor-pointer animate-fade-in group relative overflow-hidden`;
+                fileEl.style.animationDelay = `${(index % 20) * 20}ms`;
                 fileEl.onclick = () => openFile(file.handle);
                 
-                // Truncate name for display
-                const displayName = file.name.length > 25 ? file.name.substring(0, 25) + '...' : file.name;
+                const displayName = file.name.length > 35 ? file.name.substring(0, 32) + '...' : file.name;
 
                 fileEl.innerHTML = `
-                    <div class="flex flex-col h-full justify-between">
+                    <div class="flex flex-col h-full justify-between relative z-10">
                         <div>
                             <div class="flex items-start justify-between mb-3">
-                                <div class="${iconColor} text-3xl"><i class="fa-solid ${iconClass}"></i></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-400"></div> <!-- Yellow dot matching design -->
+                                <div class="${iconColor} text-3xl w-12 h-12 flex items-center justify-center rounded-xl ${bgIcon} group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
                             </div>
-                            <h4 class="font-semibold text-sm text-gray-800 mb-1 line-clamp-2" title="${file.name}">${displayName}</h4>
+                            <h4 class="font-semibold text-sm text-gray-800 mb-1 leading-snug" title="${file.name}">${displayName}</h4>
                         </div>
-                        <div class="flex items-center justify-between mt-4 border-t border-gray-50 pt-3">
-                            <span class="text-xs text-gray-400 font-medium">${file.size}</span>
-                            <span class="text-xs text-gray-400">${file.date}</span>
+                        <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-50/50">
+                            <span class="text-[11px] font-semibold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">${file.sizeStr}</span>
+                            <span class="text-[11px] text-gray-400 font-medium">${file.date}</span>
                         </div>
                     </div>
                 `;
@@ -361,18 +481,80 @@
             });
         }
 
-        window.goBack = () => {
-            currentCategory = null;
+        // Folder Card Builder (Uñacht'ayaña luraña)
+        function renderFolderCard(title, subtitle, onClickFn, index, isRealDir = false) {
+            const folderEl = document.createElement('div');
+            folderEl.className = `file-card bg-white p-5 rounded-2xl border border-gray-100 shadow-sm cursor-pointer flex flex-col items-center justify-center group animate-fade-in relative overflow-hidden`;
+            folderEl.style.animationDelay = `${index * 30}ms`;
+            folderEl.onclick = onClickFn;
+            
+            const iconColor = isRealDir ? 'text-gray-400' : 'text-yellow-400';
+            
+            folderEl.innerHTML = `
+                <div class="text-4xl ${iconColor} mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm">
+                    <i class="fa-solid fa-folder"></i>
+                </div>
+                <h4 class="font-semibold text-gray-800 text-center text-sm leading-tight px-2">${title}</h4>
+                <p class="text-[11px] text-gray-400 mt-1.5 font-medium">${subtitle}</p>
+            `;
+            foldersContainer.appendChild(folderEl);
+        }
+
+        // Nayra sarnaqawi Ist'añanaka (History API - Back Button Navigation)
+        window.addEventListener('popstate', (event) => {
+            if (event.state) {
+                currentCategory = event.state.category || null;
+                viewMode = event.state.viewMode || 'home';
+            } else {
+                currentCategory = null;
+                viewMode = 'home';
+            }
+            searchInput.value = '';
+            renderView();
+        });
+
+        function navigateToCategory(category) {
+            currentCategory = category;
+            viewMode = 'home';
+            history.pushState({ category: category, viewMode: 'home' }, "", `#${category.replace(/[\s📁🧲🧪🧬📄📂]/g, '')}`);
+            searchInput.value = '';
             renderView();
         }
 
-        // Open File (Fula: Uddit fiilde)
+        function goHome(pushState = true) {
+            currentCategory = null;
+            viewMode = 'home';
+            searchInput.value = '';
+            if(pushState) history.pushState({ category: null, viewMode: 'home' }, "", " ");
+            renderView();
+        }
+
+        function goBack() {
+            // Browser back wada karawana eka
+            history.back();
+        }
+
+        // Sidebar Navigation
+        navDrives.addEventListener('click', () => goHome());
+        
+        navRecent.addEventListener('click', () => {
+            currentCategory = null;
+            viewMode = 'recent';
+            history.pushState({ category: null, viewMode: 'recent' }, "", "#Recent");
+            searchInput.value = '';
+            renderView();
+        });
+
+        navStarred.addEventListener('click', () => {
+            alert("Starred files feature coming soon! ✨");
+        });
+
+        // Fiilde Uddit (Open File)
         async function openFile(fileHandle) {
             try {
                 const file = await fileHandle.getFile();
                 const url = URL.createObjectURL(file);
                 window.open(url, '_blank');
-                // Clean up URL object after a short delay to allow it to open
                 setTimeout(() => URL.revokeObjectURL(url), 5000); 
             } catch (err) {
                 console.error("Error opening file", err);
@@ -380,7 +562,7 @@
             }
         }
 
-        // Search Functionality (Fula: Kuugal tefoore)
+        // Tefoore (Search)
         searchInput.addEventListener('input', (e) => {
             renderView(e.target.value);
         });
@@ -396,11 +578,13 @@
 
         function formatDate(timestamp) {
             const date = new Date(timestamp);
+            const today = new Date();
+            if(date.toDateString() === today.toDateString()) return 'Today';
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
             return `${months[date.getMonth()]} ${date.getDate()}`;
         }
 
-        // Start
+        // Qallta
         init();
     </script>
 </body>
