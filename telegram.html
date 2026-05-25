@@ -298,7 +298,8 @@
 
         async function loadFiles(forceSync = false) {
             if (forceSync && directoryHandle) {
-                let perm = await directoryHandle.verifyPermission({ mode: 'read' });
+                // verifyPermission වෙනුවට queryPermission භාවිතා කළ යුතුය
+                let perm = await directoryHandle.queryPermission({ mode: 'read' });
                 if (perm !== 'granted') {
                     perm = await directoryHandle.requestPermission({ mode: 'read' });
                     if (perm !== 'granted') return;
@@ -714,7 +715,8 @@
         async function openFile(fileName) {
             try {
                 if (!directoryHandle) return;
-                let perm = await directoryHandle.verifyPermission({ mode: 'read' });
+                // මෙතනත් verifyPermission වෙනුවට queryPermission විය යුතුය
+                let perm = await directoryHandle.queryPermission({ mode: 'read' });
                 if (perm !== 'granted') {
                     perm = await directoryHandle.requestPermission({ mode: 'read' });
                     if (perm !== 'granted') return;
