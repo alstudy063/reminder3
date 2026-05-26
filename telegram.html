@@ -1,61 +1,87 @@
 <!DOCTYPE html>
-<html lang="en" class="transition-colors duration-300">
+<html lang="en" class="transition-colors duration-500">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Telegram File Manager - Stable Organizer</title>
+    <title>Telegram File Manager - Stable Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Mek wi yuz Lucide SVG icons foh mek am load fain -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --accent: #2563eb;
-            --accent-glow: rgba(37, 99, 235, 0.15);
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
         }
 
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-family: 'Outfit', sans-serif; 
             user-select: none;
             -webkit-user-select: none;
+            background-color: #f1f5f9; /* Light mode bg */
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,0.05) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.05) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.05) 0, transparent 50%);
         }
+        
+        .dark body {
+            background-color: #0f172a; /* Dark mode bg */
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,0.2) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,0.2) 0, transparent 50%);
+        }
+
         input { user-select: text; -webkit-user-select: text; }
         
-        /* Ultra Smooth Hover Glow */
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+        .dark .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Smooth Card Interaction */
         .file-card {
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
         .file-card:hover {
-            transform: translateY(-5px) scale(1.015);
+            transform: translateY(-4px) scale(1.01);
             box-shadow: 0 20px 25px -5px var(--accent-glow), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            border-color: rgba(59, 130, 246, 0.3);
         }
         
-        /* Smooth Page Transition Animation */
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(16px); filter: blur(4px); }
-            to { opacity: 1; transform: translateY(0); filter: blur(0); }
+        /* Smooth Render Fade in Slide */
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .animate-slide-up {
-            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        .animate-render {
+            animation: fadeSlideUp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
         
-        /* Custom Scrollbars */
+        /* Thin Modern Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
-        /* Context Menu Animation */
+        /* Pop scale context animation */
         .context-menu-enter {
-            animation: contextScale 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation: contextScale 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
             transform-origin: top left;
         }
         @keyframes contextScale {
-            from { opacity: 0; transform: scale(0.92) translateY(-4px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
     </style>
     <script>
@@ -64,242 +90,240 @@
             theme: {
                 extend: {
                     colors: {
-                        darkBg: '#0b0f19',
-                        darkPanel: '#151b2c',
-                        darkBorder: '#1e293b'
+                        darkBg: '#0f172a',
+                        darkPanel: '#1e293b',
+                        darkBorder: '#334155'
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
                     }
                 }
             }
         }
     </script>
 </head>
-<body class="bg-[#f8fafc] text-slate-800 dark:bg-darkBg dark:text-slate-200 h-screen flex overflow-hidden transition-colors duration-300">
+<body class="text-slate-800 dark:text-slate-200 h-screen flex overflow-hidden p-2 md:p-4 gap-4">
 
-    <!-- Sidebar -->
-    <aside class="w-68 bg-white dark:bg-darkPanel border-r border-slate-200/80 dark:border-darkBorder flex flex-col justify-between hidden md:flex z-20 shadow-sm transition-colors duration-300">
+    <!-- Sidebar Container -->
+    <aside class="w-72 glass-panel rounded-4xl flex flex-col justify-between hidden md:flex z-20 shadow-xl shadow-slate-200/50 dark:shadow-none transition-all duration-500">
         <div>
-            <!-- Header Logo -->
-            <div class="p-6 flex items-center space-x-3 cursor-pointer" id="btnLogoHome">
-                <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 text-white p-2.5 rounded-xl shadow-lg shadow-blue-500/30">
-                    <i data-lucide="zap" class="w-5 h-5"></i>
+            <!-- Main Application Brand -->
+            <div class="p-6 pt-8 flex items-center space-x-4 cursor-pointer" id="btnLogoHome">
+                <div class="bg-gradient-to-br from-blue-500 to-indigo-600 text-white p-3 rounded-2xl shadow-lg shadow-blue-500/30">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-bold text-slate-800 dark:text-white leading-tight">File Explorer</h1>
-                    <span class="text-[10px] text-blue-500 font-semibold uppercase tracking-wider">Stable Edition</span>
+                    <h1 class="text-xl font-extrabold text-slate-800 dark:text-white tracking-tight">Eksplora</h1>
+                    <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Stable Edition</span>
                 </div>
             </div>
 
-            <!-- Select folder Button -->
-            <div class="px-4 mb-4">
-                <button id="btnNew" class="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/20 hover:shadow-blue-500/40 transition-all duration-300 py-3.5 rounded-2xl font-semibold active:scale-95">
-                    <i data-lucide="folder-open" class="w-5 h-5"></i>
+            <!-- Choose local directory button -->
+            <div class="px-5 mb-6">
+                <button id="btnNew" class="w-full flex items-center justify-center space-x-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-[1.02] shadow-xl shadow-slate-900/20 dark:shadow-white/10 transition-all duration-300 py-3.5 rounded-2xl font-bold active:scale-95">
+                    <i data-lucide="folder-plus" class="w-5 h-5"></i>
                     <span>Connect Telegram</span>
                 </button>
             </div>
 
-            <!-- Navigation Links -->
-            <nav class="px-3 space-y-1">
-                <a href="#" id="navHome" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 bg-blue-50 text-blue-700 dark:bg-slate-800/60 dark:text-blue-400">
-                    <i data-lucide="network" class="w-5 h-5 transition-colors"></i>
+            <!-- Functional Navigation -->
+            <nav class="px-4 space-y-1.5">
+                <a href="#" id="navHome" class="nav-item flex items-center space-x-3 px-4 py-3.5 rounded-2xl font-semibold transition-all group duration-200 bg-white/60 dark:bg-slate-800/60 shadow-sm border border-slate-200/50 dark:border-slate-700/50 text-blue-600 dark:text-blue-400">
+                    <i data-lucide="grid" class="w-5 h-5 transition-colors"></i>
                     <span>My Workspace</span>
                 </a>
-                <a href="#" id="navRecent" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <a href="#" id="navRecent" class="nav-item flex items-center space-x-3 px-4 py-3.5 rounded-2xl font-medium transition-all group duration-200 text-slate-500 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-slate-800/40">
                     <i data-lucide="clock" class="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors"></i>
                     <span>Recent Files</span>
                 </a>
-                <a href="#" id="navStarred" class="nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <a href="#" id="navStarred" class="nav-item flex items-center space-x-3 px-4 py-3.5 rounded-2xl font-medium transition-all group duration-200 text-slate-500 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-slate-800/40">
                     <i data-lucide="star" class="w-5 h-5 text-slate-400 group-hover:text-yellow-500 transition-colors"></i>
                     <span>Starred Files</span>
                 </a>
             </nav>
         </div>
 
-        <!-- Sidebar footer -->
-        <div class="p-4 border-t border-slate-100 dark:border-darkBorder space-y-2">
-            <!-- Settings Button -->
-            <button onclick="openSettings()" class="w-full flex items-center space-x-3 px-4 py-3 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 rounded-xl transition-colors font-medium">
+        <!-- Foot Actions settings & state -->
+        <div class="p-5 space-y-3">
+            <button onclick="openSettings()" class="w-full flex items-center space-x-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-slate-800/40 rounded-2xl transition-colors font-medium">
                 <i data-lucide="settings" class="w-5 h-5 text-slate-400"></i>
                 <span>Settings</span>
             </button>
             
-            <!-- Connected state indicator -->
-            <div id="connectionStatus" class="hidden items-center space-x-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-950/20 px-3 py-2.5 rounded-xl border border-emerald-100 dark:border-emerald-950/40 mt-2">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <div id="connectionStatus" class="hidden items-center justify-center space-x-2 text-xs text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-3 py-3 rounded-2xl border border-emerald-500/20">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span>Workspace Connected</span>
             </div>
         </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-[#f8fafc] dark:bg-darkBg transition-colors duration-300">
+    <!-- Main Workspace Pane -->
+    <main class="flex-1 flex flex-col glass-panel rounded-4xl overflow-hidden relative shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-500">
         
-        <!-- Header -->
-        <header class="glass-panel p-4 flex items-center justify-between z-10 border-b border-slate-200/60 dark:border-darkBorder bg-white/80 dark:bg-darkPanel/80">
-            <div class="flex-1 max-w-3xl flex items-center bg-slate-100 dark:bg-slate-900/60 rounded-full px-5 py-2.5 border border-transparent focus-within:bg-white focus-within:border-blue-500 focus-within:shadow-sm dark:focus-within:bg-darkPanel transition-all duration-300">
-                <i data-lucide="search" class="w-4 h-4 text-slate-400 mr-3"></i>
-                <input type="text" id="searchInput" placeholder="Search across all files..." class="bg-transparent border-none outline-none w-full text-slate-700 dark:text-slate-200 placeholder-slate-400 text-sm">
+        <!-- Top Toolbar -->
+        <header class="p-5 md:p-6 flex items-center justify-between z-10">
+            <!-- Global search input bar -->
+            <div class="flex-1 max-w-2xl flex items-center bg-white/50 dark:bg-slate-900/50 backdrop-blur-md rounded-2xl px-5 py-3 border border-slate-200/50 dark:border-slate-700/50 focus-within:ring-2 ring-blue-500/30 transition-all duration-300 shadow-sm">
+                <i data-lucide="search" class="w-5 h-5 text-slate-400 mr-3"></i>
+                <input type="text" id="searchInput" placeholder="Search across all folders and files..." class="bg-transparent border-none outline-none w-full text-slate-700 dark:text-slate-200 placeholder-slate-400 font-medium">
             </div>
             
             <div class="flex items-center space-x-3 ml-4">
-                <button class="text-slate-500 hover:text-blue-600 hover:bg-slate-100 dark:hover:bg-slate-800 p-2.5 rounded-xl transition-all duration-300 active:rotate-180" id="btnRefresh" title="Force Refresh">
+                <button class="text-slate-400 hover:text-blue-500 bg-white/50 dark:bg-slate-900/50 p-3 rounded-xl transition-all duration-300 active:rotate-180 border border-slate-200/50 dark:border-slate-700/50 shadow-sm" id="btnRefresh" title="Force Sync and Refresh">
                     <i data-lucide="rotate-cw" class="w-5 h-5"></i>
                 </button>
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold shadow-md cursor-pointer hover:scale-105 transition-transform border border-white/20">
+                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-bold shadow-lg shadow-blue-500/30">
                     U
                 </div>
             </div>
         </header>
 
-        <!-- Breadcrumb Tracker -->
-        <div class="px-8 py-3.5 flex items-center text-sm text-slate-500 dark:text-slate-400 font-medium bg-white/40 dark:bg-darkPanel/20 border-b border-slate-200/40 dark:border-darkBorder min-h-[48px] overflow-x-auto whitespace-nowrap" id="breadcrumbContainer">
-            <!-- Injected by JS -->
+        <!-- Current Breadcrumb Location -->
+        <div class="px-6 md:px-8 py-2 flex items-center text-sm text-slate-500 dark:text-slate-400 font-medium overflow-x-auto whitespace-nowrap hide-scrollbar" id="breadcrumbContainer">
+            <!-- Dynamic elements loaded through JS -->
         </div>
 
-        <!-- Connection Screen -->
-        <div id="connectScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-slide-up bg-white/40 dark:bg-darkBg">
-            <div class="relative w-28 h-28 mb-8">
-                <div class="absolute inset-0 bg-blue-100 dark:bg-blue-950/40 rounded-3xl animate-pulse"></div>
-                <div class="absolute inset-2 bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+        <!-- Splash Welcome / Connect Folder Pane -->
+        <div id="connectScreen" class="flex-1 flex flex-col items-center justify-center p-8 text-center animate-render">
+            <div class="relative w-32 h-32 mb-8 group">
+                <div class="absolute inset-0 bg-blue-500/10 rounded-[2.5rem] rotate-6 group-hover:rotate-12 transition-transform duration-500"></div>
+                <div class="absolute inset-0 bg-indigo-500/10 rounded-[2.5rem] -rotate-6 group-hover:-rotate-12 transition-transform duration-500"></div>
+                <div class="absolute inset-2 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-3xl flex items-center justify-center shadow-xl shadow-blue-500/20">
                     <i data-lucide="send" class="w-12 h-12 text-white"></i>
                 </div>
             </div>
             <h2 class="text-3xl font-extrabold text-slate-800 dark:text-white mb-3 tracking-tight">Connect Telegram Workspace</h2>
-            <p class="text-slate-500 dark:text-slate-400 max-w-md mb-8 text-sm leading-relaxed">Select your local folder to virtually organize your PDF study materials.</p>
+            <p class="text-slate-500 dark:text-slate-400 max-w-md mb-10 text-sm font-medium leading-relaxed">Choose your downloaded Telegram folder to categorize your school PDFs virtually without breaking anything.</p>
             
-            <button id="selectFolderBtn" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-10 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 transition-all duration-300 flex items-center space-x-3 active:scale-95">
+            <button id="selectFolderBtn" class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold py-4 px-10 rounded-2xl shadow-xl shadow-slate-900/20 dark:shadow-white/10 hover:scale-[1.02] hover:-translate-y-1 transition-all duration-300 flex items-center space-x-3 active:scale-95">
                 <i data-lucide="folder-open" class="w-5 h-5"></i>
-                <span>Select Folder</span>
+                <span>Choose Telegram Folder</span>
             </button>
-            <button id="restoreAccessBtn" class="hidden mt-5 bg-white dark:bg-darkPanel border border-slate-200 dark:border-darkBorder hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold py-3.5 px-8 rounded-2xl shadow-sm transition-all duration-300 flex items-center space-x-3 active:scale-95">
-                <i data-lucide="unlock" class="w-5 h-5 text-blue-500"></i>
-                <span>Load Saved Workspace</span>
+            <button id="restoreAccessBtn" class="hidden mt-6 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white font-semibold py-2 px-6 rounded-xl transition-all duration-300 flex items-center space-x-2">
+                <i data-lucide="unlock" class="w-4 h-4"></i>
+                <span>Load Last Workspace</span>
             </button>
         </div>
 
-        <!-- Main View Container -->
-        <div id="mainView" class="flex-1 overflow-y-auto px-8 pb-10 hidden scroll-smooth">
+        <!-- Rendered Workspace Items -->
+        <div id="mainView" class="flex-1 overflow-y-auto px-6 md:px-8 pb-10 hidden scroll-smooth">
             
-            <!-- Dashboard Stats -->
+            <!-- Category Dashboard Statistics -->
             <div id="dashboardStatsSection" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-8 hidden">
-                <!-- Injected via JS -->
+                <!-- Loaded Dynamically -->
             </div>
 
-            <!-- Pinned Folders -->
+            <!-- Saved/Pinned Virtual Folders -->
             <div id="pinnedFoldersSection" class="mb-8 pt-2 hidden">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-4 pl-2">
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center">
                         <i data-lucide="pin" class="w-4 h-4 mr-2 text-red-500"></i> Pinned Folders
                     </h3>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="pinnedFoldersContainer"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5" id="pinnedFoldersContainer"></div>
             </div>
 
-            <!-- Folders -->
+            <!-- Main Dynamic Virtual Folders -->
             <div id="foldersSection" class="mb-8 pt-2 hidden">
-                <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center justify-between mb-4 pl-2">
                     <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center">
-                        <i data-lucide="network" class="w-4 h-4 mr-2 text-amber-500"></i> Folders
+                        <i data-lucide="folder-tree" class="w-4 h-4 mr-2 text-blue-500"></i> Folders
                     </h3>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="foldersContainer"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5" id="foldersContainer"></div>
             </div>
 
-            <!-- Files -->
+            <!-- Nested/Folder Specific Files -->
             <div id="filesSection" class="pt-2 hidden">
-                <div class="flex items-center justify-between mb-5 border-b border-slate-200/80 dark:border-darkBorder pb-3">
-                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center" id="filesHeader">
+                <div class="flex items-center justify-between mb-5 pb-3">
+                    <h3 class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center pl-2" id="filesHeader">
                         <i data-lucide="file-text" class="w-4 h-4 mr-2 text-blue-500"></i> Files
                     </h3>
                     <div id="backBtnContainer" class="hidden">
-                        <!-- Go bak wan level na di folder tree event attach inline -->
-                        <button onclick="goBackUp()" type="button" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-darkPanel dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-2 rounded-xl font-bold transition-all flex items-center active:scale-95 shadow-sm">
+                        <button onclick="goBackUp()" type="button" class="text-sm bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-xl font-bold transition-all flex items-center active:scale-95 shadow-sm border border-slate-200 dark:border-slate-700">
                             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Go Back
                         </button>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5" id="filesContainer"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5" id="filesContainer"></div>
                 
-                <!-- Empty State -->
-                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-16 text-center">
-                    <div class="text-5xl text-slate-200 dark:text-slate-700 mb-4"><i data-lucide="folder-open" class="w-12 h-12 mx-auto"></i></div>
-                    <p class="text-slate-500 dark:text-slate-400 font-medium">No files found here.</p>
+                <!-- Zero Search / Empty State -->
+                <div id="emptyState" class="hidden flex flex-col items-center justify-center py-20 text-center">
+                    <div class="w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="inbox" class="w-10 h-10 text-slate-400"></i>
+                    </div>
+                    <p class="text-slate-500 dark:text-slate-400 font-semibold text-lg">No files matches this view.</p>
                 </div>
             </div>
         </div>
         
-        <!-- Loading Overlay -->
-        <div id="loadingOverlay" class="absolute inset-0 bg-white/95 dark:bg-darkBg/95 backdrop-blur-md z-[60] flex flex-col items-center justify-center hidden">
+        <!-- Loader Screen overlay -->
+        <div id="loadingOverlay" class="absolute inset-0 bg-white/90 dark:bg-darkBg/90 backdrop-blur-md z-[60] flex flex-col items-center justify-center hidden">
             <div class="relative w-24 h-24 mb-6">
                 <div class="absolute inset-0 rounded-full border-4 border-slate-100 dark:border-slate-800"></div>
-                <div class="absolute inset-0 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
-                <div class="absolute inset-4 rounded-full bg-blue-50 dark:bg-slate-900/50 flex items-center justify-center">
-                    <i data-lucide="wand-2" class="w-8 h-8 text-blue-500 animate-pulse"></i>
+                <div class="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+                <div class="absolute inset-4 rounded-full bg-blue-50 dark:bg-slate-800 flex items-center justify-center">
+                    <i data-lucide="sparkles" class="w-8 h-8 text-blue-500 animate-pulse"></i>
                 </div>
             </div>
-            <p class="text-slate-800 dark:text-white font-bold text-xl tracking-wide">Scanning Files...</p>
+            <p class="text-slate-800 dark:text-white font-extrabold text-2xl tracking-tight">Scanning Directory...</p>
         </div>
 
     </main>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-darkPanel rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-darkBorder transform scale-95 transition-transform duration-300" id="settingsContent">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center">
-                    <i data-lucide="settings" class="w-5 h-5 text-blue-500 mr-2"></i> Settings
+    <!-- Customizer & Colors Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-darkPanel rounded-[2rem] p-8 max-w-sm w-full shadow-2xl border border-slate-100 dark:border-darkBorder transform scale-95 transition-transform duration-300" id="settingsContent">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white flex items-center">
+                    <i data-lucide="settings-2" class="w-6 h-6 text-blue-500 mr-3"></i> Settings
                 </h3>
-                <button onclick="closeSettings()" class="text-slate-400 hover:text-red-500 transition-colors">
-                    <i data-lucide="x" class="w-6 h-6"></i>
+                <button onclick="closeSettings()" class="text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 p-2 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             
             <div class="space-y-6">
-                <!-- Dark Mode Toggle -->
-                <div class="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-darkBorder">
+                <!-- Dark mode switch -->
+                <div class="flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
                     <div>
-                        <p class="font-bold text-slate-800 dark:text-white">Dark Mode</p>
-                        <p class="text-xs text-slate-500">Toggle dark appearance</p>
+                        <p class="font-bold text-slate-800 dark:text-white text-lg">Dark Interface</p>
+                        <p class="text-xs text-slate-500 font-medium">Toggle night mode</p>
                     </div>
-                    <button onclick="toggleDarkMode()" class="w-12 h-12 rounded-xl bg-white dark:bg-darkPanel border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:scale-105 transition-transform shadow-sm text-slate-600 dark:text-yellow-400">
+                    <button onclick="toggleDarkMode()" class="w-14 h-14 rounded-2xl bg-white dark:bg-darkPanel border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:scale-105 transition-transform shadow-sm text-slate-600 dark:text-yellow-400">
                         <i id="themeBtnIconModal" data-lucide="moon" class="w-6 h-6"></i>
                     </button>
                 </div>
 
-                <!-- Accent Color Picker -->
-                <div class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-darkBorder">
-                    <p class="font-bold text-slate-800 dark:text-white mb-1">Theme Color</p>
-                    <p class="text-xs text-slate-500 mb-4">Choose your accent color</p>
-                    <div class="flex justify-between">
-                        <button onclick="changeAccent('#2563eb', 'blue')" class="w-10 h-10 rounded-full bg-blue-600 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-blue"></button>
-                        <button onclick="changeAccent('#10b981', 'emerald')" class="w-10 h-10 rounded-full bg-emerald-500 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-emerald"></button>
-                        <button onclick="changeAccent('#8b5cf6', 'purple')" class="w-10 h-10 rounded-full bg-purple-500 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-purple"></button>
-                        <button onclick="changeAccent('#f43f5e', 'rose')" class="w-10 h-10 rounded-full bg-rose-500 ring-2 ring-offset-2 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-rose"></button>
+                <!-- Accent Color Palette switcher -->
+                <div class="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200/50 dark:border-slate-700/50">
+                    <p class="font-bold text-slate-800 dark:text-white text-lg mb-1">Color Palette</p>
+                    <p class="text-xs text-slate-500 font-medium mb-5">Change UI highlighting</p>
+                    <div class="flex justify-between px-2">
+                        <button onclick="changeAccent('#3b82f6', 'blue')" class="w-10 h-10 rounded-full bg-blue-500 ring-4 ring-offset-4 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-blue"></button>
+                        <button onclick="changeAccent('#10b981', 'emerald')" class="w-10 h-10 rounded-full bg-emerald-500 ring-4 ring-offset-4 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-emerald"></button>
+                        <button onclick="changeAccent('#8b5cf6', 'purple')" class="w-10 h-10 rounded-full bg-purple-500 ring-4 ring-offset-4 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-purple"></button>
+                        <button onclick="changeAccent('#f43f5e', 'rose')" class="w-10 h-10 rounded-full bg-rose-500 ring-4 ring-offset-4 dark:ring-offset-darkPanel ring-transparent active:scale-90 transition-all theme-btn" id="theme-rose"></button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Context Menu -->
-    <div id="contextMenu" class="hidden fixed z-[100] bg-white/95 dark:bg-darkPanel/95 backdrop-blur-sm rounded-2xl shadow-xl py-2 w-48 border border-slate-200 dark:border-darkBorder text-sm context-menu-enter text-slate-700 dark:text-slate-300">
+    <!-- Context Right-click Menu -->
+    <div id="contextMenu" class="hidden fixed z-[100] bg-white/90 dark:bg-darkPanel/90 backdrop-blur-xl rounded-2xl shadow-2xl py-2 w-52 border border-slate-200/50 dark:border-slate-700/50 text-sm context-menu-enter text-slate-700 dark:text-slate-300 font-medium">
     </div>
 
-    <!-- Details Modal -->
-    <div id="detailsModal" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-darkPanel rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 dark:border-darkBorder transform scale-95 transition-transform duration-300" id="detailsContent">
-            <!-- Injected by JS -->
+    <!-- In-depth Details Dialog -->
+    <div id="detailsModal" class="hidden fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-[100] flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-darkPanel rounded-[2rem] p-8 max-w-md w-full shadow-2xl border border-slate-100 dark:border-darkBorder transform scale-95 transition-transform duration-300" id="detailsContent">
+            <!-- Compiled inside JS -->
         </div>
     </div>
 
     <script>
-        // --- CORE STATE MANAGEMENT ---
-        // Dis na di main state wey de control evriting
-        let appState = {
-            mode: 'home', 
-            path: [],     
-            query: ''     
-        };
-
+        // --- Virtual State Management (Stable & Lag-Free) ---
+        let appState = { mode: 'home', path: [], query: '' };
         let directoryHandle = null;
         let allFiles = []; 
         let pinnedFolders = []; 
@@ -314,10 +338,10 @@
         const breadcrumbContainer = document.getElementById('breadcrumbContainer');
         const contextMenu = document.getElementById('contextMenu');
 
-        // Mek wi call lucide foh load di SVG icon dem
-        function callLucide() {
+        // Render standard Lucide SVG elements without external HTTP requests
+        function callLucide(rootElement = document) {
             if (window.lucide) {
-                lucide.createIcons();
+                lucide.createIcons({ root: rootElement });
             }
         }
 
@@ -325,7 +349,7 @@
             const isDark = await idbKeyval.get('theme_dark');
             if (isDark) document.documentElement.classList.add('dark');
             
-            const storedAccent = await idbKeyval.get('theme_accent') || '#2563eb';
+            const storedAccent = await idbKeyval.get('theme_accent') || '#3b82f6';
             const storedAccentName = await idbKeyval.get('theme_accent_name') || 'blue';
             applyAccentColor(storedAccent, storedAccentName);
             
@@ -333,7 +357,7 @@
             callLucide();
 
             if (!window.showDirectoryPicker) {
-                alert("Browser not supported. Please use Chrome or Edge.");
+                alert("Browser system directory picker is not supported on this platform.");
                 return;
             }
             
@@ -349,6 +373,7 @@
                     directoryHandle = storedHandle;
                     document.getElementById('restoreAccessBtn').classList.remove('hidden');
                     document.getElementById('connectionStatus').classList.remove('hidden');
+                    document.getElementById('connectionStatus').classList.add('flex');
                     
                     const cachedFiles = await idbKeyval.get('cached_files');
                     if (cachedFiles && cachedFiles.length > 0) {
@@ -362,12 +387,10 @@
                         return; 
                     }
                 }
-            } catch (err) {
-                console.error("Initialization error:", err);
-            }
+            } catch (err) { console.error("Could not bootstrap IndexDB data:", err); }
         }
 
-        // --- STATE CONTROLLER ---
+        // State update orchestrator syncing Browser history
         function updateState(newState, pushToHistory = true) {
             appState = { ...appState, ...newState };
             
@@ -380,30 +403,23 @@
                 
                 history.pushState(appState, "", hash || " ");
             }
-            
             renderApp();
         }
 
-        // Dis function de mek sure sey di go back button de wok fain
+        // Handle Back button clicks by pulling slice path (Safe Nested Navigation)
         window.goBackUp = function() {
             if (appState.path.length > 0) {
-                const newPath = [...appState.path];
-                newPath.pop(); // Comot di las folder foh go up 1 level
-                updateState({ path: newPath });
+                updateState({ path: appState.path.slice(0, -1) });
             }
         }
 
         window.addEventListener('popstate', (event) => {
-            if (event.state) {
-                appState = event.state;
-            } else {
-                appState = { mode: 'home', path: [], query: '' };
-            }
+            if (event.state) appState = event.state;
+            else appState = { mode: 'home', path: [], query: '' };
             renderApp(); 
         });
 
-        // --- UI RENDERER ---
-        // Dis function de render di app en update DOM
+        // --- Render UI (Render UI smoothly by eliminating multiple DOM writes) ---
         function renderApp() {
             document.getElementById('dashboardStatsSection').classList.add('hidden');
             document.getElementById('pinnedFoldersSection').classList.add('hidden');
@@ -416,20 +432,22 @@
             const filesContainer = document.getElementById('filesContainer');
             const filesHeader = document.getElementById('filesHeader');
             
-            foldersContainer.innerHTML = '';
-            filesContainer.innerHTML = '';
+            // Fast clear trick to prevent thread blocks
+            foldersContainer.textContent = '';
+            filesContainer.textContent = '';
             
-            mainView.classList.remove('animate-slide-up');
+            mainView.classList.remove('animate-render');
             void mainView.offsetWidth; 
-            mainView.classList.add('animate-slide-up');
+            mainView.classList.add('animate-render');
 
+            // Reset navigation layouts
             document.querySelectorAll('.nav-item').forEach(el => {
-                el.className = "nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/40";
+                el.className = "nav-item flex items-center space-x-3 px-4 py-3.5 rounded-2xl font-medium transition-all group duration-200 text-slate-500 dark:text-slate-400 hover:bg-white/40 dark:hover:bg-slate-800/40";
                 const icon = el.querySelector('i');
-                if(icon) icon.className = icon.className.replace('text-lg w-5 transition-colors', 'w-5 h-5 text-slate-400 group-hover:text-blue-500 transition-colors');
+                if(icon) icon.className = icon.className.replace('text-blue-600', 'text-slate-400 group-hover:text-indigo-500 transition-colors');
             });
 
-            const activeClass = "nav-item flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all group duration-200 bg-blue-50 text-blue-700 dark:bg-slate-800/60 dark:text-blue-400";
+            const activeClass = "nav-item flex items-center space-x-3 px-4 py-3.5 rounded-2xl font-semibold transition-all group duration-200 bg-white/60 dark:bg-slate-800/60 shadow-sm border border-slate-200/50 dark:border-slate-700/50 text-blue-600 dark:text-blue-400";
             
             let displayFiles = [];
 
@@ -453,7 +471,7 @@
                 renderBreadcrumbs([{ name: 'Workspace', click: () => updateState({mode: 'home', path: [], query: ''}) }, { name: 'Starred Files', click: null }]);
                 
                 displayFiles = allFiles.filter(f => starredFiles.includes(f.name));
-                filesHeader.innerHTML = `<i data-lucide="star" class="w-4 h-4 mr-2 text-yellow-500"></i> Starred Materials (${displayFiles.length})`;
+                filesHeader.innerHTML = `<i data-lucide="star" class="w-4 h-4 mr-2 text-yellow-500"></i> Starred (${displayFiles.length})`;
                 
             } else if (appState.mode === 'home') {
                 document.getElementById('navHome').className = activeClass;
@@ -487,26 +505,32 @@
                 const folderNames = Object.keys(currentNode.folders);
                 if (folderNames.length > 0) {
                     document.getElementById('foldersSection').classList.remove('hidden');
+                    const folderFrag = document.createDocumentFragment();
                     folderNames.forEach((name, idx) => {
                         const childCount = getFileCount(currentNode.folders[name]);
-                        foldersContainer.appendChild(createFolderCard(name, `${childCount} items`, idx));
+                        folderFrag.appendChild(createFolderCard(name, `${childCount} files`, idx));
                     });
+                    foldersContainer.appendChild(folderFrag);
+                    callLucide(foldersContainer); 
                 }
                 
                 displayFiles = currentNode.files;
                 filesHeader.innerHTML = `<i data-lucide="file-text" class="w-4 h-4 mr-2 text-blue-500"></i> Files (${displayFiles.length})`;
             }
 
+            // Fragment injection blocks UI threads from freezing
             if (displayFiles.length > 0) {
+                const filesFrag = document.createDocumentFragment();
                 displayFiles.forEach((file, idx) => {
-                    filesContainer.appendChild(createFileCard(file, idx));
+                    filesFrag.appendChild(createFileCard(file, idx));
                 });
+                filesContainer.appendChild(filesFrag);
+                callLucide(filesContainer); 
             } else if (appState.mode !== 'home' || Object.keys(getCurrentNode().folders).length === 0) {
                 document.getElementById('emptyState').classList.remove('hidden');
             }
-
-            // Afta render, run lucide foh load d SVG icon
-            callLucide();
+            
+            callLucide(filesHeader);
         }
 
         function getCurrentNode() {
@@ -517,10 +541,10 @@
             return current;
         }
 
-        // --- COMPONENT CREATORS ---
+        // --- View Assemblers ---
         function renderBreadcrumbs(crumbs) {
             breadcrumbContainer.innerHTML = `
-                <button onclick="updateState({mode: 'home', path: [], query: ''})" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center">
+                <button onclick="updateState({mode: 'home', path: [], query: ''})" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center bg-white/50 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
                     <i data-lucide="home" class="w-4 h-4 mr-2 text-blue-500"></i> Workspace 
                 </button>
             `;
@@ -534,70 +558,77 @@
                     span.onclick = crumb.click;
                     breadcrumbContainer.appendChild(span);
                 } else {
-                    breadcrumbContainer.innerHTML += `<span class="bg-indigo-50 dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-950 font-bold">${crumb.name}</span>`;
+                    breadcrumbContainer.innerHTML += `<span class="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1.5 rounded-lg border border-blue-100 dark:border-blue-800/50 font-bold shadow-sm">${crumb.name}</span>`;
                 }
             });
+            callLucide(breadcrumbContainer);
         }
 
         function renderDashboardStats() {
             const section = document.getElementById('dashboardStatsSection');
             section.innerHTML = '';
             const stats = [
-                { name: "Exam Papers", icon: "pen-tool", color: "from-orange-500 to-amber-500", key: "Exam Papers 📄" },
-                { name: "Physics", icon: "magnet", color: "from-blue-500 to-cyan-500", key: "Physics 🧲" },
-                { name: "Chemistry", icon: "flask-conical", color: "from-emerald-500 to-teal-500", key: "Chemistry 🧪" },
-                { name: "Biology", icon: "dna", color: "from-purple-500 to-pink-500", key: "Biology 🧬" }
+                { name: "Exam Papers", icon: "pen-tool", color: "from-orange-400 to-red-500", key: "Exam Papers 📄" },
+                { name: "Physics", icon: "magnet", color: "from-blue-400 to-indigo-500", key: "Physics 🧲" },
+                { name: "Chemistry", icon: "flask-conical", color: "from-emerald-400 to-teal-500", key: "Chemistry 🧪" },
+                { name: "Biology", icon: "dna", color: "from-purple-400 to-fuchsia-500", key: "Biology 🧬" }
             ];
 
+            const frag = document.createDocumentFragment();
             stats.forEach(stat => {
                 const count = virtualFileSystem.folders[stat.key] ? getFileCount(virtualFileSystem.folders[stat.key]) : 0;
                 const card = document.createElement('div');
-                card.className = "p-5 bg-white dark:bg-darkPanel border border-slate-100 dark:border-darkBorder rounded-2xl flex items-center justify-between shadow-sm cursor-pointer hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-300 transform active:scale-95";
+                card.className = "p-5 bg-white/60 dark:bg-slate-800/40 backdrop-blur-sm border border-slate-200/60 dark:border-slate-700/50 rounded-3xl flex items-center justify-between shadow-sm cursor-pointer hover:border-blue-300 dark:hover:border-slate-500 transition-all duration-300 transform hover:-translate-y-1";
                 card.onclick = () => updateState({ path: [stat.key] });
                 
                 card.innerHTML = `
                     <div>
-                        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">${stat.name}</p>
-                        <h4 class="text-2xl font-black text-slate-800 dark:text-white mt-1">${count} <span class="text-xs font-semibold text-slate-400">files</span></h4>
+                        <p class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">${stat.name}</p>
+                        <h4 class="text-3xl font-extrabold text-slate-800 dark:text-white mt-1">${count} <span class="text-xs font-bold text-slate-400">files</span></h4>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr ${stat.color} text-white flex items-center justify-center shadow-md">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br ${stat.color} text-white flex items-center justify-center shadow-lg">
                         <i data-lucide="${stat.icon}" class="w-6 h-6"></i>
                     </div>
                 `;
-                section.appendChild(card);
+                frag.appendChild(card);
             });
+            section.appendChild(frag);
+            callLucide(section);
         }
 
         function renderPinnedFolders() {
             const container = document.getElementById('pinnedFoldersContainer');
             container.innerHTML = '';
+            const frag = document.createDocumentFragment();
             pinnedFolders.forEach((pathArr, index) => {
                 const title = pathArr[pathArr.length - 1]; 
                 const style = getFolderStyling(title);
                 
                 const el = document.createElement('div');
-                el.className = `file-card bg-white dark:bg-darkPanel p-5 rounded-2xl border border-red-100 dark:border-red-950/40 shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
+                el.className = `file-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-5 rounded-3xl border border-red-200/60 dark:border-red-900/30 shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
                 el.style.animationDelay = `${index * 15}ms`;
                 el.onclick = () => updateState({ path: [...pathArr] });
                 el.oncontextmenu = (e) => showContextMenu(e, 'folder', pathArr);
 
                 el.innerHTML = `
-                    <div class="absolute top-2.5 right-2.5 text-red-500 transform rotate-45 opacity-80 animate-pulse">
+                    <div class="absolute top-3 right-3 text-red-500 transform rotate-45 opacity-80 animate-pulse bg-red-50 dark:bg-red-900/30 p-1.5 rounded-full">
                         <i data-lucide="pin" class="w-3 h-3"></i>
                     </div>
                     <div class="text-blue-500 ${style.color} mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative">
                         <i data-lucide="${style.icon}" class="w-10 h-10"></i>
                     </div>
                     <h4 class="font-extrabold text-slate-800 dark:text-slate-200 text-center text-sm leading-tight px-2 line-clamp-2">${title}</h4>
-                    <p class="text-[10px] text-red-500 font-bold bg-red-50 dark:bg-red-950/20 px-2.5 py-0.5 rounded-full mt-1.5 truncate max-w-full" title="${pathArr.join(' > ')}">${pathArr.length > 1 ? pathArr.slice(0, -1).join('/') : 'Root'}</p>
+                    <p class="text-[10px] text-red-500 font-bold bg-red-50 dark:bg-red-900/20 px-2.5 py-0.5 rounded-full mt-2 truncate max-w-full" title="${pathArr.join(' > ')}">${pathArr.length > 1 ? pathArr.slice(0, -1).join('/') : 'Root'}</p>
                 `;
-                container.appendChild(el);
+                frag.appendChild(el);
             });
+            container.appendChild(frag);
+            callLucide(container);
         }
 
         function createFolderCard(title, subtitle, index) {
             const el = document.createElement('div');
-            el.className = `file-card bg-white dark:bg-darkPanel p-5 rounded-2xl border border-slate-100 dark:border-darkBorder shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
+            el.className = `file-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-5 rounded-3xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm cursor-pointer flex flex-col items-center justify-center group relative overflow-hidden`;
             el.style.animationDelay = `${index * 15}ms`;
             
             const fullPath = [...appState.path, title];
@@ -606,11 +637,11 @@
             
             const style = getFolderStyling(title);
             el.innerHTML = `
-                <div class="${style.color} mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative">
-                    <i data-lucide="${style.icon}" class="w-10 h-10"></i>
+                <div class="${style.color} mb-3 group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 drop-shadow-sm relative p-2 rounded-2xl ${style.bg}">
+                    <i data-lucide="${style.icon}" class="w-8 h-8"></i>
                 </div>
                 <h4 class="font-extrabold text-slate-800 dark:text-slate-200 text-center text-sm leading-tight px-2 line-clamp-2">${title}</h4>
-                <p class="text-[11px] text-slate-400 mt-1.5 font-bold ${style.bg} px-2.5 py-0.5 rounded-full">${subtitle}</p>
+                <p class="text-[10px] text-slate-500 mt-2 font-bold bg-slate-100 dark:bg-slate-900 px-3 py-1 rounded-full">${subtitle}</p>
             `;
             return el;
         }
@@ -621,14 +652,14 @@
             
             let iconColor = 'text-blue-500';
             let iconClass = 'file-text';
-            let bgIcon = 'bg-blue-50 dark:bg-blue-950/40';
+            let bgIcon = 'bg-blue-50 dark:bg-blue-900/20';
             
-            if(isPdf) { iconColor = 'text-red-500'; iconClass = 'file-text'; bgIcon = 'bg-red-50 dark:bg-red-950/40'; }
-            if(isImg) { iconColor = 'text-emerald-500'; iconClass = 'image'; bgIcon = 'bg-emerald-50 dark:bg-emerald-950/40'; }
+            if(isPdf) { iconColor = 'text-red-500'; iconClass = 'file-text'; bgIcon = 'bg-red-50 dark:bg-red-900/20'; }
+            if(isImg) { iconColor = 'text-emerald-500'; iconClass = 'image'; bgIcon = 'bg-emerald-50 dark:bg-emerald-900/20'; }
 
             const isStarred = starredFiles.includes(file.name);
             const el = document.createElement('div');
-            el.className = `file-card bg-white dark:bg-darkPanel p-4 rounded-2xl border border-slate-100 dark:border-darkBorder shadow-sm cursor-pointer relative overflow-hidden`;
+            el.className = `file-card bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-4 rounded-3xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm cursor-pointer relative overflow-hidden`;
             el.style.animationDelay = `${(index % 20) * 15}ms`;
             el.onclick = () => openFile(file.name);
             el.oncontextmenu = (e) => showContextMenu(e, 'file', file);
@@ -638,19 +669,19 @@
             el.innerHTML = `
                 <div class="flex flex-col h-full justify-between relative z-10">
                     <div>
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="${iconColor} w-12 h-12 flex items-center justify-center rounded-xl ${bgIcon} group-hover:scale-110 transition-transform duration-300">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="${iconColor} w-12 h-12 flex items-center justify-center rounded-2xl ${bgIcon} group-hover:scale-110 transition-transform duration-300 shadow-inner">
                                 <i data-lucide="${iconClass}" class="w-6 h-6"></i>
                             </div>
-                            <button onclick="event.stopPropagation(); toggleStarFile('${file.name}')" class="text-slate-300 hover:text-yellow-500 transition-colors duration-200 focus:outline-none">
+                            <button onclick="event.stopPropagation(); toggleStarFile('${file.name}')" class="text-slate-300 hover:text-yellow-500 transition-colors duration-200 focus:outline-none p-1 bg-slate-50 dark:bg-slate-900/50 rounded-full">
                                 <i data-lucide="star" class="w-4 h-4 ${isStarred ? 'fill-yellow-400 text-yellow-400' : ''}"></i>
                             </button>
                         </div>
                         <h4 class="font-bold text-sm text-slate-800 dark:text-slate-200 mb-1 leading-snug break-all" title="${file.name}">${displayName}</h4>
                     </div>
-                    <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-50 dark:border-slate-800/40">
-                        <span class="text-[10px] font-bold text-slate-400 bg-slate-50 dark:bg-slate-900 px-2 py-1 rounded-md">${file.sizeStr}</span>
-                        <span class="text-[10px] text-slate-400 font-medium">${file.date}</span>
+                    <div class="flex items-center justify-between mt-4 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                        <span class="text-[10px] font-extrabold text-slate-500 bg-slate-100 dark:bg-slate-900 px-2.5 py-1 rounded-lg">${file.sizeStr}</span>
+                        <span class="text-[10px] text-slate-400 font-semibold">${file.date}</span>
                     </div>
                 </div>
             `;
@@ -659,14 +690,14 @@
 
         function getFolderStyling(title) {
             let n = title.toLowerCase();
-            if (n.includes("physics")) return { icon: "magnet", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/40" };
-            if (n.includes("chemistry")) return { icon: "flask-conical", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/40" };
-            if (n.includes("biology")) return { icon: "dna", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-950/40" };
-            if (n.includes("exam")) return { icon: "pen-tool", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/40" };
-            return { icon: "folder", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/40" };
+            if (n.includes("physics")) return { icon: "magnet", color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-900/20" };
+            if (n.includes("chemistry")) return { icon: "flask-conical", color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-900/20" };
+            if (n.includes("biology")) return { icon: "dna", color: "text-purple-500", bg: "bg-purple-50 dark:bg-purple-900/20" };
+            if (n.includes("exam")) return { icon: "pen-tool", color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-900/20" };
+            return { icon: "folder", color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-900/20" };
         }
 
-        // --- USER ACTIONS ---
+        // --- Custom Interaction Logic ---
         async function toggleStarFile(fileName) {
             const idx = starredFiles.indexOf(fileName);
             if (idx === -1) starredFiles.push(fileName);
@@ -688,7 +719,7 @@
             renderApp();
         }
 
-        // --- CONTEXT MENU ---
+        // --- Pop Up menus & UI states ---
         function showContextMenu(e, type, itemData) {
             e.preventDefault(); e.stopPropagation();
             contextMenu.innerHTML = '';
@@ -696,10 +727,10 @@
             if (type === 'folder') {
                 const isPinned = pinnedFolders.some(p => JSON.stringify(p) === JSON.stringify(itemData));
                 const pinBtn = document.createElement('div');
-                pinBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 cursor-pointer flex items-center transition-colors font-medium";
+                pinBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-blue-600 cursor-pointer flex items-center transition-colors font-bold rounded-xl m-1";
                 pinBtn.innerHTML = isPinned 
-                    ? `<i data-lucide="pin-off" class="w-5 h-5 text-slate-400 text-center mr-2"></i> <span>Unpin Folder</span>`
-                    : `<i data-lucide="pin" class="w-5 h-5 text-slate-400 text-center mr-2 text-red-500"></i> <span>Pin Folder</span>`;
+                    ? `<i data-lucide="pin-off" class="w-5 h-5 text-slate-400 text-center mr-3"></i> <span>Unpin Folder</span>`
+                    : `<i data-lucide="pin" class="w-5 h-5 text-red-500 text-center mr-3"></i> <span>Pin Folder</span>`;
                 pinBtn.onclick = () => { contextMenu.classList.add('hidden'); isPinned ? actionUnpinFolder(itemData) : actionPinFolder(itemData); };
                 contextMenu.appendChild(pinBtn);
 
@@ -708,15 +739,15 @@
                 const isStarred = starredFiles.includes(itemData.name);
                 
                 const starBtn = document.createElement('div');
-                starBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-medium border-b border-slate-100 dark:border-darkBorder";
+                starBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-bold rounded-xl m-1";
                 starBtn.innerHTML = isStarred 
-                    ? `<i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-yellow-500 text-center mr-2"></i> <span>Unstar</span>`
-                    : `<i data-lucide="star" class="w-5 h-5 text-slate-400 text-center mr-2"></i> <span>Star File</span>`;
+                    ? `<i data-lucide="star" class="w-5 h-5 text-yellow-500 fill-yellow-500 text-center mr-3"></i> <span>Unstar</span>`
+                    : `<i data-lucide="star" class="w-5 h-5 text-slate-400 text-center mr-3"></i> <span>Star File</span>`;
                 starBtn.onclick = () => { contextMenu.classList.add('hidden'); toggleStarFile(itemData.name); };
 
                 const detailBtn = document.createElement('div');
-                detailBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-medium";
-                detailBtn.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-slate-400 text-center mr-2"></i> <span>Details</span>`;
+                detailBtn.className = "px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer flex items-center transition-colors font-bold rounded-xl m-1";
+                detailBtn.innerHTML = `<i data-lucide="info" class="w-5 h-5 text-slate-400 text-center mr-3"></i> <span>Details</span>`;
                 detailBtn.onclick = () => { contextMenu.classList.add('hidden'); showFileDetails(); };
 
                 contextMenu.appendChild(starBtn);
@@ -724,16 +755,16 @@
             }
             
             let x = e.clientX; let y = e.clientY;
-            if (x + 200 > window.innerWidth) x = window.innerWidth - 200;
+            if (x + 220 > window.innerWidth) x = window.innerWidth - 220;
             if (y + 120 > window.innerHeight) y = window.innerHeight - 120;
             contextMenu.style.left = `${x}px`; contextMenu.style.top = `${y}px`;
             contextMenu.classList.remove('hidden');
-            callLucide(); // Reload icons inside context menu
+            callLucide(contextMenu); 
         }
 
         document.addEventListener('click', () => contextMenu.classList.add('hidden'));
 
-        // --- SETTINGS MODAL ---
+        // Settings configuration panel
         function openSettings() {
             const modal = document.getElementById('settingsModal');
             modal.classList.remove('hidden');
@@ -758,7 +789,7 @@
             if(iconModal) {
                 iconModal.setAttribute('data-lucide', isDark ? "sun" : "moon");
             }
-            callLucide();
+            callLucide(document.getElementById('settingsModal'));
         }
 
         window.changeAccent = async function(hexColor, name) {
@@ -775,7 +806,7 @@
             if (btn) btn.classList.add('ring-slate-400', 'scale-110');
         }
 
-        // --- FILE SYSTEM LOGIC ---
+        // Native triggers and folder sync
         document.getElementById('selectFolderBtn').addEventListener('click', selectNewFolder);
         document.getElementById('btnNew').addEventListener('click', selectNewFolder);
         document.getElementById('restoreAccessBtn').addEventListener('click', () => loadFiles(true));
@@ -785,9 +816,14 @@
         document.getElementById('navRecent').addEventListener('click', () => updateState({mode: 'recent', path: [], query: ''}));
         document.getElementById('navStarred').addEventListener('click', () => updateState({mode: 'starred', path: [], query: ''}));
         
+        // Anti lag search delay controller
+        let searchTimeout;
         searchInput.addEventListener('input', (e) => {
-            if(e.target.value === '') updateState({mode: 'home', query: ''});
-            else updateState({mode: 'search', query: e.target.value});
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if(e.target.value === '') updateState({mode: 'home', query: ''});
+                else updateState({mode: 'search', query: e.target.value});
+            }, 250);
         });
         document.getElementById('btnLogoHome').addEventListener('click', () => updateState({mode: 'home', path: [], query: ''}));
 
@@ -798,7 +834,7 @@
                 directoryHandle = handle;
                 await idbKeyval.set('telegram_folder_handle', handle);
                 await loadFiles(true);
-            } catch (error) { console.error("Error:", error); }
+            } catch (error) { console.error("Xihoxo:", error); }
         }
 
         async function loadFiles(forceSync = false) {
@@ -816,12 +852,13 @@
             try {
                 await readDirectoryRecursively(directoryHandle);
                 if (allFiles.length === 0) {
-                    alert("No educational materials found.");
+                    alert("No educational materials discovered in this directory.");
                     connectScreen.classList.remove('hidden'); loadingOverlay.classList.add('hidden'); return;
                 }
                 await idbKeyval.set('cached_files', allFiles);
                 buildNestedTree();
                 document.getElementById('connectionStatus').classList.remove('hidden');
+                document.getElementById('connectionStatus').classList.add('flex');
                 updateState({ mode: 'home', path: [], query: '' });
                 mainView.classList.remove('hidden');
             } catch (error) { console.error(error); connectScreen.classList.remove('hidden'); } 
@@ -840,6 +877,7 @@
             }
         }
 
+        // Logic routing files to nested folders
         function determineNestedPath(filename) {
             let n = filename.toLowerCase(); let path = [];
             if (n.includes("fast track") || n.includes("ft 0") || n.includes("ft 1") || n.includes("ft ")) {
@@ -888,47 +926,49 @@
             return count;
         }
 
-        // --- FILE DETAILS MODAL ---
+        // File Information panel builder
         function showFileDetails() {
             if(!selectedFileForDetails) return;
             const file = selectedFileForDetails;
             const isPdf = file.name.toLowerCase().endsWith('.pdf');
             
             document.getElementById('detailsContent').innerHTML = `
-                <div class="flex justify-between items-start mb-5">
-                    <h3 class="text-xl font-bold text-slate-800 dark:text-white flex items-center">
-                        <i data-lucide="info" class="w-5 h-5 mr-2 text-blue-500"></i> File Details
+                <div class="flex justify-between items-start mb-6">
+                    <h3 class="text-2xl font-extrabold text-slate-800 dark:text-white flex items-center">
+                        <i data-lucide="info" class="w-6 h-6 mr-3 text-blue-500"></i> File Details
                     </h3>
-                    <button onclick="closeDetails()" class="text-slate-400 hover:text-red-500 transition-colors"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    <button onclick="closeDetails()" class="text-slate-400 hover:text-red-500 bg-slate-50 dark:bg-slate-800 p-2 rounded-full transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
                 </div>
                 <div class="space-y-4">
-                    <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-darkBorder">
-                        <i data-lucide="${isPdf ? 'file-text' : 'image'}" class="w-8 h-8 mr-4 text-center ${isPdf ? 'text-red-500' : 'text-emerald-500'}"></i>
+                    <div class="flex items-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-200/50 dark:border-slate-700/50">
+                        <div class="w-14 h-14 bg-white dark:bg-darkPanel rounded-2xl shadow-sm flex items-center justify-center mr-4">
+                            <i data-lucide="${isPdf ? 'file-text' : 'image'}" class="w-7 h-7 text-center ${isPdf ? 'text-red-500' : 'text-emerald-500'}"></i>
+                        </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-bold text-slate-800 dark:text-white truncate" title="${file.name}">${file.name}</p>
-                            <p class="text-xs text-slate-400">File Name</p>
+                            <p class="text-base font-bold text-slate-800 dark:text-white truncate" title="${file.name}">${file.name}</p>
+                            <p class="text-xs font-semibold text-slate-400">File Name</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
-                        <div class="p-3 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
-                            <p class="text-xs text-slate-400 mb-1">Size</p>
-                            <p class="font-bold text-slate-800 dark:text-white">${file.sizeStr}</p>
+                        <div class="p-4 border border-slate-200/50 dark:border-slate-700/50 rounded-3xl bg-white dark:bg-darkPanel/20">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Size</p>
+                            <p class="font-extrabold text-lg text-slate-800 dark:text-white">${file.sizeStr}</p>
                         </div>
-                        <div class="p-3 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
-                            <p class="text-xs text-slate-400 mb-1">Modified Date</p>
-                            <p class="font-bold text-slate-800 dark:text-white">${file.date}</p>
+                        <div class="p-4 border border-slate-200/50 dark:border-slate-700/50 rounded-3xl bg-white dark:bg-darkPanel/20">
+                            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Modified Date</p>
+                            <p class="font-extrabold text-lg text-slate-800 dark:text-white">${file.date}</p>
                         </div>
                     </div>
-                    <div class="p-4 border border-slate-100 dark:border-darkBorder rounded-2xl bg-white dark:bg-darkPanel/20">
-                        <p class="text-xs text-slate-400 mb-1">Virtual Path</p>
-                        <p class="font-semibold text-slate-800 dark:text-white text-sm break-all">${file.virtualPathStr}</p>
+                    <div class="p-5 border border-slate-200/50 dark:border-slate-700/50 rounded-3xl bg-white dark:bg-darkPanel/20">
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Virtual Path</p>
+                        <p class="font-bold text-slate-800 dark:text-white text-sm break-all leading-relaxed">${file.virtualPathStr}</p>
                     </div>
                 </div>
             `;
             const modal = document.getElementById('detailsModal');
             modal.classList.remove('hidden');
             setTimeout(() => { modal.classList.remove('opacity-0'); document.getElementById('detailsContent').classList.remove('scale-95'); }, 10);
-            callLucide(); // Reload icons foh di modal
+            callLucide(document.getElementById('detailsContent')); 
         }
 
         window.closeDetails = function() {
@@ -950,7 +990,7 @@
                 const url = URL.createObjectURL(file);
                 window.open(url, '_blank');
                 setTimeout(() => URL.revokeObjectURL(url), 5000); 
-            } catch (err) { alert("Could not access standard file. Ensure read permissions are granted."); }
+            } catch (err) { alert("Could not open this file."); }
         }
 
         function formatSize(bytes) {
