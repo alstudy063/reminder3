@@ -347,7 +347,10 @@
                         buildNestedTree();
                         connectScreen.classList.add('hidden');
                         mainView.classList.remove('hidden');
-                        updateState({ mode: 'home', path: [], query: '' }); // Render UI
+                        
+                        // Initial History state එක සේව් කිරීම
+                        history.replaceState(appState, "", " ");
+                        updateState({ mode: 'home', path: [], query: '' }, false); // Render UI
                         return; 
                     }
                 }
@@ -357,10 +360,32 @@
         }
 
         // --- STATE CONTROLLER ---
-        function updateState(newState) {
+        function updateState(newState, pushToHistory = true) {
             appState = { ...appState, ...newState };
+            
+            // Browser එකේ History එක අප්ඩේට් කිරීම (Back Button වැඩ කරන්න)
+            if (pushToHistory) {
+                let hash = "";
+                if (appState.mode === 'search') hash = "#search";
+                else if (appState.mode === 'recent') hash = "#recent";
+                else if (appState.mode === 'starred') hash = "#starred";
+                else if (appState.path.length > 0) hash = "#" + encodeURIComponent(appState.path[appState.path.length - 1]);
+                
+                history.pushState(appState, "", hash || " ");
+            }
+            
             renderApp();
         }
+
+        // Browser එකේ Back/Forward බටන් එක එබුවම ඇප් එක අප්ඩේට් වීම
+        window.addEventListener('popstate', (event) => {
+            if (event.state) {
+                appState = event.state;
+            } else {
+                appState = { mode: 'home', path: [], query: '' };
+            }
+            renderApp(); // History එකට ආයේ push කරන්නේ නැතුව UI එක විතරක් render කරනවා
+        });
 
         // --- UI RENDERER (Darshava) ---
         // Single source of truth for UI. Eliminates bugs where multiple sections show at once.
