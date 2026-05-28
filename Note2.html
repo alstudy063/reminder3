@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Docket Nes</title>
+    <title>Docket Notes</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -642,12 +642,11 @@
 
         const app = initializeApp(firebaseConfig);
         
-        // Safe Analytics initialization for sandboxed browsers (prevents crashing)
         let analytics = null;
         try {
             analytics = getAnalytics(app);
         } catch (error) {
-            console.warn("Firebase Analytics initialization skipped (probably inside sandboxed iframe):", error);
+            console.warn("Firebase Analytics initialization skipped:", error);
         }
 
         const auth = getAuth(app);
@@ -656,7 +655,7 @@
         const APP_ID = 'studyflow-pro';
 
         // ---------------------------------------------------------
-        // Core DOM Elements (Declared FIRST to avoid TDZ errors)
+        // Core DOM Elements
         // ---------------------------------------------------------
         const mainTitle = document.getElementById('main-title');
         const toggleBtn = document.getElementById('toggle-palette-btn');
@@ -778,6 +777,150 @@
             gfm: true,     
             breaks: true   
         });
+
+        // ---------------------------------------------------------
+        // Settings & Auth UI Logic (FIX FOR updateSettingsUI ERROR)
+        // ---------------------------------------------------------
+        function updateSettingsUI(user) {
+            const signinBtn = document.getElementById('settings-google-signin-btn');
+            const userInfoDiv = document.getElementById('settings-user-info');
+            const avatarImg = document.getElementById('settings-avatar');
+            const nameSpan = document.getElementById('settings-name');
+            const signOutBtn = document.getElementById('settings-signout-btn');
+
+            if (user) {
+                if(signinBtn) signinBtn.classList.add('hidden');
+                if(userInfoDiv) userInfoDiv.classList.remove('hidden');
+                if(avatarImg) avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name=' + encodeURIComponent(user.displayName || 'User');
+                if(nameSpan) nameSpan.textContent = user.displayName || user.email || 'User';
+                if(signOutBtn) signOutBtn.classList.remove('hidden');
+            } else {
+                if(signinBtn) signinBtn.classList.remove('hidden');
+                if(userInfoDiv) userInfoDiv.classList.add('hidden');
+            }
+        }
+
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettings = () => {
+            settingsModal.classList.remove('hidden');
+            setTimeout(() => {
+                settingsModal.classList.remove('opacity-0');
+                settingsModal.querySelector('.bg-white').classList.remove('scale-95');
+                settingsModal.classList.add('opacity-100');
+                settingsModal.querySelector('.bg-white').classList.add('scale-100');
+            }, 20);
+        };
+        const closeSettings = () => {
+            settingsModal.classList.remove('opacity-100');
+            settingsModal.querySelector('.bg-white').classList.remove('scale-100');
+            settingsModal.classList.add('opacity-0');
+            settingsModal.querySelector('.bg-white').classList.add('scale-95');
+            setTimeout(() => settingsModal.classList.add('hidden'), 500);
+        };
+        
+        document.getElementById('settings-btn-desktop')?.addEventListener('click', openSettings);
+        document.getElementById('settings-btn-mobile')?.addEventListener('click', openSettings);
+        document.getElementById('close-settings-btn')?.addEventListener('click', closeSettings);
+        settingsModal?.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
+
+        document.getElementById('settings-google-signin-btn')?.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+                showToast("Signed in! Notes are now synced.");
+                closeSettings();
+            } catch (error) {
+                console.error(error);
+                showToast("Sign in failed.");
+            }
+        });
+        
+        document.getElementById('settings-signout-btn')?.addEventListener('click', async () => {
+            await signOut(auth);
+            showToast("Signed out.");
+            closeSettings();
+        });
+
+        function fetchNotesFromFirestore() {
+            if (!currentUser) return;
+            const notesCollectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            unsubscribeSnapshot = onSnapshot(notesCollectionRef, (snapshot) => {
+                notesData = [];
+                snapshot.forEach((doc) => notesData.push({ id: doc.id, ...doc.data() }));
+                notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                hideLoading();
+                renderNotes(notesData);
+                processUrlParam();
+            }, (error) => {
+                console.error(error);
+                hideLoading();
+                renderNotes([]);
+            });
+        }
+
+        function formatSnippet(content, maxLength = 100) {
+            if (!content) return '';
+            let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+            text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
+            text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
+            text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^[-*_]{3,}\s*$/gm, '');
+            text = text.replace(/\s+/g, ' ').trim();
+            if (text.length > maxLength) text = text.substring(0, maxLength) + '...';
+            return text;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        function showToast(message) {
+            const existing = document.getElementById('dynamic-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'dynamic-toast';
+            toast.innerText = message;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '70px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.backgroundColor = '#1f2937';
+            toast.style.color = 'white';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '9999px';
+            toast.style.fontSize = '0.875rem';
+            toast.style.fontWeight = '500';
+            toast.style.zIndex = '9999';
+            toast.style.whiteSpace = 'nowrap';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.2s ease';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.style.opacity = '1', 10);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        let urlParamProcessed = false;
+        function processUrlParam() {
+            if (urlParamProcessed) return;
+            const params = new URLSearchParams(window.location.search);
+            const noteId = params.get('note');
+            if (noteId && notesData.length > 0) {
+                const note = notesData.find(n => n.id === noteId);
+                if (note) {
+                    urlParamProcessed = true;
+                    openViewModal(note);
+                } else {
+                    showToast("Note not found");
+                    urlParamProcessed = true;
+                }
+            }
+        }
 
         // ---------------------------------------------------------
         // View Modal FAB Logic
