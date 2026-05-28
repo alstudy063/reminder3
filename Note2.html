@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Docket Notes</title>
+    <title>Docket Nes</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -627,6 +627,9 @@
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
+        // ---------------------------------------------------------
+        // Firebase Configuration & Initialization
+        // ---------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -638,26 +641,79 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
+        
+        // Safe Analytics initialization for sandboxed browsers (prevents crashing)
+        let analytics = null;
+        try {
+            analytics = getAnalytics(app);
+        } catch (error) {
+            console.warn("Firebase Analytics initialization skipped (probably inside sandboxed iframe):", error);
+        }
+
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         const APP_ID = 'studyflow-pro';
 
+        // ---------------------------------------------------------
+        // Core DOM Elements (Declared FIRST to avoid TDZ errors)
+        // ---------------------------------------------------------
+        const mainTitle = document.getElementById('main-title');
+        const toggleBtn = document.getElementById('toggle-palette-btn');
+        const paletteMenu = document.getElementById('palette-menu');
+        const notesGrid = document.getElementById('notes-grid');
+        const searchInput = document.getElementById('search-input');
+        const emptyState = document.getElementById('empty-state');
+        
+        const editorModal = document.getElementById('editor-modal');
+        const editorContainer = document.getElementById('editor-container');
+        const titleInput = document.getElementById('note-title-input');
+        const contentInput = document.getElementById('note-content-input');
+        const previewTitle = document.getElementById('preview-title');
+        const previewContent = document.getElementById('preview-content');
+        const cancelBtn = document.getElementById('cancel-note-btn');
+        const saveBtn = document.getElementById('save-note-btn');
+        const deleteBtn = document.getElementById('delete-note-btn');
+        const modalHeader = document.getElementById('modal-header');
+        const modalColorIndicator = document.getElementById('modal-color-indicator');
+        
+        const viewModal = document.getElementById('view-modal');
+        const viewModalContent = document.getElementById('view-modal-content');
+        const viewTitle = document.getElementById('view-title');
+        const viewContent = document.getElementById('view-content');
+        const viewColorIndicator = document.getElementById('view-color-indicator');
+        const closeViewBtn = document.getElementById('close-view-modal');
+        
+        const viewFabToggle = document.getElementById('view-fab-toggle');
+        const viewFabMenu = document.getElementById('view-fab-menu');
+        const viewFabIcon = viewFabToggle.querySelector('i');
+        const editFromViewBtn = document.getElementById('edit-from-view-btn');
+        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
+        const copyViewBtn = document.getElementById('copy-view-btn');
+        
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+
+        // ---------------------------------------------------------
+        // State Variables
+        // ---------------------------------------------------------
         let currentUser = null;
         let unsubscribeSnapshot = null;
         let notesData = [];
-
-        lucide.createIcons();
+        let isPaletteOpen = false;
+        let activeNoteId = null;
+        let activeColor = '#ffffff';
+        let currentViewNote = null;
+        let isViewFabOpen = false;
+        let fullscreenIcon = fullscreenViewBtn.querySelector('i');
+        let randomShineTimeout = null;
 
         // ---------------------------------------------------------
-        // Loading & UI Initialization
+        // Loading & UI Functions
         // ---------------------------------------------------------
-        const mainTitle = document.getElementById('main-title');
-        let randomShineTimeout;
-        
         function renderSkeletons() {
-            const notesGrid = document.getElementById('notes-grid');
+            if (!notesGrid) return;
             notesGrid.innerHTML = '';
             for(let i=0; i<6; i++) {
                 notesGrid.innerHTML += `
@@ -681,7 +737,7 @@
             if (randomShineTimeout) clearTimeout(randomShineTimeout);
             mainTitle.classList.remove('text-shine-fx');
             mainTitle.classList.add('text-shine-fx-infinite');
-            document.getElementById('empty-state').classList.add('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
             renderSkeletons();
         }
 
@@ -715,214 +771,13 @@
             randomShineTimeout = setTimeout(randomTrigger, nextTime);
         }
 
+        // Initialize UI State
         showLoading();
 
         marked.setOptions({
             gfm: true,     
             breaks: true   
         });
-
-        // ---------------------------------------------------------
-        // Authentication & Realtime Data Fetching
-        // ---------------------------------------------------------
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            updateSettingsUI(user);
-            if (user) {
-                fetchNotesFromFirestore();
-            } else {
-                if (unsubscribeSnapshot) unsubscribeSnapshot();
-                notesData = [];
-                hideLoading();
-                renderNotes([]);
-            }
-        });
-
-        function updateSettingsUI(user) {
-            const signinBtn = document.getElementById('settings-google-signin-btn');
-            const userInfoDiv = document.getElementById('settings-user-info');
-            const avatarImg = document.getElementById('settings-avatar');
-            const nameSpan = document.getElementById('settings-name');
-            const signOutBtn = document.getElementById('settings-signout-btn');
-
-            if (user) {
-                signinBtn.classList.add('hidden');
-                userInfoDiv.classList.remove('hidden');
-                avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name=' + encodeURIComponent(user.displayName || 'User');
-                nameSpan.textContent = user.displayName || user.email || 'User';
-                signOutBtn.classList.remove('hidden');
-            } else {
-                signinBtn.classList.remove('hidden');
-                userInfoDiv.classList.add('hidden');
-            }
-        }
-
-        const settingsModal = document.getElementById('settings-modal');
-        const openSettings = () => {
-            settingsModal.classList.remove('hidden');
-            setTimeout(() => {
-                settingsModal.classList.remove('opacity-0');
-                settingsModal.querySelector('.bg-white').classList.remove('scale-95');
-                settingsModal.classList.add('opacity-100');
-                settingsModal.querySelector('.bg-white').classList.add('scale-100');
-            }, 20);
-        };
-        const closeSettings = () => {
-            settingsModal.classList.remove('opacity-100');
-            settingsModal.querySelector('.bg-white').classList.remove('scale-100');
-            settingsModal.classList.add('opacity-0');
-            settingsModal.querySelector('.bg-white').classList.add('scale-95');
-            setTimeout(() => settingsModal.classList.add('hidden'), 500);
-        };
-        document.getElementById('settings-btn-desktop').addEventListener('click', openSettings);
-        document.getElementById('settings-btn-mobile').addEventListener('click', openSettings);
-        document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
-        settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
-
-        document.getElementById('settings-google-signin-btn').addEventListener('click', async () => {
-            try {
-                await signInWithPopup(auth, provider);
-                showToast("Signed in! Notes are now synced.");
-                closeSettings();
-            } catch (error) {
-                console.error(error);
-                showToast("Sign in failed.");
-            }
-        });
-        document.getElementById('settings-signout-btn').addEventListener('click', async () => {
-            await signOut(auth);
-            showToast("Signed out.");
-            closeSettings();
-        });
-
-        function fetchNotesFromFirestore() {
-            if (!currentUser) return;
-            const notesCollectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-            if (unsubscribeSnapshot) unsubscribeSnapshot();
-            unsubscribeSnapshot = onSnapshot(notesCollectionRef, (snapshot) => {
-                notesData = [];
-                snapshot.forEach((doc) => notesData.push({ id: doc.id, ...doc.data() }));
-                notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                hideLoading();
-                renderNotes(notesData);
-                processUrlParam();
-            }, (error) => {
-                console.error(error);
-                hideLoading();
-                renderNotes([]);
-            });
-        }
-
-        function formatSnippet(content, maxLength = 100) {
-            if (!content) return '';
-            let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-            text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
-            text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
-            text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
-            text = text.replace(/^#{1,6}\s+/gm, '');
-            text = text.replace(/^[-*_]{3,}\s*$/gm, '');
-            text = text.replace(/\s+/g, ' ').trim();
-            if (text.length > maxLength) text = text.substring(0, maxLength) + '...';
-            return text;
-        }
-
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
-        }
-
-        function showToast(message) {
-            const existing = document.getElementById('dynamic-toast');
-            if (existing) existing.remove();
-            const toast = document.createElement('div');
-            toast.id = 'dynamic-toast';
-            toast.innerText = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '70px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = '#1f2937';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '9999px';
-            toast.style.fontSize = '0.875rem';
-            toast.style.fontWeight = '500';
-            toast.style.zIndex = '9999';
-            toast.style.whiteSpace = 'nowrap';
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.2s ease';
-            document.body.appendChild(toast);
-            setTimeout(() => toast.style.opacity = '1', 10);
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }
-
-        let urlParamProcessed = false;
-        function processUrlParam() {
-            if (urlParamProcessed) return;
-            const params = new URLSearchParams(window.location.search);
-            const noteId = params.get('note');
-            if (noteId && notesData.length > 0) {
-                const note = notesData.find(n => n.id === noteId);
-                if (note) {
-                    urlParamProcessed = true;
-                    openViewModal(note);
-                } else {
-                    showToast("Note not found");
-                    urlParamProcessed = true;
-                }
-            }
-        }
-
-        // ---------------------------------------------------------
-        // Core DOM Elements Variables
-        // ---------------------------------------------------------
-        const toggleBtn = document.getElementById('toggle-palette-btn');
-        const paletteMenu = document.getElementById('palette-menu');
-        const notesGrid = document.getElementById('notes-grid');
-        const searchInput = document.getElementById('search-input');
-        const emptyState = document.getElementById('empty-state');
-        
-        const editorModal = document.getElementById('editor-modal');
-        const editorContainer = document.getElementById('editor-container');
-        const titleInput = document.getElementById('note-title-input');
-        const contentInput = document.getElementById('note-content-input');
-        const previewTitle = document.getElementById('preview-title');
-        const previewContent = document.getElementById('preview-content');
-        const cancelBtn = document.getElementById('cancel-note-btn');
-        const saveBtn = document.getElementById('save-note-btn');
-        const deleteBtn = document.getElementById('delete-note-btn');
-        const modalHeader = document.getElementById('modal-header');
-        const modalColorIndicator = document.getElementById('modal-color-indicator');
-        
-        const viewModal = document.getElementById('view-modal');
-        const viewModalContent = document.getElementById('view-modal-content');
-        const viewTitle = document.getElementById('view-title');
-        const viewContent = document.getElementById('view-content');
-        const viewColorIndicator = document.getElementById('view-color-indicator');
-        const closeViewBtn = document.getElementById('close-view-modal');
-        
-        // FAB related elements inside View Modal
-        const viewFabToggle = document.getElementById('view-fab-toggle');
-        const viewFabMenu = document.getElementById('view-fab-menu');
-        const viewFabIcon = viewFabToggle.querySelector('i');
-        const editFromViewBtn = document.getElementById('edit-from-view-btn');
-        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
-        const copyViewBtn = document.getElementById('copy-view-btn');
-        
-        const confirmModal = document.getElementById('confirm-modal');
-        const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-
-        let isPaletteOpen = false;
-        let activeNoteId = null;
-        let activeColor = '#ffffff';
-        let currentViewNote = null;
-        let isViewFabOpen = false;
-        let fullscreenIcon = fullscreenViewBtn.querySelector('i');
 
         // ---------------------------------------------------------
         // View Modal FAB Logic
@@ -949,7 +804,6 @@
 
         viewFabToggle.addEventListener('click', toggleViewFab);
         
-        // Close View FAB when clicking anywhere else in the modal
         viewModalContent.addEventListener('click', (e) => {
             if (isViewFabOpen && !viewFabToggle.contains(e.target) && !viewFabMenu.contains(e.target)) {
                 closeViewFab();
@@ -1102,7 +956,7 @@
         // ---------------------------------------------------------
         function openViewModal(note) {
             currentViewNote = note;
-            closeViewFab(); // Ensure FAB starts closed
+            closeViewFab(); 
             
             const viewLoading = document.getElementById('view-loading');
             const viewContentWrapper = document.getElementById('view-content-wrapper');
@@ -1478,6 +1332,22 @@
             if (activeNoteId) await setDoc(doc(collectionRef, activeNoteId), noteData);
             else await addDoc(collectionRef, noteData);
             closeEditorModal();
+        });
+
+        // ---------------------------------------------------------
+        // Authentication State Listener (Initiated LAST)
+        // ---------------------------------------------------------
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            updateSettingsUI(user);
+            if (user) {
+                fetchNotesFromFirestore();
+            } else {
+                if (unsubscribeSnapshot) unsubscribeSnapshot();
+                notesData = [];
+                hideLoading();
+                renderNotes([]);
+            }
         });
     </script>
 </body>
