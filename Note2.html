@@ -11,13 +11,13 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Google Fonts: Inter + Sinhala -->
+    <!-- Google Fonts: Inter + Noto Sans Sinhala for high-quality multilingual typography -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@100..900&display=swap" rel="stylesheet">
     
     <!-- Markdown Parser -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
-    <!-- KaTeX for Math Rendering -->
+    <!-- KaTeX for Premium Math Equations and Expressions -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
@@ -32,11 +32,11 @@
                         sinhala: ['Noto Sans Sinhala', 'sans-serif'],
                     },
                     colors: {
-                        c1: '#ffcc80',
-                        c2: '#ffab91',
-                        c3: '#b39ddb',
-                        c4: '#80deea',
-                        c5: '#c5e1a5',
+                        c1: '#ffcc80', // Soft Pastel Orange
+                        c2: '#ffab91', // Soft Pastel Coral
+                        c3: '#b39ddb', // Soft Pastel Purple
+                        c4: '#80deea', // Soft Pastel Cyan
+                        c5: '#c5e1a5', // Soft Pastel Green
                     },
                     transitionTimingFunction: {
                         'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
@@ -61,6 +61,7 @@
             overflow: hidden;
         }
 
+        /* Scrollbar styles to keep visual cleanliness */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -69,7 +70,7 @@
             scrollbar-width: none;
         }
 
-        /* Premium Animations */
+        /* Premium Micro-Animations and transitions */
         @keyframes textShine {
             0% { background-position: 200% center; }
             100% { background-position: -200% center; }
@@ -91,7 +92,7 @@
             opacity: 0;
         }
         
-        /* New Settings Pane Animation */
+        /* Smooth Pane Fading animation for settings tabs */
         @keyframes paneFadeIn {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
@@ -100,7 +101,7 @@
             animation: paneFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Premium Palette menu & Animations */
+        /* Color Palette menu interactions */
         .palette-menu {
             opacity: 0;
             pointer-events: none;
@@ -134,7 +135,7 @@
             transform: translateY(0) scale(1);
         }
 
-        /* Format Toolbar Buttons */
+        /* Premium typography and formatting toolbars */
         .format-btn {
             padding: 0.35rem;
             color: #6b7280;
@@ -151,7 +152,6 @@
             background-color: #374151;
         }
 
-        /* Professional typography */
         .prose {
             line-height: 1.6;
         }
@@ -169,7 +169,7 @@
         .dark .prose h1 { border-color: #374151; }
         .prose p { margin-bottom: 1.25rem; line-height: 1.7; }
         
-        /* Reading Mode Overrides */
+        /* Reading Mode overrides */
         .reading-mode-active {
             background-color: var(--reading-bg) !important;
             transition: background-color 0.4s ease;
@@ -208,7 +208,6 @@
             }
         }
         
-        /* Form Element Styling for Settings */
         .premium-select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
@@ -220,11 +219,11 @@
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row bg-white dark:bg-gray-950 transition-colors duration-300">
 
-    <!-- Sidebar -->
+    <!-- Sidebar / Floating Action Area -->
     <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white dark:md:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1 transition-colors duration-300">
         <h1 class="font-bold text-xl tracking-tight text-gray-900 dark:text-white hidden md:block mb-20 animate-fade-in-up">Docket</h1>
         
-        <!-- Palette (FAB) -->
+        <!-- Palette Creator (Floating Action Menu) -->
         <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100] animate-fade-in-up" style="animation-delay: 0.1s;">
             <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 dark:border-gray-700 z-10">
                 <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm hover:scale-110 active:scale-95" data-color="#c5e1a5"></button>
@@ -239,7 +238,7 @@
             </button>
         </div>
 
-        <!-- Settings Icon -->
+        <!-- Desktop Settings Button -->
         <div class="hidden md:block mt-auto animate-fade-in-up" style="animation-delay: 0.2s;">
             <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
                 <i data-lucide="settings" class="w-5 h-5 hover:rotate-90 transition-transform"></i>
@@ -270,7 +269,7 @@
         </div>
     </main>
 
-    <!-- View Modal (Reading & Fullscreen) -->
+    <!-- View Modal (Preview / Fullscreen View Mode) -->
     <div id="view-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
         <div id="view-modal-content" class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-5xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 relative">
             
@@ -283,7 +282,7 @@
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 md:p-8 relative no-scrollbar">
-                <!-- Wrapper changes width based on fullscreen setting -->
+                <!-- Wrapper changes width based on settings and full screen state -->
                 <div id="view-content-max-wrapper" class="w-full max-w-3xl mx-auto pb-24 transition-all duration-500">
                     <div id="view-content-wrapper" class="block">
                         <h1 id="view-title" class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"></h1>
@@ -292,7 +291,7 @@
                 </div>
             </div>
 
-            <!-- View Modal FAB Menu -->
+            <!-- Floating FAB Menu inside View Modal -->
             <div id="view-fab-container" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex flex-col items-center justify-end z-50 pointer-events-none">
                 <div id="view-fab-menu" class="flex flex-col gap-3 items-center mb-4 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none origin-bottom">
                     <button id="reading-mode-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Toggle Reading Mode">
@@ -315,7 +314,7 @@
         </div>
     </div>
 
-    <!-- Editor Modal -->
+    <!-- Note Creation & Editing Editor Modal -->
     <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 dark:bg-gray-950/90 md:bg-black/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
         <div class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-2xl flex flex-col overflow-hidden border-0 md:border border-gray-200 dark:border-gray-800 transform scale-95 transition-all duration-500" id="editor-container">
             <div class="h-14 md:h-16 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 flex-shrink-0" id="modal-header">
@@ -332,7 +331,9 @@
                     <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black dark:bg-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 shadow-md">Save</button>
                 </div>
             </div>
+            
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                <!-- Editor Inputs (Left Pane) -->
                 <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
                     <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
                         <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white outline-none w-full mb-4 bg-transparent">
@@ -353,6 +354,8 @@
                         <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
                     </div>
                 </div>
+                
+                <!-- Live Preview Pane (Right Pane) -->
                 <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50 dark:bg-gray-950">
                     <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-800 empty:hidden"></h1>
                     <div id="preview-content" class="prose prose-base md:prose-lg dark:prose-invert text-gray-800 dark:text-gray-200 w-full max-w-none"></div>
@@ -361,11 +364,11 @@
         </div>
     </div>
 
-    <!-- Redesigned Settings Modal (Horizontal Desktop) -->
+    <!-- Redesigned Horizontal Settings Modal -->
     <div id="settings-modal" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm hidden modal-center p-0 md:p-4 opacity-0 transition-opacity duration-500">
         <div class="bg-white dark:bg-gray-900 w-full md:w-[850px] md:max-w-[90vw] h-full md:h-[600px] md:rounded-[24px] shadow-2xl transform scale-95 transition-all duration-500 overflow-hidden flex flex-col md:flex-row border-0 md:border border-gray-200/50 dark:border-gray-700/50">
             
-            <!-- Mobile Header -->
+            <!-- Mobile Navigation Header -->
             <div class="md:hidden flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0 z-10 bg-white dark:bg-gray-900">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white">Settings</h3>
                 <button id="close-settings-mobile" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
@@ -373,7 +376,7 @@
                 </button>
             </div>
 
-            <!-- Sidebar Tabs -->
+            <!-- Desktop Sidebar Tabs Navigation -->
             <div class="w-full md:w-64 bg-gray-50/50 dark:bg-gray-950/50 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 flex flex-row md:flex-col p-4 md:p-6 gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar flex-shrink-0">
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 hidden md:block px-2">Settings</h3>
                 
@@ -388,9 +391,9 @@
                 </button>
             </div>
 
-            <!-- Main Content Area -->
+            <!-- Tab Content Pane Area -->
             <div class="flex-1 flex flex-col h-full bg-white dark:bg-gray-900 overflow-hidden relative">
-                <!-- Desktop Close Button -->
+                <!-- Desktop Close Button (Floating in top right) -->
                 <div class="hidden md:flex items-center justify-end px-6 py-4 flex-shrink-0 z-10 absolute top-0 right-0">
                     <button id="close-settings-desktop" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
                         <i data-lucide="x" class="w-4 h-4"></i>
@@ -399,10 +402,11 @@
 
                 <div class="p-6 md:px-10 md:py-8 overflow-y-auto flex-1 no-scrollbar relative">
                     
-                    <!-- Account Tab -->
+                    <!-- Account Settings Tab Pane -->
                     <div id="tab-account" class="settings-pane block">
                         <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Profile</h4>
                         <div class="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                            <!-- Display Sync Status / User Information -->
                             <div id="settings-user-info" class="hidden flex-col items-center gap-4 w-full">
                                 <div class="relative">
                                     <img id="settings-avatar" class="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-700" src="" alt="avatar">
@@ -415,6 +419,7 @@
                                 <button id="settings-signout-btn" class="mt-4 px-6 py-2.5 text-sm font-semibold text-red-600 bg-red-50 dark:bg-red-900/20 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors w-full max-w-[200px]">Sign out</button>
                             </div>
                             
+                            <!-- Prompt Sign In Securely -->
                             <div id="settings-signin-container" class="flex flex-col items-center w-full">
                                 <div class="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mb-4">
                                     <i data-lucide="cloud" class="w-10 h-10"></i>
@@ -429,12 +434,12 @@
                         </div>
                     </div>
 
-                    <!-- Appearance Tab -->
+                    <!-- Appearance Options Tab Pane -->
                     <div id="tab-appearance" class="settings-pane hidden">
                         <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Theme & Layout</h4>
                         <div class="flex flex-col gap-6">
                             
-                            <!-- Theme Option -->
+                            <!-- Theme Option (Full App) -->
                             <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-900 dark:text-white">App Theme</label>
@@ -446,7 +451,7 @@
                                 </select>
                             </div>
 
-                            <!-- Full Screen Layout -->
+                            <!-- Full Screen Layout adjustments -->
                             <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 flex flex-col gap-5">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-900 dark:text-white">Full Screen Mode Size</label>
@@ -468,7 +473,7 @@
                                 </div>
                             </div>
 
-                            <!-- Reading Mode Customization -->
+                            <!-- Reading Mode Color Adjustments (Only for Full Screen / Preview mode) -->
                             <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
                                 <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Reading Mode Colors</label>
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Custom colors applied only when Reading Mode is enabled.</p>
@@ -498,11 +503,12 @@
                         </div>
                     </div>
 
-                    <!-- Data Tab -->
+                    <!-- Data & Syncying Tab Pane -->
                     <div id="tab-data" class="settings-pane hidden">
                         <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Data Management</h4>
                         
                         <div class="flex flex-col gap-4">
+                            <!-- Backup Export JSON -->
                             <div class="p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30 flex items-center justify-between gap-4">
                                 <div>
                                     <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Export Backup</h5>
@@ -513,6 +519,7 @@
                                 </button>
                             </div>
 
+                            <!-- Import Notes JSON -->
                             <div class="p-5 bg-green-50/50 dark:bg-green-900/10 rounded-2xl border border-green-100 dark:border-green-900/30 flex items-center justify-between gap-4">
                                 <div>
                                     <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Import Notes</h5>
@@ -526,6 +533,7 @@
                                 </div>
                             </div>
                             
+                            <!-- Danger Zone to Clear Firestore Storage -->
                             <div class="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
                                 <h5 class="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Danger Zone</h5>
                                 <p class="text-xs text-red-500/80 dark:text-red-400/80 mb-4">Permanently delete all notes from the cloud. This action cannot be undone.</p>
@@ -541,7 +549,7 @@
         </div>
     </div>
 
-    <!-- Universal Confirm Modal -->
+    <!-- Universal Premium Confirmation Dialog Modal (Alert replacements) -->
     <div id="confirm-modal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500">
         <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-800">
             <div class="p-6 md:p-8">
@@ -560,11 +568,13 @@
         </div>
     </div>
 
+    <!-- Firebase System Module Integration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Global Firestore Config parameters
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -578,7 +588,13 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
-        const APP_ID = 'studyflow-pro';
+        const APP_ID = 'studyflow-pro'; // Core container partition
+
+        // DOM element cache definition - Initialized safely before use
+        const viewModal = document.getElementById('view-modal');
+        const viewFabMenu = document.getElementById('view-fab-menu');
+        const viewFabIcon = document.getElementById('view-fab-icon');
+        const editorModal = document.getElementById('editor-modal');
 
         let currentUser = null;
         let unsubscribeSnapshot = null;
@@ -590,8 +606,10 @@
         let isViewFabOpen = false;
         let isReadingMode = false;
 
+        // Marked dynamic config settings for live rendering
         marked.setOptions({ gfm: true, breaks: true });
 
+        // Retrieve and build local UI customized preferences
         const defaultPrefs = {
             theme: 'light',
             readingBg: '#fdf6e3',
@@ -607,31 +625,59 @@
             userPrefs = defaultPrefs;
         }
 
-        function applyPreferences() {
-            // Theme
-            if (userPrefs.theme === 'dark') document.documentElement.classList.add('dark');
-            else document.documentElement.classList.remove('dark');
-
-            // CSS Variables for Reading Mode
-            document.documentElement.style.setProperty('--reading-bg', userPrefs.readingBg);
-            document.documentElement.style.setProperty('--reading-text', userPrefs.readingText);
-
-            // Update DOM inputs
-            document.getElementById('pref-theme').value = userPrefs.theme || 'light';
-            document.getElementById('pref-reading-bg').value = userPrefs.readingBg || defaultPrefs.readingBg;
-            document.getElementById('pref-reading-text').value = userPrefs.readingText || defaultPrefs.readingText;
-            document.getElementById('pref-bg-val').textContent = userPrefs.readingBg || defaultPrefs.readingBg;
-            document.getElementById('pref-text-val').textContent = userPrefs.readingText || defaultPrefs.readingText;
-            document.getElementById('pref-fs-width').value = userPrefs.fsWidth || 'max-w-5xl';
-            document.getElementById('pref-fs-fontsize').value = userPrefs.fsFontSize || '18';
-            document.getElementById('font-size-val').textContent = (userPrefs.fsFontSize || '18') + 'px';
-
-            // Apply immediately if in full screen
-            if (document.fullscreenElement) {
-                applyFullscreenLayout(true);
+        // Applies customized user layouts to full screen cards
+        function applyFullscreenLayout(isFullscreen) {
+            const maxWrapper = document.getElementById('view-content-max-wrapper');
+            const content = document.getElementById('view-content');
+            
+            if (isFullscreen) {
+                maxWrapper.className = `w-full mx-auto pb-24 transition-all duration-500 ${userPrefs.fsWidth || 'max-w-5xl'}`;
+                content.style.fontSize = (userPrefs.fsFontSize || '18') + 'px';
+            } else {
+                maxWrapper.className = 'w-full max-w-3xl mx-auto pb-24 transition-all duration-500';
+                content.style.fontSize = '';
             }
         }
 
+        // Apply visual user customized metrics to document
+        function applyPreferences() {
+            // Theme selection
+            if (userPrefs.theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Customize active reading color variables
+            document.documentElement.style.setProperty('--reading-bg', userPrefs.readingBg || defaultPrefs.readingBg);
+            document.documentElement.style.setProperty('--reading-text', userPrefs.readingText || defaultPrefs.readingText);
+
+            // Populate settings elements instantly
+            const selectTheme = document.getElementById('pref-theme');
+            const colorBg = document.getElementById('pref-reading-bg');
+            const colorText = document.getElementById('pref-reading-text');
+            const bgVal = document.getElementById('pref-bg-val');
+            const textVal = document.getElementById('pref-text-val');
+            const widthSel = document.getElementById('pref-fs-width');
+            const fsSlider = document.getElementById('pref-fs-fontsize');
+            const fsVal = document.getElementById('font-size-val');
+
+            if (selectTheme) selectTheme.value = userPrefs.theme || 'light';
+            if (colorBg) colorBg.value = userPrefs.readingBg || defaultPrefs.readingBg;
+            if (colorText) colorText.value = userPrefs.readingText || defaultPrefs.readingText;
+            if (bgVal) bgVal.textContent = userPrefs.readingBg || defaultPrefs.readingBg;
+            if (textVal) textVal.textContent = userPrefs.readingText || defaultPrefs.readingText;
+            if (widthSel) widthSel.value = userPrefs.fsWidth || 'max-w-5xl';
+            if (fsSlider) fsSlider.value = userPrefs.fsFontSize || '18';
+            if (fsVal) fsVal.textContent = (userPrefs.fsFontSize || '18') + 'px';
+
+            // Real-time check if viewer is open/fullscreen to apply metrics
+            if (viewModal && !viewModal.classList.contains('hidden')) {
+                applyFullscreenLayout(document.fullscreenElement ? true : false);
+            }
+        }
+
+        // Save customized layout variables to storage
         function savePreferences() {
             userPrefs = {
                 theme: document.getElementById('pref-theme').value,
@@ -644,16 +690,19 @@
             applyPreferences();
         }
 
-        // Event listeners for preferences
+        // Wire preferences settings components to dynamically alter layout
         ['pref-theme', 'pref-reading-bg', 'pref-reading-text', 'pref-fs-width', 'pref-fs-fontsize'].forEach(id => {
-            document.getElementById(id).addEventListener('input', savePreferences);
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', savePreferences);
         });
 
         applyPreferences();
 
+        // Safe Toast notifications builder
         function showToast(message) {
             const existing = document.getElementById('dynamic-toast');
             if (existing) existing.remove();
+            
             const toast = document.createElement('div');
             toast.id = 'dynamic-toast';
             toast.innerText = message;
@@ -671,14 +720,15 @@
             toast.style.opacity = '0';
             toast.style.transition = 'opacity 0.2s ease';
             document.body.appendChild(toast);
+            
             setTimeout(() => toast.style.opacity = '1', 10);
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
-            }, 2000);
+            }, 2500);
         }
 
-        // Confirm Modal Reusable
+        // Handle safe user actions confirmation alerts
         function showConfirmModal(title, message, btnText, isDanger, onConfirm) {
             const modal = document.getElementById('confirm-modal');
             document.getElementById('confirm-title').textContent = title;
@@ -695,7 +745,7 @@
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
-                modal.querySelector('.bg-white').classList.remove('scale-95');
+                modal.querySelector('.bg-white, .dark\\:bg-gray-900').classList.remove('scale-95');
                 modal.classList.add('opacity-100');
             }, 20);
 
@@ -706,26 +756,26 @@
         function closeConfirmModal() {
             const modal = document.getElementById('confirm-modal');
             modal.classList.remove('opacity-100');
-            modal.querySelector('.bg-white').classList.add('scale-95');
+            modal.querySelector('.bg-white, .dark\\:bg-gray-900').classList.add('scale-95');
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
-        // Redesigned Settings Tab Logic
+        // Settings tab pane rendering logic
         document.querySelectorAll('.settings-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 const currentTab = e.currentTarget;
                 
-                // Reset all tabs
+                // Clear active states
                 document.querySelectorAll('.settings-tab').forEach(t => {
                     t.classList.remove('active', 'bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm', 'ring-1', 'ring-gray-200', 'dark:ring-gray-700');
                     t.classList.add('text-gray-600', 'dark:text-gray-400');
                 });
                 
-                // Activate clicked tab
+                // Activate target layout
                 currentTab.classList.add('active', 'bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm', 'ring-1', 'ring-gray-200', 'dark:ring-gray-700');
                 currentTab.classList.remove('text-gray-600', 'dark:text-gray-400');
 
-                // Switch panes
+                // Hide settings layouts
                 document.querySelectorAll('.settings-pane').forEach(p => { 
                     p.classList.remove('block'); 
                     p.classList.add('hidden'); 
@@ -740,11 +790,15 @@
         });
 
         function updateSettingsUI(user) {
-            if (user) {
+            if (user && !user.isAnonymous) {
                 document.getElementById('settings-signin-container')?.classList.add('hidden');
                 document.getElementById('settings-user-info')?.classList.replace('hidden', 'flex');
-                if (document.getElementById('settings-avatar')) document.getElementById('settings-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName;
-                if (document.getElementById('settings-name')) document.getElementById('settings-name').textContent = user.displayName || 'User';
+                if (document.getElementById('settings-avatar')) {
+                    document.getElementById('settings-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || 'User');
+                }
+                if (document.getElementById('settings-name')) {
+                    document.getElementById('settings-name').textContent = user.displayName || 'User Account';
+                }
             } else {
                 document.getElementById('settings-signin-container')?.classList.remove('hidden');
                 document.getElementById('settings-user-info')?.classList.replace('flex', 'hidden');
@@ -753,12 +807,12 @@
 
         const settingsModal = document.getElementById('settings-modal');
         const openSettings = () => {
-            // Ensure first tab is active when opened
             document.querySelector('.settings-tab[data-target="tab-account"]').click();
             settingsModal.classList.remove('hidden');
             setTimeout(() => {
                 settingsModal.classList.remove('opacity-0');
                 settingsModal.querySelector('div').classList.remove('scale-95');
+                settingsModal.classList.add('opacity-100');
             }, 20);
         };
         const closeSettings = () => {
@@ -775,13 +829,18 @@
         document.getElementById('settings-google-signin-btn')?.addEventListener('click', async () => {
             try {
                 await signInWithPopup(auth, provider);
-                showToast("Signed in successfully.");
-            } catch (error) { console.error(error); showToast("Sign in failed."); }
+                showToast("Signed in successfully with Google.");
+            } catch (error) { 
+                console.error(error); 
+                showToast("Sign in failed."); 
+            }
         });
         document.getElementById('settings-signout-btn')?.addEventListener('click', async () => {
-            await signOut(auth); showToast("Signed out.");
+            await signOut(auth); 
+            showToast("Signed out from Google.");
         });
 
+        // Backup and Data sync operations
         document.getElementById('export-btn').addEventListener('click', () => {
             if (notesData.length === 0) return showToast("No notes to export!");
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData));
@@ -793,7 +852,7 @@
         });
 
         document.getElementById('import-file').addEventListener('change', async (e) => {
-            if (!currentUser) return showToast("Please sign in to import notes.");
+            if (!currentUser) return showToast("Authentication error.");
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -820,12 +879,12 @@
                 }
             };
             reader.readAsText(file);
-            e.target.value = ''; // reset input
+            e.target.value = ''; // Reset input
         });
 
         document.getElementById('clear-all-btn').addEventListener('click', () => {
-            if (!currentUser) return showToast("You must be signed in.");
-            if (notesData.length === 0) return showToast("No data to clear.");
+            if (!currentUser) return showToast("Sync account needed.");
+            if (notesData.length === 0) return showToast("No notes to delete.");
             
             showConfirmModal(
                 "Clear All Data", 
@@ -847,6 +906,7 @@
             );
         });
 
+        // Grid renderer of Pastel Cards
         function renderNotes(notesToRender) {
             const notesGrid = document.getElementById('notes-grid');
             const emptyState = document.getElementById('empty-state');
@@ -879,22 +939,23 @@
             lucide.createIcons();
         }
 
+        // Live synchronizer from user Firestore directory
         function fetchNotesFromFirestore() {
             if (!currentUser) return;
             const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
             if (unsubscribeSnapshot) unsubscribeSnapshot();
+            
             unsubscribeSnapshot = onSnapshot(ref, (snapshot) => {
                 notesData = [];
                 snapshot.forEach(doc => notesData.push({ id: doc.id, ...doc.data() }));
                 notesData.sort((a, b) => b.timestamp - a.timestamp);
                 renderNotes(notesData);
+            }, (error) => {
+                console.error("Firestore loading error:", error);
             });
         }
 
-        const viewModal = document.getElementById('view-modal');
-        const viewFabMenu = document.getElementById('view-fab-menu');
-        const viewFabIcon = document.getElementById('view-fab-icon');
-
+        // Preview actions floating dialog logic
         function toggleViewFab(e) {
             if (e) e.stopPropagation();
             isViewFabOpen = !isViewFabOpen;
@@ -912,6 +973,7 @@
         }
         document.getElementById('view-fab-toggle').addEventListener('click', toggleViewFab);
 
+        // Preview full-screen note parser
         function openViewModal(note) {
             currentViewNote = note;
             closeViewFab();
@@ -922,12 +984,17 @@
             document.getElementById('view-color-indicator').style.backgroundColor = note.color || '#ccc';
             document.getElementById('view-content').innerHTML = marked.parse(note.content || '');
             
-            try { renderMathInElement(document.getElementById('view-content'), { throwOnError: false }); } catch(e){}
+            try { 
+                renderMathInElement(document.getElementById('view-content'), { throwOnError: false }); 
+            } catch(e) {
+                console.warn("Math loading omitted:", e);
+            }
 
             viewModal.classList.remove('hidden');
             setTimeout(() => {
                 viewModal.classList.remove('opacity-0');
                 document.getElementById('view-modal-content').classList.remove('scale-95');
+                viewModal.classList.add('opacity-100');
             }, 20);
             lucide.createIcons();
         }
@@ -941,7 +1008,7 @@
             }, 300);
         });
 
-        // Reading Mode Toggle
+        // Reading mode selector logic
         document.getElementById('reading-mode-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             isReadingMode = !isReadingMode;
@@ -957,24 +1024,7 @@
             closeViewFab();
         });
 
-        // Full Screen Width/Font size applier
-        function applyFullscreenLayout(isFullscreen) {
-            const maxWrapper = document.getElementById('view-content-max-wrapper');
-            const content = document.getElementById('view-content');
-            
-            if (isFullscreen) {
-                // Apply Width
-                maxWrapper.className = `w-full mx-auto pb-24 transition-all duration-500 ${userPrefs.fsWidth}`;
-                // Apply Font Size
-                content.style.fontSize = userPrefs.fsFontSize + 'px';
-            } else {
-                // Revert
-                maxWrapper.className = 'w-full max-w-3xl mx-auto pb-24 transition-all duration-500';
-                content.style.fontSize = '';
-            }
-        }
-
-        // Full Screen Toggle
+        // Maximizer layout handler
         document.getElementById('fullscreen-view-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             closeViewFab();
@@ -997,7 +1047,7 @@
             lucide.createIcons();
         });
 
-        // Edit & Copy from View
+        // Quick action operations on active preview
         document.getElementById('edit-from-view-btn').addEventListener('click', () => {
             const note = currentViewNote;
             document.getElementById('close-view-modal').click();
@@ -1005,13 +1055,24 @@
         });
 
         document.getElementById('copy-view-btn').addEventListener('click', () => {
-            if(currentViewNote) {
-                navigator.clipboard.writeText(currentViewNote.content || '').then(()=>showToast("Copied!"));
+            if (currentViewNote) {
+                // Clipboard safe copy
+                const textToCopy = currentViewNote.content || '';
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Copied to clipboard!");
+                } catch (err) {
+                    showToast("Copy failed.");
+                }
+                document.body.removeChild(tempTextArea);
                 closeViewFab();
             }
         });
 
-        const editorModal = document.getElementById('editor-modal');
         function openEditorModal(note = null, color = '#ffffff') {
             activeNoteId = note ? note.id : null;
             activeColor = note ? note.color : color;
@@ -1028,6 +1089,7 @@
             setTimeout(() => {
                 editorModal.classList.remove('opacity-0');
                 document.getElementById('editor-container').classList.remove('scale-95');
+                editorModal.classList.add('opacity-100');
             }, 20);
         }
 
@@ -1049,7 +1111,7 @@
         });
 
         document.getElementById('save-note-btn').addEventListener('click', async () => {
-            if (!currentUser) return showToast("Sign in required to save!");
+            if (!currentUser) return showToast("Anonymous auth required.");
             const title = document.getElementById('note-title-input').value.trim();
             const content = document.getElementById('note-content-input').value.trim();
             if (!title && !content) return closeEditorModal();
@@ -1057,33 +1119,50 @@
             const colRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
             const data = { title, content, color: activeColor, timestamp: Date.now() };
             
-            if (activeNoteId) await setDoc(doc(colRef, activeNoteId), data);
-            else await addDoc(colRef, data);
-            
-            closeEditorModal();
+            try {
+                if (activeNoteId) {
+                    await setDoc(doc(colRef, activeNoteId), data);
+                } else {
+                    await addDoc(colRef, data);
+                }
+                closeEditorModal();
+            } catch (err) {
+                console.error("Save error:", err);
+                showToast("Failed to save note.");
+            }
         });
 
+        // Dynamic content updates
         function updatePreview() {
-            document.getElementById('preview-title').textContent = document.getElementById('note-title-input').value;
-            const content = document.getElementById('note-content-input').value;
-            document.getElementById('preview-content').innerHTML = marked.parse(content);
-            try { renderMathInElement(document.getElementById('preview-content'), { throwOnError: false }); } catch(e){}
+            const titleVal = document.getElementById('note-title-input').value;
+            const contentVal = document.getElementById('note-content-input').value;
+            
+            document.getElementById('preview-title').textContent = titleVal;
+            document.getElementById('preview-content').innerHTML = marked.parse(contentVal);
+            
+            try { 
+                renderMathInElement(document.getElementById('preview-content'), { throwOnError: false }); 
+            } catch(e){}
         }
 
         document.getElementById('note-title-input').addEventListener('input', updatePreview);
         document.getElementById('note-content-input').addEventListener('input', updatePreview);
 
-        // Markdown format buttons
+        // Quick format tool modifiers
         document.querySelectorAll('.format-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 const input = document.getElementById('note-content-input');
                 const format = btn.getAttribute('data-format');
-                const start = input.selectionStart, end = input.selectionEnd;
+                const start = input.selectionStart;
+                const end = input.selectionEnd;
+                
                 input.value = input.value.substring(0, start) + format + input.value.substring(start, end) + format + input.value.substring(end);
                 updatePreview();
+                input.focus();
             });
         });
 
+        // Color dots palette logic
         document.getElementById('toggle-palette-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             isPaletteOpen = !isPaletteOpen;
@@ -1096,29 +1175,46 @@
             }
         });
 
+        // Close palette menu on outer click
+        document.addEventListener('click', () => {
+            if (isPaletteOpen) {
+                document.getElementById('toggle-palette-btn').click();
+            }
+        });
+
         document.querySelectorAll('.color-dot').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                document.getElementById('toggle-palette-btn').click(); // close
+                e.stopPropagation();
+                document.getElementById('palette-menu').classList.remove('open');
+                document.getElementById('plus-icon').classList.remove('rotate-135');
+                isPaletteOpen = false;
                 openEditorModal(null, e.target.getAttribute('data-color'));
             });
         });
 
+        // Live matching filter logic
         document.getElementById('search-input').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
-            renderNotes(notesData.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q)));
+            const filtered = notesData.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q));
+            renderNotes(filtered);
         });
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            updateSettingsUI(user);
-            if (user) fetchNotesFromFirestore();
-            else {
-                if(unsubscribeSnapshot) unsubscribeSnapshot();
-                notesData = [];
-                renderNotes([]);
+        // Robust Anonymous validation to prevent Firestore permissions issue
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) {
+                try {
+                    await signInAnonymously(auth);
+                } catch (err) {
+                    console.error("Anonym auth login error:", err);
+                }
+            } else {
+                currentUser = user;
+                updateSettingsUI(user);
+                fetchNotesFromFirestore();
             }
         });
 
+        // Init Lucide engine
         lucide.createIcons();
     </script>
 </body>
