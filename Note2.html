@@ -594,7 +594,6 @@
                         </button>
                     </div>
                 </div>
-                <!-- Additional settings can be added here -->
             </div>
         </div>
     </div>
@@ -701,13 +700,11 @@
 
         function startRandomShine() {
             if (randomShineTimeout) clearTimeout(randomShineTimeout);
-            
             const randomTrigger = () => {
                 triggerShine();
                 const nextTime = Math.random() * 20000 + 15000; 
                 randomShineTimeout = setTimeout(randomTrigger, nextTime);
             };
-            
             const nextTime = Math.random() * 15000 + 10000; 
             randomShineTimeout = setTimeout(randomTrigger, nextTime);
         }
@@ -812,10 +809,8 @@
             let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
             text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
-            
             text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
             text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
-            
             text = text.replace(/^#{1,6}\s+/gm, '');
             text = text.replace(/^[-*_]{3,}\s*$/gm, '');
             text = text.replace(/\s+/g, ' ').trim();
@@ -876,11 +871,16 @@
             }
         }
 
+        // ==========================================
+        // DOM Elements
+        // ==========================================
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
         const notesGrid = document.getElementById('notes-grid');
         const searchInput = document.getElementById('search-input');
         const emptyState = document.getElementById('empty-state');
+        
+        // Editor Modal
         const editorModal = document.getElementById('editor-modal');
         const editorContainer = document.getElementById('editor-container');
         const titleInput = document.getElementById('note-title-input');
@@ -893,24 +893,22 @@
         const modalHeader = document.getElementById('modal-header');
         const modalColorIndicator = document.getElementById('modal-color-indicator');
         
-        // View Modal Elements
+        // View Modal 
         const viewModal = document.getElementById('view-modal');
         const viewModalContent = document.getElementById('view-modal-content');
         const viewTitle = document.getElementById('view-title');
         const viewContent = document.getElementById('view-content');
         const viewColorIndicator = document.getElementById('view-color-indicator');
         const closeViewBtn = document.getElementById('close-view-modal');
-        const editFromViewBtn = document.getElementById('edit-from-view-btn');
-        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
-        const copyViewBtn = document.getElementById('copy-view-btn');
-        let fullscreenIcon = null;
         
-        // View Modal FAB Logic
+        // View Modal FAB
         const viewFabToggle = document.getElementById('view-fab-toggle');
         const viewFabMenu = document.getElementById('view-fab-menu');
         const viewFabIcon = viewFabToggle.querySelector('i');
-        let isViewFabOpen = false;
-
+        const editFromViewBtn = document.getElementById('edit-from-view-btn');
+        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
+        const copyViewBtn = document.getElementById('copy-view-btn');
+        
         const confirmModal = document.getElementById('confirm-modal');
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
@@ -919,8 +917,12 @@
         let activeNoteId = null;
         let activeColor = '#ffffff';
         let currentViewNote = null;
+        let isViewFabOpen = false;
+        let fullscreenIcon = fullscreenViewBtn.querySelector('i');
 
-        // View Modal FAB Toggle
+        // ==========================================
+        // View Modal FAB Logic
+        // ==========================================
         function toggleViewFab(e) {
             if (e) e.stopPropagation();
             isViewFabOpen = !isViewFabOpen;
@@ -942,15 +944,15 @@
         }
 
         viewFabToggle.addEventListener('click', toggleViewFab);
-
-        // Close FAB when clicking outside
         viewModalContent.addEventListener('click', (e) => {
             if (isViewFabOpen && !viewFabToggle.contains(e.target) && !viewFabMenu.contains(e.target)) {
                 closeViewFab();
             }
         });
 
-
+        // ==========================================
+        // Fullscreen Logic
+        // ==========================================
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 viewModalContent.requestFullscreen().catch(err => console.error(err));
@@ -976,6 +978,9 @@
             toggleFullscreen();
         });
 
+        // ==========================================
+        // Main Screen Palette & Notes Logic
+        // ==========================================
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             isPaletteOpen = !isPaletteOpen;
@@ -984,9 +989,11 @@
                 toggleBtn.classList.add('open');
             } else closePalette();
         });
+        
         document.addEventListener('click', (e) => {
             if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette();
         });
+        
         function closePalette() {
             isPaletteOpen = false;
             paletteMenu.classList.remove('open');
@@ -1044,7 +1051,6 @@
                 div.addEventListener('click', (e) => {
                     if (e.target.closest('.edit-btn') || e.target.closest('.copy-btn')) return;
                     openViewModal(note);
-                    if (!document.fullscreenElement) toggleFullscreen();
                 });
                 
                 const copyBtn = div.querySelector('.copy-btn');
@@ -1057,7 +1063,7 @@
                     tempTextArea.select();
                     document.execCommand('copy');
                     document.body.removeChild(tempTextArea);
-                    showToast("Content Copied! 搭");
+                    showToast("Content Copied! 📝");
                 });
 
                 const editBtn = div.querySelector('.edit-btn');
@@ -1065,6 +1071,7 @@
                     e.stopPropagation();
                     openEditorModal(note);
                 });
+                
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
@@ -1074,16 +1081,19 @@
                     el.select();
                     document.execCommand('copy');
                     document.body.removeChild(el);
-                    showToast("Link Copied! 迫");
+                    showToast("Link Copied! 🔗");
                 });
                 notesGrid.appendChild(div);
             });
             lucide.createIcons();
         }
 
+        // ==========================================
+        // View Modal Logic
+        // ==========================================
         function openViewModal(note) {
             currentViewNote = note;
-            closeViewFab(); // Reset FAB state on open
+            closeViewFab();
             
             const viewLoading = document.getElementById('view-loading');
             const viewContentWrapper = document.getElementById('view-content-wrapper');
@@ -1133,13 +1143,12 @@
                 viewLoading.classList.remove('flex');
                 viewContentWrapper.classList.remove('hidden');
 
-                fullscreenIcon = fullscreenViewBtn.querySelector('i');
                 if (fullscreenIcon) lucide.createIcons();
             }, 400);
         }
 
         function closeViewModal() {
-            closeViewFab(); // Reset FAB state
+            closeViewFab();
             viewModal.classList.remove('opacity-100');
             viewModalContent.classList.remove('scale-100');
             viewModal.classList.add('opacity-0');
@@ -1172,7 +1181,7 @@
             tempTextArea.select();
             document.execCommand('copy');
             document.body.removeChild(tempTextArea);
-            showToast("Content Copied! 搭");
+            showToast("Content Copied! 📝");
         });
 
         document.addEventListener('keydown', (e) => {
@@ -1180,6 +1189,9 @@
             if (e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); }
         });
 
+        // ==========================================
+        // Editor Modal Logic
+        // ==========================================
         function showConfirmModal(onConfirm) {
             confirmModal.classList.remove('hidden');
             setTimeout(() => {
