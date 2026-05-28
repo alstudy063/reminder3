@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Docketes</title>
+    <title>Docket Notes</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -11,7 +11,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter + Sinhala -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@100..900&display=swap" rel="stylesheet">
     
     <!-- Markdown Parser -->
@@ -24,7 +24,6 @@
 
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
@@ -37,6 +36,10 @@
                         c3: '#b39ddb',
                         c4: '#80deea',
                         c5: '#c5e1a5',
+                    },
+                    transitionTimingFunction: {
+                        'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
+                        'spring': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                     }
                 }
             }
@@ -44,62 +47,63 @@
     </script>
 
     <style>
-        :root {
-            --rm-bg: #fdf6e3;
-            --rm-text: #333333;
+        * {
+            -webkit-tap-highlight-color: transparent;
         }
-
-        * { -webkit-tap-highlight-color: transparent; }
         body {
             font-family: 'Inter', 'Noto Sans Sinhala', sans-serif;
+            background-color: #ffffff;
             overflow: hidden;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Reading Mode Styles */
-        .reading-mode-active {
-            background-color: var(--rm-bg) !important;
-            color: var(--rm-text) !important;
-            transition: all 0.5s ease;
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        .reading-mode-active .prose h1, .reading-mode-active .prose h2, 
-        .reading-mode-active .prose h3, .reading-mode-active .prose p, 
-        .reading-mode-active .prose li, .reading-mode-active .prose strong,
-        .reading-mode-active #view-title, .reading-mode-active .text-gray-900,
-        .reading-mode-active .text-gray-800 {
-            color: var(--rm-text) !important;
-        }
-        .reading-mode-active .bg-white {
-            background-color: var(--rm-bg) !important;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
-        /* Animations */
+        /* Premium Animations */
         @keyframes textShine {
             0% { background-position: 200% center; }
             100% { background-position: -200% center; }
+        }
+        .text-shine-fx {
+            background: linear-gradient(to right, #111827 20%, #d1d5db 40%, #ffffff 50%, #d1d5db 60%, #111827 80%);
+            background-size: 200% auto;
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            animation: textShine 3s ease-in-out forwards;
         }
         .text-shine-fx-infinite {
             background: linear-gradient(to right, #111827 20%, #d1d5db 40%, #ffffff 50%, #d1d5db 60%, #111827 80%);
             background-size: 200% auto;
             color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
             -webkit-background-clip: text !important;
             background-clip: text !important;
             animation: textShine 3s linear infinite;
         }
-        .dark .text-shine-fx-infinite {
-            background: linear-gradient(to right, #f9fafb 20%, #4b5563 40%, #1f2937 50%, #4b5563 60%, #f9fafb 80%);
-            background-size: 200% auto;
-            -webkit-background-clip: text !important;
-        }
 
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
         @keyframes popIn {
             from { opacity: 0; transform: scale(0.95) translateY(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
         }
-        .animate-pop-in { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; }
+        .animate-pop-in {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+        }
 
         /* Premium Palette menu & Animations */
         .palette-menu {
@@ -152,18 +156,11 @@
         }
 
         /* FAB Rotate Animation */
-        #toggle-palette-btn i, #toggle-palette-btn svg {
+        #toggle-palette-btn i {
             transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-        #toggle-palette-btn.open i, #toggle-palette-btn.open svg {
+        #toggle-palette-btn.open i {
             transform: rotate(135deg);
-        }
-
-        #view-fab-toggle i, #view-fab-toggle svg {
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        #view-fab-toggle.open i, #view-fab-toggle.open svg {
-            transform: rotate(90deg);
         }
 
         /* Format Toolbar Buttons */
@@ -207,462 +204,513 @@
         .prose {
             line-height: 1.6;
             color: #1f2937;
-            transition: all 0.3s ease;
         }
-        .dark .prose { color: #d1d5db; }
-        .prose h1 { font-size: 2.5rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; color: #111827; }
-        .dark .prose h1 { border-bottom-color: #374151; color: #f9fafb; }
-        .prose h2 { font-size: 2rem; font-weight: 700; margin-top: 2rem; margin-bottom: 0.75rem; color: #111827; }
-        .dark .prose h2 { color: #f9fafb; }
-        .prose h3 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; color: #1f2937; }
-        .dark .prose h3 { color: #e5e7eb; }
-        .prose strong { color: #000000; }
-        .dark .prose strong { color: #ffffff; }
+        .prose h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-top: 2.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+            color: #111827;
+        }
+        .prose h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+            color: #111827;
+        }
+        .prose h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #1f2937;
+        }
+        .prose p {
+            margin-bottom: 1.25rem;
+            line-height: 1.7;
+        }
+        .prose strong {
+            font-weight: 700;
+            color: #000000;
+        }
+        .prose em {
+            font-style: italic;
+        }
+        .prose del {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
         
-        .prose code:not(pre code) { background-color: #f3f4f6; color: #ef4444; padding: 0.2rem 0.4rem; border-radius: 0.375rem; font-size: 0.875em; }
-        .dark .prose code:not(pre code) { background-color: #374151; color: #fca5a5; }
+        /* Inline Code */
+        .prose code:not(pre code) {
+            background-color: #f3f4f6;
+            color: #ef4444;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.375rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875em;
+        }
         
-        .prose pre { background-color: #1f2937; padding: 1.25rem; border-radius: 0.75rem; overflow-x: auto; }
-        .dark .prose pre { background-color: #000000; }
-        .prose pre code { color: #e5e7eb; }
+        /* Code Blocks */
+        .prose pre {
+            background-color: #1f2937;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .prose pre code {
+            color: #e5e7eb;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875em;
+            background: none;
+            padding: 0;
+            line-height: 1.5;
+        }
         
-        .prose blockquote { background-color: #fef9e3; border-left: 4px solid #f5b042; padding: 1rem 1.5rem; margin: 1.5rem 0; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
-        .dark .prose blockquote { background-color: #422006; border-left-color: #f59e0b; color: #fde68a; }
+        /* Lists */
+        .prose ul {
+            list-style-type: disc;
+            margin: 1rem 0 1rem 1.5rem;
+            padding-left: 0.5rem;
+        }
+        .prose ol {
+            list-style-type: decimal;
+            margin: 1rem 0 1rem 1.5rem;
+            padding-left: 0.5rem;
+        }
+        .prose ol li::marker {
+            font-weight: 700;
+            color: #111827;
+        }
+        .prose li {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+        
+        /* Nested Lists - "Kapila Penna" styling */
+        .prose li > ul, .prose li > ol {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            border-left: 2px solid #e5e7eb;
+            padding-left: 1.25rem;
+            margin-left: 0.25rem;
+        }
+        .prose li > ul li, .prose li > ol li {
+            color: #4b5563;
+            font-weight: 400;
+            font-size: 0.95em;
+        }
+        
+        /* Blockquotes - Soft yellow with orange border */
+        .prose blockquote {
+            background-color: #fef9e3;
+            border-left: 4px solid #f5b042;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 0.75rem 0.75rem 0;
+            color: #78350f;
+            font-style: italic;
+        }
+        .prose blockquote p:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Links */
+        .prose a {
+            color: #2563eb;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-weight: 500;
+        }
 
-        .modal-center { display: flex; align-items: center; justify-content: center; }
+        /* HTML Widget Styles */
+        .html-widget-wrapper {
+            margin: 1.5rem 0;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            background-color: #ffffff;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .html-widget-wrapper .prose-pre-override {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            border: none !important;
+        }
+        
+        /* Images */
+        .prose img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.75rem;
+            margin: 1.5rem auto;
+            display: block;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+        
+        /* Horizontal Rules */
+        .prose hr {
+            border: none;
+            border-top: 2px solid #e5e7eb;
+            margin: 2.5rem 0;
+        }
+        
+        /* KaTeX Math Adjustments */
+        .katex {
+            background-color: #f8fafc;
+            padding: 0.1rem 0.2rem;
+            border-radius: 0.25rem;
+            font-size: 1.05em;
+        }
+        .katex-display {
+            background: transparent;
+            padding: 1rem 0 !important;
+            margin: 1.5rem 0 !important;
+            display: flex !important;
+            justify-content: center;
+            overflow-x: auto;
+        }
+        .katex-display .katex {
+            background: transparent;
+            padding: 0;
+        }
 
-        /* Custom Scrollbar for Settings */
-        .settings-scroll::-webkit-scrollbar { width: 6px; }
-        .settings-scroll::-webkit-scrollbar-track { background: transparent; }
-        .settings-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
-        .dark .settings-scroll::-webkit-scrollbar-thumb { background-color: #4b5563; }
+        @media (max-width: 768px) {
+            .prose h1 { font-size: 1.75rem; margin-top: 1.5rem; }
+            .prose h2 { font-size: 1.5rem; margin-top: 1.5rem; }
+            .prose h3 { font-size: 1.25rem; }
+            .prose { font-size: 0.95rem; }
+        }
 
-        /* Custom Range Slider */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #000; cursor: pointer; margin-top: -6px; }
-        .dark input[type=range]::-webkit-slider-thumb { background: #fff; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 2px; }
-        .dark input[type=range]::-webkit-slider-runnable-track { background: #4b5563; }
+        .modal-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
+        @media (max-width: 768px) {
+            #editor-modal .bg-white, #view-modal .bg-white, #settings-modal .bg-white {
+                width: 100%;
+                height: 100%;
+                max-width: 100%;
+                max-height: 100%;
+                border-radius: 0;
+            }
+            #editor-modal, #view-modal, #settings-modal { padding: 0; }
+            #view-modal-content { max-height: 100%; border-radius: 0; }
+            .edit-btn { opacity: 1 !important; background-color: rgba(0,0,0,0.7) !important; }
+        }
     </style>
 </head>
-<body class="h-screen w-full flex flex-col md:flex-row bg-white dark:bg-gray-900 transition-colors duration-300">
+<body class="h-screen w-full flex flex-col md:flex-row">
 
-    <!-- Sidebar -->
-    <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white dark:md:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1 transition-colors duration-300">
-        <h1 class="font-bold text-xl tracking-tight text-gray-900 dark:text-white hidden md:block mb-20">Docket</h1>
+    <!-- Sidebar (desktop: left, vertical; mobile: hidden/0-width so FAB can float) -->
+    <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white md:border-r border-gray-200 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1">
+        <h1 class="font-bold text-xl tracking-tight text-gray-900 hidden md:block mb-20 animate-fade-in-up">Docket</h1>
         
-        <!-- FAB Main Screen -->
-        <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100]">
+        <!-- New Note Button + Palette (FAB on Mobile) -->
+        <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100] animate-fade-in-up" style="animation-delay: 0.1s;">
             <!-- Palette Menu -->
-            <div id="palette-menu" class="absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-[24px] shadow-2xl border border-gray-100 dark:border-gray-700 z-10 opacity-0 pointer-events-none translate-y-4 transition-all duration-300">
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 shadow-sm hover:scale-110 color-dot" data-color="#c5e1a5"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 shadow-sm hover:scale-110 color-dot" data-color="#80deea"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 shadow-sm hover:scale-110 color-dot" data-color="#b39ddb"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 shadow-sm hover:scale-110 color-dot" data-color="#ffab91"></button>
-                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 shadow-sm hover:scale-110 color-dot" data-color="#ffcc80"></button>
+            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 z-10">
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#c5e1a5"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#80deea"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#b39ddb"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffab91"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm border border-black/5 hover:scale-110 active:scale-95 transition-transform" data-color="#ffcc80"></button>
             </div>
-            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-all z-20">
-                <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6 transition-transform duration-300"></i>
+            
+            <!-- Floating Action Button -->
+            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.2)] md:shadow-lg hover:shadow-[0_12px_40px_rgb(0,0,0,0.3)] hover:scale-105 active:scale-95 focus:outline-none z-20">
+                <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6"></i>
             </button>
         </div>
 
-        <div class="hidden md:block mt-auto">
-            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                <i data-lucide="settings" class="w-5 h-5 hover:rotate-90 transition-transform duration-500"></i>
+        <!-- Settings Icon (Desktop: bottom of sidebar) -->
+        <div class="hidden md:block mt-auto animate-fade-in-up" style="animation-delay: 0.2s;">
+            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all duration-300 active:scale-90">
+                <i data-lucide="settings" class="w-5 h-5 transition-transform duration-500 hover:rotate-90"></i>
             </button>
         </div>
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 h-full flex flex-col relative overflow-hidden order-2">
+    <main class="flex-1 h-full flex flex-col relative bg-white overflow-hidden order-2">
         <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10">
-            <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800">
+            <!-- Settings Icon (Mobile: top left/right) -->
+            <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-all active:scale-90 animate-fade-in-up">
                 <i data-lucide="settings" class="w-5 h-5"></i>
             </button>
-            <div class="flex items-center text-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full px-4 py-2 w-full max-w-sm ml-auto md:ml-0 focus-within:shadow-md transition-all">
+            <div class="flex items-center text-gray-400 bg-gray-50 border border-gray-200 rounded-full px-4 py-2 w-full max-w-sm ml-auto md:ml-0 animate-fade-in-up transition-all duration-300 focus-within:shadow-md focus-within:bg-white focus-within:border-gray-300" style="animation-delay: 0.1s;">
                 <i data-lucide="search" class="w-5 h-5 mr-2"></i>
-                <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base text-gray-800 dark:text-white">
+                <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base">
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
-            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 dark:text-white mb-6 md:mb-12 tracking-tighter cursor-pointer select-none">Notes</h2>
+            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none" title="Tap to shine!" style="animation-delay: 0.2s;">Notes</h2>
             <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
             
-            <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400 dark:text-gray-500">
-                <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50"></i>
+            <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400 animate-fade-in-up" style="animation-delay: 0.3s;">
+                <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
                 <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
             </div>
         </div>
     </main>
 
-    <!-- Settings Modal (Ekhane Settings Modal ache) -->
-    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-gray-900 w-full max-w-md max-h-[85vh] flex flex-col rounded-2xl shadow-2xl transform scale-95 transition-all duration-300">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Settings</h3>
-                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-900 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            
-            <div class="p-6 overflow-y-auto settings-scroll flex-1 text-gray-800 dark:text-gray-200">
-                
-                <!-- Account Section -->
-                <div class="mb-8">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">Account Sync</h4>
-                    <div id="settings-auth-container">
-                        <div id="settings-user-info" class="hidden flex items-center justify-between bg-gray-50 dark:bg-gray-800 p-3 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <div class="flex items-center gap-3">
-                                <img id="settings-avatar" class="w-10 h-10 rounded-full object-cover" src="" alt="avatar">
-                                <span id="settings-name" class="text-sm font-medium"></span>
-                            </div>
-                            <button id="settings-signout-btn" class="text-xs font-bold text-red-500 hover:text-red-600 bg-red-50 dark:bg-red-900/20 px-3 py-1.5 rounded-lg transition-colors">Sign Out</button>
-                        </div>
-                        <button id="settings-google-signin-btn" class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-3 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-all shadow-sm">
-                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
-                            Sign in to Sync Data
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Appearance Section -->
-                <div class="mb-8">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">Appearance</h4>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium mb-2">App Theme</label>
-                        <select id="theme-select" class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 outline-none text-sm">
-                            <option value="light">Light Mode</option>
-                            <option value="dark">Dark Mode</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-4 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-800/30">
-                        <label class="block text-sm font-bold text-indigo-900 dark:text-indigo-300 mb-1">Full-Screen Display Options</label>
-                        <p class="text-xs text-indigo-700/70 dark:text-indigo-400/70 mb-4">Adjust how content looks when maximized.</p>
-                        
-                        <div class="mb-4">
-                            <div class="flex justify-between text-xs mb-1">
-                                <span>Max Width</span>
-                                <span id="width-val-display" class="font-bold">1000px</span>
-                            </div>
-                            <input type="range" id="fs-width-slider" min="600" max="1800" step="50" value="1000">
-                        </div>
-
-                        <div>
-                            <div class="flex justify-between text-xs mb-1">
-                                <span>Font Size</span>
-                                <span id="font-val-display" class="font-bold">18px</span>
-                            </div>
-                            <input type="range" id="fs-font-slider" min="14" max="28" step="1" value="18">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Reading Mode Customization -->
-                <div class="mb-8">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">Reading Mode Colors</h4>
-                    <p class="text-xs text-gray-500 mb-3">Colors applied when you click the Book icon in Full Screen.</p>
-                    <div class="flex gap-4">
-                        <div class="flex-1">
-                            <label class="block text-xs mb-1">Background</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" id="rm-bg-color" value="#fdf6e3" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent">
-                                <span class="text-xs font-mono uppercase" id="rm-bg-hex">#FDF6E3</span>
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <label class="block text-xs mb-1">Text</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" id="rm-text-color" value="#333333" class="w-8 h-8 rounded cursor-pointer border-0 p-0 bg-transparent">
-                                <span class="text-xs font-mono uppercase" id="rm-text-hex">#333333</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Data Management -->
-                <div>
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-4">Data Management</h4>
-                    <div class="flex flex-col gap-3">
-                        <div class="flex gap-3">
-                            <button id="export-btn" class="flex-1 flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 rounded-xl text-sm font-medium transition-colors">
-                                <i data-lucide="download" class="w-4 h-4"></i> Export
-                            </button>
-                            <label class="flex-1 flex items-center justify-center gap-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 py-2 rounded-xl text-sm font-medium cursor-pointer transition-colors">
-                                <i data-lucide="upload" class="w-4 h-4"></i> Import
-                                <input type="file" id="import-input" accept=".json" class="hidden">
-                            </label>
-                        </div>
-                        <button id="clear-data-btn" class="w-full flex items-center justify-center gap-2 bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/40 py-2 rounded-xl text-sm font-bold transition-colors">
-                            <i data-lucide="alert-triangle" class="w-4 h-4"></i> Clear All Notes
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- Clear All Confirmation Modal -->
-    <div id="clear-confirm-modal" class="fixed inset-0 z-[110] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-gray-900 w-full max-w-sm rounded-2xl shadow-2xl p-6 transform scale-95 transition-all duration-300 border border-red-100 dark:border-red-900/30">
-            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-4 mx-auto">
-                <i data-lucide="trash-2" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
-            </div>
-            <h3 class="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">Delete All Data?</h3>
-            <p class="text-center text-gray-500 dark:text-gray-400 text-sm mb-6">Are you absolutely sure? This will permanently delete all your notes. This action cannot be undone.</p>
-            <div class="flex gap-3">
-                <button id="cancel-clear-btn" class="flex-1 py-2.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-                <button id="confirm-clear-btn" class="flex-1 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 shadow-md shadow-red-500/30 transition-colors">Yes, Delete All</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Editor Modal (Ekhane Editor Modal ache) -->
-    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 dark:bg-black/80 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-300">
-        <div class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-2xl flex flex-col overflow-hidden border border-gray-200 dark:border-gray-800 transform scale-95 transition-all duration-300" id="editor-container">
-            <div class="h-14 md:h-16 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 flex-shrink-0" id="modal-header">
+    <!-- Editor Modal -->
+    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 md:bg-white/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500 ease-smooth">
+        <div class="bg-white w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden border-0 md:border border-gray-200 transform scale-95 transition-all duration-500 ease-smooth" id="editor-container">
+            <div class="h-14 md:h-16 border-b border-gray-100 flex items-center justify-between px-4 md:px-6 flex-shrink-0 transition-colors duration-500" id="modal-header">
                 <div class="flex items-center gap-2">
-                    <div id="modal-color-indicator" class="w-4 h-4 rounded-full"></div>
-                    <span class="font-medium text-gray-500 dark:text-gray-400 text-sm">Editor</span>
+                    <div id="modal-color-indicator" class="w-4 h-4 rounded-full transition-colors duration-500"></div>
+                    <span class="font-medium text-gray-500 text-sm">Editor</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full hidden items-center gap-1 transition-colors">
+                    <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-full hidden items-center gap-1 transition-colors active:scale-95">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                         <span class="hidden md:inline">Delete</span>
                     </button>
-                    <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full transition-colors">Cancel</button>
-                    <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black dark:bg-white dark:text-black rounded-full hover:scale-105 shadow-md transition-transform">Save</button>
+                    <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full transition-colors active:scale-95">Cancel</button>
+                    <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md hover:shadow-lg transition-all active:scale-95">Save</button>
                 </div>
             </div>
             <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
-                <!-- Editor Side -->
-                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
+                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 flex flex-col bg-white">
                     <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
-                        <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white outline-none w-full mb-4 bg-transparent">
+                        <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 outline-none w-full mb-4 bg-transparent">
                         
-                        <div class="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 dark:border-gray-800 overflow-x-auto no-scrollbar flex-shrink-0">
-                            <!-- Standard toolbar buttons... -->
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="**"><i data-lucide="bold" class="w-4 h-4"></i></button>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="*"><i data-lucide="italic" class="w-4 h-4"></i></button>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="~~"><i data-lucide="strikethrough" class="w-4 h-4"></i></button>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="=="><i data-lucide="highlighter" class="w-4 h-4"></i></button>
-                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="# "><i data-lucide="heading-1" class="w-4 h-4"></i></button>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="## "><i data-lucide="heading-2" class="w-4 h-4"></i></button>
-                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="- "><i data-lucide="list" class="w-4 h-4"></i></button>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="1. "><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
-                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="> "><i data-lucide="quote" class="w-4 h-4"></i></button>
-                            <button class="format-btn text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="```\n" data-suffix="\n```"><i data-lucide="code" class="w-4 h-4"></i></button>
-                            <button class="format-btn p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" data-format="```html\n<!-- Paste HTML Here -->\n" data-suffix="\n```"><i data-lucide="layout-template" class="w-4 h-4 text-indigo-500"></i></button>
+                        <!-- Toolbar -->
+                        <div class="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 overflow-x-auto no-scrollbar flex-shrink-0">
+                            <button class="format-btn" data-format="**" title="Bold"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="*" title="Italic"><i data-lucide="italic" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="~~" title="Strikethrough"><i data-lucide="strikethrough" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="==" title="Highlight"><i data-lucide="highlighter" class="w-4 h-4"></i></button>
+                            <div class="w-px h-4 bg-gray-200 mx-1"></div>
+                            <button class="format-btn" data-format="# " title="Heading 1"><i data-lucide="heading-1" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="## " title="Heading 2"><i data-lucide="heading-2" class="w-4 h-4"></i></button>
+                            <div class="w-px h-4 bg-gray-200 mx-1"></div>
+                            <button class="format-btn" data-format="- " title="Bullet List"><i data-lucide="list" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="1. " title="Numbered List"><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
+                            <div class="w-px h-4 bg-gray-200 mx-1"></div>
+                            <button class="format-btn" data-format="> " title="Quote"><i data-lucide="quote" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="```\n" data-suffix="\n```" title="Code Block"><i data-lucide="code" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="```html\n<!-- Paste your HTML/CSS Widget Here -->\n" data-suffix="\n```" title="HTML Live Widget"><i data-lucide="layout-template" class="w-4 h-4 text-indigo-500"></i></button>
                         </div>
 
-                        <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                        <textarea id="note-content-input" placeholder="Start typing... Markdown & LaTeX supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 bg-transparent leading-relaxed no-scrollbar"></textarea>
                     </div>
-                    <div class="h-10 border-t border-gray-50 dark:border-gray-800 flex items-center px-4 md:px-6 flex-shrink-0 bg-gray-50/50 dark:bg-gray-800/50 text-xs text-gray-400 dark:text-gray-500 justify-between font-medium">
+                    <div class="h-10 border-t border-gray-50 flex items-center px-4 md:px-6 flex-shrink-0 bg-gray-50/50 text-xs text-gray-400 justify-between font-medium">
                         <span id="word-count">0 words</span>
                         <span id="char-count">0 characters</span>
                     </div>
                 </div>
-                <!-- Preview Side -->
-                <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50 dark:bg-gray-900/50">
-                    <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700 empty:hidden"></h1>
-                    <div id="preview-content" class="prose prose-base md:prose-lg w-full max-w-none"></div>
+                <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50">
+                    <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4 pb-2 border-b border-gray-200 empty:hidden"></h1>
+                    <div id="preview-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- View Modal (Preview / Full Screen - Ekhane View Modal ache) -->
-    <div id="view-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-300">
-        <div id="view-modal-content" class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-5xl md:max-h-[85vh] md:rounded-[24px] shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-300 relative">
+    <!-- View Modal (Gemini Centered Style + FAB Menu) -->
+    <div id="view-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500 ease-smooth">
+        <div id="view-modal-content" class="bg-white w-full h-full md:w-full md:max-w-5xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 ease-smooth relative">
             
-            <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 dark:border-gray-800 z-10 bg-white dark:bg-gray-900 transition-colors">
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 z-10 bg-white">
                 <div class="flex items-center gap-2">
-                    <div id="view-color-indicator" class="w-4 h-4 rounded-full"></div>
+                    <div id="view-color-indicator" class="w-4 h-4 rounded-full transition-colors duration-500"></div>
                     <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
                 </div>
-                <button id="close-view-modal" class="text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors active:scale-90"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600 transition-colors active:scale-90"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             
-            <div id="view-scroll-area" class="flex-1 overflow-y-auto p-4 md:p-8 relative transition-colors">
-                <!-- Wrapper for Dynamic Centering / Width -->
-                <div id="view-content-container" class="w-full max-w-3xl mx-auto pb-24 transition-all duration-500 ease-out">
+            <!-- Content Area (Centered like Gemini Chat) -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
+                <!-- Wrapper for max-width centering -->
+                <div class="w-full max-w-3xl mx-auto pb-24">
                     <div id="view-loading" class="hidden flex-col gap-4 w-full max-w-none animate-pulse mt-2">
-                        <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded-md w-3/4 mb-4"></div>
-                        <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-full"></div>
-                        <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-5/6"></div>
-                        <div class="h-4 bg-gray-100 dark:bg-gray-800 rounded-md w-4/6"></div>
+                        <div class="h-8 bg-gray-200 rounded-md w-3/4 mb-4"></div>
+                        <div class="h-4 bg-gray-100 rounded-md w-full"></div>
+                        <div class="h-4 bg-gray-100 rounded-md w-5/6"></div>
+                        <div class="h-4 bg-gray-100 rounded-md w-4/6"></div>
+                        <div class="h-4 bg-gray-100 rounded-md w-full mt-4"></div>
+                        <div class="h-4 bg-gray-100 rounded-md w-11/12"></div>
+                        <div class="h-4 bg-gray-100 rounded-md w-3/4"></div>
                     </div>
                     
                     <div id="view-content-wrapper" class="block">
-                        <h1 id="view-title" class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight transition-all"></h1>
-                        <div id="view-content" class="prose prose-base md:prose-lg w-full max-w-none leading-relaxed transition-all duration-500"></div>
+                        <h1 id="view-title" class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight"></h1>
+                        <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none leading-relaxed"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- View Modal FAB -->
-            <div id="view-fab-container" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex flex-col items-center justify-end z-50">
+            <!-- View Modal Floating Action Menu (Replaces bottom bar) -->
+            <div id="view-fab-container" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex flex-col items-center justify-end z-50 pointer-events-none">
+                <!-- Expanded Menu Buttons -->
                 <div id="view-fab-menu" class="flex flex-col gap-3 items-center mb-4 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none origin-bottom">
-                    <!-- Reading Mode Button -->
-                    <button id="reading-mode-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-amber-600 dark:text-amber-400 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all pointer-events-auto hidden" title="Reading Mode">
-                        <i data-lucide="book-open" class="w-5 h-5"></i>
-                    </button>
-                    <!-- Expand Width (Fullscreen) Button -->
-                    <button id="fullscreen-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Full Screen Expand">
+                    <button id="fullscreen-view-btn" class="w-12 h-12 bg-white text-gray-700 border border-gray-200 rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:bg-gray-50 hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Full Screen">
                         <i data-lucide="maximize" class="w-5 h-5"></i>
                     </button>
-                    <button id="copy-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Copy Text">
+                    <button id="copy-view-btn" class="w-12 h-12 bg-white text-gray-700 border border-gray-200 rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:bg-gray-50 hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Copy Text">
                         <i data-lucide="copy" class="w-5 h-5"></i>
                     </button>
-                    <button id="edit-from-view-btn" class="w-12 h-12 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Edit">
+                    <button id="edit-from-view-btn" class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.2)] hover:bg-gray-800 hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Edit">
                         <i data-lucide="pencil" class="w-5 h-5"></i>
                     </button>
                 </div>
 
-                <button id="view-fab-toggle" class="w-14 h-14 bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-white rounded-full flex items-center justify-center shadow-xl hover:scale-105 active:scale-95 transition-all pointer-events-auto">
-                    <i data-lucide="settings" class="w-6 h-6 transition-transform duration-300"></i>
+                <!-- Main Toggle Button -->
+                <button id="view-fab-toggle" class="w-14 h-14 bg-gray-100/90 backdrop-blur-md border border-gray-200 text-gray-800 rounded-full flex items-center justify-center shadow-[0_8px_25px_rgba(0,0,0,0.15)] hover:bg-gray-200 hover:scale-105 active:scale-95 transition-all pointer-events-auto" title="Options">
+                    <i data-lucide="settings" class="w-6 h-6 transition-transform duration-500"></i>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Script (Ekhane JS code ache) -->
+    <!-- Settings Modal (includes sign-in) -->
+    <div id="settings-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900">Settings</h3>
+                <button id="close-settings-btn" class="text-gray-400 hover:text-gray-600 transition-colors active:scale-90">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div id="settings-auth-container">
+                    <div class="flex flex-col items-center gap-4">
+                        <div id="settings-user-info" class="hidden flex flex-col items-center gap-2">
+                            <img id="settings-avatar" class="w-16 h-16 rounded-full object-cover" src="" alt="avatar">
+                            <span id="settings-name" class="text-sm font-medium text-gray-700"></span>
+                            <button id="settings-signout-btn" class="mt-2 text-sm text-red-600 hover:text-red-700">Sign out</button>
+                        </div>
+                        <button id="settings-google-signin-btn" class="flex items-center gap-2 bg-white border border-gray-300 rounded-full px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all active:scale-95 shadow-sm hover:shadow">
+                            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+                            Sign in with Google
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="confirm-modal" class="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500 ease-smooth">
+        <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 ease-smooth overflow-hidden">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900">Delete Note</h3>
+                </div>
+                <p class="text-gray-600 mb-6">Are you sure you want to delete this note? This action cannot be undone.</p>
+                <div class="flex justify-end gap-3">
+                    <button id="confirm-cancel-btn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full transition-colors active:scale-95">Cancel</button>
+                    <button id="confirm-delete-btn" class="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-full shadow-md hover:shadow-lg transition-all active:scale-95">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Application Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-analytics.js";
 
-        // --- FIREBASE SETUP ---
+        // ---------------------------------------------------------
+        // Firebase Configuration & Initialization
+        // ---------------------------------------------------------
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
             projectId: "studymaster-919ba",
             storageBucket: "studymaster-919ba.firebasestorage.app",
             messagingSenderId: "426684063256",
-            appId: "1:426684063256:web:52c17625a9450ea9662d6d"
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+            measurementId: "G-CWQB2330GF"
         };
+
         const app = initializeApp(firebaseConfig);
+        
+        let analytics = null;
+        try {
+            analytics = getAnalytics(app);
+        } catch (error) {
+            console.warn("Firebase Analytics initialization skipped:", error);
+        }
+
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         const APP_ID = 'studyflow-pro';
 
-        // --- APP STATE & SETTINGS ---
-        let currentUser = null;
-        let unsubscribeSnapshot = null;
-        let notesData = [];
-        
-        let appSettings = JSON.parse(localStorage.getItem('docket_settings')) || {
-            theme: 'light', 
-            fsWidth: 1000, 
-            fsFontSize: 18,
-            rmBg: '#fdf6e3',
-            rmText: '#333333'
-        };
-        let isReadingMode = false;
-        let isExpandedView = false;
-        let randomShineTimeout = null;
-
-        lucide.createIcons();
-
-        // --- DOM ELEMENTS ---
+        // ---------------------------------------------------------
+        // Core DOM Elements
+        // ---------------------------------------------------------
         const mainTitle = document.getElementById('main-title');
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
         const notesGrid = document.getElementById('notes-grid');
+        const searchInput = document.getElementById('search-input');
         const emptyState = document.getElementById('empty-state');
         
-        // Editor
         const editorModal = document.getElementById('editor-modal');
         const editorContainer = document.getElementById('editor-container');
         const titleInput = document.getElementById('note-title-input');
         const contentInput = document.getElementById('note-content-input');
+        const previewTitle = document.getElementById('preview-title');
+        const previewContent = document.getElementById('preview-content');
         const cancelBtn = document.getElementById('cancel-note-btn');
         const saveBtn = document.getElementById('save-note-btn');
         const deleteBtn = document.getElementById('delete-note-btn');
         const modalHeader = document.getElementById('modal-header');
         const modalColorIndicator = document.getElementById('modal-color-indicator');
         
-        // View Modal
         const viewModal = document.getElementById('view-modal');
-        const viewContentContainer = document.getElementById('view-content-container');
-        const viewContent = document.getElementById('view-content');
         const viewModalContent = document.getElementById('view-modal-content');
+        const viewTitle = document.getElementById('view-title');
+        const viewContent = document.getElementById('view-content');
+        const viewColorIndicator = document.getElementById('view-color-indicator');
         const closeViewBtn = document.getElementById('close-view-modal');
         
-        // View Modal FAB
         const viewFabToggle = document.getElementById('view-fab-toggle');
         const viewFabMenu = document.getElementById('view-fab-menu');
-        const readingModeBtn = document.getElementById('reading-mode-btn');
-        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
+        const viewFabIcon = viewFabToggle.querySelector('i');
         const editFromViewBtn = document.getElementById('edit-from-view-btn');
+        const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
         const copyViewBtn = document.getElementById('copy-view-btn');
         
         const confirmModal = document.getElementById('confirm-modal');
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-        let fullscreenIcon = fullscreenViewBtn ? fullscreenViewBtn.querySelector('i') : null;
+        // ---------------------------------------------------------
+        // State Variables
+        // ---------------------------------------------------------
+        let currentUser = null;
+        let unsubscribeSnapshot = null;
+        let notesData = [];
+        let isPaletteOpen = false;
         let activeNoteId = null;
         let activeColor = '#ffffff';
+        let currentViewNote = null;
+        let isViewFabOpen = false;
+        let fullscreenIcon = fullscreenViewBtn.querySelector('i');
+        let randomShineTimeout = null;
 
-        // --- SETTINGS APPLICATION ---
-        function applySettings() {
-            if (appSettings.theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
-            
-            document.documentElement.style.setProperty('--rm-bg', appSettings.rmBg);
-            document.documentElement.style.setProperty('--rm-text', appSettings.rmText);
-            localStorage.setItem('docket_settings', JSON.stringify(appSettings));
-            
-            const themeSelect = document.getElementById('theme-select');
-            if (themeSelect) themeSelect.value = appSettings.theme;
-            
-            const fsWidthSlider = document.getElementById('fs-width-slider');
-            if (fsWidthSlider) fsWidthSlider.value = appSettings.fsWidth;
-            
-            const widthValDisplay = document.getElementById('width-val-display');
-            if (widthValDisplay) widthValDisplay.textContent = appSettings.fsWidth + 'px';
-            
-            const fsFontSlider = document.getElementById('fs-font-slider');
-            if (fsFontSlider) fsFontSlider.value = appSettings.fsFontSize;
-            
-            const fontValDisplay = document.getElementById('font-val-display');
-            if (fontValDisplay) fontValDisplay.textContent = appSettings.fsFontSize + 'px';
-            
-            const rmBgColor = document.getElementById('rm-bg-color');
-            if (rmBgColor) rmBgColor.value = appSettings.rmBg;
-            
-            const rmBgHex = document.getElementById('rm-bg-hex');
-            if (rmBgHex) rmBgHex.textContent = appSettings.rmBg.toUpperCase();
-            
-            const rmTextColor = document.getElementById('rm-text-color');
-            if (rmTextColor) rmTextColor.value = appSettings.rmText;
-            
-            const rmTextHex = document.getElementById('rm-text-hex');
-            if (rmTextHex) rmTextHex.textContent = appSettings.rmText.toUpperCase();
-            
-            updateViewModalStyling();
-        }
-
-        document.getElementById('theme-select')?.addEventListener('change', (e) => { appSettings.theme = e.target.value; applySettings(); });
-        document.getElementById('fs-width-slider')?.addEventListener('input', (e) => { appSettings.fsWidth = e.target.value; applySettings(); });
-        document.getElementById('fs-font-slider')?.addEventListener('input', (e) => { appSettings.fsFontSize = e.target.value; applySettings(); });
-        document.getElementById('rm-bg-color')?.addEventListener('input', (e) => { appSettings.rmBg = e.target.value; applySettings(); });
-        document.getElementById('rm-text-color')?.addEventListener('input', (e) => { appSettings.rmText = e.target.value; applySettings(); });
-
-        applySettings();
-        marked.setOptions({ gfm: true, breaks: true });
-
-        // --- LOADING & UI FUNCTIONS ---
+        // ---------------------------------------------------------
+        // Loading & UI Functions
+        // ---------------------------------------------------------
         function renderSkeletons() {
             if (!notesGrid) return;
             notesGrid.innerHTML = '';
@@ -683,30 +731,33 @@
                 `;
             }
         }
-
+        
         function showLoading() {
             if (randomShineTimeout) clearTimeout(randomShineTimeout);
-            mainTitle?.classList.remove('text-shine-fx');
-            mainTitle?.classList.add('text-shine-fx-infinite');
+            mainTitle.classList.remove('text-shine-fx');
+            mainTitle.classList.add('text-shine-fx-infinite');
             if (emptyState) emptyState.classList.add('hidden');
             renderSkeletons();
         }
 
         function hideLoading() {
-            mainTitle?.classList.remove('text-shine-fx-infinite');
+            mainTitle.classList.remove('text-shine-fx-infinite');
             startRandomShine();
         }
-
+        
         const triggerShine = () => {
-            if (mainTitle && !mainTitle.classList.contains('text-shine-fx-infinite')) {
+            if (!mainTitle.classList.contains('text-shine-fx-infinite')) {
                 mainTitle.classList.remove('text-shine-fx');
                 void mainTitle.offsetWidth; 
                 mainTitle.classList.add('text-shine-fx');
-                setTimeout(() => { mainTitle.classList.remove('text-shine-fx'); }, 1500);
+                
+                setTimeout(() => {
+                    mainTitle.classList.remove('text-shine-fx');
+                }, 1500);
             }
         };
-
-        mainTitle?.addEventListener('click', triggerShine);
+        
+        mainTitle.addEventListener('click', triggerShine);
 
         function startRandomShine() {
             if (randomShineTimeout) clearTimeout(randomShineTimeout);
@@ -719,375 +770,728 @@
             randomShineTimeout = setTimeout(randomTrigger, nextTime);
         }
 
+        // Initialize UI State
         showLoading();
 
-        // --- AUTH & DATA FETCHING ---
+        marked.setOptions({
+            gfm: true,     
+            breaks: true   
+        });
+
+        // ---------------------------------------------------------
+        // Settings & Auth UI Logic (FIX FOR updateSettingsUI ERROR)
+        // ---------------------------------------------------------
         function updateSettingsUI(user) {
             const signinBtn = document.getElementById('settings-google-signin-btn');
             const userInfoDiv = document.getElementById('settings-user-info');
             const avatarImg = document.getElementById('settings-avatar');
             const nameSpan = document.getElementById('settings-name');
+            const signOutBtn = document.getElementById('settings-signout-btn');
 
             if (user) {
                 if(signinBtn) signinBtn.classList.add('hidden');
                 if(userInfoDiv) userInfoDiv.classList.remove('hidden');
-                if(avatarImg) avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name=U';
-                if(nameSpan) nameSpan.textContent = user.displayName || 'User';
+                if(avatarImg) avatarImg.src = user.photoURL || 'https://ui-avatars.com/api/?background=random&name=' + encodeURIComponent(user.displayName || 'User');
+                if(nameSpan) nameSpan.textContent = user.displayName || user.email || 'User';
+                if(signOutBtn) signOutBtn.classList.remove('hidden');
             } else {
                 if(signinBtn) signinBtn.classList.remove('hidden');
                 if(userInfoDiv) userInfoDiv.classList.add('hidden');
             }
         }
 
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            updateSettingsUI(user);
-            if (user) {
-                const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-                if (unsubscribeSnapshot) unsubscribeSnapshot();
-                unsubscribeSnapshot = onSnapshot(ref, (snapshot) => {
-                    notesData = [];
-                    snapshot.forEach(doc => notesData.push({ id: doc.id, ...doc.data() }));
-                    notesData.sort((a, b) => b.timestamp - a.timestamp);
-                    mainTitle?.classList.remove('text-shine-fx-infinite');
-                    renderNotes(notesData);
-                });
-            } else {
-                if (unsubscribeSnapshot) unsubscribeSnapshot();
-                notesData = [];
-                mainTitle?.classList.remove('text-shine-fx-infinite');
-                renderNotes([]);
-            }
-        });
-
         const settingsModal = document.getElementById('settings-modal');
-        const openSettingsModal = () => {
+        const openSettings = () => {
             settingsModal.classList.remove('hidden');
             setTimeout(() => {
                 settingsModal.classList.remove('opacity-0');
-                settingsModal.querySelector('div').classList.remove('scale-95');
-            }, 10);
+                settingsModal.querySelector('.bg-white').classList.remove('scale-95');
+                settingsModal.classList.add('opacity-100');
+                settingsModal.querySelector('.bg-white').classList.add('scale-100');
+            }, 20);
         };
-        const closeSettingsModal = () => {
+        const closeSettings = () => {
+            settingsModal.classList.remove('opacity-100');
+            settingsModal.querySelector('.bg-white').classList.remove('scale-100');
             settingsModal.classList.add('opacity-0');
-            settingsModal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => settingsModal.classList.add('hidden'), 300);
+            settingsModal.querySelector('.bg-white').classList.add('scale-95');
+            setTimeout(() => settingsModal.classList.add('hidden'), 500);
         };
         
-        document.getElementById('settings-btn-desktop')?.addEventListener('click', openSettingsModal);
-        document.getElementById('settings-btn-mobile')?.addEventListener('click', openSettingsModal);
-        document.getElementById('close-settings-btn')?.addEventListener('click', closeSettingsModal);
-        document.getElementById('settings-google-signin-btn')?.addEventListener('click', () => signInWithPopup(auth, provider));
-        document.getElementById('settings-signout-btn')?.addEventListener('click', () => signOut(auth));
+        document.getElementById('settings-btn-desktop')?.addEventListener('click', openSettings);
+        document.getElementById('settings-btn-mobile')?.addEventListener('click', openSettings);
+        document.getElementById('close-settings-btn')?.addEventListener('click', closeSettings);
+        settingsModal?.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
 
-        // --- DATA MANAGEMENT ---
-        document.getElementById('export-btn')?.addEventListener('click', () => {
-            if(notesData.length === 0) return showToast("No notes to export.");
-            const dataStr = JSON.stringify(notesData, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Docket_Notes_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast("Notes Exported Successfully!");
-        });
-
-        document.getElementById('import-input')?.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(!file || !currentUser) {
-                if(!currentUser) showToast("Sign in to import notes.");
-                return;
+        document.getElementById('settings-google-signin-btn')?.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+                showToast("Signed in! Notes are now synced.");
+                closeSettings();
+            } catch (error) {
+                console.error(error);
+                showToast("Sign in failed.");
             }
-            const reader = new FileReader();
-            reader.onload = async (event) => {
-                try {
-                    const importedNotes = JSON.parse(event.target.result);
-                    if(Array.isArray(importedNotes)) {
-                        showToast("Importing notes...");
-                        const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-                        for(const note of importedNotes) {
-                            const { title, content, color, timestamp } = note;
-                            await addDoc(ref, { title, content, color, timestamp: timestamp || Date.now() });
-                        }
-                        showToast("Import Complete!");
-                        closeSettingsModal();
-                    }
-                } catch(err) { showToast("Invalid JSON file."); }
-            };
-            reader.readAsText(file);
-            e.target.value = '';
-        });
-
-        const clearConfirmModal = document.getElementById('clear-confirm-modal');
-        document.getElementById('clear-data-btn')?.addEventListener('click', () => {
-            if(notesData.length === 0) return showToast("No data to clear.");
-            clearConfirmModal.classList.remove('hidden');
-            setTimeout(() => { clearConfirmModal.classList.remove('opacity-0'); clearConfirmModal.querySelector('div').classList.remove('scale-95'); }, 10);
         });
         
-        document.getElementById('cancel-clear-btn')?.addEventListener('click', () => {
-            clearConfirmModal.classList.add('opacity-0');
-            clearConfirmModal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => clearConfirmModal.classList.add('hidden'), 300);
+        document.getElementById('settings-signout-btn')?.addEventListener('click', async () => {
+            await signOut(auth);
+            showToast("Signed out.");
+            closeSettings();
         });
 
-        document.getElementById('confirm-clear-btn')?.addEventListener('click', async () => {
-            if(!currentUser) return;
-            document.getElementById('confirm-clear-btn').textContent = "Deleting...";
-            try {
-                const promises = notesData.map(note => deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', note.id)));
-                await Promise.all(promises);
-                showToast("All data cleared.");
-            } catch(e) { showToast("Error clearing data."); }
-            
-            document.getElementById('confirm-clear-btn').textContent = "Yes, Delete All";
-            document.getElementById('cancel-clear-btn').click();
-            closeSettingsModal();
-        });
-
-        // --- UI UTILS & RENDER ---
-        function showToast(msg) {
-            const t = document.createElement('div');
-            t.className = 'fixed bottom-16 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-5 py-2.5 rounded-full text-sm font-medium z-[9999] opacity-0 transition-opacity';
-            t.textContent = msg;
-            document.body.appendChild(t);
-            setTimeout(() => t.classList.remove('opacity-0'), 10);
-            setTimeout(() => { t.classList.add('opacity-0'); setTimeout(()=>t.remove(),300); }, 2500);
+        function fetchNotesFromFirestore() {
+            if (!currentUser) return;
+            const notesCollectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            unsubscribeSnapshot = onSnapshot(notesCollectionRef, (snapshot) => {
+                notesData = [];
+                snapshot.forEach((doc) => notesData.push({ id: doc.id, ...doc.data() }));
+                notesData.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                hideLoading();
+                renderNotes(notesData);
+                processUrlParam();
+            }, (error) => {
+                console.error(error);
+                hideLoading();
+                renderNotes([]);
+            });
         }
 
-        function renderNotes(data) {
-            if (!notesGrid) return;
+        function formatSnippet(content, maxLength = 100) {
+            if (!content) return '';
+            let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+            text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
+            text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
+            text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^[-*_]{3,}\s*$/gm, '');
+            text = text.replace(/\s+/g, ' ').trim();
+            if (text.length > maxLength) text = text.substring(0, maxLength) + '...';
+            return text;
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        function showToast(message) {
+            const existing = document.getElementById('dynamic-toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'dynamic-toast';
+            toast.innerText = message;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '70px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.backgroundColor = '#1f2937';
+            toast.style.color = 'white';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '9999px';
+            toast.style.fontSize = '0.875rem';
+            toast.style.fontWeight = '500';
+            toast.style.zIndex = '9999';
+            toast.style.whiteSpace = 'nowrap';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.2s ease';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.style.opacity = '1', 10);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2000);
+        }
+
+        let urlParamProcessed = false;
+        function processUrlParam() {
+            if (urlParamProcessed) return;
+            const params = new URLSearchParams(window.location.search);
+            const noteId = params.get('note');
+            if (noteId && notesData.length > 0) {
+                const note = notesData.find(n => n.id === noteId);
+                if (note) {
+                    urlParamProcessed = true;
+                    openViewModal(note);
+                } else {
+                    showToast("Note not found");
+                    urlParamProcessed = true;
+                }
+            }
+        }
+
+        // ---------------------------------------------------------
+        // View Modal FAB Logic
+        // ---------------------------------------------------------
+        function toggleViewFab(e) {
+            if (e) e.stopPropagation();
+            isViewFabOpen = !isViewFabOpen;
+            if (isViewFabOpen) {
+                viewFabMenu.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                viewFabMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
+                viewFabIcon.classList.add('rotate-90');
+            } else {
+                closeViewFab();
+            }
+        }
+
+        function closeViewFab() {
+            if (!viewFabMenu) return;
+            isViewFabOpen = false;
+            viewFabMenu.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+            viewFabMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
+            viewFabIcon.classList.remove('rotate-90');
+        }
+
+        viewFabToggle.addEventListener('click', toggleViewFab);
+        
+        viewModalContent.addEventListener('click', (e) => {
+            if (isViewFabOpen && !viewFabToggle.contains(e.target) && !viewFabMenu.contains(e.target)) {
+                closeViewFab();
+            }
+        });
+
+        // ---------------------------------------------------------
+        // Fullscreen Logic for View Modal
+        // ---------------------------------------------------------
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                viewModalContent.requestFullscreen().catch(err => console.error(err));
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
+            } else {
+                document.exitFullscreen();
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        }
+
+        function handleFullscreenChange() {
+            if (document.fullscreenElement) {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'minimize');
+            } else {
+                if (fullscreenIcon) fullscreenIcon.setAttribute('data-lucide', 'maximize');
+            }
+            lucide.createIcons();
+        }
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        
+        fullscreenViewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeViewFab();
+            toggleFullscreen();
+        });
+
+        // ---------------------------------------------------------
+        // Main Screen Palette & Notes Logic
+        // ---------------------------------------------------------
+        toggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isPaletteOpen = !isPaletteOpen;
+            if (isPaletteOpen) {
+                paletteMenu.classList.add('open');
+                toggleBtn.classList.add('open');
+            } else closePalette();
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette();
+        });
+        
+        function closePalette() {
+            isPaletteOpen = false;
+            paletteMenu.classList.remove('open');
+            toggleBtn.classList.remove('open');
+        }
+
+        document.querySelectorAll('.color-dot').forEach(dot => {
+            dot.addEventListener('click', (e) => {
+                const selectedColor = e.target.getAttribute('data-color');
+                closePalette();
+                openEditorModal(null, selectedColor);
+            });
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = notesData.filter(note => 
+                note.title?.toLowerCase().includes(query) || note.content?.toLowerCase().includes(query)
+            );
+            renderNotes(filtered);
+        });
+
+        function renderNotes(notesToRender) {
             notesGrid.innerHTML = '';
-            if (emptyState) emptyState.classList.toggle('hidden', data.length > 0);
-            
-            data.forEach((note, i) => {
-                const snippet = (note.content || '').replace(/[#*_~`]/g,'').substring(0, 100) + '...';
-                const date = note.timestamp ? new Date(note.timestamp).toLocaleDateString() : '';
-                
+            if (notesToRender.length === 0) emptyState.classList.remove('hidden');
+            else emptyState.classList.add('hidden');
+
+            notesToRender.forEach((note, index) => {
                 const div = document.createElement('div');
-                div.className = 'group relative rounded-3xl p-6 flex flex-col justify-between min-h-[220px] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer animate-pop-in border border-black/5';
-                div.style.backgroundColor = note.color || '#ffffff';
-                div.style.animationDelay = `${i * 0.05}s`;
+                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in`;
                 
+                div.style.animationDelay = `${index * 0.05}s`;
+                div.style.backgroundColor = note.color || '#ffffff';
+                
+                let snippet = formatSnippet(note.content, 100);
+                if (!snippet) snippet = 'No content';
+                const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date';
                 div.innerHTML = `
-                    <div>
-                        <h3 class="text-xl font-bold text-gray-900 mb-2 line-clamp-2">${note.title || 'Untitled'}</h3>
-                        <p class="text-gray-800/80 text-sm leading-relaxed line-clamp-3">${snippet}</p>
+                    <div class="transition-transform duration-500 ease-smooth group-hover:translate-x-1">
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
+                        <p class="text-gray-800/80 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet}</p>
                     </div>
                     <div class="mt-4 flex items-end justify-between z-10">
-                        <span class="text-xs font-semibold text-gray-900/50">${date}</span>
-                        <div class="flex gap-2">
-                            <div class="w-10 h-10 bg-white/80 rounded-full flex items-center justify-center text-gray-700 shadow-sm hover:scale-110 active:scale-95 transition-transform copy-btn"><i data-lucide="copy" class="w-4 h-4"></i></div>
-                            <div class="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white shadow-md hover:scale-110 active:scale-95 transition-transform edit-btn"><i data-lucide="pencil" class="w-4 h-4"></i></div>
+                        <span class="text-xs md:text-sm font-semibold text-gray-900/60 transition-opacity duration-300 group-hover:opacity-100">${dateStr}</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-white border border-gray-200 rounded-full text-gray-600 flex items-center justify-center shadow-sm cursor-pointer copy-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Copy Text">
+                                <i data-lucide="copy" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none transition-transform duration-300 group-hover:scale-110"></i>
+                            </div>
+                            <div class="w-10 h-10 md:w-12 md:h-12 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform transition-all duration-300 ease-spring hover:scale-110 active:scale-90" title="Edit Note">
+                                <i data-lucide="pencil" class="w-4 h-4 md:w-5 md:h-5 pointer-events-none transition-transform duration-300 group-hover:rotate-12"></i>
+                            </div>
                         </div>
                     </div>
                 `;
                 
                 div.addEventListener('click', (e) => {
-                    if(!e.target.closest('.copy-btn') && !e.target.closest('.edit-btn')) openViewModal(note);
+                    if (e.target.closest('.edit-btn') || e.target.closest('.copy-btn')) return;
+                    openViewModal(note);
                 });
-                div.querySelector('.copy-btn').addEventListener('click', (e) => {
+                
+                const copyBtn = div.querySelector('.copy-btn');
+                copyBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    navigator.clipboard.writeText(note.content || '').then(()=>showToast("Copied!"));
+                    const textToCopy = note.content || '';
+                    const tempTextArea = document.createElement('textarea');
+                    tempTextArea.value = textToCopy;
+                    document.body.appendChild(tempTextArea);
+                    tempTextArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempTextArea);
+                    showToast("Content Copied! 📝");
                 });
-                div.querySelector('.edit-btn').addEventListener('click', (e) => {
+
+                const editBtn = div.querySelector('.edit-btn');
+                editBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     openEditorModal(note);
+                });
+                
+                div.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
+                    const el = document.createElement('textarea');
+                    el.value = shareUrl;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    showToast("Link Copied! 🔗");
                 });
                 notesGrid.appendChild(div);
             });
             lucide.createIcons();
         }
 
-        // --- FULL SCREEN / VIEW MODAL LOGIC ---
-        function updateViewModalStyling() {
-            if (!viewContentContainer || !viewContent) return;
-            if (isExpandedView) {
-                viewContentContainer.style.maxWidth = appSettings.fsWidth + 'px';
-                viewContent.style.fontSize = appSettings.fsFontSize + 'px';
-                readingModeBtn?.classList.remove('hidden');
-            } else {
-                viewContentContainer.style.maxWidth = '768px';
-                viewContent.style.fontSize = '';
-                isReadingMode = false;
-                viewModalContent?.classList.remove('reading-mode-active');
-                readingModeBtn?.classList.add('hidden');
-            }
-        }
-
-        fullscreenViewBtn?.addEventListener('click', () => {
-            isExpandedView = !isExpandedView;
-            if (isExpandedView) {
-                document.documentElement.requestFullscreen().catch(e=>console.log(e));
-                if(fullscreenViewBtn) fullscreenViewBtn.innerHTML = '<i data-lucide="minimize" class="w-5 h-5"></i>';
-            } else {
-                if(document.fullscreenElement) document.exitFullscreen();
-                if(fullscreenViewBtn) fullscreenViewBtn.innerHTML = '<i data-lucide="maximize" class="w-5 h-5"></i>';
-            }
-            updateViewModalStyling();
-            lucide.createIcons();
-            closeViewFab();
-        });
-
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement && isExpandedView) {
-                isExpandedView = false;
-                updateViewModalStyling();
-                if(fullscreenViewBtn) fullscreenViewBtn.innerHTML = '<i data-lucide="maximize" class="w-5 h-5"></i>';
-                lucide.createIcons();
-            }
-        });
-
-        readingModeBtn?.addEventListener('click', () => {
-            isReadingMode = !isReadingMode;
-            if (isReadingMode) {
-                viewModalContent?.classList.add('reading-mode-active');
-                readingModeBtn.classList.add('bg-amber-100', 'dark:bg-amber-900/30');
-            } else {
-                viewModalContent?.classList.remove('reading-mode-active');
-                readingModeBtn.classList.remove('bg-amber-100', 'dark:bg-amber-900/30');
-            }
-            closeViewFab();
-        });
-
-        viewFabToggle?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            let isOpen = !viewFabMenu.classList.contains('opacity-100');
-            if (isOpen) {
-                viewFabMenu.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                viewFabMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                viewFabToggle.classList.add('open');
-            } else { closeViewFab(); }
-        });
-
-        function closeViewFab() {
-            if(!viewFabMenu) return;
-            viewFabMenu.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-            viewFabMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-            if(viewFabToggle) viewFabToggle.classList.remove('open');
-        }
-        viewModal?.addEventListener('click', closeViewFab);
-
+        // ---------------------------------------------------------
+        // View Modal State Logic
+        // ---------------------------------------------------------
         function openViewModal(note) {
             currentViewNote = note;
-            isExpandedView = false;
-            isReadingMode = false;
-            viewModalContent?.classList.remove('reading-mode-active');
-            readingModeBtn?.classList.remove('bg-amber-100', 'dark:bg-amber-900/30');
-            updateViewModalStyling();
+            closeViewFab(); 
             
-            document.getElementById('view-title').textContent = note.title || 'Untitled';
-            document.getElementById('view-color-indicator').style.backgroundColor = note.color || '#ccc';
-            viewContent.innerHTML = marked.parse((note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>'));
-            try { renderMathInElement(viewContent, { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}] }); } catch(e){}
+            const viewLoading = document.getElementById('view-loading');
+            const viewContentWrapper = document.getElementById('view-content-wrapper');
+            
+            viewLoading.classList.remove('hidden');
+            viewLoading.classList.add('flex');
+            viewContentWrapper.classList.add('hidden');
             
             viewModal.classList.remove('hidden');
-            setTimeout(() => { viewModal.classList.remove('opacity-0'); viewModalContent.classList.remove('scale-95'); }, 10);
+            setTimeout(() => {
+                viewModal.classList.remove('opacity-0');
+                viewModalContent.classList.remove('scale-95');
+                viewModal.classList.add('opacity-100');
+                viewModalContent.classList.add('scale-100');
+            }, 20);
+
+            setTimeout(() => {
+                viewTitle.textContent = note.title || 'Untitled Note';
+                viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
+                
+                const processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
+                const parsedHtml = marked.parse(processedContent);
+                
+                viewContent.innerHTML = parsedHtml;
+                try {
+                    renderMathInElement(viewContent, {
+                        delimiters: [
+                            {left: '$$', right: '$$', display: true},
+                            {left: '$', right: '$', display: false},
+                            {left: '\\(', right: '\\)', display: false},
+                            {left: '\\[', right: '\\]', display: true}
+                        ],
+                        throwOnError: false
+                    });
+                } catch(e) { console.error(e); }
+
+                processHtmlWidgets(viewContent);
+
+                const animElements = viewContent.querySelectorAll('strong, mark');
+                animElements.forEach(el => {
+                    el.style.animation = 'none';
+                    el.offsetHeight; 
+                    el.style.animation = null; 
+                });
+
+                viewLoading.classList.add('hidden');
+                viewLoading.classList.remove('flex');
+                viewContentWrapper.classList.remove('hidden');
+
+                if (fullscreenIcon) lucide.createIcons();
+            }, 400);
         }
 
-        document.getElementById('close-view-modal')?.addEventListener('click', () => {
-            viewModal.classList.add('opacity-0'); viewModalContent.classList.add('scale-95');
-            setTimeout(() => { viewModal.classList.add('hidden'); }, 300);
-            if(document.fullscreenElement) document.exitFullscreen();
-        });
-
-        document.getElementById('edit-from-view-btn')?.addEventListener('click', () => {
-            document.getElementById('close-view-modal').click();
-            setTimeout(() => openEditorModal(currentViewNote), 300);
-        });
-
-        document.getElementById('copy-view-btn')?.addEventListener('click', () => {
-            navigator.clipboard.writeText(currentViewNote?.content || '').then(()=>showToast("Copied!"));
+        function closeViewModal() {
             closeViewFab();
-        });
-
-        // --- EDITOR & PALETTE ---
-        toggleBtn?.addEventListener('click', (e) => {
+            viewModal.classList.remove('opacity-100');
+            viewModalContent.classList.remove('scale-100');
+            viewModal.classList.add('opacity-0');
+            viewModalContent.classList.add('scale-95');
+            setTimeout(() => {
+                viewModal.classList.add('hidden');
+                currentViewNote = null;
+                if (document.fullscreenElement) document.exitFullscreen();
+            }, 500);
+        }
+        
+        closeViewBtn.addEventListener('click', closeViewModal);
+        viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
+        
+        editFromViewBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            paletteMenu.classList.toggle('opacity-0');
-            paletteMenu.classList.toggle('pointer-events-none');
-            paletteMenu.classList.toggle('translate-y-4');
-            toggleBtn.classList.toggle('open');
+            if (currentViewNote) { 
+                closeViewFab();
+                closeViewModal(); 
+                openEditorModal(currentViewNote); 
+            }
         });
-        document.addEventListener('click', () => {
-            if(!paletteMenu) return;
-            paletteMenu.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
-            if(toggleBtn) toggleBtn.classList.remove('open');
+        
+        copyViewBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!currentViewNote) return;
+            closeViewFab();
+            const textToCopy = currentViewNote.content || '';
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = textToCopy;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+            showToast("Content Copied! 📝");
         });
 
-        document.querySelectorAll('.color-dot').forEach(btn => {
-            btn.addEventListener('click', (e) => openEditorModal(null, e.target.dataset.color));
+        document.addEventListener('keydown', (e) => {
+            if (viewModal.classList.contains('hidden')) return;
+            if (e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); }
         });
+
+        // ---------------------------------------------------------
+        // Editor Modal Logic
+        // ---------------------------------------------------------
+        function showConfirmModal(onConfirm) {
+            confirmModal.classList.remove('hidden');
+            setTimeout(() => {
+                confirmModal.classList.remove('opacity-0');
+                confirmModal.querySelector('.bg-white').classList.remove('scale-95');
+                confirmModal.classList.add('opacity-100');
+                confirmModal.querySelector('.bg-white').classList.add('scale-100');
+            }, 20);
+            const handleConfirm = () => { closeConfirmModal(); onConfirm(); };
+            const handleCancel = () => closeConfirmModal();
+            confirmDeleteBtn.onclick = handleConfirm;
+            confirmCancelBtn.onclick = handleCancel;
+            confirmModal.onclick = (e) => { if (e.target === confirmModal) closeConfirmModal(); };
+        }
+        
+        function closeConfirmModal() {
+            confirmModal.classList.remove('opacity-100');
+            confirmModal.querySelector('.bg-white').classList.remove('scale-100');
+            confirmModal.classList.add('opacity-0');
+            confirmModal.querySelector('.bg-white').classList.add('scale-95');
+            setTimeout(() => {
+                confirmModal.classList.add('hidden');
+                confirmDeleteBtn.onclick = null;
+                confirmCancelBtn.onclick = null;
+                confirmModal.onclick = null;
+            }, 500);
+        }
 
         function openEditorModal(note = null, color = '#ffffff') {
-            activeNoteId = note?.id || null;
-            let activeColor = note?.color || color;
-            titleInput.value = note?.title || '';
-            contentInput.value = note?.content || '';
-            
-            document.getElementById('modal-color-indicator').style.backgroundColor = activeColor;
-            document.getElementById('delete-note-btn').classList.toggle('hidden', !activeNoteId);
-            document.getElementById('delete-note-btn').classList.toggle('flex', !!activeNoteId);
-            
+            activeNoteId = note ? note.id : null;
+            activeColor = note ? note.color : color;
+            titleInput.value = note ? note.title || '' : '';
+            contentInput.value = note ? note.content || '' : '';
+            modalHeader.style.backgroundColor = `${activeColor}20`;
+            modalColorIndicator.style.backgroundColor = activeColor;
             updatePreview();
+            
+            if (activeNoteId) {
+                deleteBtn.classList.remove('hidden');
+                deleteBtn.classList.add('flex');
+            } else {
+                deleteBtn.classList.add('hidden');
+                deleteBtn.classList.remove('flex');
+            }
+            
             editorModal.classList.remove('hidden');
-            setTimeout(() => { editorModal.classList.remove('opacity-0'); document.getElementById('editor-container').classList.remove('scale-95'); }, 10);
+            void editorModal.offsetWidth;
+            editorModal.classList.remove('opacity-0');
+            editorModal.classList.add('opacity-100');
+            editorContainer.classList.remove('scale-95');
+            editorContainer.classList.add('scale-100');
+            titleInput.focus();
         }
 
-        document.getElementById('cancel-note-btn')?.addEventListener('click', () => {
-            editorModal.classList.add('opacity-0'); document.getElementById('editor-container').classList.add('scale-95');
-            setTimeout(() => editorModal.classList.add('hidden'), 300);
-        });
+        function processHtmlWidgets(container) {
+            const htmlBlocks = container.querySelectorAll('pre code.language-html');
+            
+            htmlBlocks.forEach((codeBlock, index) => {
+                const pre = codeBlock.parentElement;
+                if (pre.parentElement.classList.contains('widget-source')) return;
 
-        document.getElementById('save-note-btn')?.addEventListener('click', async () => {
-            if(!currentUser) { showToast("Sign in required."); openSettingsModal(); return; }
-            if(!titleInput.value.trim() && !contentInput.value.trim()) return document.getElementById('cancel-note-btn').click();
-            
-            const color = document.getElementById('modal-color-indicator').style.backgroundColor;
-            const data = { title: titleInput.value.trim(), content: contentInput.value.trim(), color, timestamp: Date.now() };
-            const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-            
-            if(activeNoteId) await setDoc(doc(ref, activeNoteId), data);
-            else await addDoc(ref, data);
-            
-            document.getElementById('cancel-note-btn').click();
-        });
+                const rawHtml = codeBlock.textContent;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'html-widget-wrapper';
 
-        function updatePreview() {
-            document.getElementById('preview-title').textContent = titleInput.value;
-            const html = marked.parse(contentInput.value.replace(/==([^=]+)==/g, '<mark>$1</mark>'));
-            document.getElementById('preview-content').innerHTML = html;
-            try { renderMathInElement(document.getElementById('preview-content'), { delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}] }); } catch(e){}
-            
-            const txt = contentInput.value;
-            document.getElementById('char-count').textContent = txt.length + " chars";
-            document.getElementById('word-count').textContent = (txt.trim()?txt.trim().split(/\s+/).length:0) + " words";
-        }
-        titleInput?.addEventListener('input', updatePreview);
-        contentInput?.addEventListener('input', updatePreview);
-        
-        // Format buttons handler
-        document.querySelectorAll('.format-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const format = btn.dataset.format;
-                const suffix = btn.dataset.suffix || format;
-                const start = contentInput.selectionStart;
-                const end = contentInput.selectionEnd;
-                const txt = contentInput.value;
-                const selected = txt.substring(start, end);
+                const header = document.createElement('div');
+                header.className = 'bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center';
+                header.innerHTML = `
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="layout-template" class="w-4 h-4"></i> Live Widget
+                    </span>
+                    <div class="flex bg-gray-200/80 p-0.5 rounded-lg border border-gray-300/50">
+                        <button class="widget-tab-btn active px-3 py-1 text-xs font-semibold rounded-md transition-all bg-white text-gray-900 shadow-sm" data-target="preview">Preview</button>
+                        <button class="widget-tab-btn px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-900" data-target="source">Code</button>
+                    </div>
+                `;
+
+                const contentContainer = document.createElement('div');
+                contentContainer.className = 'relative w-full';
+
+                const previewArea = document.createElement('div');
+                previewArea.className = 'widget-live p-4 overflow-x-auto w-full';
+                previewArea.innerHTML = rawHtml;
+
+                const sourceArea = document.createElement('div');
+                sourceArea.className = 'widget-source hidden w-full bg-[#1f2937]';
                 
-                if (['# ', '## ', '- ', '1. ', '> '].includes(format)) {
-                    contentInput.value = txt.substring(0, start) + format + selected + txt.substring(end);
-                } else {
-                    contentInput.value = txt.substring(0, start) + format + selected + suffix + txt.substring(end);
-                }
-                updatePreview();
-                contentInput.focus();
+                pre.parentNode.insertBefore(wrapper, pre);
+                pre.classList.add('prose-pre-override');
+                sourceArea.appendChild(pre);
+
+                contentContainer.appendChild(previewArea);
+                contentContainer.appendChild(sourceArea);
+                wrapper.appendChild(header);
+                wrapper.appendChild(contentContainer);
+
+                const btns = header.querySelectorAll('.widget-tab-btn');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        btns.forEach(b => {
+                            b.classList.remove('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
+                            b.classList.add('text-gray-500', 'font-medium');
+                        });
+                        btn.classList.add('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
+                        btn.classList.remove('text-gray-500', 'font-medium');
+
+                        const target = btn.getAttribute('data-target');
+                        if (target === 'preview') {
+                            previewArea.classList.remove('hidden');
+                            sourceArea.classList.add('hidden');
+                        } else {
+                            previewArea.classList.add('hidden');
+                            sourceArea.classList.remove('hidden');
+                        }
+                    });
+                });
+            });
+            lucide.createIcons({ root: container });
+        }
+
+        function closeEditorModal() {
+            editorModal.classList.remove('opacity-100');
+            editorModal.classList.add('opacity-0');
+            editorContainer.classList.remove('scale-100');
+            editorContainer.classList.add('scale-95');
+            setTimeout(() => {
+                editorModal.classList.add('hidden');
+                titleInput.value = '';
+                contentInput.value = '';
+                activeNoteId = null;
+                deleteBtn.classList.add('hidden');
+                deleteBtn.classList.remove('flex');
+            }, 500);
+        }
+        
+        cancelBtn.addEventListener('click', closeEditorModal);
+        
+        deleteBtn.addEventListener('click', () => {
+            if (!activeNoteId || !currentUser) return;
+            showConfirmModal(async () => {
+                const noteRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId);
+                await deleteDoc(noteRef);
+                closeEditorModal();
             });
         });
 
+        function updatePreview() {
+            previewTitle.textContent = titleInput.value || 'Untitled Note';
+            
+            const processedContent = (contentInput.value || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
+            const parsedHtml = marked.parse(processedContent);
+            
+            previewContent.innerHTML = parsedHtml;
+            try {
+                renderMathInElement(previewContent, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            } catch(e) { console.error(e); }
+            
+            processHtmlWidgets(previewContent);
+            
+            const text = contentInput.value;
+            const chars = text.length;
+            const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
+            document.getElementById('word-count').textContent = `${words} word${words !== 1 ? 's' : ''}`;
+            document.getElementById('char-count').textContent = `${chars} character${chars !== 1 ? 's' : ''}`;
+        }
+        
+        titleInput.addEventListener('input', updatePreview);
+        contentInput.addEventListener('input', updatePreview);
+
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const format = btn.getAttribute('data-format');
+                const suffix = btn.getAttribute('data-suffix') || format;
+                const start = contentInput.selectionStart;
+                const end = contentInput.selectionEnd;
+                const text = contentInput.value;
+                const selectedText = text.substring(start, end);
+                
+                let newText = '';
+                let newCursorPos = start;
+
+                const isBlockFormat = ['# ', '## ', '- ', '1. ', '> '].includes(format);
+
+                if (isBlockFormat) {
+                    newText = text.substring(0, start) + format + selectedText + text.substring(end);
+                    newCursorPos = end + format.length;
+                } else if (format === '```\n') {
+                    newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end);
+                    newCursorPos = start + format.length;
+                } else {
+                    newText = text.substring(0, start) + format + selectedText + suffix + text.substring(end);
+                    newCursorPos = selectedText.length > 0 ? end + format.length * 2 : start + format.length;
+                }
+                
+                contentInput.value = newText;
+                contentInput.focus();
+                contentInput.selectionStart = contentInput.selectionEnd = newCursorPos;
+                updatePreview();
+            });
+        });
+
+        contentInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+                updatePreview();
+            }
+            
+            if (e.key === 'Enter') {
+                const start = this.selectionStart;
+                const textToCursor = this.value.substring(0, start);
+                const lines = textToCursor.split('\n');
+                const currentLine = lines[lines.length - 1];
+                
+                const ulMatch = currentLine.match(/^(\s*)([-*])\s(.*)$/);
+                const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+
+                if (ulMatch || olMatch) {
+                    const isEmpty = ulMatch ? !ulMatch[3].trim() : !olMatch[3].trim();
+                    
+                    if (isEmpty) {
+                        e.preventDefault();
+                        const markerLength = ulMatch ? ulMatch[1].length + ulMatch[2].length + 1 : olMatch[1].length + olMatch[2].length + 2;
+                        const newValue = this.value.substring(0, start - markerLength) + '\n' + this.value.substring(this.selectionEnd);
+                        this.value = newValue;
+                        this.selectionStart = this.selectionEnd = start - markerLength + 1;
+                        updatePreview();
+                        return;
+                    }
+
+                    e.preventDefault();
+                    let insertion = '\n';
+                    if (ulMatch) {
+                        insertion += ulMatch[1] + ulMatch[2] + ' ';
+                    } else if (olMatch) {
+                        const nextNum = parseInt(olMatch[2], 10) + 1;
+                        insertion += olMatch[1] + nextNum + '. ';
+                    }
+                    
+                    this.value = this.value.substring(0, start) + insertion + this.value.substring(this.selectionEnd);
+                    this.selectionStart = this.selectionEnd = start + insertion.length;
+                    updatePreview();
+                }
+            }
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            if (!currentUser) { 
+                showToast("Please sign in to save notes.");
+                openSettings();
+                return;
+            }
+            const title = titleInput.value.trim() || 'Untitled Note';
+            const content = contentInput.value.trim();
+            if (!content && !titleInput.value.trim()) { closeEditorModal(); return; }
+            const noteData = { title, content, color: activeColor, timestamp: Date.now() };
+            const collectionRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (activeNoteId) await setDoc(doc(collectionRef, activeNoteId), noteData);
+            else await addDoc(collectionRef, noteData);
+            closeEditorModal();
+        });
+
+        // ---------------------------------------------------------
+        // Authentication State Listener (Initiated LAST)
+        // ---------------------------------------------------------
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            updateSettingsUI(user);
+            if (user) {
+                fetchNotesFromFirestore();
+            } else {
+                if (unsubscribeSnapshot) unsubscribeSnapshot();
+                notesData = [];
+                hideLoading();
+                renderNotes([]);
+            }
+        });
     </script>
 </body>
 </html>
