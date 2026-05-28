@@ -519,52 +519,41 @@
 
     <!-- View Modal -->
     <div id="view-modal" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500 ease-smooth">
-        <div id="view-modal-content" class="bg-white w-full h-full md:w-full md:max-w-5xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 ease-smooth relative">
-            <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 z-10 bg-white">
+        <div id="view-modal-content" class="bg-white w-full h-full md:w-full md:max-w-4xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 ease-smooth">
+            <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100">
                 <div class="flex items-center gap-2">
                     <div id="view-color-indicator" class="w-4 h-4 rounded-full transition-colors duration-500"></div>
                     <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
                 </div>
                 <button id="close-view-modal" class="text-gray-400 hover:text-gray-600 transition-colors active:scale-90"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            
-            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative">
-                <!-- Wrapper for Gemini-style centering -->
-                <div class="w-full max-w-3xl mx-auto pb-24">
-                    <div id="view-loading" class="hidden flex-col gap-4 w-full max-w-none animate-pulse mt-2">
-                        <div class="h-8 bg-gray-200 rounded-md w-3/4 mb-4"></div>
-                        <div class="h-4 bg-gray-100 rounded-md w-full"></div>
-                        <div class="h-4 bg-gray-100 rounded-md w-5/6"></div>
-                        <div class="h-4 bg-gray-100 rounded-md w-4/6"></div>
-                        <div class="h-4 bg-gray-100 rounded-md w-full mt-4"></div>
-                        <div class="h-4 bg-gray-100 rounded-md w-11/12"></div>
-                        <div class="h-4 bg-gray-100 rounded-md w-3/4"></div>
-                    </div>
-                    <div id="view-content-wrapper" class="block">
-                        <h1 id="view-title" class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight"></h1>
-                        <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none leading-relaxed"></div>
-                    </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8">
+                <div id="view-loading" class="hidden flex-col gap-4 w-full max-w-none animate-pulse mt-2">
+                    <div class="h-8 bg-gray-200 rounded-md w-3/4 mb-4"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-full"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-5/6"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-4/6"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-full mt-4"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-11/12"></div>
+                    <div class="h-4 bg-gray-100 rounded-md w-3/4"></div>
+                </div>
+                <div id="view-content-wrapper" class="block">
+                    <h1 id="view-title" class="text-2xl md:text-4xl font-bold text-gray-900 mb-4"></h1>
+                    <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 w-full max-w-none"></div>
                 </div>
             </div>
-
-            <!-- View Modal Floating Action Menu (Replaces bottom bar) -->
-            <div id="view-fab-container" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex flex-col items-center justify-end z-50 pointer-events-none">
-                <!-- Expanded Menu Buttons -->
-                <div id="view-fab-menu" class="flex flex-col gap-3 items-center mb-4 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none origin-bottom">
-                    <button id="fullscreen-view-btn" class="w-12 h-12 bg-white text-gray-700 border border-gray-200 rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:bg-gray-50 hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Full Screen">
-                        <i data-lucide="maximize" class="w-5 h-5"></i>
-                    </button>
-                    <button id="copy-view-btn" class="w-12 h-12 bg-white text-gray-700 border border-gray-200 rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.1)] hover:bg-gray-50 hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Copy Text">
-                        <i data-lucide="copy" class="w-5 h-5"></i>
-                    </button>
-                    <button id="edit-from-view-btn" class="w-12 h-12 bg-black text-white rounded-full flex items-center justify-center shadow-[0_4px_15px_rgba(0,0,0,0.2)] hover:bg-gray-800 hover:scale-110 active:scale-95 transition-all pointer-events-auto" title="Edit">
-                        <i data-lucide="pencil" class="w-5 h-5"></i>
-                    </button>
-                </div>
-
-                <!-- Main Toggle Button -->
-                <button id="view-fab-toggle" class="w-14 h-14 bg-gray-100/90 backdrop-blur-md border border-gray-200 text-gray-800 rounded-full flex items-center justify-center shadow-[0_8px_25px_rgba(0,0,0,0.15)] hover:bg-gray-200 hover:scale-105 active:scale-95 transition-all pointer-events-auto">
-                    <i data-lucide="settings" class="w-6 h-6 transition-transform duration-500"></i>
+            <div class="px-4 md:px-6 py-3 md:py-4 border-t border-gray-100 flex justify-end gap-2">
+                <button id="copy-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors active:scale-95">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Copy Text</span>
+                </button>
+                <button id="fullscreen-view-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-full flex items-center gap-1 transition-colors active:scale-95">
+                    <i data-lucide="maximize" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Full Screen</span>
+                </button>
+                <button id="edit-from-view-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black rounded-full hover:bg-gray-800 shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center gap-1">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                    <span>Edit</span>
                 </button>
             </div>
         </div>
@@ -594,6 +583,7 @@
                         </button>
                     </div>
                 </div>
+                <!-- Additional settings can be added here -->
             </div>
         </div>
     </div>
@@ -684,10 +674,11 @@
             startRandomShine();
         }
         
+        // Manual trigger for shining when tapped
         const triggerShine = () => {
             if (!mainTitle.classList.contains('text-shine-fx-infinite')) {
                 mainTitle.classList.remove('text-shine-fx');
-                void mainTitle.offsetWidth; 
+                void mainTitle.offsetWidth; // Trigger reflow
                 mainTitle.classList.add('text-shine-fx');
                 
                 setTimeout(() => {
@@ -700,22 +691,27 @@
 
         function startRandomShine() {
             if (randomShineTimeout) clearTimeout(randomShineTimeout);
+            
             const randomTrigger = () => {
                 triggerShine();
-                const nextTime = Math.random() * 20000 + 15000; 
+                const nextTime = Math.random() * 20000 + 15000; // Random delay between 15s - 35s
                 randomShineTimeout = setTimeout(randomTrigger, nextTime);
             };
-            const nextTime = Math.random() * 15000 + 10000; 
+            
+            const nextTime = Math.random() * 15000 + 10000; // First shine delay
             randomShineTimeout = setTimeout(randomTrigger, nextTime);
         }
 
+        // Trigger loading visually immediately
         showLoading();
 
+        // Configure Marked.js for Canvas-like formatting
         marked.setOptions({
-            gfm: true,     
-            breaks: true   
+            gfm: true,     // GitHub Flavored Markdown
+            breaks: true   // Convert \n to <br> to mimic word processors
         });
 
+        // Auth state listener
         onAuthStateChanged(auth, (user) => {
             currentUser = user;
             updateSettingsUI(user);
@@ -729,6 +725,7 @@
             }
         });
 
+        // Update settings modal UI based on auth state
         function updateSettingsUI(user) {
             const signinBtn = document.getElementById('settings-google-signin-btn');
             const userInfoDiv = document.getElementById('settings-user-info');
@@ -748,9 +745,11 @@
             }
         }
 
+        // Settings modal handlers
         const settingsModal = document.getElementById('settings-modal');
         const openSettings = () => {
             settingsModal.classList.remove('hidden');
+            // Small delay to allow display:block to apply before animating opacity/transform
             setTimeout(() => {
                 settingsModal.classList.remove('opacity-0');
                 settingsModal.querySelector('.bg-white').classList.remove('scale-95');
@@ -770,6 +769,7 @@
         document.getElementById('close-settings-btn').addEventListener('click', closeSettings);
         settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
 
+        // Sign-in / sign-out inside settings modal
         document.getElementById('settings-google-signin-btn').addEventListener('click', async () => {
             try {
                 await signInWithPopup(auth, provider);
@@ -809,8 +809,11 @@
             let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
             text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
+            
+            // Special handling for HTML widgets vs standard code blocks
             text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
             text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
+            
             text = text.replace(/^#{1,6}\s+/gm, '');
             text = text.replace(/^[-*_]{3,}\s*$/gm, '');
             text = text.replace(/\s+/g, ' ').trim();
@@ -871,16 +874,12 @@
             }
         }
 
-        // ==========================================
-        // DOM Elements
-        // ==========================================
+        // DOM elements (same as before)
         const toggleBtn = document.getElementById('toggle-palette-btn');
         const paletteMenu = document.getElementById('palette-menu');
         const notesGrid = document.getElementById('notes-grid');
         const searchInput = document.getElementById('search-input');
         const emptyState = document.getElementById('empty-state');
-        
-        // Editor Modal
         const editorModal = document.getElementById('editor-modal');
         const editorContainer = document.getElementById('editor-container');
         const titleInput = document.getElementById('note-title-input');
@@ -892,23 +891,15 @@
         const deleteBtn = document.getElementById('delete-note-btn');
         const modalHeader = document.getElementById('modal-header');
         const modalColorIndicator = document.getElementById('modal-color-indicator');
-        
-        // View Modal 
         const viewModal = document.getElementById('view-modal');
         const viewModalContent = document.getElementById('view-modal-content');
         const viewTitle = document.getElementById('view-title');
         const viewContent = document.getElementById('view-content');
         const viewColorIndicator = document.getElementById('view-color-indicator');
         const closeViewBtn = document.getElementById('close-view-modal');
-        
-        // View Modal FAB
-        const viewFabToggle = document.getElementById('view-fab-toggle');
-        const viewFabMenu = document.getElementById('view-fab-menu');
-        const viewFabIcon = viewFabToggle.querySelector('i');
         const editFromViewBtn = document.getElementById('edit-from-view-btn');
         const fullscreenViewBtn = document.getElementById('fullscreen-view-btn');
-        const copyViewBtn = document.getElementById('copy-view-btn');
-        
+        let fullscreenIcon = null;
         const confirmModal = document.getElementById('confirm-modal');
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
@@ -917,42 +908,7 @@
         let activeNoteId = null;
         let activeColor = '#ffffff';
         let currentViewNote = null;
-        let isViewFabOpen = false;
-        let fullscreenIcon = fullscreenViewBtn.querySelector('i');
 
-        // ==========================================
-        // View Modal FAB Logic
-        // ==========================================
-        function toggleViewFab(e) {
-            if (e) e.stopPropagation();
-            isViewFabOpen = !isViewFabOpen;
-            if (isViewFabOpen) {
-                viewFabMenu.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
-                viewFabMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                viewFabIcon.classList.add('rotate-90');
-            } else {
-                closeViewFab();
-            }
-        }
-
-        function closeViewFab() {
-            if (!viewFabMenu) return;
-            isViewFabOpen = false;
-            viewFabMenu.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
-            viewFabMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-            viewFabIcon.classList.remove('rotate-90');
-        }
-
-        viewFabToggle.addEventListener('click', toggleViewFab);
-        viewModalContent.addEventListener('click', (e) => {
-            if (isViewFabOpen && !viewFabToggle.contains(e.target) && !viewFabMenu.contains(e.target)) {
-                closeViewFab();
-            }
-        });
-
-        // ==========================================
-        // Fullscreen Logic
-        // ==========================================
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 viewModalContent.requestFullscreen().catch(err => console.error(err));
@@ -973,14 +929,8 @@
             lucide.createIcons();
         }
         document.addEventListener('fullscreenchange', handleFullscreenChange);
-        fullscreenViewBtn.addEventListener('click', () => {
-            closeViewFab();
-            toggleFullscreen();
-        });
+        fullscreenViewBtn.addEventListener('click', toggleFullscreen);
 
-        // ==========================================
-        // Main Screen Palette & Notes Logic
-        // ==========================================
         toggleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             isPaletteOpen = !isPaletteOpen;
@@ -989,11 +939,9 @@
                 toggleBtn.classList.add('open');
             } else closePalette();
         });
-        
         document.addEventListener('click', (e) => {
             if (isPaletteOpen && !toggleBtn.contains(e.target) && !paletteMenu.contains(e.target)) closePalette();
         });
-        
         function closePalette() {
             isPaletteOpen = false;
             paletteMenu.classList.remove('open');
@@ -1025,6 +973,7 @@
                 const div = document.createElement('div');
                 div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in`;
                 
+                // Staggered entrance delay based on grid position
                 div.style.animationDelay = `${index * 0.05}s`;
                 div.style.backgroundColor = note.color || '#ffffff';
                 
@@ -1063,7 +1012,7 @@
                     tempTextArea.select();
                     document.execCommand('copy');
                     document.body.removeChild(tempTextArea);
-                    showToast("Content Copied! 📝");
+                    showToast("Content Copied! 搭");
                 });
 
                 const editBtn = div.querySelector('.edit-btn');
@@ -1071,7 +1020,6 @@
                     e.stopPropagation();
                     openEditorModal(note);
                 });
-                
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
@@ -1081,27 +1029,25 @@
                     el.select();
                     document.execCommand('copy');
                     document.body.removeChild(el);
-                    showToast("Link Copied! 🔗");
+                    showToast("Link Copied! 迫");
                 });
                 notesGrid.appendChild(div);
             });
             lucide.createIcons();
         }
 
-        // ==========================================
-        // View Modal Logic
-        // ==========================================
         function openViewModal(note) {
             currentViewNote = note;
-            closeViewFab();
             
             const viewLoading = document.getElementById('view-loading');
             const viewContentWrapper = document.getElementById('view-content-wrapper');
             
+            // Show loading state initially
             viewLoading.classList.remove('hidden');
             viewLoading.classList.add('flex');
             viewContentWrapper.classList.add('hidden');
             
+            // Trigger View Modal Appearance
             viewModal.classList.remove('hidden');
             setTimeout(() => {
                 viewModal.classList.remove('opacity-0');
@@ -1110,10 +1056,12 @@
                 viewModalContent.classList.add('scale-100');
             }, 20);
 
+            // Fake brief loading delay (400ms) to show skeleton animation
             setTimeout(() => {
                 viewTitle.textContent = note.title || 'Untitled Note';
                 viewColorIndicator.style.backgroundColor = note.color || '#cccccc';
                 
+                // Pre-process custom markdown (==highlight== to <mark>)
                 const processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
                 const parsedHtml = marked.parse(processedContent);
                 
@@ -1130,25 +1078,28 @@
                     });
                 } catch(e) { console.error(e); }
 
+                // Process HTML Widgets
                 processHtmlWidgets(viewContent);
 
+                // Restart flash animations (forces browser to replay them)
                 const animElements = viewContent.querySelectorAll('strong, mark');
                 animElements.forEach(el => {
                     el.style.animation = 'none';
-                    el.offsetHeight; 
+                    el.offsetHeight; // trigger reflow
                     el.style.animation = null; 
                 });
 
+                // Hide loading, show content
                 viewLoading.classList.add('hidden');
                 viewLoading.classList.remove('flex');
                 viewContentWrapper.classList.remove('hidden');
 
+                fullscreenIcon = fullscreenViewBtn.querySelector('i');
                 if (fullscreenIcon) lucide.createIcons();
             }, 400);
         }
 
         function closeViewModal() {
-            closeViewFab();
             viewModal.classList.remove('opacity-100');
             viewModalContent.classList.remove('scale-100');
             viewModal.classList.add('opacity-0');
@@ -1159,21 +1110,15 @@
                 if (document.fullscreenElement) document.exitFullscreen();
             }, 500);
         }
-        
         closeViewBtn.addEventListener('click', closeViewModal);
         viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
-        
         editFromViewBtn.addEventListener('click', () => {
-            if (currentViewNote) { 
-                closeViewFab();
-                closeViewModal(); 
-                openEditorModal(currentViewNote); 
-            }
+            if (currentViewNote) { closeViewModal(); openEditorModal(currentViewNote); }
         });
         
-        copyViewBtn.addEventListener('click', () => {
+        // Copy Text Button Feature
+        document.getElementById('copy-view-btn').addEventListener('click', () => {
             if (!currentViewNote) return;
-            closeViewFab();
             const textToCopy = currentViewNote.content || '';
             const tempTextArea = document.createElement('textarea');
             tempTextArea.value = textToCopy;
@@ -1181,7 +1126,7 @@
             tempTextArea.select();
             document.execCommand('copy');
             document.body.removeChild(tempTextArea);
-            showToast("Content Copied! 📝");
+            showToast("Content Copied! 搭");
         });
 
         document.addEventListener('keydown', (e) => {
@@ -1189,9 +1134,6 @@
             if (e.key === 'Enter') { e.preventDefault(); toggleFullscreen(); }
         });
 
-        // ==========================================
-        // Editor Modal Logic
-        // ==========================================
         function showConfirmModal(onConfirm) {
             confirmModal.classList.remove('hidden');
             setTimeout(() => {
@@ -1248,13 +1190,15 @@
             
             htmlBlocks.forEach((codeBlock, index) => {
                 const pre = codeBlock.parentElement;
-                if (pre.parentElement.classList.contains('widget-source')) return;
+                if (pre.parentElement.classList.contains('widget-source')) return; // Already processed
 
                 const rawHtml = codeBlock.textContent;
 
+                // Create Wrapper
                 const wrapper = document.createElement('div');
                 wrapper.className = 'html-widget-wrapper';
 
+                // Create Header/Toolbar
                 const header = document.createElement('div');
                 header.className = 'bg-gray-50 px-4 py-2 border-b border-gray-200 flex justify-between items-center';
                 header.innerHTML = `
@@ -1267,31 +1211,37 @@
                     </div>
                 `;
 
+                // Create Content Areas
                 const contentContainer = document.createElement('div');
                 contentContainer.className = 'relative w-full';
 
                 const previewArea = document.createElement('div');
                 previewArea.className = 'widget-live p-4 overflow-x-auto w-full';
+                // Render the raw HTML
                 previewArea.innerHTML = rawHtml;
 
                 const sourceArea = document.createElement('div');
                 sourceArea.className = 'widget-source hidden w-full bg-[#1f2937]';
                 
+                // Move original pre into source area
                 pre.parentNode.insertBefore(wrapper, pre);
                 pre.classList.add('prose-pre-override');
                 sourceArea.appendChild(pre);
 
+                // Assemble
                 contentContainer.appendChild(previewArea);
                 contentContainer.appendChild(sourceArea);
                 wrapper.appendChild(header);
                 wrapper.appendChild(contentContainer);
 
+                // Tab Switching Logic
                 const btns = header.querySelectorAll('.widget-tab-btn');
                 btns.forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         
+                        // Update active state
                         btns.forEach(b => {
                             b.classList.remove('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
                             b.classList.add('text-gray-500', 'font-medium');
@@ -1299,6 +1249,7 @@
                         btn.classList.add('bg-white', 'text-gray-900', 'shadow-sm', 'active', 'font-semibold');
                         btn.classList.remove('text-gray-500', 'font-medium');
 
+                        // Toggle views
                         const target = btn.getAttribute('data-target');
                         if (target === 'preview') {
                             previewArea.classList.remove('hidden');
@@ -1340,6 +1291,7 @@
         function updatePreview() {
             previewTitle.textContent = titleInput.value || 'Untitled Note';
             
+            // Pre-process custom markdown (==highlight== to <mark>)
             const processedContent = (contentInput.value || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
             const parsedHtml = marked.parse(processedContent);
             
@@ -1356,8 +1308,10 @@
                 });
             } catch(e) { console.error(e); }
             
+            // Process HTML Widgets for live preview panel
             processHtmlWidgets(previewContent);
             
+            // Update Word & Character Count
             const text = contentInput.value;
             const chars = text.length;
             const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length;
@@ -1367,6 +1321,7 @@
         titleInput.addEventListener('input', updatePreview);
         contentInput.addEventListener('input', updatePreview);
 
+        // Format Toolbar Handler
         document.querySelectorAll('.format-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -1400,7 +1355,9 @@
             });
         });
 
+        // Smart Editor Features: Auto-formatting lists & Tab support
         contentInput.addEventListener('keydown', function(e) {
+            // Tab to insert spaces (prevents jumping out of textarea)
             if (e.key === 'Tab') {
                 e.preventDefault();
                 const start = this.selectionStart;
@@ -1410,12 +1367,14 @@
                 updatePreview();
             }
             
+            // Enter key to auto-continue lists
             if (e.key === 'Enter') {
                 const start = this.selectionStart;
                 const textToCursor = this.value.substring(0, start);
                 const lines = textToCursor.split('\n');
                 const currentLine = lines[lines.length - 1];
                 
+                // Regex matches lines starting with optional space, then - or * or number.
                 const ulMatch = currentLine.match(/^(\s*)([-*])\s(.*)$/);
                 const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
 
@@ -1423,6 +1382,7 @@
                     const isEmpty = ulMatch ? !ulMatch[3].trim() : !olMatch[3].trim();
                     
                     if (isEmpty) {
+                        // User pressed enter on an empty list item -> break the list by removing the marker
                         e.preventDefault();
                         const markerLength = ulMatch ? ulMatch[1].length + ulMatch[2].length + 1 : olMatch[1].length + olMatch[2].length + 2;
                         const newValue = this.value.substring(0, start - markerLength) + '\n' + this.value.substring(this.selectionEnd);
@@ -1432,6 +1392,7 @@
                         return;
                     }
 
+                    // Auto-continue the list format
                     e.preventDefault();
                     let insertion = '\n';
                     if (ulMatch) {
