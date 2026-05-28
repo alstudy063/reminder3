@@ -101,8 +101,114 @@
         }
         .animate-pop-in { animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; }
 
-        /* Typography Customization */
-        .prose { line-height: 1.6; color: #1f2937; transition: all 0.3s ease; }
+        /* Premium Palette menu & Animations */
+        .palette-menu {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(15px) scale(0.95);
+            transform-origin: bottom center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (min-width: 768px) {
+            .palette-menu {
+                transform: translateY(-15px) scale(0.95);
+                transform-origin: top center;
+            }
+        }
+        .palette-menu.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+        }
+        .color-dot {
+            opacity: 0;
+            transform: translateY(15px) scale(0.5);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (min-width: 768px) {
+            .color-dot {
+                transform: translateY(-15px) scale(0.5);
+            }
+        }
+        .palette-menu.open .color-dot {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        /* Mobile stagger (bottom up) */
+        .color-dot:nth-child(5) { transition-delay: 0.05s; }
+        .color-dot:nth-child(4) { transition-delay: 0.10s; }
+        .color-dot:nth-child(3) { transition-delay: 0.15s; }
+        .color-dot:nth-child(2) { transition-delay: 0.20s; }
+        .color-dot:nth-child(1) { transition-delay: 0.25s; }
+
+        /* Desktop stagger (top down) */
+        @media (min-width: 768px) {
+            .color-dot:nth-child(1) { transition-delay: 0.05s; }
+            .color-dot:nth-child(2) { transition-delay: 0.10s; }
+            .color-dot:nth-child(3) { transition-delay: 0.15s; }
+            .color-dot:nth-child(4) { transition-delay: 0.20s; }
+            .color-dot:nth-child(5) { transition-delay: 0.25s; }
+        }
+
+        /* FAB Rotate Animation */
+        #toggle-palette-btn i, #toggle-palette-btn svg {
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #toggle-palette-btn.open i, #toggle-palette-btn.open svg {
+            transform: rotate(135deg);
+        }
+
+        #view-fab-toggle i, #view-fab-toggle svg {
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #view-fab-toggle.open i, #view-fab-toggle.open svg {
+            transform: rotate(90deg);
+        }
+
+        /* Format Toolbar Buttons */
+        .format-btn {
+            padding: 0.35rem;
+            color: #6b7280;
+            border-radius: 0.375rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .format-btn:hover {
+            color: #111827;
+            background-color: #f3f4f6;
+            transform: scale(1.1);
+        }
+        .format-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Flash Animation for Bold & Highlight */
+        @keyframes highlightFlash {
+            0% { background-color: rgba(250, 204, 21, 0.9); color: #000; box-shadow: 0 0 12px rgba(250, 204, 21, 0.6); }
+            100% { background-color: transparent; box-shadow: 0 0 0 transparent; }
+        }
+        
+        .prose strong {
+            font-weight: 700;
+            color: #000000;
+            border-radius: 0.2rem;
+            animation: highlightFlash 1.5s ease-out forwards;
+        }
+
+        .prose mark {
+            background-color: #fef08a; /* Resting state */
+            color: #111827;
+            padding: 0.1em 0.3em;
+            border-radius: 0.25rem;
+            animation: highlightFlash 1.5s ease-out forwards;
+        }
+
+        /* Professional typography */
+        .prose {
+            line-height: 1.6;
+            color: #1f2937;
+            transition: all 0.3s ease;
+        }
         .dark .prose { color: #d1d5db; }
         .prose h1 { font-size: 2.5rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; color: #111827; }
         .dark .prose h1 { border-bottom-color: #374151; color: #f9fafb; }
@@ -517,7 +623,6 @@
         const confirmCancelBtn = document.getElementById('confirm-cancel-btn');
         const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-        let fullscreenIcon = fullscreenViewBtn ? fullscreenViewBtn.querySelector('i') : null;
         let activeNoteId = null;
         let activeColor = '#ffffff';
 
@@ -846,15 +951,13 @@
 
         fullscreenViewBtn?.addEventListener('click', () => {
             isExpandedView = !isExpandedView;
-            const icon = fullscreenViewBtn.querySelector('i');
             
             if (isExpandedView) {
-                // Try true browser fullscreen, but also apply our width expansion
                 document.documentElement.requestFullscreen().catch(e=>console.log(e));
-                if(icon) icon.setAttribute('data-lucide', 'minimize');
+                if(fullscreenViewBtn) fullscreenViewBtn.innerHTML = '<i data-lucide="minimize" class="w-5 h-5"></i>';
             } else {
                 if(document.fullscreenElement) document.exitFullscreen();
-                if(icon) icon.setAttribute('data-lucide', 'maximize');
+                if(fullscreenViewBtn) fullscreenViewBtn.innerHTML = '<i data-lucide="maximize" class="w-5 h-5"></i>';
             }
             
             updateViewModalStyling();
@@ -867,7 +970,7 @@
             if (!document.fullscreenElement && isExpandedView) {
                 isExpandedView = false;
                 updateViewModalStyling();
-                if(fullscreenViewBtn) fullscreenViewBtn.querySelector('i').setAttribute('data-lucide', 'maximize');
+                if(fullscreenViewBtn) fullscreenViewBtn.innerHTML = '<i data-lucide="maximize" class="w-5 h-5"></i>';
                 lucide.createIcons();
             }
         });
@@ -892,7 +995,7 @@
             if (isOpen) {
                 viewFabMenu.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
                 viewFabMenu.classList.add('opacity-100', 'translate-y-0', 'pointer-events-auto');
-                viewFabToggle.querySelector('i').classList.add('rotate-90');
+                viewFabToggle.classList.add('open');
             } else { closeViewFab(); }
         });
 
@@ -900,7 +1003,7 @@
             if(!viewFabMenu) return;
             viewFabMenu.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
             viewFabMenu.classList.remove('opacity-100', 'translate-y-0', 'pointer-events-auto');
-            if(viewFabToggle) viewFabToggle.querySelector('i').classList.remove('rotate-90');
+            if(viewFabToggle) viewFabToggle.classList.remove('open');
         }
         viewModal?.addEventListener('click', closeViewFab);
 
@@ -943,12 +1046,12 @@
             paletteMenu.classList.toggle('opacity-0');
             paletteMenu.classList.toggle('pointer-events-none');
             paletteMenu.classList.toggle('translate-y-4');
-            toggleBtn.querySelector('i').classList.toggle('rotate-135');
+            toggleBtn.classList.toggle('open');
         });
         document.addEventListener('click', () => {
             if(!paletteMenu) return;
             paletteMenu.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
-            if(toggleBtn) toggleBtn.querySelector('i').classList.remove('rotate-135');
+            if(toggleBtn) toggleBtn.classList.remove('open');
         });
 
         document.querySelectorAll('.color-dot').forEach(btn => {
