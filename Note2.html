@@ -11,7 +11,7 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- Google Fonts: Inter + Noto Sans Sinhala -->
+    <!-- Google Fonts: Inter + Noto Sans Sinhala (kept for backwards compatibility of existing notes) -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@100..900&display=swap" rel="stylesheet">
     
     <!-- Markdown Parser -->
@@ -88,6 +88,17 @@
             -webkit-background-clip: text !important;
             background-clip: text !important;
             animation: textShine 3s linear infinite;
+        }
+
+        /* Flash Animation for highlights */
+        @keyframes highlightFlash {
+            0% { background-color: transparent; }
+            30% { background-color: #fef08a; color: #111827; border-radius: 4px; padding: 0 4px; }
+            100% { background-color: inherit; }
+        }
+        
+        .prose strong, .prose mark {
+            animation: highlightFlash 1.5s ease-out forwards;
         }
 
         @keyframes fadeInUp {
@@ -235,11 +246,13 @@
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
             <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 dark:text-white mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none">Notes</h2>
-            <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-start pb-8"></div>
+            
+            <!-- Cards Grid -->
+            <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch pb-8"></div>
             
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
-                <p class="text-lg text-center px-4">No notes found. Tap the + button to create your first note!</p>
+                <p class="text-lg text-center px-4">No notes found. Press the + button to add a new note!</p>
             </div>
         </div>
     </main>
@@ -269,13 +282,13 @@
             <!-- Floating FAB Menu inside View Modal -->
             <div id="view-fab-container" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex flex-col items-center justify-end z-50 pointer-events-none">
                 <div id="view-fab-menu" class="flex flex-col gap-3 items-center mb-4 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none origin-bottom">
-                    <button id="reading-mode-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Toggle Reading Mode">
+                    <button id="reading-mode-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Reading Mode">
                         <i data-lucide="book-open" class="w-5 h-5"></i>
                     </button>
-                    <button id="fullscreen-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Full Screen">
+                    <button id="fullscreen-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Fullscreen (Enter)">
                         <i data-lucide="maximize" class="w-5 h-5"></i>
                     </button>
-                    <button id="copy-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Copy Text">
+                    <button id="copy-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Copy">
                         <i data-lucide="copy" class="w-5 h-5"></i>
                     </button>
                     <button id="edit-from-view-btn" class="w-12 h-12 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Edit">
@@ -311,7 +324,7 @@
                 <!-- Editor Inputs (Left Pane) -->
                 <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
                     <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
-                        <input id="note-title-input" type="text" placeholder="Note Title..." class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white outline-none w-full mb-4 bg-transparent">
+                        <input id="note-title-input" type="text" placeholder="Note title..." class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white outline-none w-full mb-4 bg-transparent">
                         
                         <div class="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 dark:border-gray-800 overflow-x-auto no-scrollbar flex-shrink-0">
                             <button class="format-btn" data-format="**"><i data-lucide="bold" class="w-4 h-4"></i></button>
@@ -329,7 +342,13 @@
                             <button class="format-btn" data-format="```html\n<!-- Paste HTML/CSS Here -->\n" data-suffix="\n```" title="Live HTML Widget"><i data-lucide="layout-template" class="w-4 h-4 text-indigo-500"></i></button>
                         </div>
 
-                        <textarea id="note-content-input" placeholder="Start typing... Markdown & HTML Live Widgets supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                        <textarea id="note-content-input" placeholder="Start typing... Markdown and HTML Live Widgets supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                        
+                        <!-- Word and character count display -->
+                        <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 pt-3 mt-2 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+                            <span>Words: <span id="word-count" class="font-mono text-gray-600 dark:text-gray-300 font-semibold">0</span></span>
+                            <span>Characters: <span id="char-count" class="font-mono text-gray-600 dark:text-gray-300 font-semibold">0</span></span>
+                        </div>
                     </div>
                 </div>
                 
@@ -401,7 +420,7 @@
                                     <i data-lucide="cloud" class="w-10 h-10"></i>
                                 </div>
                                 <h5 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Sync your notes</h5>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6 max-w-[250px]">Sign in securely to backup and access your notes anywhere.</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6 max-w-[250px]">Sign in securely to access your notes from anywhere.</p>
                                 <button id="settings-google-signin-btn" class="flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all w-full max-w-[250px]">
                                     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
                                     Continue with Google
@@ -412,35 +431,35 @@
 
                     <!-- Appearance Options Tab -->
                     <div id="tab-appearance" class="settings-pane hidden">
-                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Theme & Layout</h4>
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Theme and Appearance</h4>
                         <div class="flex flex-col gap-6">
                             
                             <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-900 dark:text-white">App Theme</label>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Select light or dark mode.</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Choose Light or Dark theme.</p>
                                 </div>
                                 <select id="pref-theme" class="premium-select w-full md:w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-xl px-4 py-2.5 outline-none focus:border-black dark:focus:border-white shadow-sm cursor-pointer">
-                                    <option value="light">Light Mode</option>
-                                    <option value="dark">Dark Mode</option>
+                                    <option value="light">Light Theme</option>
+                                    <option value="dark">Dark Theme</option>
                                 </select>
                             </div>
 
                             <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 flex flex-col gap-5">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white">Full Screen Mode Size</label>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">Adjust how wide content appears in full screen.</p>
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white">Fullscreen Width</label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">Adjust how content appears in fullscreen.</p>
                                     <select id="pref-fs-width" class="premium-select w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-xl px-4 py-2.5 outline-none focus:border-black shadow-sm cursor-pointer">
-                                        <option value="max-w-3xl">Normal (Narrow - Best for reading)</option>
+                                        <option value="max-w-3xl">Normal (Easy to read)</option>
                                         <option value="max-w-5xl">Wide</option>
                                         <option value="max-w-7xl">Extra Wide</option>
-                                        <option value="max-w-full px-8">Full Screen Width (100%)</option>
+                                        <option value="max-w-full px-8">Full Screen (100%)</option>
                                     </select>
                                 </div>
                                 
                                 <div>
                                     <div class="flex items-center justify-between mb-3">
-                                        <label class="block text-sm font-semibold text-gray-900 dark:text-white">Full Screen Font Size</label>
+                                        <label class="block text-sm font-semibold text-gray-900 dark:text-white">Font Size</label>
                                         <span id="font-size-val" class="text-xs font-mono bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300">18px</span>
                                     </div>
                                     <input type="range" id="pref-fs-fontsize" min="14" max="32" value="18" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white">
@@ -449,7 +468,7 @@
 
                             <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
                                 <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Reading Mode Colors</label>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Custom colors applied only when Reading Mode is enabled.</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Colors applied only when Reading Mode is active.</p>
                                 
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="flex flex-col items-center bg-white dark:bg-gray-700 p-3 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
@@ -483,11 +502,11 @@
                         <div class="flex flex-col gap-4">
                             <div class="p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30 flex items-center justify-between gap-4">
                                 <div>
-                                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Export Backup</h5>
+                                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Download Backup</h5>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Download all notes as a JSON file.</p>
                                 </div>
                                 <button id="export-btn" class="flex-shrink-0 flex justify-center items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
-                                    <i data-lucide="download" class="w-4 h-4"></i> Export
+                                    <i data-lucide="download" class="w-4 h-4"></i> Download
                                 </button>
                             </div>
 
@@ -506,9 +525,9 @@
                             
                             <div class="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
                                 <h5 class="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Danger Zone</h5>
-                                <p class="text-xs text-red-500/80 dark:text-red-400/80 mb-4">Permanently delete all notes from the cloud. This action cannot be undone.</p>
+                                <p class="text-xs text-red-500/80 dark:text-red-400/80 mb-4">Permanently delete your notes. This action cannot be undone.</p>
                                 <button id="clear-all-btn" class="w-full flex justify-center items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-xl transition-colors shadow-sm">
-                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> Clear All Data
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> Delete All Data
                                 </button>
                             </div>
                         </div>
@@ -526,9 +545,9 @@
                     <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
                         <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
                     </div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="confirm-title">Confirm Action</h3>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="confirm-title">Confirm</h3>
                 </div>
-                <p class="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed" id="confirm-message">Are you sure you want to proceed?</p>
+                <p class="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed" id="confirm-message">Are you sure you want to do this?</p>
                 <div class="flex justify-end gap-3">
                     <button id="confirm-cancel-btn" class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">Cancel</button>
                     <button id="confirm-action-btn" class="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-md transition-colors">Confirm</button>
@@ -578,6 +597,7 @@
         let isViewFabOpen = false;
         let isReadingMode = false;
         let randomShineTimeout = null;
+        let hasProcessedInitialUrlParam = false; // To check URL parameter
 
         marked.setOptions({ gfm: true, breaks: true });
 
@@ -809,6 +829,62 @@
             lucide.createIcons({ root: container });
         }
 
+        /* LaTeX Display Math Protection (`\[ ... \]`) */
+        function protectDisplayMath(text) {
+            if (!text) return { text: '', blocks: [] };
+            let mathBlocks = [];
+            let protectedText = text.replace(/\\\[([\s\S]*?)\\\]/g, (match) => {
+                mathBlocks.push(match);
+                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
+            });
+            return { text: protectedText, blocks: mathBlocks };
+        }
+
+        function restoreDisplayMath(text, blocks) {
+            blocks.forEach((block, index) => {
+                text = text.replace(`__MATH_BLOCK_${index}__`, block);
+            });
+            return text;
+        }
+
+        /* Show Skeleton Loading Animations */
+        function renderSkeletons() {
+            notesGrid.innerHTML = '';
+            document.getElementById('empty-state').classList.add('hidden');
+            for(let i=0; i<6; i++) {
+                notesGrid.innerHTML += `
+                <div class="rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between h-full min-h-[220px] bg-gray-100 dark:bg-gray-800 animate-pulse border border-gray-200/50 dark:border-gray-700/50">
+                    <div>
+                        <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mb-2"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+                    </div>
+                    <div class="mt-4 flex justify-between items-end">
+                        <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                        <div class="flex gap-2">
+                            <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        }
+
+        /* Read URL Parameter */
+        function processUrlParam() {
+            if (hasProcessedInitialUrlParam) return;
+            const urlParams = new URLSearchParams(window.location.search);
+            const noteId = urlParams.get('note');
+            if (noteId) {
+                const note = notesData.find(n => n.id === noteId);
+                if (note) {
+                    openViewModal(note);
+                    hasProcessedInitialUrlParam = true;
+                }
+            }
+        }
+
         /* ================= SETTINGS TABS & AUTH LOGIC ================= */
         document.querySelectorAll('.settings-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
@@ -869,10 +945,10 @@
 
         /* ================= DATA IMPORT / EXPORT ================= */
         document.getElementById('export-btn').addEventListener('click', () => {
-            if (notesData.length === 0) return showToast("No notes to export!");
+            if (notesData.length === 0) return showToast("No notes to download!");
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(notesData));
             const a = document.createElement('a'); a.href = dataStr; a.download = "docket_notes_backup.json"; a.click();
-            showToast("Export complete!");
+            showToast("Download successful!");
         });
 
         document.getElementById('import-file').addEventListener('change', async (e) => {
@@ -891,33 +967,37 @@
                         await addDoc(colRef, { title: note.title || 'Imported Note', content: note.content || '', color: note.color || '#ffffff', timestamp: Date.now() });
                     }
                     showToast("Import successful!");
-                } catch (err) { showToast("Failed to parse JSON file."); }
+                } catch (err) { showToast("Failed to read JSON file."); }
             };
             reader.readAsText(file);
             e.target.value = '';
         });
 
         document.getElementById('clear-all-btn').addEventListener('click', () => {
-            if (!currentUser) return showToast("Sync account needed.");
+            if (!currentUser) return showToast("An account is required for this action.");
             if (notesData.length === 0) return showToast("No notes to delete.");
-            showConfirmModal("Clear All Data", "Are you absolutely sure? This will permanently delete ALL your notes from the cloud.", "Yes, Delete All", true, async () => {
+            showConfirmModal("Delete All Data", "Are you sure you want to do this? All your notes will be permanently deleted.", "Yes, delete all", true, async () => {
                 showToast("Deleting...");
                 try {
                     for (let note of notesData) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', note.id));
-                    showToast("All data cleared successfully.");
-                } catch (error) { showToast("Error clearing data."); }
+                    showToast("All data successfully deleted.");
+                } catch (error) { showToast("Error deleting data."); }
             });
         });
 
         /* ================= GRID RENDERING & FIRESTORE ================= */
         function renderNotes(notesToRender) {
             notesGrid.innerHTML = '';
-            if (notesToRender.length === 0) document.getElementById('empty-state').classList.remove('hidden');
-            else document.getElementById('empty-state').classList.add('hidden');
+            if (notesToRender.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+            }
 
             notesToRender.forEach((note, index) => {
                 const div = document.createElement('div');
-                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between min-h-[200px] md:min-h-[240px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in border border-black/5 dark:border-white/5`;
+                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between h-full min-h-[220px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in border border-black/5 dark:border-white/5`;
                 div.style.animationDelay = `${index * 0.05}s`;
                 div.style.backgroundColor = document.documentElement.classList.contains('dark') ? (note.color + 'cc') : note.color || '#ffffff';
                 
@@ -925,19 +1005,19 @@
                 const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString() : '';
                 
                 div.innerHTML = `
-                    <div class="transition-transform duration-500 ease-smooth group-hover:translate-x-1">
+                    <div class="transition-transform duration-500 ease-smooth group-hover:translate-x-1 flex-1">
                         <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
                         <p class="text-gray-800/80 dark:text-gray-800/90 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet || 'No content'}</p>
                     </div>
-                    <div class="mt-4 flex items-end justify-between z-10">
+                    <div class="mt-4 flex items-end justify-between z-10 flex-shrink-0">
                         <span class="text-xs font-semibold text-gray-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300">${dateStr}</span>
                         
-                        <!-- Restored Edit & Copy Buttons -->
+                        <!-- Edit & Copy Buttons -->
                         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div class="w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-600 flex items-center justify-center shadow-sm cursor-pointer copy-btn transform hover:scale-110 active:scale-90" title="Copy Text">
+                            <div class="w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-600 flex items-center justify-center shadow-sm cursor-pointer copy-btn transform hover:scale-110 active:scale-90" title="Copy">
                                 <i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i>
                             </div>
-                            <div class="w-10 h-10 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform hover:scale-110 active:scale-90" title="Edit Note">
+                            <div class="w-10 h-10 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform hover:scale-110 active:scale-90" title="Edit">
                                 <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
                             </div>
                         </div>
@@ -953,7 +1033,7 @@
                     e.stopPropagation();
                     const textToCopy = note.content || '';
                     const ta = document.createElement('textarea'); ta.value = textToCopy; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-                    showToast("Content Copied! 📝");
+                    showToast("Content copied! 📝");
                 });
 
                 div.querySelector('.edit-btn').addEventListener('click', (e) => {
@@ -961,17 +1041,50 @@
                     openEditorModal(note);
                 });
                 
-                // Context Menu for Link Share
+                // Right-click copy Link (Navigator Clipboard and Fallback)
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
-                    const el = document.createElement('textarea'); el.value = shareUrl; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-                    showToast("Link Copied! 🔗");
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(shareUrl).then(() => {
+                            showToast("Link copied! 🔗");
+                        }).catch(err => {
+                            fallbackCopy(shareUrl);
+                        });
+                    } else {
+                        fallbackCopy(shareUrl);
+                    }
                 });
+
+                // Long-press copy Link (for Touch devices)
+                let pressTimer;
+                div.addEventListener('touchstart', (e) => {
+                    pressTimer = window.setTimeout(() => {
+                        const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
+                        if (navigator.clipboard && window.isSecureContext) {
+                            navigator.clipboard.writeText(shareUrl).then(() => showToast("Link copied! 🔗"));
+                        } else {
+                            fallbackCopy(shareUrl);
+                        }
+                    }, 800); // 800ms Long press
+                });
+                div.addEventListener('touchend', () => clearTimeout(pressTimer));
+                div.addEventListener('touchmove', () => clearTimeout(pressTimer));
 
                 notesGrid.appendChild(div);
             });
             lucide.createIcons();
+        }
+
+        // Fallback Copy Function
+        function fallbackCopy(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("Link copied! 🔗");
         }
 
         function fetchNotesFromFirestore() {
@@ -979,7 +1092,13 @@
             const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
             if (unsubscribeSnapshot) unsubscribeSnapshot();
             unsubscribeSnapshot = onSnapshot(ref, (snapshot) => {
-                notesData = []; snapshot.forEach(doc => notesData.push({ id: doc.id, ...doc.data() })); notesData.sort((a, b) => b.timestamp - a.timestamp); renderNotes(notesData);
+                notesData = []; 
+                snapshot.forEach(doc => notesData.push({ id: doc.id, ...doc.data() })); 
+                notesData.sort((a, b) => b.timestamp - a.timestamp); 
+                renderNotes(notesData);
+                
+                // Process URL Parameter after data loads
+                processUrlParam();
             });
         }
 
@@ -997,14 +1116,19 @@
         function openViewModal(note) {
             currentViewNote = note; closeViewFab(); isReadingMode = false;
             document.getElementById('view-modal-content').classList.remove('reading-mode-active');
-            document.getElementById('view-title').textContent = note.title || 'Untitled';
+            document.getElementById('view-title').textContent = note.title || 'Untitled Note';
             document.getElementById('view-color-indicator').style.backgroundColor = note.color || '#ccc';
             
-            const processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
-            document.getElementById('view-content').innerHTML = marked.parse(processedContent);
+            // Protect LaTeX Display Math before parsing Markdown
+            let processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
+            const protectedMath = protectDisplayMath(processedContent);
+            let parsedHtml = marked.parse(protectedMath.text);
+            parsedHtml = restoreDisplayMath(parsedHtml, protectedMath.blocks); // Restore Math Blocks
+            
+            document.getElementById('view-content').innerHTML = parsedHtml;
             
             try { renderMathInElement(document.getElementById('view-content'), { throwOnError: false }); } catch(e){}
-            processHtmlWidgets(document.getElementById('view-content')); // Restored Feature!
+            processHtmlWidgets(document.getElementById('view-content')); 
 
             viewModal.classList.remove('hidden');
             setTimeout(() => {
@@ -1021,14 +1145,25 @@
         document.getElementById('reading-mode-btn').addEventListener('click', (e) => {
             e.stopPropagation(); isReadingMode = !isReadingMode;
             const contentCard = document.getElementById('view-modal-content');
-            if (isReadingMode) { contentCard.classList.add('reading-mode-active'); showToast("Reading Mode Enabled"); } 
-            else { contentCard.classList.remove('reading-mode-active'); showToast("Reading Mode Disabled"); }
+            if (isReadingMode) { contentCard.classList.add('reading-mode-active'); showToast("Reading Mode enabled"); } 
+            else { contentCard.classList.remove('reading-mode-active'); showToast("Reading Mode disabled"); }
             closeViewFab();
         });
 
         document.getElementById('fullscreen-view-btn').addEventListener('click', (e) => {
             e.stopPropagation(); closeViewFab();
             if (!document.fullscreenElement) document.getElementById('view-modal-content').requestFullscreen(); else document.exitFullscreen();
+        });
+
+        // Toggle Fullscreen with Enter key in View Modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !viewModal.classList.contains('hidden') && viewModal.classList.contains('opacity-100')) {
+                // Check if Settings/Editor are open
+                if (editorModal.classList.contains('hidden') && settingsModal.classList.contains('hidden')) {
+                    e.preventDefault();
+                    document.getElementById('fullscreen-view-btn').click();
+                }
+            }
         });
 
         document.addEventListener('fullscreenchange', () => {
@@ -1045,7 +1180,7 @@
         document.getElementById('copy-view-btn').addEventListener('click', () => {
             if (currentViewNote) {
                 const ta = document.createElement('textarea'); ta.value = currentViewNote.content || ''; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-                showToast("Copied to clipboard!"); closeViewFab();
+                showToast("Copied!"); closeViewFab();
             }
         });
 
@@ -1080,7 +1215,7 @@
         });
 
         document.getElementById('save-note-btn').addEventListener('click', async () => {
-            if (!currentUser) return showToast("Anonymous auth required.");
+            if (!currentUser) return showToast("Authentication error. Please try again.");
             const title = document.getElementById('note-title-input').value.trim(); const content = document.getElementById('note-content-input').value.trim();
             if (!title && !content) return closeEditorModal();
             
@@ -1094,10 +1229,24 @@
 
         function updatePreview() {
             document.getElementById('preview-title').textContent = document.getElementById('note-title-input').value;
-            const processedContent = (document.getElementById('note-content-input').value || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
-            document.getElementById('preview-content').innerHTML = marked.parse(processedContent);
+            let rawContent = document.getElementById('note-content-input').value || '';
+            
+            // Update Word and Character Count (Live Update)
+            const charCount = rawContent.length;
+            const wordCount = rawContent.trim() === '' ? 0 : rawContent.trim().split(/\s+/).length;
+            document.getElementById('char-count').textContent = charCount;
+            document.getElementById('word-count').textContent = wordCount;
+
+            // Markdown Parse and LaTeX protection
+            let processedContent = rawContent.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+            const protectedMath = protectDisplayMath(processedContent);
+            let parsedHtml = marked.parse(protectedMath.text);
+            parsedHtml = restoreDisplayMath(parsedHtml, protectedMath.blocks);
+            
+            // Insert into preview (Triggers flash animation)
+            document.getElementById('preview-content').innerHTML = parsedHtml;
             try { renderMathInElement(document.getElementById('preview-content'), { throwOnError: false }); } catch(e){}
-            processHtmlWidgets(document.getElementById('preview-content')); // Restored!
+            processHtmlWidgets(document.getElementById('preview-content'));
         }
 
         document.getElementById('note-title-input').addEventListener('input', updatePreview);
@@ -1132,7 +1281,7 @@
             });
         });
 
-        // Restored Tab & Enter Markdown Shortcuts
+        // Tab & Enter Markdown Shortcuts
         document.getElementById('note-content-input').addEventListener('keydown', function(e) {
             if (e.key === 'Tab') {
                 e.preventDefault();
@@ -1193,6 +1342,9 @@
             const q = e.target.value.toLowerCase();
             renderNotes(notesData.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q)));
         });
+
+        // Show Skeleton UI before data loads
+        renderSkeletons();
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { try { await signInAnonymously(auth); } catch (err) {} } 
