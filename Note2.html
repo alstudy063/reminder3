@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Docket Notes</title>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS with Typography Plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -829,23 +829,35 @@
             lucide.createIcons({ root: container });
         }
 
-        /* LaTeX Display Math Protection (`\[ ... \]`) */
-        function protectDisplayMath(text) {
+        /* LaTeX Math Protection (Display & Inline) */
+        function protectMath(text) {
             if (!text) return { text: '', blocks: [] };
             let mathBlocks = [];
-            let protectedText = text.replace(/\\\[([\s\S]*?)\\\]/g, (match) => {
+            // Protect block and inline math: $$...$$, \[...\], \(...\), and $...$
+            let protectedText = text.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^$\n]+\$)/g, (match) => {
                 mathBlocks.push(match);
                 return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
             });
             return { text: protectedText, blocks: mathBlocks };
         }
 
-        function restoreDisplayMath(text, blocks) {
+        function restoreMath(text, blocks) {
             blocks.forEach((block, index) => {
                 text = text.replace(`__MATH_BLOCK_${index}__`, block);
             });
             return text;
         }
+
+        // KaTeX global config for parsing inline & block delimiters correctly
+        const katexConfig = {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '\\[', right: '\\]', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+        };
 
         /* Show Skeleton Loading Animations */
         function renderSkeletons() {
@@ -1119,15 +1131,15 @@
             document.getElementById('view-title').textContent = note.title || 'Untitled Note';
             document.getElementById('view-color-indicator').style.backgroundColor = note.color || '#ccc';
             
-            // Protect LaTeX Display Math before parsing Markdown
+            // Protect LaTeX Math before parsing Markdown
             let processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
-            const protectedMath = protectDisplayMath(processedContent);
+            const protectedMath = protectMath(processedContent);
             let parsedHtml = marked.parse(protectedMath.text);
-            parsedHtml = restoreDisplayMath(parsedHtml, protectedMath.blocks); // Restore Math Blocks
+            parsedHtml = restoreMath(parsedHtml, protectedMath.blocks); // Restore Math Blocks
             
             document.getElementById('view-content').innerHTML = parsedHtml;
             
-            try { renderMathInElement(document.getElementById('view-content'), { throwOnError: false }); } catch(e){}
+            try { renderMathInElement(document.getElementById('view-content'), katexConfig); } catch(e){}
             processHtmlWidgets(document.getElementById('view-content')); 
 
             viewModal.classList.remove('hidden');
@@ -1239,13 +1251,13 @@
 
             // Markdown Parse and LaTeX protection
             let processedContent = rawContent.replace(/==([^=]+)==/g, '<mark>$1</mark>');
-            const protectedMath = protectDisplayMath(processedContent);
+            const protectedMath = protectMath(processedContent);
             let parsedHtml = marked.parse(protectedMath.text);
-            parsedHtml = restoreDisplayMath(parsedHtml, protectedMath.blocks);
+            parsedHtml = restoreMath(parsedHtml, protectedMath.blocks);
             
             // Insert into preview (Triggers flash animation)
             document.getElementById('preview-content').innerHTML = parsedHtml;
-            try { renderMathInElement(document.getElementById('preview-content'), { throwOnError: false }); } catch(e){}
+            try { renderMathInElement(document.getElementById('preview-content'), katexConfig); } catch(e){}
             processHtmlWidgets(document.getElementById('preview-content'));
         }
 
