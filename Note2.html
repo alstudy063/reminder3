@@ -51,7 +51,7 @@
                 processEscapes: true
             },
             startup: {
-                typeset: false // Auto rendering disable කර, අවශ්‍ය වෙලාවට පමණක් render කරමු
+                typeset: false // Disable auto rendering, we will trigger manually when content loads
             }
         };
     </script>
@@ -236,6 +236,23 @@
         .node { stroke: #fff; stroke-width: 2px; cursor: pointer; }
         .node-label { font-size: 11px; font-weight: 600; pointer-events: none; }
         .link { stroke: #999; stroke-opacity: 0.6; stroke-width: 1.5px; }
+
+        /* Perfect rendering with overflow-visible to prevent clipping inside cards */
+        .note-card {
+            overflow: visible !important;
+            height: auto !important;
+            min-height: 240px;
+        }
+
+        /* Responsive SVG and Math containers inside cards */
+        .note-card svg, .note-card .mermaid svg, .note-card .mjx-container {
+            max-width: 100% !important;
+            height: auto !important;
+        }
+        .mjx-container {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+        }
     </style>
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row bg-white dark:bg-gray-950 transition-colors duration-300">
@@ -290,7 +307,7 @@
                 <!-- Search Box -->
                 <div class="flex items-center text-gray-400 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-4 py-2 w-full transition-colors">
                     <i data-lucide="search" class="w-5 h-5 mr-2"></i>
-                    <input id="search-input" type="text" placeholder="සෙවීම (Search)..." class="bg-transparent w-full outline-none text-base text-gray-900 dark:text-white">
+                    <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base text-gray-900 dark:text-white">
                 </div>
                 <!-- Knowledge Graph Button -->
                 <button id="graph-view-btn" class="w-11 h-11 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm flex-shrink-0" title="Knowledge Graph Map">
@@ -316,7 +333,7 @@
             
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
-                <p class="text-lg text-center px-4">සටහන් කිසිවක් නැත. සටහනක් එක් කිරීමට පහත ඇති + ලකුණ ඔබන්න.</p>
+                <p class="text-lg text-center px-4">No notes found. Click the '+' icon to create a new note!</p>
             </div>
         </div>
     </main>
@@ -415,7 +432,7 @@
                             <button class="format-btn" data-format="\n```mermaid\ngraph TD;\n    A-->B;\n```\n" data-suffix="" title="Mermaid Diagram"><i data-lucide="git-merge" class="w-4 h-4 text-emerald-500"></i></button>
                             <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
                             <!-- Canvas Draw Integration Button -->
-                            <button id="open-drawing-board-btn" class="format-btn" title="ඇඳීමේ පුවරුව (Digital Drawing Canvas)"><i data-lucide="palette" class="w-4 h-4 text-pink-500"></i></button>
+                            <button id="open-drawing-board-btn" class="format-btn" title="Digital Drawing Canvas"><i data-lucide="palette" class="w-4 h-4 text-pink-500"></i></button>
                         </div>
 
                         <textarea id="note-content-input" placeholder="Start typing... Markdown, [[Bidirectional Link]] or #tags supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
@@ -442,7 +459,7 @@
         <div class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-md md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 relative">
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i data-lucide="folder-search" class="w-5 h-5 text-indigo-500"></i> ෆෝල්ඩර පද්ධතිය (Folders)
+                    <i data-lucide="folder-search" class="w-5 h-5 text-indigo-500"></i> Folder System
                 </h3>
                 <button id="close-folder-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -460,7 +477,7 @@
         <div class="bg-white dark:bg-gray-900 w-full max-w-4xl h-[85vh] rounded-[24px] shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 border border-gray-200 dark:border-gray-800">
             <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i data-lucide="pencil-line" class="w-5 h-5 text-pink-500"></i> ඇඳීමේ පුවරුව (Drawing Board)
+                    <i data-lucide="pencil-line" class="w-5 h-5 text-pink-500"></i> Drawing Board
                 </h3>
                 <div class="flex items-center gap-3">
                     <button id="clear-canvas-btn" class="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">Clear</button>
@@ -500,7 +517,7 @@
         <div class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-5xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 relative">
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 z-10">
                 <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <i data-lucide="network" class="w-5 h-5 text-indigo-500"></i> සටහන් සිතියම (Knowledge Graph)
+                    <i data-lucide="network" class="w-5 h-5 text-indigo-500"></i> Knowledge Graph
                 </h3>
                 <button id="close-graph-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
@@ -511,7 +528,7 @@
             </div>
             
             <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center text-xs text-gray-400">
-                <span>* සටහනක් Preview කිරීමට හෝ Edit කිරීමට එය මත ක්ලික් කරන්න.</span>
+                <span>* Click on a node to view or edit the corresponding note.</span>
                 <span>Zoom: Scroll | Pan: Drag Background</span>
             </div>
         </div>
@@ -660,12 +677,12 @@
                             <div class="p-5 bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-900/30 flex flex-col gap-3">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white">ෆෝල්ඩර කළමනාකරණය (Manage Folders)</h5>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">නව ෆෝල්ඩර සාදන්න සහ කළමනාකරණය කරන්න.</p>
+                                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Manage Folders</h5>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Create and manage nested folders to organize your notes.</p>
                                     </div>
                                 </div>
                                 <div class="flex gap-2">
-                                    <input type="text" id="new-folder-name" placeholder="ෆෝල්ඩරයේ නම..." class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm outline-none flex-1">
+                                    <input type="text" id="new-folder-name" placeholder="Folder name..." class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm outline-none flex-1">
                                     <select id="parent-folder-select" class="premium-select bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-xl px-4 py-2 text-sm outline-none cursor-pointer w-1/3 pr-8">
                                         <option value="">No Parent (Root)</option>
                                     </select>
@@ -1350,9 +1367,9 @@
                     openViewModal(targetNote);
                 } else {
                     showConfirmModal(
-                        "නව සටහනක් සාදන්න", 
-                        `"${title}" නමින් නව සටහනක් සෑදීමට ඔබට අවශ්‍යද?`, 
-                        "ඔව්, සාදන්න", 
+                        "Create New Note", 
+                        `Would you like to create a new note titled "${title}"?`, 
+                        "Yes, Create", 
                         false, 
                         () => {
                             if (viewModal && !viewModal.classList.contains('hidden')) {
@@ -1424,7 +1441,7 @@
             const parentSelect = document.getElementById('parent-folder-select');
             
             const name = nameInput.value.trim();
-            if (!name) return showToast("ෆෝල්ඩරයේ නම ඇතුළත් කරන්න.");
+            if (!name) return showToast("Please enter a folder name.");
 
             const parentId = parentSelect.value || null;
             if (currentUser) {
@@ -1442,7 +1459,7 @@
             container.innerHTML = '';
             
             if (foldersData.length === 0) {
-                container.innerHTML = `<span class="text-xs text-gray-400">Folders කිසිවක් සාදා නැත.</span>`;
+                container.innerHTML = `<span class="text-xs text-gray-400">No folders created yet.</span>`;
                 return;
             }
 
@@ -1495,7 +1512,7 @@
 
             const rootItem = document.createElement('div');
             rootItem.className = 'flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer font-bold mb-3 border-b border-gray-100 dark:border-gray-800 text-indigo-600 dark:text-indigo-400';
-            rootItem.innerHTML = `<i data-lucide="layout" class="w-4 h-4"></i> සියලුම සටහන් (All Notes)`;
+            rootItem.innerHTML = `<i data-lucide="layout" class="w-4 h-4"></i> All Notes`;
             rootItem.addEventListener('click', () => {
                 currentFolderFilter = null;
                 document.getElementById('filter-status-bar').classList.add('hidden');
@@ -1509,7 +1526,7 @@
             if (roots.length === 0) {
                 const empty = document.createElement('div');
                 empty.className = 'text-center text-gray-400 py-6';
-                empty.innerHTML = `පහත සැකසුම් (Settings -> Data) වෙත ගොස් <br/><b>Manage Folders</b> වෙතින් ෆෝල්ඩර සාදන්න.`;
+                empty.innerHTML = `Go to <b>Settings -> Data -> Manage Folders</b><br/> to set up your directory tree structure.`;
                 container.appendChild(empty);
                 lucide.createIcons({ root: container });
                 return;
@@ -1681,13 +1698,23 @@
 
             notesToRender.forEach((note, index) => {
                 const div = document.createElement('div');
-                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between h-full min-h-[220px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in border border-black/5 dark:border-white/5`;
+                // Added note-card class with overflow: visible !important & height: auto !important
+                div.className = `note-card group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in border border-black/5 dark:border-white/5`;
                 div.style.animationDelay = `${index * 0.05}s`;
                 div.style.backgroundColor = document.documentElement.classList.contains('dark') ? (note.color + 'cc') : note.color || '#ffffff';
                 
-                let snippet = formatSnippet(note.content, 120);
-                const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString() : '';
+                // Parse markdown/math inside card content beautifully instead of stripping it
+                let cardContentMarkdown = note.content || '';
+                if (cardContentMarkdown.length > 200) {
+                    cardContentMarkdown = cardContentMarkdown.substring(0, 200) + '...';
+                }
                 
+                let processedSnippet = cardContentMarkdown.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+                const protectedMath = protectMath(processedSnippet);
+                let wikiHtml = processWikiLinks(protectedMath.text);
+                let parsedHtml = marked.parse(wikiHtml);
+                parsedHtml = restoreMath(parsedHtml, protectedMath.blocks);
+
                 let folderBadge = '';
                 if (note.folderId) {
                     const fold = foldersData.find(f => f.id === note.folderId);
@@ -1700,10 +1727,10 @@
                     <div class="transition-transform duration-500 ease-smooth group-hover:translate-x-1 flex-1">
                         ${folderBadge}
                         <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
-                        <p class="text-gray-800/80 dark:text-gray-800/90 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet || 'No content'}</p>
+                        <div class="prose prose-sm dark:prose-invert text-gray-800/80 dark:text-gray-800/90 font-medium text-sm md:text-base leading-relaxed max-w-none">${parsedHtml || 'No content'}</div>
                     </div>
                     <div class="mt-4 flex items-end justify-between z-10 flex-shrink-0">
-                        <span class="text-xs font-semibold text-gray-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300">${dateStr}</span>
+                        <span class="text-xs font-semibold text-gray-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300">${note.timestamp ? new Date(note.timestamp).toLocaleDateString() : ''}</span>
                         
                         <!-- Edit & Copy Buttons -->
                         <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -1765,6 +1792,9 @@
                 notesGrid.appendChild(div);
             });
             lucide.createIcons();
+
+            // Render Math & Diagrams inside the notes dashboard grid cards beautifully
+            renderDynamicContent(notesGrid);
         }
 
         function fallbackCopy(text) {
