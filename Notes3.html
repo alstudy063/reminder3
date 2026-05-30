@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Docket Notes</title>
+
+    <!-- Tailwind CSS with Typography Plugin -->
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- KaTeX for Premium Math Equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        c1: '#ffcc80',
+                        c2: '#ffab91',
+                        c3: '#b39ddb',
+                        c4: '#80deea',
+                        c5: '#c5e1a5',
+                    },
+                    transitionTimingFunction: {
+                        'smooth': 'cubic-bezier(0.16, 1, 0.3, 1)',
+                        'spring': 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            --reading-bg: #fdf6e3;
+            --reading-text: #000000;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Premium Micro-Animations */
+        @keyframes textShine {
+            0% { background-position: 200% center; }
+            100% { background-position: -200% center; }
+        }
+        .text-shine-fx {
+            background: linear-gradient(to right, #111827 20%, #6b7280 40%, #ffffff 50%, #6b7280 60%, #111827 80%);
+            background-size: 200% auto;
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            animation: textShine 3s ease-in-out forwards;
+        }
+        .dark .text-shine-fx {
+            background: linear-gradient(to right, #ffffff 20%, #9ca3af 40%, #111827 50%, #9ca3af 60%, #ffffff 80%);
+            background-size: 200% auto;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+        }
+        
+        .text-shine-fx-infinite {
+            background: linear-gradient(to right, #111827 20%, #d1d5db 40%, #ffffff 50%, #d1d5db 60%, #111827 80%);
+            background-size: 200% auto;
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            animation: textShine 3s linear infinite;
+        }
+
+        /* Flash Animation for highlights */
+        @keyframes highlightFlash {
+            0% { background-color: transparent; }
+            30% { background-color: #fef08a; color: #111827; border-radius: 4px; padding: 0 4px; }
+            100% { background-color: inherit; }
+        }
+        
+        .prose strong, .prose mark {
+            animation: highlightFlash 1.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .animate-pop-in {
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            opacity: 0;
+        }
+
+        /* Settings Pane Animation */
+        @keyframes paneFadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .settings-pane.block { animation: paneFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+        /* Palette Menu */
+        .palette-menu {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(15px) scale(0.95);
+            transform-origin: bottom center;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (min-width: 768px) {
+            .palette-menu { transform: translateY(-15px) scale(0.95); transform-origin: top center; }
+        }
+        .palette-menu.open { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .color-dot {
+            opacity: 0; transform: translateY(15px) scale(0.5);
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @media (min-width: 768px) { .color-dot { transform: translateY(-15px) scale(0.5); } }
+        .palette-menu.open .color-dot { opacity: 1; transform: translateY(0) scale(1); }
+
+        /* FAB Toggle Rotate */
+        #toggle-palette-btn { transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #toggle-palette-btn.open { transform: rotate(135deg); }
+
+        /* Formatting Toolbar */
+        .format-btn {
+            padding: 0.35rem; color: #6b7280; border-radius: 0.375rem;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .format-btn:hover { color: #111827; background-color: #f3f4f6; transform: scale(1.1); }
+        .dark .format-btn:hover { color: #f9fafb; background-color: #374151; }
+
+        /* HTML Widget Styles */
+        .html-widget-wrapper {
+            margin: 1.5rem 0; border: 1px solid #e5e7eb; border-radius: 0.75rem;
+            overflow: hidden; background-color: #ffffff; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .dark .html-widget-wrapper { border-color: #374151; background-color: #1f2937; }
+        .html-widget-wrapper .prose-pre-override { margin: 0 !important; border-radius: 0 !important; border: none !important; }
+        .widget-live { padding: 1rem; overflow-x: auto; width: 100%; }
+
+        /* Prose Overrides */
+        .prose { line-height: 1.6; }
+        .prose h1, .prose h2, .prose h3, .prose h4 { color: inherit; }
+        .prose h1 {
+            font-size: 2.5rem; font-weight: 800; margin-top: 2.5rem; margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem;
+        }
+        .dark .prose h1 { border-color: #374151; }
+        .prose p { margin-bottom: 1.25rem; line-height: 1.7; }
+        .prose mark { background-color: #fef08a; color: #111827; padding: 0.1em 0.3em; border-radius: 0.25rem; }
+
+        /* Reading Mode overrides */
+        .reading-mode-active { background-color: var(--reading-bg) !important; transition: background-color 0.4s ease; }
+        .reading-mode-active #view-title,
+        .reading-mode-active .prose,
+        .reading-mode-active .prose h1, .reading-mode-active .prose h2,
+        .reading-mode-active .prose h3, .reading-mode-active .prose p,
+        .reading-mode-active .prose strong, .reading-mode-active .prose li,
+        .reading-mode-active .prose code:not(pre code) {
+            color: var(--reading-text) !important; transition: color 0.4s ease;
+        }
+        
+        .modal-center { display: flex; align-items: center; justify-content: center; }
+
+        @media (max-width: 768px) {
+            #editor-modal > div, #view-modal > div, #settings-modal > div, #graph-modal > div, #sketchpad-modal > div {
+                width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0;
+            }
+            #editor-modal, #view-modal, #settings-modal, #graph-modal, #sketchpad-modal { padding: 0; }
+        }
+        
+        .premium-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;
+        }
+    </style>
+</head>
+<body class="h-screen w-full flex flex-col md:flex-row bg-white dark:bg-gray-950 transition-colors duration-300">
+
+    <!-- Sidebar / Floating Action Area -->
+    <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white dark:md:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1 transition-colors duration-300">
+        <h1 class="font-bold text-xl tracking-tight text-gray-900 dark:text-white hidden md:block mb-10 animate-fade-in-up">Docket</h1>
+        
+        <!-- Navigation Icons -->
+        <div class="hidden md:flex flex-col items-center gap-6 mb-8 animate-fade-in-up" style="animation-delay: 0.05s;">
+            <button id="sidebar-all-notes" class="w-12 h-12 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 transition-all border border-indigo-100 dark:border-indigo-900/30" title="All Notes">
+                <i data-lucide="layout-grid" class="w-5 h-5"></i>
+            </button>
+            <button id="sidebar-folders-btn" class="w-12 h-12 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all" title="Folder Explorer">
+                <i data-lucide="folder-tree" class="w-5 h-5"></i>
+            </button>
+            <button id="sidebar-graph-btn" class="w-12 h-12 rounded-xl flex items-center justify-center text-gray-500 hover:text-gray-950 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all" title="Knowledge Graph">
+                <i data-lucide="network" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Palette Creator (Floating Action Menu) -->
+        <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100] animate-fade-in-up" style="animation-delay: 0.1s;">
+            <div id="palette-menu" class="palette-menu absolute bottom-full mb-4 md:top-full md:bottom-auto md:mb-0 md:mt-6 flex flex-col items-center gap-3 p-3 bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-[24px] md:rounded-full shadow-2xl border border-gray-100 dark:border-gray-700 z-10">
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c5 color-dot shadow-sm hover:scale-110 active:scale-95" data-color="#c5e1a5"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c4 color-dot shadow-sm hover:scale-110 active:scale-95" data-color="#80deea"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c3 color-dot shadow-sm hover:scale-110 active:scale-95" data-color="#b39ddb"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c2 color-dot shadow-sm hover:scale-110 active:scale-95" data-color="#ffab91"></button>
+                <button class="w-11 h-11 md:w-8 md:h-8 rounded-full bg-c1 color-dot shadow-sm hover:scale-110 active:scale-95" data-color="#ffcc80"></button>
+            </div>
+            
+            <button id="toggle-palette-btn" class="w-14 h-14 md:w-12 md:h-12 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-105 active:scale-95 z-20">
+                <i data-lucide="plus" class="w-7 h-7 md:w-6 md:h-6"></i>
+            </button>
+        </div>
+
+        <!-- Desktop Settings Button -->
+        <div class="hidden md:block mt-auto animate-fade-in-up" style="animation-delay: 0.2s;">
+            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                <i data-lucide="settings" class="w-5 h-5 hover:rotate-90 transition-transform"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Folder Navigation Side Pane -->
+    <div id="folder-side-pane" class="w-0 overflow-hidden md:h-full bg-gray-50/50 dark:bg-gray-900/50 border-r border-gray-200/50 dark:border-gray-800/50 transition-all duration-300 flex flex-col z-30">
+        <div class="p-6 flex flex-col h-full">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-bold text-lg text-gray-900 dark:text-white">Folders</h3>
+                <button id="close-folder-pane" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"><i data-lucide="chevrons-left" class="w-5 h-5"></i></button>
+            </div>
+            <div id="folder-tree-container" class="flex-1 overflow-y-auto no-scrollbar space-y-2">
+                <!-- Dynamically generated nested folder tree -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 h-full flex flex-col relative overflow-hidden order-2">
+        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end gap-3 z-10">
+            <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all">
+                <i data-lucide="settings" class="w-5 h-5"></i>
+            </button>
+            <button id="mobile-folders-btn" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all">
+                <i data-lucide="folder-tree" class="w-5 h-5"></i>
+            </button>
+            <button id="mobile-graph-btn" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all">
+                <i data-lucide="network" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="flex items-center text-gray-400 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-4 py-2 w-full max-w-sm ml-auto transition-colors">
+                <i data-lucide="search" class="w-5 h-5 mr-2"></i>
+                <input id="search-input" type="text" placeholder="Search notes or tags..." class="bg-transparent w-full outline-none text-base text-gray-900 dark:text-white">
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
+            <!-- Active folder path header breadcrumb -->
+            <div id="folder-breadcrumb" class="hidden items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-2">
+                <i data-lucide="folder" class="w-4 h-4"></i>
+                <span id="breadcrumb-path">Root</span>
+                <button id="clear-folder-filter" class="ml-2 hover:text-red-500"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+            </div>
+            
+            <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 dark:text-white mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none">Notes</h2>
+            
+            <!-- Cards Grid -->
+            <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 items-stretch pb-8"></div>
+            
+            <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400">
+                <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
+                <p class="text-lg text-center px-4">No notes found. Press the + button to add a new note!</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- View Modal (Preview / Fullscreen View Mode) -->
+    <div id="view-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
+        <div id="view-modal-content" class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-5xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 relative">
+            
+            <div class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-gray-100 dark:border-gray-800 z-10 transition-colors" id="view-header">
+                <div class="flex items-center gap-2">
+                    <div id="view-color-indicator" class="w-4 h-4 rounded-full"></div>
+                    <span class="text-xs font-medium text-gray-400 uppercase tracking-wider">Preview</span>
+                </div>
+                <button id="close-view-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 relative no-scrollbar">
+                <div id="view-content-max-wrapper" class="w-full max-w-3xl mx-auto pb-24 transition-all duration-500">
+                    <div id="view-content-wrapper" class="block">
+                        <h1 id="view-title" class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"></h1>
+                        <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 dark:text-gray-200 w-full max-w-none leading-relaxed transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating FAB Menu inside View Modal -->
+            <div id="view-fab-container" class="absolute bottom-6 right-6 md:bottom-8 md:right-8 flex flex-col items-center justify-end z-50 pointer-events-none">
+                <div id="view-fab-menu" class="flex flex-col gap-3 items-center mb-4 opacity-0 translate-y-4 transition-all duration-300 pointer-events-none origin-bottom">
+                    <button id="reading-mode-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Reading Mode">
+                        <i data-lucide="book-open" class="w-5 h-5"></i>
+                    </button>
+                    <button id="fullscreen-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Fullscreen (Enter)">
+                        <i data-lucide="maximize" class="w-5 h-5"></i>
+                    </button>
+                    <button id="copy-view-btn" class="w-12 h-12 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Copy">
+                        <i data-lucide="copy" class="w-5 h-5"></i>
+                    </button>
+                    <button id="edit-from-view-btn" class="w-12 h-12 bg-black dark:bg-white text-white dark:text-black rounded-full flex items-center justify-center shadow-lg hover:scale-110 pointer-events-auto" title="Edit">
+                        <i data-lucide="pencil" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <button id="view-fab-toggle" class="w-14 h-14 bg-gray-100/90 dark:bg-gray-800/90 backdrop-blur-md border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-full flex items-center justify-center shadow-xl hover:scale-105 pointer-events-auto transition-transform">
+                    <i data-lucide="settings" class="w-6 h-6 transition-transform duration-500" id="view-fab-icon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Note Creation & Editing Editor Modal -->
+    <div id="editor-modal" class="fixed inset-0 z-50 bg-white/90 dark:bg-gray-950/90 md:bg-black/40 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-7xl md:h-[90vh] md:rounded-[30px] shadow-2xl flex flex-col overflow-hidden border-0 md:border border-gray-200 dark:border-gray-800 transform scale-95 transition-all duration-500" id="editor-container">
+            <div class="h-14 md:h-16 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between px-4 md:px-6 flex-shrink-0" id="modal-header">
+                <div class="flex items-center gap-3">
+                    <div id="modal-color-indicator" class="w-4 h-4 rounded-full"></div>
+                    
+                    <!-- Folder Assignment dropdown inside Editor Header -->
+                    <div class="relative">
+                        <select id="note-folder-select" class="premium-select text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border-0 rounded-lg pl-3 pr-8 py-1.5 outline-none cursor-pointer">
+                            <option value="">No Folder (Root)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="delete-note-btn" class="px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-full hidden items-center gap-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span class="hidden md:inline">Delete</span>
+                    </button>
+                    <button id="cancel-note-btn" class="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-full">Cancel</button>
+                    <button id="save-note-btn" class="px-4 py-1.5 text-sm font-semibold text-white bg-black dark:bg-white dark:text-black rounded-full hover:bg-gray-800 dark:hover:bg-gray-200 shadow-md">Save</button>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+                <!-- Editor Inputs (Left Pane) -->
+                <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
+                    <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
+                        <input id="note-title-input" type="text" placeholder="Note title..." class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white outline-none w-full mb-4 bg-transparent">
+                        
+                        <div class="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 dark:border-gray-800 overflow-x-auto no-scrollbar flex-shrink-0">
+                            <button class="format-btn" data-format="**"><i data-lucide="bold" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="*"><i data-lucide="italic" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="~~"><i data-lucide="strikethrough" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="=="><i data-lucide="highlighter" class="w-4 h-4"></i></button>
+                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                            <button class="format-btn" data-format="# "><i data-lucide="heading-1" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="## "><i data-lucide="heading-2" class="w-4 h-4"></i></button>
+                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                            <button class="format-btn" data-format="- "><i data-lucide="list" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="1. "><i data-lucide="list-ordered" class="w-4 h-4"></i></button>
+                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                            <button class="format-btn" data-format="[[New Link]]" title="Bidirectional Link"><i data-lucide="link" class="w-4 h-4 text-indigo-500"></i></button>
+                            <button id="insert-sketch-btn" class="format-btn" title="Open Sketchpad Canvas"><i data-lucide="palette" class="w-4 h-4 text-emerald-500"></i></button>
+                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                            <button class="format-btn" data-format="```\n" data-suffix="\n```" title="Code Block"><i data-lucide="code" class="w-4 h-4"></i></button>
+                            <button class="format-btn" data-format="```html\n<!-- Paste HTML/CSS Here -->\n" data-suffix="\n```" title="Live HTML Widget"><i data-lucide="layout-template" class="w-4 h-4 text-indigo-500"></i></button>
+                        </div>
+
+                        <textarea id="note-content-input" placeholder="Start typing... Hint: type [[Note Title]] to link bidirectional. Markdown and drawings supported." class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                        
+                        <!-- Word and character count display -->
+                        <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 pt-3 mt-2 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
+                            <span>Words: <span id="word-count" class="font-mono text-gray-600 dark:text-gray-300 font-semibold">0</span></span>
+                            <span>Characters: <span id="char-count" class="font-mono text-gray-600 dark:text-gray-300 font-semibold">0</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Live Preview Pane (Right Pane) -->
+                <div class="w-full md:w-1/2 h-1/2 md:h-full overflow-y-auto p-4 md:p-8 bg-gray-50 dark:bg-gray-950">
+                    <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-800 empty:hidden"></h1>
+                    <div id="preview-content" class="prose prose-base md:prose-lg dark:prose-invert text-gray-800 dark:text-gray-200 w-full max-w-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Redesigned Horizontal Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm hidden modal-center p-0 md:p-4 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full md:w-[850px] md:max-w-[90vw] h-full md:h-[600px] md:rounded-[24px] shadow-2xl transform scale-95 transition-all duration-500 overflow-hidden flex flex-col md:flex-row border-0 md:border border-gray-200/50 dark:border-gray-700/50">
+            
+            <!-- Mobile Navigation Header -->
+            <div class="md:hidden flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0 z-10 bg-white dark:bg-gray-900">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white">Settings</h3>
+                <button id="close-settings-mobile" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Desktop Sidebar Tabs Navigation -->
+            <div class="w-full md:w-64 bg-gray-50/50 dark:bg-gray-950/50 border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 flex flex-row md:flex-col p-4 md:p-6 gap-2 overflow-x-auto md:overflow-y-auto no-scrollbar flex-shrink-0">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4 hidden md:block px-2">Settings</h3>
+                
+                <button class="settings-tab active flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm ring-1 ring-gray-200 dark:ring-gray-700 whitespace-nowrap" data-target="tab-account">
+                    <i data-lucide="user" class="w-5 h-5"></i> <span class="hidden md:inline">Account</span>
+                </button>
+                <button class="settings-tab flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap" data-target="tab-folders">
+                    <i data-lucide="folder-open" class="w-5 h-5"></i> <span class="hidden md:inline">Folders Manager</span>
+                </button>
+                <button class="settings-tab flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap" data-target="tab-appearance">
+                    <i data-lucide="palette" class="w-5 h-5"></i> <span class="hidden md:inline">Appearance</span>
+                </button>
+                <button class="settings-tab flex items-center justify-center md:justify-start gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 whitespace-nowrap" data-target="tab-data">
+                    <i data-lucide="database" class="w-5 h-5"></i> <span class="hidden md:inline">Data & Sync</span>
+                </button>
+            </div>
+
+            <!-- Tab Content Pane Area -->
+            <div class="flex-1 flex flex-col h-full bg-white dark:bg-gray-900 overflow-hidden relative">
+                <!-- Desktop Close Button -->
+                <div class="hidden md:flex items-center justify-end px-6 py-4 flex-shrink-0 z-10 absolute top-0 right-0">
+                    <button id="close-settings-desktop" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="p-6 md:px-10 md:py-8 overflow-y-auto flex-1 no-scrollbar relative">
+                    
+                    <!-- Account Settings Tab -->
+                    <div id="tab-account" class="settings-pane block">
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Profile</h4>
+                        <div class="flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                            <div id="settings-user-info" class="hidden flex-col items-center gap-4 w-full">
+                                <div class="relative">
+                                    <img id="settings-avatar" class="w-24 h-24 rounded-full object-cover shadow-lg border-4 border-white dark:border-gray-700" src="" alt="avatar">
+                                    <div class="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                                </div>
+                                <div class="text-center">
+                                    <h5 id="settings-name" class="text-xl font-bold text-gray-900 dark:text-white"></h5>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Synced across devices</p>
+                                </div>
+                                <button id="settings-signout-btn" class="mt-4 px-6 py-2.5 text-sm font-semibold text-red-600 bg-red-50 dark:bg-red-900/20 rounded-full hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors w-full max-w-[200px]">Sign out</button>
+                            </div>
+                            
+                            <div id="settings-signin-container" class="flex flex-col items-center w-full">
+                                <div class="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded-full flex items-center justify-center mb-4">
+                                    <i data-lucide="cloud" class="w-10 h-10"></i>
+                                </div>
+                                <h5 class="text-lg font-bold text-gray-900 dark:text-white mb-2">Sync your notes</h5>
+                                <p class="text-sm text-gray-500 dark:text-gray-400 text-center mb-6 max-w-[250px]">Sign in securely to access your notes from anywhere.</p>
+                                <button id="settings-google-signin-btn" class="flex items-center justify-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-3 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 shadow-sm transition-all w-full max-w-[250px]">
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="w-5 h-5" alt="Google">
+                                    Continue with Google
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NEW Folders Management Tab -->
+                    <div id="tab-folders" class="settings-pane hidden">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-bold text-gray-900 dark:text-white">Manage Nested Folders</h4>
+                            <button id="add-new-folder-btn" class="flex items-center gap-1 bg-black text-white dark:bg-white dark:text-black font-semibold text-xs py-2 px-4 rounded-xl shadow transition-all hover:scale-105">
+                                <i data-lucide="folder-plus" class="w-4 h-4"></i> Create Folder
+                            </button>
+                        </div>
+                        
+                        <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                            <div id="folders-manager-list" class="space-y-3 max-h-[320px] overflow-y-auto no-scrollbar">
+                                <!-- Folders edit and management entries -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Options Tab -->
+                    <div id="tab-appearance" class="settings-pane hidden">
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Theme and Appearance</h4>
+                        <div class="flex flex-col gap-6">
+                            
+                            <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white">App Theme</label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Choose Light or Dark theme.</p>
+                                </div>
+                                <select id="pref-theme" class="premium-select w-full md:w-48 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-xl px-4 py-2.5 outline-none focus:border-black dark:focus:border-white shadow-sm cursor-pointer">
+                                    <option value="light">Light Theme</option>
+                                    <option value="dark">Dark Theme</option>
+                                </select>
+                            </div>
+
+                            <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50 flex flex-col gap-5">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-900 dark:text-white">Fullscreen Width</label>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 mb-3">Adjust how content appears in fullscreen.</p>
+                                    <select id="pref-fs-width" class="premium-select w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-xl px-4 py-2.5 outline-none focus:border-black shadow-sm cursor-pointer">
+                                        <option value="max-w-3xl">Normal (Easy to read)</option>
+                                        <option value="max-w-5xl">Wide</option>
+                                        <option value="max-w-7xl">Extra Wide</option>
+                                        <option value="max-w-full px-8">Full Screen (100%)</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="block text-sm font-semibold text-gray-900 dark:text-white">Font Size</label>
+                                        <span id="font-size-val" class="text-xs font-mono bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded text-gray-700 dark:text-gray-300">18px</span>
+                                    </div>
+                                    <input type="range" id="pref-fs-fontsize" min="14" max="32" value="18" class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white">
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-1">Reading Mode Colors</label>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Colors applied only when Reading Mode is active.</p>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="flex flex-col items-center bg-white dark:bg-gray-700 p-3 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
+                                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-300 mb-2">Background</label>
+                                        <div class="flex items-center gap-3">
+                                            <div class="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-500 shadow-inner">
+                                                <input type="color" id="pref-reading-bg" class="absolute -top-2 -left-2 w-12 h-12 cursor-pointer border-0 p-0">
+                                            </div>
+                                            <span class="text-xs font-mono text-gray-700 dark:text-gray-300 uppercase" id="pref-bg-val"></span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col items-center bg-white dark:bg-gray-700 p-3 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
+                                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-300 mb-2">Text</label>
+                                        <div class="flex items-center gap-3">
+                                            <div class="relative w-8 h-8 rounded-full overflow-hidden border border-gray-300 dark:border-gray-500 shadow-inner">
+                                                <input type="color" id="pref-reading-text" class="absolute -top-2 -left-2 w-12 h-12 cursor-pointer border-0 p-0">
+                                            </div>
+                                            <span class="text-xs font-mono text-gray-700 dark:text-gray-300 uppercase" id="pref-text-val"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- Data & Sync Tab Pane -->
+                    <div id="tab-data" class="settings-pane hidden">
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Data Management</h4>
+                        
+                        <div class="flex flex-col gap-4">
+                            <div class="p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30 flex items-center justify-between gap-4">
+                                <div>
+                                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Download Backup</h5>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Download all notes as a JSON file.</p>
+                                </div>
+                                <button id="export-btn" class="flex-shrink-0 flex justify-center items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Download
+                                </button>
+                            </div>
+
+                            <div class="p-5 bg-green-50/50 dark:bg-green-900/10 rounded-2xl border border-green-100 dark:border-green-900/30 flex items-center justify-between gap-4">
+                                <div>
+                                    <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Import Notes</h5>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Restore notes from a JSON backup.</p>
+                                </div>
+                                <div>
+                                    <input type="file" id="import-file" accept=".json" class="hidden">
+                                    <label for="import-file" class="flex-shrink-0 flex justify-center items-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-medium py-2 px-4 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm transition-colors cursor-pointer">
+                                        <i data-lucide="upload" class="w-4 h-4"></i> Import
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 p-5 bg-red-50/50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
+                                <h5 class="text-sm font-semibold text-red-600 dark:text-red-400 mb-1">Danger Zone</h5>
+                                <p class="text-xs text-red-500/80 dark:text-red-400/80 mb-4">Permanently delete your notes. This action cannot be undone.</p>
+                                <button id="clear-all-btn" class="w-full flex justify-center items-center gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-xl transition-colors shadow-sm">
+                                    <i data-lucide="alert-triangle" class="w-4 h-4"></i> Delete All Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW Knowledge Graph Modal -->
+    <div id="graph-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full h-full md:w-4/5 md:h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 relative">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="network" class="w-5 h-5 text-indigo-500"></i>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Knowledge Network</h3>
+                </div>
+                <button id="close-graph-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="flex-1 relative bg-gray-50 dark:bg-gray-950 overflow-hidden">
+                <canvas id="graph-canvas" class="w-full h-full cursor-grab active:cursor-grabbing"></canvas>
+                
+                <div class="absolute bottom-4 left-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur border border-gray-200/50 dark:border-gray-800 p-4 rounded-xl shadow-lg max-w-xs text-xs space-y-1.5">
+                    <p class="font-bold text-gray-900 dark:text-white">Interactive Knowledge Graph</p>
+                    <p class="text-gray-500">Nodes are notes. Connected paths are bi-directional wikilinks.</p>
+                    <p class="text-indigo-600 dark:text-indigo-400 font-medium">• Drag nodes to rearrange them</p>
+                    <p class="text-indigo-600 dark:text-indigo-400 font-medium">• Double click a node to read note</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW Sketchpad/Drawing Modal -->
+    <div id="sketchpad-modal" class="fixed inset-0 z-[110] bg-black/60 backdrop-blur-md hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full h-full md:w-[800px] md:h-[600px] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="pencil-ruler" class="w-5 h-5 text-emerald-500"></i>
+                    <h3 class="font-bold text-lg text-gray-900 dark:text-white">Digital Drawing Board</h3>
+                </div>
+                <button id="close-sketchpad-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Sketch Tools -->
+            <div class="flex flex-wrap items-center gap-4 bg-gray-50 dark:bg-gray-950 px-6 py-3 border-b border-gray-100 dark:border-gray-800">
+                <div class="flex items-center gap-1">
+                    <button class="sketch-color-dot w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 bg-black active-dot" data-color="#000000"></button>
+                    <button class="sketch-color-dot w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 bg-red-500" data-color="#ef4444"></button>
+                    <button class="sketch-color-dot w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 bg-blue-500" data-color="#3b82f6"></button>
+                    <button class="sketch-color-dot w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 bg-green-500" data-color="#10b981"></button>
+                    <button class="sketch-color-dot w-6 h-6 rounded-full border-2 border-white dark:border-gray-800 bg-yellow-500" data-color="#f59e0b"></button>
+                </div>
+
+                <div class="w-px h-5 bg-gray-200 dark:bg-gray-800"></div>
+
+                <!-- Pen thickness slider -->
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-gray-500">Size</span>
+                    <input type="range" id="sketch-stroke-size" min="2" max="30" value="5" class="w-24 accent-black dark:accent-white">
+                </div>
+
+                <div class="w-px h-5 bg-gray-200 dark:bg-gray-800"></div>
+
+                <!-- Tools buttons -->
+                <button id="sketch-eraser" class="flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-black dark:hover:text-white py-1 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <i data-lucide="eraser" class="w-3.5 h-3.5"></i> Eraser
+                </button>
+                <button id="sketch-clear" class="flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-600 py-1 px-2.5 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear Canvas
+                </button>
+
+                <button id="sketch-insert" class="ml-auto bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2 px-5 rounded-xl shadow transition-all hover:scale-105 flex items-center gap-1">
+                    <i data-lucide="image" class="w-4 h-4"></i> Insert into Note
+                </button>
+            </div>
+
+            <div class="flex-1 bg-white relative">
+                <canvas id="sketch-canvas" class="w-full h-full cursor-crosshair bg-white"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Universal Confirmation Dialog -->
+    <div id="confirm-modal" class="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm hidden modal-center p-4 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full max-w-md rounded-2xl shadow-2xl transform scale-95 transition-all duration-500 overflow-hidden border border-gray-100 dark:border-gray-800">
+            <div class="p-6 md:p-8">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600 dark:text-red-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white" id="confirm-title">Confirm</h3>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed" id="confirm-message">Are you sure you want to do this?</p>
+                <div class="flex justify-end gap-3">
+                    <button id="confirm-cancel-btn" class="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">Cancel</button>
+                    <button id="confirm-action-btn" class="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-md transition-colors">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase System Module Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Global Firestore Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+        const APP_ID = 'studyflow-pro'; 
+
+        // DOM Element Cache
+        const viewModal = document.getElementById('view-modal');
+        const viewFabMenu = document.getElementById('view-fab-menu');
+        const viewFabIcon = document.getElementById('view-fab-icon');
+        const editorModal = document.getElementById('editor-modal');
+        const mainTitle = document.getElementById('main-title');
+        const notesGrid = document.getElementById('notes-grid');
+        
+        // NEW Modals/Panes
+        const graphModal = document.getElementById('graph-modal');
+        const sketchpadModal = document.getElementById('sketchpad-modal');
+        const folderSidePane = document.getElementById('folder-side-pane');
+
+        // State variables
+        let currentUser = null;
+        let unsubscribeSnapshot = null;
+        let unsubscribeFolders = null;
+        
+        let notesData = [];
+        let foldersData = [];
+        let currentFolderFilter = null; // ID of folder currently filtered
+        
+        let isPaletteOpen = false;
+        let activeNoteId = null;
+        let activeColor = '#ffffff';
+        let currentViewNote = null;
+        let isViewFabOpen = false;
+        let isReadingMode = false;
+        let randomShineTimeout = null;
+        let hasProcessedInitialUrlParam = false;
+
+        marked.setOptions({ gfm: true, breaks: true });
+
+        /* ================= REDESIGNED INTEGRATED WIKILINK PARSING ================= */
+        // Obsidian bidirectional wikilinks parse: [[Target Note Title]] -> converts to actionable link
+        function parseWikiLinks(htmlContent) {
+            return htmlContent.replace(/\[\[(.*?)\]\]/g, (match, title) => {
+                const cleanTitle = title.trim();
+                return `<span class="wiki-link text-indigo-600 dark:text-indigo-400 font-bold underline decoration-dotted decoration-2 underline-offset-4 cursor-pointer hover:text-indigo-800 transition-colors" data-wiki-target="${escapeHtml(cleanTitle)}">${escapeHtml(cleanTitle)}</span>`;
+            });
+        }
+
+        // Attach listeners for WikiLinks inside view/preview areas
+        function initWikiLinkListeners(container) {
+            container.querySelectorAll('.wiki-link').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const targetTitle = el.getAttribute('data-wiki-target');
+                    
+                    // Look up existing note matching target title
+                    const targetNote = notesData.find(n => (n.title || '').toLowerCase() === targetTitle.toLowerCase());
+                    if (targetNote) {
+                        openViewModal(targetNote);
+                    } else {
+                        // Create inline note on-the-fly
+                        showConfirmModal(
+                            "Create Note",
+                            `Linked note "${targetTitle}" doesn't exist. Create it now?`,
+                            "Create Note",
+                            false,
+                            async () => {
+                                if (!currentUser) return;
+                                const colRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+                                const newDocRef = await addDoc(colRef, {
+                                    title: targetTitle,
+                                    content: `Welcome to your linked note: **${targetTitle}**! \n\nAdd content here...`,
+                                    color: '#ffffff',
+                                    timestamp: Date.now()
+                                });
+                                // Clean and load
+                                if (viewModal) viewModal.classList.add('hidden');
+                                showToast(`Note "${targetTitle}" created!`);
+                            }
+                        );
+                    }
+                });
+            });
+        }
+
+        /* ================= TITLE ANIMATION & EFFECTS ================= */
+        const triggerShine = () => {
+            if (!mainTitle.classList.contains('text-shine-fx-infinite')) {
+                mainTitle.classList.remove('text-shine-fx');
+                void mainTitle.offsetWidth; 
+                mainTitle.classList.add('text-shine-fx');
+                setTimeout(() => mainTitle.classList.remove('text-shine-fx'), 1500);
+            }
+        };
+        
+        mainTitle.addEventListener('click', triggerShine);
+
+        function startRandomShine() {
+            if (randomShineTimeout) clearTimeout(randomShineTimeout);
+            const randomTrigger = () => {
+                triggerShine();
+                const nextTime = Math.random() * 20000 + 15000; 
+                randomShineTimeout = setTimeout(randomTrigger, nextTime);
+            };
+            const nextTime = Math.random() * 15000 + 10000; 
+            randomShineTimeout = setTimeout(randomTrigger, nextTime);
+        }
+        startRandomShine();
+
+        /* ================= PREFERENCES & SETTINGS ================= */
+        const defaultPrefs = { theme: 'light', readingBg: '#fdf6e3', readingText: '#000000', fsWidth: 'max-w-5xl', fsFontSize: '18' };
+        let userPrefs = {};
+        try { userPrefs = JSON.parse(localStorage.getItem('docketPrefs')) || defaultPrefs; } catch(e) { userPrefs = defaultPrefs; }
+
+        function applyFullscreenLayout(isFullscreen) {
+            const maxWrapper = document.getElementById('view-content-max-wrapper');
+            const content = document.getElementById('view-content');
+            
+            if (isFullscreen) {
+                maxWrapper.className = `w-full mx-auto pb-24 transition-all duration-500 ${userPrefs.fsWidth || 'max-w-5xl'}`;
+                content.style.fontSize = (userPrefs.fsFontSize || '18') + 'px';
+            } else {
+                maxWrapper.className = 'w-full max-w-3xl mx-auto pb-24 transition-all duration-500';
+                content.style.fontSize = '';
+            }
+        }
+
+        function applyPreferences() {
+            if (userPrefs.theme === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+
+            document.documentElement.style.setProperty('--reading-bg', userPrefs.readingBg || defaultPrefs.readingBg);
+            document.documentElement.style.setProperty('--reading-text', userPrefs.readingText || defaultPrefs.readingText);
+
+            const els = {
+                'pref-theme': userPrefs.theme || 'light',
+                'pref-reading-bg': userPrefs.readingBg || defaultPrefs.readingBg,
+                'pref-reading-text': userPrefs.readingText || defaultPrefs.readingText,
+                'pref-fs-width': userPrefs.fsWidth || 'max-w-5xl',
+                'pref-fs-fontsize': userPrefs.fsFontSize || '18'
+            };
+            for(let id in els) {
+                if(document.getElementById(id)) document.getElementById(id).value = els[id];
+            }
+            if(document.getElementById('pref-bg-val')) document.getElementById('pref-bg-val').textContent = els['pref-reading-bg'];
+            if(document.getElementById('pref-text-val')) document.getElementById('pref-text-val').textContent = els['pref-reading-text'];
+            if(document.getElementById('font-size-val')) document.getElementById('font-size-val').textContent = els['pref-fs-fontsize'] + 'px';
+
+            if (viewModal && !viewModal.classList.contains('hidden')) {
+                applyFullscreenLayout(document.fullscreenElement ? true : false);
+            }
+        }
+
+        function savePreferences() {
+            userPrefs = {
+                theme: document.getElementById('pref-theme').value,
+                readingBg: document.getElementById('pref-reading-bg').value,
+                readingText: document.getElementById('pref-reading-text').value,
+                fsWidth: document.getElementById('pref-fs-width').value,
+                fsFontSize: document.getElementById('pref-fs-fontsize').value
+            };
+            localStorage.setItem('docketPrefs', JSON.stringify(userPrefs));
+            applyPreferences();
+        }
+
+        ['pref-theme', 'pref-reading-bg', 'pref-reading-text', 'pref-fs-width', 'pref-fs-fontsize'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', savePreferences);
+        });
+        applyPreferences();
+
+        /* ================= UTILITIES & UI COMPONENTS ================= */
+        function formatSnippet(content, maxLength = 100) {
+            if (!content) return '';
+            let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+            text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
+            text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
+            text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
+            text = text.replace(/^#{1,6}\s+/gm, '');
+            text = text.replace(/^[-*_]{3,}\s*$/gm, '');
+            text = text.replace(/\s+/g, ' ').trim();
+            if (text.length > maxLength) text = text.substring(0, maxLength) + '...';
+            return text;
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        }
+
+        function showToast(message) {
+            const existing = document.getElementById('dynamic-toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.id = 'dynamic-toast';
+            toast.innerText = message;
+            toast.style.position = 'fixed';
+            toast.style.bottom = '70px';
+            toast.style.left = '50%';
+            toast.style.transform = 'translateX(-50%)';
+            toast.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#1f2937';
+            toast.style.color = document.documentElement.classList.contains('dark') ? '#000000' : 'white';
+            toast.style.padding = '10px 20px';
+            toast.style.borderRadius = '9999px';
+            toast.style.fontSize = '0.875rem';
+            toast.style.fontWeight = '500';
+            toast.style.zIndex = '9999';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.2s ease';
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.style.opacity = '1', 10);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
+        }
+
+        function showConfirmModal(title, message, btnText, isDanger, onConfirm) {
+            const modal = document.getElementById('confirm-modal');
+            document.getElementById('confirm-title').textContent = title;
+            document.getElementById('confirm-message').textContent = message;
+            const btn = document.getElementById('confirm-action-btn');
+            btn.textContent = btnText;
+            
+            if (isDanger) btn.className = "px-5 py-2.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-md transition-colors";
+            else btn.className = "px-5 py-2.5 text-sm font-semibold text-white bg-black dark:bg-white dark:text-black rounded-xl shadow-md transition-colors";
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.bg-white, .dark\\:bg-gray-900').classList.remove('scale-95');
+                modal.classList.add('opacity-100');
+            }, 20);
+
+            btn.onclick = () => { closeConfirmModal(); onConfirm(); };
+            document.getElementById('confirm-cancel-btn').onclick = closeConfirmModal;
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('opacity-100');
+            modal.querySelector('.bg-white, .dark\\:bg-gray-900').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // HTML Live Widget Processing
+        function processHtmlWidgets(container) {
+            const htmlBlocks = container.querySelectorAll('pre code.language-html');
+            
+            htmlBlocks.forEach((codeBlock) => {
+                const pre = codeBlock.parentElement;
+                if (pre.parentElement.classList.contains('widget-source')) return;
+
+                const rawHtml = codeBlock.textContent;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'html-widget-wrapper';
+
+                const header = document.createElement('div');
+                header.className = 'bg-gray-50 dark:bg-gray-800 px-4 py-2 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center';
+                header.innerHTML = `
+                    <span class="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <i data-lucide="layout-template" class="w-4 h-4"></i> Live Widget
+                    </span>
+                    <div class="flex bg-gray-200/80 dark:bg-gray-900 p-0.5 rounded-lg border border-gray-300/50 dark:border-gray-600">
+                        <button class="widget-tab-btn active px-3 py-1 text-xs font-semibold rounded-md transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm" data-target="preview">Preview</button>
+                        <button class="widget-tab-btn px-3 py-1 text-xs font-medium rounded-md transition-all text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white" data-target="source">Code</button>
+                    </div>
+                `;
+
+                const contentContainer = document.createElement('div');
+                contentContainer.className = 'relative w-full';
+
+                const previewArea = document.createElement('div');
+                previewArea.className = 'widget-live bg-white dark:bg-gray-900';
+                previewArea.innerHTML = rawHtml;
+
+                const sourceArea = document.createElement('div');
+                sourceArea.className = 'widget-source hidden w-full bg-[#1f2937] p-4';
+                
+                pre.parentNode.insertBefore(wrapper, pre);
+                pre.classList.add('prose-pre-override');
+                sourceArea.appendChild(pre);
+
+                contentContainer.appendChild(previewArea);
+                contentContainer.appendChild(sourceArea);
+                wrapper.appendChild(header);
+                wrapper.appendChild(contentContainer);
+
+                const btns = header.querySelectorAll('.widget-tab-btn');
+                btns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault(); e.stopPropagation();
+                        btns.forEach(b => {
+                            b.classList.remove('bg-white', 'dark:bg-gray-700', 'text-gray-900', 'dark:text-white', 'shadow-sm', 'active', 'font-semibold');
+                            b.classList.add('text-gray-500', 'dark:text-gray-400', 'font-medium');
+                        });
+                        btn.classList.add('bg-white', 'dark:bg-gray-700', 'text-gray-900', 'dark:text-white', 'shadow-sm', 'active', 'font-semibold');
+                        btn.classList.remove('text-gray-500', 'dark:text-gray-400', 'font-medium');
+
+                        if (btn.getAttribute('data-target') === 'preview') {
+                            previewArea.classList.remove('hidden'); sourceArea.classList.add('hidden');
+                        } else {
+                            previewArea.classList.add('hidden'); sourceArea.classList.remove('hidden');
+                        }
+                    });
+                });
+            });
+            lucide.createIcons({ root: container });
+        }
+
+        /* LaTeX Math Protection (Display & Inline) */
+        function protectMath(text) {
+            if (!text) return { text: '', blocks: [] };
+            let mathBlocks = [];
+            let protectedText = text.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^$\n]+\$)/g, (match) => {
+                mathBlocks.push(match);
+                return `MATHBLOCKPLACEHOLDER${mathBlocks.length - 1}END`;
+            });
+            return { text: protectedText, blocks: mathBlocks };
+        }
+
+        function restoreMath(text, blocks) {
+            blocks.forEach((block, index) => {
+                let safeBlock = block.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                text = text.replace(`MATHBLOCKPLACEHOLDER${index}END`, safeBlock);
+            });
+            return text;
+        }
+
+        // KaTeX global config for parsing inline & block delimiters correctly
+        const katexConfig = {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '\\[', right: '\\]', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\(', right: '\\)', display: false}
+            ],
+            throwOnError: false
+        };
+
+        /* Show Skeleton Loading Animations */
+        function renderSkeletons() {
+            notesGrid.innerHTML = '';
+            document.getElementById('empty-state').classList.add('hidden');
+            for(let i=0; i<6; i++) {
+                notesGrid.innerHTML += `
+                <div class="rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between h-full min-h-[220px] bg-gray-100 dark:bg-gray-800 animate-pulse border border-gray-200/50 dark:border-gray-700/50">
+                    <div>
+                        <div class="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-full mb-2"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6 mb-2"></div>
+                        <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/6"></div>
+                    </div>
+                    <div class="mt-4 flex justify-between items-end">
+                        <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                        <div class="flex gap-2">
+                            <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            <div class="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>`;
+            }
+        }
+
+        /* Read URL Parameter */
+        function processUrlParam() {
+            if (hasProcessedInitialUrlParam) return;
+            const urlParams = new URLSearchParams(window.location.search);
+            const noteId = urlParams.get('note');
+            if (noteId) {
+                const note = notesData.find(n => n.id === noteId);
+                if (note) {
+                    openViewModal(note);
+                    hasProcessedInitialUrlParam = true;
+                }
+            }
+        }
+
+        /* ================= NESTED FOLDER CORE SYSTEM ================= */
+        // Render tree view sidebar dynamically with recursive styling
+        function renderFolderTree() {
+            const container = document.getElementById('folder-tree-container');
+            container.innerHTML = '';
+
+            // Add standard "All Notes" option
+            const allBtn = document.createElement('div');
+            allBtn.className = `flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer ${!currentFolderFilter ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'}`;
+            allBtn.innerHTML = `<i data-lucide="layers" class="w-4 h-4"></i> <span>All Notes</span>`;
+            allBtn.addEventListener('click', () => filterByFolder(null));
+            container.appendChild(allBtn);
+
+            // Helper to recursively draw folders
+            const drawFolders = (parentId, depth) => {
+                const subfolders = foldersData.filter(f => f.parentId === parentId);
+                subfolders.forEach(folder => {
+                    const el = document.createElement('div');
+                    el.className = `flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 ${currentFolderFilter === folder.id ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-400' : 'text-gray-600 dark:text-gray-400'}`;
+                    el.style.paddingLeft = `${depth * 12 + 12}px`;
+                    el.innerHTML = `
+                        <div class="flex items-center gap-2 overflow-hidden truncate">
+                            <i data-lucide="folder" class="w-4 h-4 text-amber-500 flex-shrink-0"></i>
+                            <span class="truncate">${escapeHtml(folder.name)}</span>
+                        </div>
+                    `;
+                    el.addEventListener('click', () => filterByFolder(folder.id));
+                    container.appendChild(el);
+
+                    // Recurse children folders
+                    drawFolders(folder.id, depth + 1);
+                });
+            };
+
+            drawFolders(null, 0);
+            lucide.createIcons({ root: container });
+        }
+
+        function filterByFolder(folderId) {
+            currentFolderFilter = folderId;
+            const breadcrumb = document.getElementById('folder-breadcrumb');
+            const pathText = document.getElementById('breadcrumb-path');
+
+            if (!folderId) {
+                breadcrumb.classList.add('hidden');
+            } else {
+                breadcrumb.classList.remove('hidden');
+                
+                // Track breadcrumb path hierarchy
+                let path = [];
+                let current = foldersData.find(f => f.id === folderId);
+                while(current) {
+                    path.unshift(current.name);
+                    current = foldersData.find(f => f.id === current.parentId);
+                }
+                pathText.textContent = path.join(' / ');
+            }
+            renderNotes(getFilteredNotes());
+            renderFolderTree();
+        }
+
+        // Apply logic to fetch only notes belonging to current active folder and descendants
+        function getFilteredNotes() {
+            if (!currentFolderFilter) return notesData;
+            
+            // Get current folder ID plus nested descendants
+            let allowedFolderIds = [currentFolderFilter];
+            const getDescendants = (parentId) => {
+                foldersData.filter(f => f.parentId === parentId).forEach(f => {
+                    allowedFolderIds.push(f.id);
+                    getDescendants(f.id);
+                });
+            };
+            getDescendants(currentFolderFilter);
+
+            return notesData.filter(n => allowedFolderIds.includes(n.folderId));
+        }
+
+        // Setup folder selectors inside Editor modal 
+        function populateFolderDropdown() {
+            const select = document.getElementById('note-folder-select');
+            select.innerHTML = `<option value="">No Folder (Root)</option>`;
+            
+            const recurseOption = (parentId, prefix = '') => {
+                const subs = foldersData.filter(f => f.parentId === parentId);
+                subs.forEach(folder => {
+                    const opt = document.createElement('option');
+                    opt.value = folder.id;
+                    opt.textContent = prefix + folder.name;
+                    select.appendChild(opt);
+                    recurseOption(folder.id, prefix + '— ');
+                });
+            };
+            recurseOption(null, '');
+        }
+
+        // Folders Sync to Firestore
+        function syncFolders() {
+            if (!currentUser) return;
+            const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders');
+            if (unsubscribeFolders) unsubscribeFolders();
+            unsubscribeFolders = onSnapshot(ref, (snapshot) => {
+                foldersData = [];
+                snapshot.forEach(doc => foldersData.push({ id: doc.id, ...doc.data() }));
+                foldersData.sort((a,b) => a.timestamp - b.timestamp);
+                
+                // Trigger dynamic trees
+                renderFolderTree();
+                populateFolderDropdown();
+                renderFoldersManager();
+            });
+        }
+
+        // Render standard Folder management inside settings
+        function renderFoldersManager() {
+            const list = document.getElementById('folders-manager-list');
+            list.innerHTML = '';
+
+            if (foldersData.length === 0) {
+                list.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">No custom folders created yet.</p>`;
+                return;
+            }
+
+            foldersData.forEach(folder => {
+                const parentFolder = foldersData.find(f => f.id === folder.parentId);
+                const item = document.createElement('div');
+                item.className = "flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm";
+                item.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="font-bold text-sm text-gray-900 dark:text-white">${escapeHtml(folder.name)}</span>
+                        <span class="text-xs text-gray-400">Parent: ${parentFolder ? escapeHtml(parentFolder.name) : 'None (Root)'}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="edit-folder-name text-gray-400 hover:text-black dark:hover:text-white p-1" title="Rename"><i data-lucide="edit" class="w-4 h-4"></i></button>
+                        <button class="delete-folder text-red-400 hover:text-red-600 p-1" title="Delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                `;
+
+                // Handle folder deletion confirmation
+                item.querySelector('.delete-folder').addEventListener('click', () => {
+                    showConfirmModal(
+                        "Delete Folder",
+                        `Delete "${folder.name}"? Notes in this folder will remain but be orphaned to the Root folder.`,
+                        "Delete Folder",
+                        true,
+                        async () => {
+                            if (!currentUser) return;
+                            // Clean folderId for orphaned notes
+                            const orphaned = notesData.filter(n => n.folderId === folder.id);
+                            for (let note of orphaned) {
+                                await setDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', note.id), { ...note, folderId: null });
+                            }
+                            // Delete folder doc
+                            await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders', folder.id));
+                            showToast("Folder deleted.");
+                        }
+                    );
+                });
+
+                // Handle folder renaming inline
+                item.querySelector('.edit-folder-name').addEventListener('click', () => {
+                    const newName = prompt("Rename folder to:", folder.name);
+                    if (newName && newName.trim()) {
+                        setDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders', folder.id), {
+                            ...folder,
+                            name: newName.trim()
+                        });
+                    }
+                });
+
+                list.appendChild(item);
+            });
+            lucide.createIcons({ root: list });
+        }
+
+        // Folder Creator Action
+        document.getElementById('add-new-folder-btn').addEventListener('click', async () => {
+            const folderName = prompt("Enter folder name:");
+            if (!folderName || !folderName.trim()) return;
+
+            // Form selection options for nesting on creation
+            let selectStr = `<option value="">No Parent (Root)</option>`;
+            foldersData.forEach(f => {
+                selectStr += `<option value="${f.id}">${f.name}</option>`;
+            });
+
+            const parentId = prompt(`Optional: Enter Parent Folder ID if nesting, or cancel/leave empty for Root:\n${foldersData.map(f => `${f.name} (id: ${f.id})`).join('\n')}`);
+            const matchedParent = foldersData.find(f => f.id === parentId);
+
+            if (currentUser) {
+                await addDoc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders'), {
+                    name: folderName.trim(),
+                    parentId: matchedParent ? matchedParent.id : null,
+                    timestamp: Date.now()
+                });
+                showToast("Folder created!");
+            }
+        });
+
+        // Folders Side Pane controls
+        const toggleFoldersPane = (open) => {
+            if (open) {
+                folderSidePane.classList.replace('w-0', 'w-80');
+            } else {
+                folderSidePane.classList.replace('w-80', 'w-0');
+            }
+        };
+
+        document.getElementById('sidebar-folders-btn').addEventListener('click', () => {
+            const isOpen = folderSidePane.classList.contains('w-80');
+            toggleFoldersPane(!isOpen);
+        });
+        document.getElementById('mobile-folders-btn').addEventListener('click', () => toggleFoldersPane(true));
+        document.getElementById('close-folder-pane').addEventListener('click', () => toggleFoldersPane(false));
+        document.getElementById('clear-folder-filter').addEventListener('click', () => filterByFolder(null));
+
+        /* ================= INTERACTIVE KNOWLEDGE GRAPH MAP ================= */
+        // Canvas physics simulation displaying Obsidian style structural connections
+        let graphAnimationId = null;
+        const graphCanvas = document.getElementById('graph-canvas');
+        const ctx = graphCanvas.getContext('2d');
+        let nodes = [];
+        let links = [];
+        let dragNode = null;
+
+        function openKnowledgeGraph() {
+            graphModal.classList.remove('hidden');
+            setTimeout(() => {
+                graphModal.classList.remove('opacity-0');
+                graphModal.querySelector('div').classList.remove('scale-95');
+                graphModal.classList.add('opacity-100');
+                initGraphEngine();
+            }, 20);
+        }
+
+        function closeKnowledgeGraph() {
+            graphModal.classList.add('opacity-0');
+            graphModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                graphModal.classList.add('hidden');
+                cancelAnimationFrame(graphAnimationId);
+            }, 300);
+        }
+
+        document.getElementById('sidebar-graph-btn').addEventListener('click', openKnowledgeGraph);
+        document.getElementById('mobile-graph-btn').addEventListener('click', openKnowledgeGraph);
+        document.getElementById('close-graph-modal').addEventListener('click', closeKnowledgeGraph);
+
+        function initGraphEngine() {
+            const w = graphCanvas.width = graphCanvas.parentElement.clientWidth;
+            const h = graphCanvas.height = graphCanvas.parentElement.clientHeight;
+
+            // Generate Map nodes
+            nodes = notesData.map((note, index) => {
+                const angle = (index / notesData.length) * Math.PI * 2;
+                return {
+                    id: note.id,
+                    title: note.title || 'Untitled',
+                    color: note.color || '#ffffff',
+                    note: note,
+                    x: w / 2 + Math.cos(angle) * 150 + (Math.random() - 0.5) * 50,
+                    y: h / 2 + Math.sin(angle) * 150 + (Math.random() - 0.5) * 50,
+                    vx: 0,
+                    vy: 0,
+                    radius: 12
+                };
+            });
+
+            // Map links by reading note bidirectional markdown links
+            links = [];
+            nodes.forEach(node => {
+                const rawText = node.note.content || '';
+                // Locate bi links match format [[Target Title]]
+                const regex = /\[\[(.*?)\]\]/g;
+                let match;
+                while((match = regex.exec(rawText)) !== null) {
+                    const targetTitle = match[1].trim();
+                    const targetNode = nodes.find(n => n.title.toLowerCase() === targetTitle.toLowerCase());
+                    if (targetNode && targetNode.id !== node.id) {
+                        links.push({ source: node, target: targetNode });
+                    }
+                }
+            });
+
+            // Canvas drag triggers
+            graphCanvas.addEventListener('mousedown', onMouseDown);
+            graphCanvas.addEventListener('mousemove', onMouseMove);
+            graphCanvas.addEventListener('mouseup', onMouseUp);
+            graphCanvas.addEventListener('dblclick', onDblClick);
+            
+            // Touch triggers for mobile compatibility
+            graphCanvas.addEventListener('touchstart', onTouchStart);
+            graphCanvas.addEventListener('touchmove', onTouchMove);
+            graphCanvas.addEventListener('touchend', onTouchEnd);
+
+            animateGraph();
+        }
+
+        function onMouseDown(e) {
+            const rect = graphCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            dragNode = nodes.find(node => {
+                const dist = Math.hypot(node.x - mouseX, node.y - mouseY);
+                return dist < node.radius + 10;
+            });
+        }
+
+        function onMouseMove(e) {
+            if (dragNode) {
+                const rect = graphCanvas.getBoundingClientRect();
+                dragNode.x = e.clientX - rect.left;
+                dragNode.y = e.clientY - rect.top;
+            }
+        }
+
+        function onMouseUp() {
+            dragNode = null;
+        }
+
+        function onTouchStart(e) {
+            if (e.touches.length > 0) {
+                const rect = graphCanvas.getBoundingClientRect();
+                const touchX = e.touches[0].clientX - rect.left;
+                const touchY = e.touches[0].clientY - rect.top;
+                dragNode = nodes.find(node => Math.hypot(node.x - touchX, node.y - touchY) < node.radius + 15);
+            }
+        }
+
+        function onTouchMove(e) {
+            if (dragNode && e.touches.length > 0) {
+                const rect = graphCanvas.getBoundingClientRect();
+                dragNode.x = e.touches[0].clientX - rect.left;
+                dragNode.y = e.touches[0].clientY - rect.top;
+            }
+        }
+
+        function onTouchEnd() {
+            dragNode = null;
+        }
+
+        function onDblClick(e) {
+            const rect = graphCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const clickedNode = nodes.find(node => Math.hypot(node.x - mouseX, node.y - mouseY) < node.radius + 10);
+            if (clickedNode) {
+                closeKnowledgeGraph();
+                openViewModal(clickedNode.note);
+            }
+        }
+
+        function animateGraph() {
+            // Apply lightweight physics charge and attraction logic
+            const k = 0.05; // Force Constant
+            const gravity = 0.01;
+            const w = graphCanvas.width;
+            const h = graphCanvas.height;
+
+            // Repulsion between ALL node pairs
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const n1 = nodes[i];
+                    const n2 = nodes[j];
+                    const dx = n2.x - n1.x;
+                    const dy = n2.y - n1.y;
+                    const dist = Math.hypot(dx, dy) || 1;
+                    if (dist < 250) {
+                        const force = (100 / (dist * dist));
+                        n1.vx -= force * (dx / dist);
+                        n1.vy -= force * (dy / dist);
+                        n2.vx += force * (dx / dist);
+                        n2.vy += force * (dy / dist);
+                    }
+                }
+            }
+
+            // Edge Hookes spring attraction force
+            links.forEach(link => {
+                const dx = link.target.x - link.source.x;
+                const dy = link.target.y - link.source.y;
+                const dist = Math.hypot(dx, dy) || 1;
+                const desiredDist = 100;
+                const force = (dist - desiredDist) * k;
+                
+                link.source.vx += force * (dx / dist);
+                link.source.vy += force * (dy / dist);
+                link.target.vx -= force * (dx / dist);
+                link.target.vy -= force * (dy / dist);
+            });
+
+            // Update positions
+            nodes.forEach(node => {
+                if (node !== dragNode) {
+                    // Center gravity pulls to middle
+                    node.vx += (w / 2 - node.x) * gravity;
+                    node.vy += (h / 2 - node.y) * gravity;
+
+                    // Friction drag damping
+                    node.vx *= 0.85;
+                    node.vy *= 0.85;
+
+                    node.x += node.vx;
+                    node.y += node.vy;
+
+                    // Bound checks
+                    node.x = Math.max(20, Math.min(w - 20, node.x));
+                    node.y = Math.max(20, Math.min(h - 20, node.y));
+                }
+            });
+
+            // Draw Canvas Frame
+            ctx.clearRect(0, 0, w, h);
+
+            // Draw line connections
+            ctx.lineWidth = 1.5;
+            ctx.strokeStyle = document.documentElement.classList.contains('dark') ? '#4b5563' : '#d1d5db';
+            links.forEach(link => {
+                ctx.beginPath();
+                ctx.moveTo(link.source.x, link.source.y);
+                ctx.lineTo(link.target.x, link.target.y);
+                ctx.stroke();
+            });
+
+            // Draw node representations
+            nodes.forEach(node => {
+                ctx.beginPath();
+                ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+                ctx.fillStyle = node.color;
+                ctx.fill();
+                ctx.strokeStyle = '#6366f1';
+                ctx.lineWidth = 2.5;
+                ctx.stroke();
+
+                // Draw Text labels
+                ctx.font = 'bold 11px Inter, sans-serif';
+                ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937';
+                ctx.textAlign = 'center';
+                ctx.fillText(node.title, node.x, node.y - 18);
+            });
+
+            graphAnimationId = requestAnimationFrame(animateGraph);
+        }
+
+        /* ================= INTEGRATED DIGITAL SKETCHPAD ================= */
+        // Drawing canvas pad integration for embedded sketching
+        const sketchCanvas = document.getElementById('sketch-canvas');
+        const sCtx = sketchCanvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0, lastY = 0;
+        let sketchColor = '#000000';
+        let sketchSize = 5;
+
+        // Custom responsive resize setup for canvas
+        function openSketchpad() {
+            sketchpadModal.classList.remove('hidden');
+            setTimeout(() => {
+                sketchpadModal.classList.remove('opacity-0');
+                sketchpadModal.querySelector('div').classList.remove('scale-95');
+                sketchpadModal.classList.add('opacity-100');
+                setupSketchCanvasSize();
+            }, 20);
+        }
+
+        function closeSketchpad() {
+            sketchpadModal.classList.add('opacity-0');
+            sketchpadModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => sketchpadModal.classList.add('hidden'), 300);
+        }
+
+        function setupSketchCanvasSize() {
+            sketchCanvas.width = sketchCanvas.parentElement.clientWidth;
+            sketchCanvas.height = sketchCanvas.parentElement.clientHeight;
+            // Preset pure white canvas background to support exports elegantly
+            sCtx.fillStyle = '#ffffff';
+            sCtx.fillRect(0, 0, sketchCanvas.width, sketchCanvas.height);
+        }
+
+        document.getElementById('insert-sketch-btn').addEventListener('click', openSketchpad);
+        document.getElementById('close-sketchpad-modal').addEventListener('click', closeSketchpad);
+
+        // Action Toolbar Triggers
+        document.querySelectorAll('.sketch-color-dot').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.sketch-color-dot').forEach(b => b.classList.remove('ring-4', 'ring-indigo-400'));
+                btn.classList.add('ring-4', 'ring-indigo-400');
+                sketchColor = btn.getAttribute('data-color');
+            });
+        });
+
+        document.getElementById('sketch-stroke-size').addEventListener('input', (e) => {
+            sketchSize = e.target.value;
+        });
+
+        document.getElementById('sketch-eraser').addEventListener('click', () => {
+            sketchColor = '#ffffff'; // Eraser mode is simple paint to white background
+            showToast("Eraser activated!");
+        });
+
+        document.getElementById('sketch-clear').addEventListener('click', () => {
+            sCtx.fillStyle = '#ffffff';
+            sCtx.fillRect(0, 0, sketchCanvas.width, sketchCanvas.height);
+            showToast("Canvas cleared!");
+        });
+
+        // Insert Image capturing Base64 payload back into active editor cursor selection
+        document.getElementById('sketch-insert').addEventListener('click', () => {
+            const dataUrl = sketchCanvas.toDataURL('image/png');
+            const editorInput = document.getElementById('note-content-input');
+            const start = editorInput.selectionStart;
+            const end = editorInput.selectionEnd;
+
+            // Formulate markdown inline base64 asset syntax
+            const markup = `\n![Drawing Sketch](${dataUrl})\n`;
+            editorInput.value = editorInput.value.substring(0, start) + markup + editorInput.value.substring(end);
+            
+            updatePreview();
+            closeSketchpad();
+            showToast("Sketch inserted!");
+        });
+
+        // Draw movements listeners
+        function draw(e) {
+            if (!isDrawing) return;
+            sCtx.beginPath();
+            sCtx.moveTo(lastX, lastY);
+            sCtx.lineTo(e.offsetX, e.offsetY);
+            sCtx.strokeStyle = sketchColor;
+            sCtx.lineWidth = sketchSize;
+            sCtx.lineCap = 'round';
+            sCtx.lineJoin = 'round';
+            sCtx.stroke();
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+
+        sketchCanvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+        });
+        sketchCanvas.addEventListener('mousemove', draw);
+        sketchCanvas.addEventListener('mouseup', () => isDrawing = false);
+        sketchCanvas.addEventListener('mouseout', () => isDrawing = false);
+
+        // Touch gestures for stylus/touch screens
+        sketchCanvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 0) {
+                isDrawing = true;
+                const rect = sketchCanvas.getBoundingClientRect();
+                lastX = e.touches[0].clientX - rect.left;
+                lastY = e.touches[0].clientY - rect.top;
+            }
+        });
+        sketchCanvas.addEventListener('touchmove', (e) => {
+            if (!isDrawing || e.touches.length === 0) return;
+            const rect = sketchCanvas.getBoundingClientRect();
+            const currX = e.touches[0].clientX - rect.left;
+            const currY = e.touches[0].clientY - rect.top;
+
+            sCtx.beginPath();
+            sCtx.moveTo(lastX, lastY);
+            sCtx.lineTo(currX, currY);
+            sCtx.strokeStyle = sketchColor;
+            sCtx.lineWidth = sketchSize;
+            sCtx.lineCap = 'round';
+            sCtx.lineJoin = 'round';
+            sCtx.stroke();
+            [lastX, lastY] = [currX, currY];
+        });
+        sketchCanvas.addEventListener('touchend', () => isDrawing = false);
+
+        /* ================= DATA IMPORT / EXPORT ================= */
+        document.getElementById('export-btn').addEventListener('click', () => {
+            if (notesData.length === 0) return showToast("No notes to download!");
+            const exportPayload = {
+                notes: notesData,
+                folders: foldersData
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportPayload));
+            const a = document.createElement('a'); a.href = dataStr; a.download = "docket_backup.json"; a.click();
+            showToast("Backup download complete! 💾");
+        });
+
+        document.getElementById('import-file').addEventListener('change', async (e) => {
+            if (!currentUser) return showToast("Authentication error.");
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    let notesToImport = [];
+                    let foldersToImport = [];
+
+                    if (Array.isArray(imported)) {
+                        notesToImport = imported; // Legacy support
+                    } else if (imported.notes && Array.isArray(imported.notes)) {
+                        notesToImport = imported.notes;
+                        foldersToImport = imported.folders || [];
+                    } else {
+                        throw new Error("Invalid structure");
+                    }
+
+                    // Import Folders first
+                    showToast(`Importing data...`);
+                    const folderMapping = {}; // mapping old ids to newly created firebase ids
+                    
+                    if (foldersToImport.length > 0) {
+                        const foldRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders');
+                        for (let f of foldersToImport) {
+                            const docRef = await addDoc(foldRef, {
+                                name: f.name || 'Imported Folder',
+                                parentId: f.parentId || null,
+                                timestamp: f.timestamp || Date.now()
+                            });
+                            folderMapping[f.id] = docRef.id;
+                        }
+
+                        // Fix nested folder parent mapping references
+                        for (let f of foldersToImport) {
+                            if (f.parentId && folderMapping[f.parentId]) {
+                                const newId = folderMapping[f.id];
+                                await setDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders', newId), {
+                                    name: f.name,
+                                    parentId: folderMapping[f.parentId],
+                                    timestamp: f.timestamp || Date.now()
+                                });
+                            }
+                        }
+                    }
+
+                    // Import Notes with appropriate folder bindings
+                    const noteRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+                    for (let n of notesToImport) {
+                        const boundFolderId = n.folderId ? (folderMapping[n.folderId] || null) : null;
+                        await addDoc(noteRef, {
+                            title: n.title || 'Untitled Note',
+                            content: n.content || '',
+                            color: n.color || '#ffffff',
+                            folderId: boundFolderId,
+                            timestamp: n.timestamp || Date.now()
+                        });
+                    }
+                    showToast("Import successful! 🎉");
+                } catch (err) { showToast("Failed to parse the backup file."); }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        });
+
+        document.getElementById('clear-all-btn').addEventListener('click', () => {
+            if (!currentUser) return showToast("An account is required for this action.");
+            if (notesData.length === 0) return showToast("No notes to delete.");
+            showConfirmModal("Delete All Data", "Are you sure you want to do this? All your notes and folders will be permanently deleted.", "Yes, delete all", true, async () => {
+                showToast("Deleting...");
+                try {
+                    for (let note of notesData) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', note.id));
+                    for (let f of foldersData) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders', f.id));
+                    showToast("All data successfully deleted.");
+                } catch (error) { showToast("Error deleting data."); }
+            });
+        });
+
+        /* ================= GRID RENDERING & FIRESTORE ================= */
+        function renderNotes(notesToRender) {
+            notesGrid.innerHTML = '';
+            if (notesToRender.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+            }
+
+            notesToRender.forEach((note, index) => {
+                const div = document.createElement('div');
+                div.className = `group relative rounded-2xl md:rounded-[30px] p-5 md:p-7 flex flex-col justify-between h-full min-h-[220px] transition-all duration-500 ease-smooth hover:-translate-y-2 hover:shadow-2xl hover:scale-[1.02] cursor-pointer animate-pop-in border border-black/5 dark:border-white/5`;
+                div.style.animationDelay = `${index * 0.05}s`;
+                div.style.backgroundColor = document.documentElement.classList.contains('dark') ? (note.color + 'cc') : note.color || '#ffffff';
+                
+                let snippet = formatSnippet(note.content, 120);
+                const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString() : '';
+                
+                // Read bound folder name if existing
+                const boundFolder = foldersData.find(f => f.id === note.folderId);
+                const folderTag = boundFolder ? `<span class="inline-flex items-center gap-1 bg-black/10 dark:bg-black/20 text-gray-900/80 px-2 py-1 rounded-lg text-xs font-bold mr-2"><i data-lucide="folder" class="w-3 h-3"></i> ${escapeHtml(boundFolder.name)}</span>` : '';
+
+                div.innerHTML = `
+                    <div class="transition-transform duration-500 ease-smooth group-hover:translate-x-1 flex-1">
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            ${folderTag}
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
+                        <p class="text-gray-800/80 dark:text-gray-800/90 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet || 'No content'}</p>
+                    </div>
+                    <div class="mt-4 flex items-end justify-between z-10 flex-shrink-0">
+                        <span class="text-xs font-semibold text-gray-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300">${dateStr}</span>
+                        
+                        <!-- Edit & Copy Buttons -->
+                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div class="w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-600 flex items-center justify-center shadow-sm cursor-pointer copy-btn transform hover:scale-110 active:scale-90" title="Copy">
+                                <i data-lucide="copy" class="w-4 h-4 pointer-events-none"></i>
+                            </div>
+                            <div class="w-10 h-10 bg-black rounded-full text-white flex items-center justify-center shadow-md cursor-pointer edit-btn transform hover:scale-110 active:scale-90" title="Edit">
+                                <i data-lucide="pencil" class="w-4 h-4 pointer-events-none"></i>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                div.addEventListener('click', (e) => {
+                    if (e.target.closest('.edit-btn') || e.target.closest('.copy-btn')) return;
+                    openViewModal(note);
+                });
+                
+                div.querySelector('.copy-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const textToCopy = note.content || '';
+                    const ta = document.createElement('textarea'); ta.value = textToCopy; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                    showToast("Content copied! 📝");
+                });
+
+                div.querySelector('.edit-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditorModal(note);
+                });
+                
+                // Right-click copy Link (Navigator Clipboard and Fallback)
+                div.addEventListener('contextmenu', (e) => {
+                    e.preventDefault();
+                    const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
+                    fallbackCopy(shareUrl);
+                });
+
+                // Long-press copy Link (for Touch devices)
+                let pressTimer;
+                div.addEventListener('touchstart', (e) => {
+                    pressTimer = window.setTimeout(() => {
+                        const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
+                        fallbackCopy(shareUrl);
+                    }, 800);
+                });
+                div.addEventListener('touchend', () => clearTimeout(pressTimer));
+                div.addEventListener('touchmove', () => clearTimeout(pressTimer));
+
+                notesGrid.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        // Fallback Copy Function
+        function fallbackCopy(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast("Share link copied! 🔗");
+        }
+
+        function fetchNotesFromFirestore() {
+            if (!currentUser) return;
+            const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
+            unsubscribeSnapshot = onSnapshot(ref, (snapshot) => {
+                notesData = []; 
+                snapshot.forEach(doc => notesData.push({ id: doc.id, ...doc.data() })); 
+                notesData.sort((a, b) => b.timestamp - a.timestamp); 
+                
+                // Apply filtered lists
+                renderNotes(getFilteredNotes());
+                
+                // Process URL Parameter after data loads
+                processUrlParam();
+            });
+        }
+
+        /* ================= PREVIEW / FULLSCREEN ================= */
+        document.getElementById('view-fab-toggle').addEventListener('click', (e) => {
+            e.stopPropagation(); isViewFabOpen = !isViewFabOpen;
+            if (isViewFabOpen) { viewFabMenu.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none'); viewFabIcon.classList.add('rotate-90'); } 
+            else closeViewFab();
+        });
+        
+        function closeViewFab() {
+            isViewFabOpen = false; viewFabMenu.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none'); viewFabIcon.classList.remove('rotate-90');
+        }
+
+        function openViewModal(note) {
+            currentViewNote = note; closeViewFab(); isReadingMode = false;
+            document.getElementById('view-modal-content').classList.remove('reading-mode-active');
+            document.getElementById('view-title').textContent = note.title || 'Untitled Note';
+            document.getElementById('view-color-indicator').style.backgroundColor = note.color || '#ccc';
+            
+            // Protect LaTeX Math before parsing Markdown
+            let processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
+            const protectedMath = protectMath(processedContent);
+            
+            let parsedHtml = marked.parse(protectedMath.text);
+            parsedHtml = restoreMath(parsedHtml, protectedMath.blocks); // Restore Math Blocks
+            parsedHtml = parseWikiLinks(parsedHtml); // Transform wiki connections
+            
+            document.getElementById('view-content').innerHTML = parsedHtml;
+            
+            try { renderMathInElement(document.getElementById('view-content'), katexConfig); } catch(e){}
+            processHtmlWidgets(document.getElementById('view-content')); 
+            initWikiLinkListeners(document.getElementById('view-content')); // Setup Obsidian active wiki listeners
+
+            viewModal.classList.remove('hidden');
+            setTimeout(() => {
+                viewModal.classList.remove('opacity-0'); document.getElementById('view-modal-content').classList.remove('scale-95'); viewModal.classList.add('opacity-100');
+            }, 20);
+            lucide.createIcons();
+        }
+
+        document.getElementById('close-view-modal').addEventListener('click', () => {
+            viewModal.classList.remove('opacity-100'); document.getElementById('view-modal-content').classList.add('scale-95');
+            setTimeout(() => { viewModal.classList.add('hidden'); if (document.fullscreenElement) document.exitFullscreen(); }, 300);
+        });
+
+        document.getElementById('reading-mode-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); isReadingMode = !isReadingMode;
+            const contentCard = document.getElementById('view-modal-content');
+            if (isReadingMode) { contentCard.classList.add('reading-mode-active'); showToast("Reading Mode enabled"); } 
+            else { contentCard.classList.remove('reading-mode-active'); showToast("Reading Mode disabled"); }
+            closeViewFab();
+        });
+
+        document.getElementById('fullscreen-view-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); closeViewFab();
+            if (!document.fullscreenElement) document.getElementById('view-modal-content').requestFullscreen(); else document.exitFullscreen();
+        });
+
+        // Toggle Fullscreen with Enter key in View Modal
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !viewModal.classList.contains('hidden') && viewModal.classList.contains('opacity-100')) {
+                // Check if Settings/Editor are open
+                if (editorModal.classList.contains('hidden') && settingsModal.classList.contains('hidden')) {
+                    e.preventDefault();
+                    document.getElementById('fullscreen-view-btn').click();
+                }
+            }
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            const fsIcon = document.querySelector('#fullscreen-view-btn i');
+            if (document.fullscreenElement) { if (fsIcon) fsIcon.setAttribute('data-lucide', 'minimize'); applyFullscreenLayout(true); } 
+            else { if (fsIcon) fsIcon.setAttribute('data-lucide', 'maximize'); applyFullscreenLayout(false); }
+            lucide.createIcons();
+        });
+
+        document.getElementById('edit-from-view-btn').addEventListener('click', () => {
+            const note = currentViewNote; document.getElementById('close-view-modal').click(); setTimeout(() => openEditorModal(note), 300);
+        });
+
+        document.getElementById('copy-view-btn').addEventListener('click', () => {
+            if (currentViewNote) {
+                const ta = document.createElement('textarea'); ta.value = currentViewNote.content || ''; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+                showToast("Copied!"); closeViewFab();
+            }
+        });
+
+        /* ================= EDITOR MODAL & SHORTCUTS ================= */
+        function openEditorModal(note = null, color = '#ffffff') {
+            activeNoteId = note ? note.id : null; activeColor = note ? note.color : color;
+            document.getElementById('note-title-input').value = note ? note.title : '';
+            document.getElementById('note-content-input').value = note ? note.content : '';
+            document.getElementById('modal-color-indicator').style.backgroundColor = activeColor;
+            
+            // Re-populate folder list values & select correct folder 
+            populateFolderDropdown();
+            document.getElementById('note-folder-select').value = (note && note.folderId) ? note.folderId : '';
+
+            const delBtn = document.getElementById('delete-note-btn');
+            if (activeNoteId) delBtn.classList.replace('hidden', 'flex'); else delBtn.classList.replace('flex', 'hidden');
+
+            updatePreview();
+            editorModal.classList.remove('hidden');
+            setTimeout(() => {
+                editorModal.classList.remove('opacity-0'); document.getElementById('editor-container').classList.remove('scale-95'); editorModal.classList.add('opacity-100');
+            }, 20);
+        }
+
+        function closeEditorModal() {
+            editorModal.classList.remove('opacity-100'); document.getElementById('editor-container').classList.add('scale-95');
+            setTimeout(() => editorModal.classList.add('hidden'), 300);
+        }
+
+        document.getElementById('cancel-note-btn').addEventListener('click', closeEditorModal);
+
+        document.getElementById('delete-note-btn').addEventListener('click', () => {
+            showConfirmModal("Delete Note", "Are you sure you want to delete this note?", "Delete", true, async () => {
+                if (activeNoteId && currentUser) { await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes', activeNoteId)); closeEditorModal(); }
+            });
+        });
+
+        document.getElementById('save-note-btn').addEventListener('click', async () => {
+            if (!currentUser) return showToast("Authentication error. Please try again.");
+            const title = document.getElementById('note-title-input').value.trim(); 
+            const content = document.getElementById('note-content-input').value.trim();
+            const folderId = document.getElementById('note-folder-select').value || null;
+
+            if (!title && !content) return closeEditorModal();
+            
+            const colRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+            const data = { title, content, color: activeColor, folderId, timestamp: Date.now() };
+            try {
+                if (activeNoteId) await setDoc(doc(colRef, activeNoteId), data); else await addDoc(colRef, data);
+                closeEditorModal();
+            } catch (err) { showToast("Failed to save note."); }
+        });
+
+        function updatePreview() {
+            document.getElementById('preview-title').textContent = document.getElementById('note-title-input').value;
+            let rawContent = document.getElementById('note-content-input').value || '';
+            
+            // Update Word and Character Count (Live Update)
+            const charCount = rawContent.length;
+            const wordCount = rawContent.trim() === '' ? 0 : rawContent.trim().split(/\s+/).length;
+            document.getElementById('char-count').textContent = charCount;
+            document.getElementById('word-count').textContent = wordCount;
+
+            // Markdown Parse and LaTeX protection
+            let processedContent = rawContent.replace(/==([^=]+)==/g, '<mark>$1</mark>');
+            const protectedMath = protectMath(processedContent);
+            let parsedHtml = marked.parse(protectedMath.text);
+            parsedHtml = restoreMath(parsedHtml, protectedMath.blocks);
+            parsedHtml = parseWikiLinks(parsedHtml); // live preview wiki link formats
+            
+            // Insert into preview (Triggers flash animation)
+            document.getElementById('preview-content').innerHTML = parsedHtml;
+            try { renderMathInElement(document.getElementById('preview-content'), katexConfig); } catch(e){}
+            processHtmlWidgets(document.getElementById('preview-content'));
+            initWikiLinkListeners(document.getElementById('preview-content'));
+        }
+
+        document.getElementById('note-title-input').addEventListener('input', updatePreview);
+        document.getElementById('note-content-input').addEventListener('input', updatePreview);
+
+        // Markdown Formatting Buttons
+        document.querySelectorAll('.format-btn').forEach(btn => {
+            if(btn.id === 'insert-sketch-btn') return; // Handled separately
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const input = document.getElementById('note-content-input');
+                const format = btn.getAttribute('data-format');
+                const suffix = btn.getAttribute('data-suffix') || format;
+                const start = input.selectionStart; const end = input.selectionEnd;
+                const selectedText = input.value.substring(start, end);
+                
+                let newText = '', newCursorPos = start;
+                const isBlockFormat = ['# ', '## ', '- ', '1. '].includes(format);
+
+                if (isBlockFormat) {
+                    newText = input.value.substring(0, start) + format + selectedText + input.value.substring(end);
+                    newCursorPos = end + format.length;
+                } else if (format === '```\n' || btn.getAttribute('title') === 'Live HTML Widget') {
+                    newText = input.value.substring(0, start) + format + selectedText + suffix + input.value.substring(end);
+                    newCursorPos = start + format.length;
+                } else {
+                    newText = input.value.substring(0, start) + format + selectedText + suffix + input.value.substring(end);
+                    newCursorPos = selectedText.length > 0 ? end + format.length * 2 : start + format.length;
+                }
+                
+                input.value = newText; updatePreview();
+                input.focus(); input.selectionStart = input.selectionEnd = newCursorPos;
+            });
+        });
+
+        // Tab & Enter Markdown Shortcuts
+        document.getElementById('note-content-input').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart, end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + "  " + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 2;
+                updatePreview();
+            }
+            if (e.key === 'Enter') {
+                const start = this.selectionStart;
+                const textToCursor = this.value.substring(0, start);
+                const lines = textToCursor.split('\n');
+                const currentLine = lines[lines.length - 1];
+                
+                const ulMatch = currentLine.match(/^(\s*)([-*])\s(.*)$/);
+                const olMatch = currentLine.match(/^(\s*)(\d+)\.\s(.*)$/);
+
+                if (ulMatch || olMatch) {
+                    const isEmpty = ulMatch ? !ulMatch[3].trim() : !olMatch[3].trim();
+                    if (isEmpty) {
+                        e.preventDefault();
+                        const markerLength = ulMatch ? ulMatch[1].length + ulMatch[2].length + 1 : olMatch[1].length + olMatch[2].length + 2;
+                        this.value = this.value.substring(0, start - markerLength) + '\n' + this.value.substring(this.selectionEnd);
+                        this.selectionStart = this.selectionEnd = start - markerLength + 1;
+                        updatePreview(); return;
+                    }
+                    e.preventDefault();
+                    let insertion = '\n';
+                    if (ulMatch) insertion += ulMatch[1] + ulMatch[2] + ' ';
+                    else if (olMatch) insertion += olMatch[1] + (parseInt(olMatch[2], 10) + 1) + '. ';
+                    
+                    this.value = this.value.substring(0, start) + insertion + this.value.substring(this.selectionEnd);
+                    this.selectionStart = this.selectionEnd = start + insertion.length;
+                    updatePreview();
+                }
+            }
+        });
+
+        // Toggle Palette
+        document.getElementById('toggle-palette-btn').addEventListener('click', (e) => {
+            e.stopPropagation(); isPaletteOpen = !isPaletteOpen;
+            if (isPaletteOpen) { document.getElementById('palette-menu').classList.add('open'); document.getElementById('toggle-palette-btn').classList.add('open'); } 
+            else { document.getElementById('palette-menu').classList.remove('open'); document.getElementById('toggle-palette-btn').classList.remove('open'); }
+        });
+
+        document.addEventListener('click', () => {
+            if (isPaletteOpen) document.getElementById('toggle-palette-btn').click();
+        });
+
+        document.querySelectorAll('.color-dot').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); document.getElementById('toggle-palette-btn').click();
+                openEditorModal(null, e.target.getAttribute('data-color'));
+            });
+        });
+
+        document.getElementById('search-input').addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            // Integrated filter for note title, content, or inline #tags search
+            renderNotes(getFilteredNotes().filter(n => 
+                (n.title || '').toLowerCase().includes(q) || 
+                (n.content || '').toLowerCase().includes(q)
+            ));
+        });
+
+        /* ================= SETTINGS TABS & AUTH LOGIC ================= */
+        document.querySelectorAll('.settings-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const currentTab = e.currentTarget;
+                document.querySelectorAll('.settings-tab').forEach(t => {
+                    t.classList.remove('active', 'bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm', 'ring-1', 'ring-gray-200', 'dark:ring-gray-700');
+                    t.classList.add('text-gray-600', 'dark:text-gray-400');
+                });
+                
+                currentTab.classList.add('active', 'bg-white', 'dark:bg-gray-800', 'text-gray-900', 'dark:text-white', 'shadow-sm', 'ring-1', 'ring-gray-200', 'dark:ring-gray-700');
+                currentTab.classList.remove('text-gray-600', 'dark:text-gray-400');
+
+                document.querySelectorAll('.settings-pane').forEach(p => { p.classList.remove('block'); p.classList.add('hidden'); });
+                const targetPane = document.getElementById(currentTab.getAttribute('data-target'));
+                if (targetPane) { targetPane.classList.remove('hidden'); targetPane.classList.add('block'); }
+            });
+        });
+
+        function updateSettingsUI(user) {
+            if (user && !user.isAnonymous) {
+                document.getElementById('settings-signin-container')?.classList.add('hidden');
+                document.getElementById('settings-user-info')?.classList.replace('hidden', 'flex');
+                if (document.getElementById('settings-avatar')) document.getElementById('settings-avatar').src = user.photoURL || '[https://ui-avatars.com/api/?name=](https://ui-avatars.com/api/?name=)' + encodeURIComponent(user.displayName || 'User');
+                if (document.getElementById('settings-name')) document.getElementById('settings-name').textContent = user.displayName || 'User Account';
+            } else {
+                document.getElementById('settings-signin-container')?.classList.remove('hidden');
+                document.getElementById('settings-user-info')?.classList.replace('flex', 'hidden');
+            }
+        }
+
+        const settingsModal = document.getElementById('settings-modal');
+        const openSettings = () => {
+            document.querySelector('.settings-tab[data-target="tab-account"]').click();
+            settingsModal.classList.remove('hidden');
+            setTimeout(() => {
+                settingsModal.classList.remove('opacity-0');
+                settingsModal.querySelector('div').classList.remove('scale-95');
+                settingsModal.classList.add('opacity-100');
+            }, 20);
+        };
+        const closeSettings = () => {
+            settingsModal.classList.remove('opacity-100');
+            settingsModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => settingsModal.classList.add('hidden'), 300);
+        };
+        
+        document.getElementById('settings-btn-desktop')?.addEventListener('click', openSettings);
+        document.getElementById('settings-btn-mobile')?.addEventListener('click', openSettings);
+        document.getElementById('close-settings-desktop')?.addEventListener('click', closeSettings);
+        document.getElementById('close-settings-mobile')?.addEventListener('click', closeSettings);
+
+        document.getElementById('settings-google-signin-btn')?.addEventListener('click', async () => {
+            try { await signInWithPopup(auth, provider); showToast("Signed in successfully."); } catch (error) { console.error(error); showToast("Sign in failed."); }
+        });
+        document.getElementById('settings-signout-btn')?.addEventListener('click', async () => {
+            await signOut(auth); showToast("Signed out.");
+        });
+
+        // "All Notes" Quick reset triggers
+        document.getElementById('sidebar-all-notes').addEventListener('click', () => filterByFolder(null));
+
+        // Show Skeleton UI before data loads
+        renderSkeletons();
+
+        onAuthStateChanged(auth, async (user) => {
+            if (!user) { try { await signInAnonymously(auth); } catch (err) {} } 
+            else { currentUser = user; updateSettingsUI(user); fetchNotesFromFirestore(); syncFolders(); }
+        });
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
