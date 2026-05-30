@@ -8,20 +8,6 @@
     <!-- Tailwind CSS with Typography Plugin -->
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Google Fonts: Inter + Noto Sans Sinhala (kept for backwards compatibility of existing notes) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@100..900&display=swap" rel="stylesheet">
-    
-    <!-- Markdown Parser -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- KaTeX for Premium Math Equations -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -46,6 +32,39 @@
             }
         }
     </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts: Inter + Noto Sans Sinhala -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+Sinhala:wght@100..900&display=swap" rel="stylesheet">
+    
+    <!-- Markdown Parser -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- MathJax for Premium Math Equations -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            startup: {
+                typeset: false // Auto rendering disable කර, අවශ්‍ය වෙලාවට පමණක් render කරමු
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Mermaid.js for Diagrams -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/9.4.3/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: false, theme: 'default' });
+    </script>
+
+    <!-- D3.js for Interactive Knowledge Graph -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
 
     <style>
         :root {
@@ -190,10 +209,10 @@
         .modal-center { display: flex; align-items: center; justify-content: center; }
 
         @media (max-width: 768px) {
-            #editor-modal > div, #view-modal > div, #settings-modal > div {
+            #editor-modal > div, #view-modal > div, #settings-modal > div, #folder-modal > div, #canvas-modal > div, #graph-modal > div {
                 width: 100%; height: 100%; max-width: 100%; max-height: 100%; border-radius: 0;
             }
-            #editor-modal, #view-modal, #settings-modal { padding: 0; }
+            #editor-modal, #view-modal, #settings-modal, #folder-modal, #canvas-modal, #graph-modal { padding: 0; }
         }
         
         .premium-select {
@@ -201,13 +220,29 @@
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat; background-position: right 1rem center; background-size: 1em;
         }
+
+        /* Bidirectional link style */
+        .backlink {
+            color: #6366f1;
+            text-decoration: underline;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .dark .backlink {
+            color: #818cf8;
+        }
+        
+        /* Node graph styling */
+        .node { stroke: #fff; stroke-width: 2px; cursor: pointer; }
+        .node-label { font-size: 11px; font-weight: 600; pointer-events: none; }
+        .link { stroke: #999; stroke-opacity: 0.6; stroke-width: 1.5px; }
     </style>
 </head>
 <body class="h-screen w-full flex flex-col md:flex-row bg-white dark:bg-gray-950 transition-colors duration-300">
 
     <!-- Sidebar / Floating Action Area -->
     <aside class="w-0 h-0 md:w-[100px] md:h-full md:bg-white dark:md:bg-gray-900 md:border-r border-gray-200 dark:border-gray-800 flex md:flex-col items-center md:justify-start md:py-8 md:px-4 z-[60] flex-shrink-0 order-last md:order-1 transition-colors duration-300">
-        <h1 class="font-bold text-xl tracking-tight text-gray-900 dark:text-white hidden md:block mb-20 animate-fade-in-up">Docket</h1>
+        <h1 class="font-bold text-xl tracking-tight text-gray-900 dark:text-white hidden md:block mb-10 animate-fade-in-up">Docket</h1>
         
         <!-- Palette Creator (Floating Action Menu) -->
         <div class="fixed bottom-6 right-6 md:relative md:bottom-auto md:right-auto flex flex-col items-center z-[100] animate-fade-in-up" style="animation-delay: 0.1s;">
@@ -224,9 +259,15 @@
             </button>
         </div>
 
-        <!-- Desktop Settings Button -->
-        <div class="hidden md:block mt-auto animate-fade-in-up" style="animation-delay: 0.2s;">
-            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+        <!-- Sidebar Navigation Buttons (Folder & Settings) -->
+        <div class="hidden md:flex flex-col items-center gap-6 mt-auto animate-fade-in-up" style="animation-delay: 0.2s;">
+            <!-- Folder Icon Button for Nested Folders Structure View -->
+            <button id="folder-view-btn" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all" title="Folders">
+                <i data-lucide="folder" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Desktop Settings Button -->
+            <button id="settings-btn-desktop" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all" title="Settings">
                 <i data-lucide="settings" class="w-5 h-5 hover:rotate-90 transition-transform"></i>
             </button>
         </div>
@@ -234,15 +275,38 @@
 
     <!-- Main Content Area -->
     <main class="flex-1 h-full flex flex-col relative overflow-hidden order-2">
-        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between md:justify-end z-10">
-            <button id="settings-btn-mobile" class="md:hidden w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all">
-                <i data-lucide="settings" class="w-5 h-5"></i>
-            </button>
-            <div class="flex items-center text-gray-400 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-4 py-2 w-full max-w-sm ml-auto md:ml-0 transition-colors">
-                <i data-lucide="search" class="w-5 h-5 mr-2"></i>
-                <input id="search-input" type="text" placeholder="Search notes..." class="bg-transparent w-full outline-none text-base text-gray-900 dark:text-white">
+        <header class="pt-4 md:pt-8 px-4 md:px-10 flex items-center justify-between z-10 gap-4">
+            <!-- Mobile Folder and Settings Buttons -->
+            <div class="flex items-center gap-1 md:hidden">
+                <button id="folder-view-btn-mobile" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all">
+                    <i data-lucide="folder" class="w-5 h-5"></i>
+                </button>
+                <button id="settings-btn-mobile" class="w-10 h-10 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center gap-3 w-full max-w-lg ml-auto">
+                <!-- Search Box -->
+                <div class="flex items-center text-gray-400 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-full px-4 py-2 w-full transition-colors">
+                    <i data-lucide="search" class="w-5 h-5 mr-2"></i>
+                    <input id="search-input" type="text" placeholder="සෙවීම (Search)..." class="bg-transparent w-full outline-none text-base text-gray-900 dark:text-white">
+                </div>
+                <!-- Knowledge Graph Button -->
+                <button id="graph-view-btn" class="w-11 h-11 rounded-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all shadow-sm flex-shrink-0" title="Knowledge Graph Map">
+                    <i data-lucide="network" class="w-5 h-5"></i>
+                </button>
             </div>
         </header>
+
+        <!-- Current Folder Path Display & Filter Bar -->
+        <div id="filter-status-bar" class="px-4 md:px-10 pt-4 flex flex-wrap gap-2 items-center justify-between text-sm hidden">
+            <div class="flex items-center gap-1.5 text-gray-500 dark:text-gray-400 font-medium">
+                <i data-lucide="folder-open" class="w-4 h-4 text-indigo-500"></i>
+                <span id="current-folder-path">All Notes</span>
+            </div>
+            <button id="clear-folder-filter-btn" class="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline">Clear Filter</button>
+        </div>
 
         <div class="flex-1 overflow-y-auto no-scrollbar px-4 md:px-10 pb-20 md:pb-16 pt-4">
             <h2 id="main-title" class="text-6xl md:text-8xl font-extrabold text-gray-900 dark:text-white mb-6 md:mb-12 tracking-tighter animate-fade-in-up cursor-pointer select-none">Notes</h2>
@@ -252,7 +316,7 @@
             
             <div id="empty-state" class="hidden w-full py-12 flex flex-col justify-center items-center text-gray-400">
                 <i data-lucide="sticky-note" class="w-16 h-16 mb-4 opacity-50 transform transition-transform duration-700 hover:scale-110 hover:-rotate-6"></i>
-                <p class="text-lg text-center px-4">No notes found. Press the + button to add a new note!</p>
+                <p class="text-lg text-center px-4">සටහන් කිසිවක් නැත. සටහනක් එක් කිරීමට පහත ඇති + ලකුණ ඔබන්න.</p>
             </div>
         </div>
     </main>
@@ -270,10 +334,11 @@
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 md:p-8 relative no-scrollbar">
-                <!-- Wrapper changes width based on settings and full screen state -->
                 <div id="view-content-max-wrapper" class="w-full max-w-3xl mx-auto pb-24 transition-all duration-500">
                     <div id="view-content-wrapper" class="block">
                         <h1 id="view-title" class="text-3xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 leading-tight"></h1>
+                        <!-- Tags Container under title -->
+                        <div id="view-tags-container" class="flex flex-wrap gap-2 mb-6"></div>
                         <div id="view-content" class="prose prose-base md:prose-lg text-gray-800 dark:text-gray-200 w-full max-w-none leading-relaxed transition-all duration-300"></div>
                     </div>
                 </div>
@@ -324,7 +389,14 @@
                 <!-- Editor Inputs (Left Pane) -->
                 <div class="w-full md:w-1/2 h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-100 dark:border-gray-800 flex flex-col bg-white dark:bg-gray-900">
                     <div class="flex-1 flex flex-col p-4 md:p-6 overflow-hidden">
-                        <input id="note-title-input" type="text" placeholder="Note title..." class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white outline-none w-full mb-4 bg-transparent">
+                        
+                        <!-- Title & Folder Select Line -->
+                        <div class="flex flex-col md:flex-row md:items-center gap-3 mb-4 flex-shrink-0">
+                            <input id="note-title-input" type="text" placeholder="Note title..." class="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white outline-none flex-1 bg-transparent">
+                            <select id="note-folder-select" class="premium-select bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-xl px-4 py-2 text-sm outline-none cursor-pointer w-full md:w-44 pr-8">
+                                <option value="">No Folder</option>
+                            </select>
+                        </div>
                         
                         <div class="flex items-center gap-1 mb-3 pb-3 border-b border-gray-100 dark:border-gray-800 overflow-x-auto no-scrollbar flex-shrink-0">
                             <button class="format-btn" data-format="**"><i data-lucide="bold" class="w-4 h-4"></i></button>
@@ -340,9 +412,13 @@
                             <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
                             <button class="format-btn" data-format="```\n" data-suffix="\n```" title="Code Block"><i data-lucide="code" class="w-4 h-4"></i></button>
                             <button class="format-btn" data-format="```html\n<!-- Paste HTML/CSS Here -->\n" data-suffix="\n```" title="Live HTML Widget"><i data-lucide="layout-template" class="w-4 h-4 text-indigo-500"></i></button>
+                            <button class="format-btn" data-format="\n```mermaid\ngraph TD;\n    A-->B;\n```\n" data-suffix="" title="Mermaid Diagram"><i data-lucide="git-merge" class="w-4 h-4 text-emerald-500"></i></button>
+                            <div class="w-px h-4 bg-gray-200 dark:bg-gray-700 mx-1"></div>
+                            <!-- Canvas Draw Integration Button -->
+                            <button id="open-drawing-board-btn" class="format-btn" title="ඇඳීමේ පුවරුව (Digital Drawing Canvas)"><i data-lucide="palette" class="w-4 h-4 text-pink-500"></i></button>
                         </div>
 
-                        <textarea id="note-content-input" placeholder="Start typing... Markdown and HTML Live Widgets supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
+                        <textarea id="note-content-input" placeholder="Start typing... Markdown, [[Bidirectional Link]] or #tags supported" class="flex-1 w-full resize-none outline-none text-base md:text-lg text-gray-700 dark:text-gray-300 bg-transparent leading-relaxed no-scrollbar"></textarea>
                         
                         <!-- Word and character count display -->
                         <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 pt-3 mt-2 border-t border-gray-100 dark:border-gray-800 flex-shrink-0">
@@ -357,6 +433,86 @@
                     <h1 id="preview-title" class="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-800 empty:hidden"></h1>
                     <div id="preview-content" class="prose prose-base md:prose-lg dark:prose-invert text-gray-800 dark:text-gray-200 w-full max-w-none"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nested Folder Navigation Modal/Sidebar (Frictionless Integration) -->
+    <div id="folder-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-md md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 relative">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="folder-search" class="w-5 h-5 text-indigo-500"></i> ෆෝල්ඩර පද්ධතිය (Folders)
+                </h3>
+                <button id="close-folder-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <div id="folder-hierarchy-view" class="flex-1 overflow-y-auto p-6 no-scrollbar text-sm text-gray-700 dark:text-gray-300">
+                <!-- Dynamic Nested Folders loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Digital Canvas Sketch Drawing Board -->
+    <div id="canvas-modal" class="fixed inset-0 z-[120] bg-black/70 backdrop-blur-md hidden modal-center p-4 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full max-w-4xl h-[85vh] rounded-[24px] shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 border border-gray-200 dark:border-gray-800">
+            <div class="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between flex-shrink-0">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="pencil-line" class="w-5 h-5 text-pink-500"></i> ඇඳීමේ පුවරුව (Drawing Board)
+                </h3>
+                <div class="flex items-center gap-3">
+                    <button id="clear-canvas-btn" class="px-4 py-1.5 text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">Clear</button>
+                    <button id="save-canvas-btn" class="px-5 py-1.5 text-xs font-semibold text-white bg-pink-600 rounded-full hover:bg-pink-700 shadow-md">Add to Note</button>
+                    <button id="close-canvas-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
+            <!-- Canvas Workspace -->
+            <div class="flex-1 bg-gray-50 dark:bg-gray-950 relative overflow-hidden flex items-center justify-center p-4">
+                <canvas id="sketchpad" class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-inner cursor-crosshair max-w-full max-h-full"></canvas>
+            </div>
+
+            <!-- Canvas Toolbars -->
+            <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-4 items-center justify-between flex-shrink-0">
+                <!-- Color palette selection -->
+                <div class="flex items-center gap-2.5">
+                    <button class="w-6 h-6 rounded-full bg-black border-2 border-white dark:border-gray-800 active-brush-color" data-color="#000000"></button>
+                    <button class="w-6 h-6 rounded-full bg-red-500 border-2 border-white dark:border-gray-800" data-color="#ef4444"></button>
+                    <button class="w-6 h-6 rounded-full bg-blue-500 border-2 border-white dark:border-gray-800" data-color="#3b82f6"></button>
+                    <button class="w-6 h-6 rounded-full bg-green-500 border-2 border-white dark:border-gray-800" data-color="#10b981"></button>
+                    <button class="w-6 h-6 rounded-full bg-amber-500 border-2 border-white dark:border-gray-800" data-color="#f59e0b"></button>
+                    <button class="w-6 h-6 rounded-full bg-purple-500 border-2 border-white dark:border-gray-800" data-color="#8b5cf6"></button>
+                </div>
+                <!-- Brush Size Slider -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Brush Size:</span>
+                    <input type="range" id="brush-size" min="2" max="25" value="5" class="w-32 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg cursor-pointer accent-pink-600">
+                    <span id="brush-size-val" class="text-xs font-mono font-bold w-6">5px</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network / Knowledge Graph View Modal -->
+    <div id="graph-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden modal-center p-0 md:p-6 opacity-0 transition-opacity duration-500">
+        <div class="bg-white dark:bg-gray-900 w-full h-full md:w-full md:max-w-5xl md:max-h-[85vh] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden transform scale-95 transition-all duration-500 relative">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800 z-10">
+                <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="network" class="w-5 h-5 text-indigo-500"></i> සටහන් සිතියම (Knowledge Graph)
+                </h3>
+                <button id="close-graph-modal" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="flex-1 bg-gray-50 dark:bg-gray-950 relative" id="graph-viewport-container">
+                <!-- SVG element for Graph representation -->
+                <svg id="knowledge-graph-svg" class="w-full h-full"></svg>
+            </div>
+            
+            <div class="px-6 py-3 border-t border-gray-100 dark:border-gray-800 flex justify-between items-center text-xs text-gray-400">
+                <span>* සටහනක් Preview කිරීමට හෝ Edit කිරීමට එය මත ක්ලික් කරන්න.</span>
+                <span>Zoom: Scroll | Pan: Drag Background</span>
             </div>
         </div>
     </div>
@@ -500,6 +656,28 @@
                         <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-6">Data Management</h4>
                         
                         <div class="flex flex-col gap-4">
+                            <!-- Folders Management Area -->
+                            <div class="p-5 bg-purple-50/50 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-900/30 flex flex-col gap-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h5 class="text-sm font-semibold text-gray-900 dark:text-white">ෆෝල්ඩර කළමනාකරණය (Manage Folders)</h5>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">නව ෆෝල්ඩර සාදන්න සහ කළමනාකරණය කරන්න.</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <input type="text" id="new-folder-name" placeholder="ෆෝල්ඩරයේ නම..." class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2 text-sm outline-none flex-1">
+                                    <select id="parent-folder-select" class="premium-select bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-xl px-4 py-2 text-sm outline-none cursor-pointer w-1/3 pr-8">
+                                        <option value="">No Parent (Root)</option>
+                                    </select>
+                                    <button id="add-folder-btn" class="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-5 rounded-xl text-sm transition-colors flex items-center gap-1">
+                                        <i data-lucide="plus" class="w-4 h-4"></i> Add
+                                    </button>
+                                </div>
+                                <div id="folders-list-edit" class="max-h-32 overflow-y-auto no-scrollbar border-t border-gray-100 dark:border-gray-800 pt-3 flex flex-col gap-2">
+                                    <!-- List of created folders with delete options -->
+                                </div>
+                            </div>
+
                             <div class="p-5 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30 flex items-center justify-between gap-4">
                                 <div>
                                     <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Download Backup</h5>
@@ -586,10 +764,21 @@
         const mainTitle = document.getElementById('main-title');
         const notesGrid = document.getElementById('notes-grid');
 
+        // Folders, Sketchpad and Graphs modals
+        const folderModal = document.getElementById('folder-modal');
+        const canvasModal = document.getElementById('canvas-modal');
+        const graphModal = document.getElementById('graph-modal');
+        const sketchpad = document.getElementById('sketchpad');
+        const ctx = sketchpad.getContext('2d');
+
         // State variables
         let currentUser = null;
         let unsubscribeSnapshot = null;
+        let unsubscribeFolders = null;
         let notesData = [];
+        let foldersData = []; // [{id, name, parentId}]
+        let currentFolderFilter = null; // Filter current view by folder ID
+
         let isPaletteOpen = false;
         let activeNoteId = null;
         let activeColor = '#ffffff';
@@ -599,7 +788,23 @@
         let randomShineTimeout = null;
         let hasProcessedInitialUrlParam = false; // To check URL parameter
 
-        marked.setOptions({ gfm: true, breaks: true });
+        // Sketchpad States
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        let brushColor = '#000000';
+        let brushSize = 5;
+
+        // Configure Marked.js to support Mermaid code blocks
+        const renderer = new marked.Renderer();
+        const originalCode = renderer.code.bind(renderer);
+        renderer.code = function(code, language, isEscaped) {
+            if (language === 'mermaid') {
+                return `<div class="mermaid">\n${code}\n</div>`;
+            }
+            return originalCode(code, language, isEscaped);
+        };
+        marked.setOptions({ renderer: renderer, gfm: true, breaks: true });
 
         /* ================= TITLE ANIMATION & EFFECTS ================= */
         const triggerShine = () => {
@@ -693,6 +898,7 @@
             let text = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             text = text.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
             text = text.replace(/!\[[^\]]*\]\([^\)]+\)/g, '');
+            text = text.replace(/\[\[([^\]]+)\]\]/g, '$1'); 
             text = text.replace(/```html[\s\S]*?```/gi, '[Interactive Widget]');
             text = text.replace(/```[\s\S]*?```/g, '[Code Block]');
             text = text.replace(/^#{1,6}\s+/gm, '');
@@ -829,11 +1035,10 @@
             lucide.createIcons({ root: container });
         }
 
-        /* LaTeX Math Protection (Display & Inline) */
+        /* LaTeX Math Protection */
         function protectMath(text) {
             if (!text) return { text: '', blocks: [] };
             let mathBlocks = [];
-            // Protect block and inline math: $$...$$, \[...\], \(...\), and $...$
             let protectedText = text.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^$\n]+\$)/g, (match) => {
                 mathBlocks.push(match);
                 return `MATHBLOCKPLACEHOLDER${mathBlocks.length - 1}END`;
@@ -843,23 +1048,30 @@
 
         function restoreMath(text, blocks) {
             blocks.forEach((block, index) => {
-                // Escape < and > to prevent them from breaking the HTML structure before KaTeX runs
                 let safeBlock = block.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 text = text.replace(`MATHBLOCKPLACEHOLDER${index}END`, safeBlock);
             });
             return text;
         }
 
-        // KaTeX global config for parsing inline & block delimiters correctly
-        const katexConfig = {
-            delimiters: [
-                {left: '$$', right: '$$', display: true},
-                {left: '\\[', right: '\\]', display: true},
-                {left: '$', right: '$', display: false},
-                {left: '\\(', right: '\\)', display: false}
-            ],
-            throwOnError: false
-        };
+        /* Dynamic Content Renderer (MathJax & Mermaid) */
+        async function renderDynamicContent(element) {
+            try {
+                const isDark = document.documentElement.classList.contains('dark');
+                mermaid.initialize({ startOnLoad: false, theme: isDark ? 'dark' : 'default' });
+                mermaid.init(undefined, element.querySelectorAll('.mermaid'));
+            } catch (e) {
+                console.error('Mermaid rendering error:', e);
+            }
+
+            if (window.MathJax) {
+                try {
+                    await MathJax.typesetPromise([element]);
+                } catch (e) {
+                    console.error('MathJax rendering error:', e);
+                }
+            }
+        }
 
         /* Show Skeleton Loading Animations */
         function renderSkeletons() {
@@ -899,7 +1111,465 @@
             }
         }
 
-        /* ================= SETTINGS TABS & AUTH LOGIC ================= */
+        /* ================= KNOWLEDGE GRAPH (D3.JS) ================= */
+        const graphViewBtn = document.getElementById('graph-view-btn');
+        graphViewBtn.addEventListener('click', () => {
+            graphModal.classList.remove('hidden');
+            setTimeout(() => {
+                graphModal.classList.remove('opacity-0');
+                graphModal.querySelector('div').classList.remove('scale-95');
+                graphModal.classList.add('opacity-100');
+                renderKnowledgeGraph();
+            }, 20);
+        });
+
+        document.getElementById('close-graph-modal').addEventListener('click', () => {
+            graphModal.classList.add('opacity-0');
+            graphModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => graphModal.classList.add('hidden'), 300);
+        });
+
+        function renderKnowledgeGraph() {
+            const container = document.getElementById('graph-viewport-container');
+            const svg = d3.select("#knowledge-graph-svg");
+            svg.selectAll("*").remove(); 
+
+            const width = container.clientWidth || 800;
+            const height = container.clientHeight || 500;
+
+            const nodes = notesData.map(note => ({
+                id: note.id,
+                title: note.title || 'Untitled Note',
+                color: note.color || '#6366f1'
+            }));
+
+            const links = [];
+            notesData.forEach(sourceNote => {
+                const content = sourceNote.content || '';
+                const matches = [...content.matchAll(/\[\[([^\]]+)\]\]/g)];
+                matches.forEach(match => {
+                    const linkedTitle = match[1].trim();
+                    const targetNote = notesData.find(n => (n.title || '').toLowerCase() === linkedTitle.toLowerCase());
+                    if (targetNote && targetNote.id !== sourceNote.id) {
+                        links.push({ source: sourceNote.id, target: targetNote.id });
+                    }
+                });
+            });
+
+            const simulation = d3.forceSimulation(nodes)
+                .force("link", d3.forceLink(links).id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-200))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(40));
+
+            const g = svg.append("g");
+            svg.call(d3.zoom().scaleExtent([0.1, 4]).on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            }));
+
+            const link = g.append("g")
+                .selectAll("line")
+                .data(links)
+                .join("line")
+                .attr("class", "link");
+
+            const node = g.append("g")
+                .selectAll(".node-group")
+                .data(nodes)
+                .join("g")
+                .attr("class", "node-group")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("click", (event, d) => {
+                    const selectedNote = notesData.find(n => n.id === d.id);
+                    if (selectedNote) {
+                        document.getElementById('close-graph-modal').click();
+                        setTimeout(() => openViewModal(selectedNote), 350);
+                    }
+                });
+
+            node.append("circle")
+                .attr("r", 15)
+                .attr("fill", d => d.color)
+                .attr("class", "node shadow-md");
+
+            node.append("text")
+                .attr("dx", 20)
+                .attr("dy", 4)
+                .attr("class", "node-label fill-gray-900 dark:fill-white")
+                .text(d => d.title);
+
+            simulation.on("tick", () => {
+                link
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                node
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x; d.fy = d.y;
+            }
+            function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null; d.fy = null;
+            }
+        }
+
+        /* ================= DIGITAL CANVAS SKETCHPAD ================= */
+        const brushColorBtns = document.querySelectorAll('#canvas-modal button[data-color]');
+        const brushSizeSlider = document.getElementById('brush-size');
+        const brushSizeValText = document.getElementById('brush-size-val');
+
+        document.getElementById('open-drawing-board-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            canvasModal.classList.remove('hidden');
+            setTimeout(() => {
+                canvasModal.classList.remove('opacity-0');
+                canvasModal.querySelector('div').classList.remove('scale-95');
+                canvasModal.classList.add('opacity-100');
+                resizeSketchpadCanvas();
+            }, 20);
+        });
+
+        function resizeSketchpadCanvas() {
+            const container = sketchpad.parentElement;
+            sketchpad.width = container.clientWidth - 40;
+            sketchpad.height = container.clientHeight - 40;
+            
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = brushColor;
+            ctx.lineWidth = brushSize;
+            
+            ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff';
+            ctx.fillRect(0, 0, sketchpad.width, sketchpad.height);
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX; clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX; clientY = e.clientY;
+            }
+
+            const rect = sketchpad.getBoundingClientRect();
+            const currentX = clientX - rect.left;
+            const currentY = clientY - rect.top;
+
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+            [lastX, lastY] = [currentX, currentY];
+        }
+
+        sketchpad.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = sketchpad.getBoundingClientRect();
+            [lastX, lastY] = [e.clientX - rect.left, e.clientY - rect.top];
+        });
+        sketchpad.addEventListener('mousemove', draw);
+        sketchpad.addEventListener('mouseup', () => isDrawing = false);
+        sketchpad.addEventListener('mouseout', () => isDrawing = false);
+
+        sketchpad.addEventListener('touchstart', (e) => {
+            isDrawing = true;
+            const rect = sketchpad.getBoundingClientRect();
+            [lastX, lastY] = [e.touches[0].clientX - rect.left, e.touches[0].clientY - rect.top];
+        });
+        sketchpad.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            draw(e);
+        });
+        sketchpad.addEventListener('touchend', () => isDrawing = false);
+
+        brushColorBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                brushColorBtns.forEach(b => b.classList.remove('active-brush-color', 'ring-2', 'ring-pink-500'));
+                btn.classList.add('active-brush-color', 'ring-2', 'ring-pink-500');
+                brushColor = btn.getAttribute('data-color');
+                ctx.strokeStyle = brushColor;
+            });
+        });
+
+        brushSizeSlider.addEventListener('input', (e) => {
+            brushSize = e.target.value;
+            brushSizeValText.textContent = brushSize + 'px';
+            ctx.lineWidth = brushSize;
+        });
+
+        document.getElementById('clear-canvas-btn').addEventListener('click', () => {
+            ctx.fillStyle = document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff';
+            ctx.fillRect(0, 0, sketchpad.width, sketchpad.height);
+        });
+
+        document.getElementById('close-canvas-btn').addEventListener('click', () => {
+            canvasModal.classList.add('opacity-0');
+            canvasModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => canvasModal.classList.add('hidden'), 300);
+        });
+
+        document.getElementById('save-canvas-btn').addEventListener('click', () => {
+            const imgData = sketchpad.toDataURL('image/png');
+            const markdownImageSyntax = `\n\n![Drawing Input](${imgData})\n\n`;
+            
+            const textarea = document.getElementById('note-content-input');
+            const pos = textarea.selectionStart;
+            textarea.value = textarea.value.substring(0, pos) + markdownImageSyntax + textarea.value.substring(pos);
+            updatePreview();
+            
+            document.getElementById('close-canvas-btn').click();
+            showToast("Drawing added successfully! 🎨");
+        });
+
+        /* ================= BI-DIRECTIONAL LINKING PARSER ================= */
+        function processWikiLinks(text) {
+            return text.replace(/\[\[([^\]]+)\]\]/g, (match, p1) => {
+                const targetTitle = p1.trim();
+                return `<span class="backlink cursor-pointer" data-target-title="${escapeHtml(targetTitle)}">${escapeHtml(targetTitle)}</span>`;
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            const backlink = e.target.closest('.backlink');
+            if (backlink) {
+                const title = backlink.getAttribute('data-target-title');
+                const targetNote = notesData.find(n => (n.title || '').toLowerCase() === title.toLowerCase());
+                if (targetNote) {
+                    openViewModal(targetNote);
+                } else {
+                    showConfirmModal(
+                        "නව සටහනක් සාදන්න", 
+                        `"${title}" නමින් නව සටහනක් සෑදීමට ඔබට අවශ්‍යද?`, 
+                        "ඔව්, සාදන්න", 
+                        false, 
+                        () => {
+                            if (viewModal && !viewModal.classList.contains('hidden')) {
+                                document.getElementById('close-view-modal').click();
+                            }
+                            setTimeout(() => {
+                                openEditorModal(null, '#ffffff');
+                                document.getElementById('note-title-input').value = title;
+                                updatePreview();
+                            }, 350);
+                        }
+                    );
+                }
+            }
+        });
+
+        /* ================= NESTED FOLDERS & TAGS MANAGEMENT ================= */
+        const folderViewBtn = document.getElementById('folder-view-btn');
+        const folderViewBtnMobile = document.getElementById('folder-view-btn-mobile');
+        
+        const openFolderModal = () => {
+            folderModal.classList.remove('hidden');
+            setTimeout(() => {
+                folderModal.classList.remove('opacity-0');
+                folderModal.querySelector('div').classList.remove('scale-95');
+                folderModal.classList.add('opacity-100');
+                renderFolderHierarchy();
+            }, 20);
+        };
+
+        const closeFolderModal = () => {
+            folderModal.classList.add('opacity-0');
+            folderModal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => folderModal.classList.add('hidden'), 300);
+        };
+
+        folderViewBtn.addEventListener('click', openFolderModal);
+        folderViewBtnMobile?.addEventListener('click', openFolderModal);
+        document.getElementById('close-folder-modal').addEventListener('click', closeFolderModal);
+
+        function fetchFoldersFromFirestore() {
+            if (!currentUser) return;
+            const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders');
+            if (unsubscribeFolders) unsubscribeFolders();
+            unsubscribeFolders = onSnapshot(ref, (snapshot) => {
+                foldersData = [];
+                snapshot.forEach(doc => foldersData.push({ id: doc.id, ...doc.data() }));
+                renderFoldersSelectOptions();
+                renderFolderHierarchy();
+                renderFoldersEditList();
+            });
+        }
+
+        function renderFoldersSelectOptions() {
+            const selects = [document.getElementById('note-folder-select'), document.getElementById('parent-folder-select')];
+            selects.forEach((select, i) => {
+                if (!select) return;
+                const firstOpt = select.options[0].outerHTML;
+                select.innerHTML = firstOpt;
+                
+                foldersData.forEach(folder => {
+                    select.innerHTML += `<option value="${folder.id}">${escapeHtml(folder.name)}</option>`;
+                });
+            });
+        }
+
+        document.getElementById('add-folder-btn').addEventListener('click', async () => {
+            const nameInput = document.getElementById('new-folder-name');
+            const parentSelect = document.getElementById('parent-folder-select');
+            
+            const name = nameInput.value.trim();
+            if (!name) return showToast("ෆෝල්ඩරයේ නම ඇතුළත් කරන්න.");
+
+            const parentId = parentSelect.value || null;
+            if (currentUser) {
+                const colRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders');
+                await addDoc(colRef, { name, parentId, timestamp: Date.now() });
+                nameInput.value = '';
+                parentSelect.value = '';
+                showToast("Folder added successfully!");
+            }
+        });
+
+        function renderFoldersEditList() {
+            const container = document.getElementById('folders-list-edit');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            if (foldersData.length === 0) {
+                container.innerHTML = `<span class="text-xs text-gray-400">Folders කිසිවක් සාදා නැත.</span>`;
+                return;
+            }
+
+            foldersData.forEach(folder => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-100 dark:border-gray-700 text-xs';
+                
+                let parentName = '';
+                if (folder.parentId) {
+                    const p = foldersData.find(f => f.id === folder.parentId);
+                    if (p) parentName = ` (Parent: ${p.name})`;
+                }
+                
+                div.innerHTML = `
+                    <span class="font-medium text-gray-700 dark:text-gray-300">${escapeHtml(folder.name)}<span class="text-[10px] text-gray-400 font-normal">${parentName}</span></span>
+                    <button class="text-red-500 hover:text-red-700 delete-fold-btn" data-id="${folder.id}">
+                        <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+                    </button>
+                `;
+                
+                div.querySelector('.delete-fold-btn').addEventListener('click', async (e) => {
+                    const fId = e.currentTarget.getAttribute('data-id');
+                    showConfirmModal("Delete Folder", "Are you sure you want to delete this folder? Sub-folders and assigned notes will be un-grouped.", "Delete", true, async () => {
+                        await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders', fId));
+                        
+                        const ref = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
+                        notesData.forEach(async (note) => {
+                            if (note.folderId === fId) {
+                                await setDoc(doc(ref, note.id), { ...note, folderId: null });
+                            }
+                        });
+                        
+                        foldersData.forEach(async (f) => {
+                            if (f.parentId === fId) {
+                                await setDoc(doc(collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'folders'), f.id), { ...f, parentId: null });
+                            }
+                        });
+                    });
+                });
+                
+                container.appendChild(div);
+            });
+            lucide.createIcons({ root: container });
+        }
+
+        function renderFolderHierarchy() {
+            const container = document.getElementById('folder-hierarchy-view');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const rootItem = document.createElement('div');
+            rootItem.className = 'flex items-center gap-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer font-bold mb-3 border-b border-gray-100 dark:border-gray-800 text-indigo-600 dark:text-indigo-400';
+            rootItem.innerHTML = `<i data-lucide="layout" class="w-4 h-4"></i> සියලුම සටහන් (All Notes)`;
+            rootItem.addEventListener('click', () => {
+                currentFolderFilter = null;
+                document.getElementById('filter-status-bar').classList.add('hidden');
+                renderNotes(notesData);
+                closeFolderModal();
+            });
+            container.appendChild(rootItem);
+
+            const roots = foldersData.filter(f => !f.parentId);
+            
+            if (roots.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'text-center text-gray-400 py-6';
+                empty.innerHTML = `පහත සැකසුම් (Settings -> Data) වෙත ගොස් <br/><b>Manage Folders</b> වෙතින් ෆෝල්ඩර සාදන්න.`;
+                container.appendChild(empty);
+                lucide.createIcons({ root: container });
+                return;
+            }
+
+            const buildTreeHtml = (folder, depth = 0) => {
+                const children = foldersData.filter(f => f.parentId === folder.id);
+                const assignedNotes = notesData.filter(n => n.folderId === folder.id);
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = `flex flex-col gap-1.5`;
+                wrapper.style.paddingLeft = `${depth * 14}px`;
+
+                const row = document.createElement('div');
+                row.className = `flex items-center justify-between p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg cursor-pointer transition-colors ${currentFolderFilter === folder.id ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400' : ''}`;
+                row.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="folder" class="w-4 h-4 ${children.length > 0 ? 'text-amber-500 fill-amber-500/20' : 'text-gray-400'}"></i>
+                        <span class="font-semibold">${escapeHtml(folder.name)}</span>
+                    </div>
+                    <span class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full font-mono text-gray-500">${assignedNotes.length}</span>
+                `;
+
+                row.addEventListener('click', () => {
+                    currentFolderFilter = folder.id;
+                    document.getElementById('filter-status-bar').classList.remove('hidden');
+                    document.getElementById('current-folder-path').textContent = folder.name;
+                    renderNotes(notesData.filter(n => n.folderId === folder.id));
+                    closeFolderModal();
+                });
+
+                wrapper.appendChild(row);
+
+                children.forEach(child => {
+                    wrapper.appendChild(buildTreeHtml(child, depth + 1));
+                });
+
+                return wrapper;
+            };
+
+            roots.forEach(root => {
+                container.appendChild(buildTreeHtml(root, 0));
+            });
+
+            lucide.createIcons({ root: container });
+        }
+
+        document.getElementById('clear-folder-filter-btn').addEventListener('click', () => {
+            currentFolderFilter = null;
+            document.getElementById('filter-status-bar').classList.add('hidden');
+            renderNotes(notesData);
+        });
+
+        function extractTags(text) {
+            if (!text) return [];
+            const matches = text.match(/#\w+/g);
+            return matches ? [...new Set(matches.map(tag => tag.toLowerCase()))] : [];
+        }
+
+        /* ================= PREFERENCES TABS & AUTH LOGIC ================= */
         document.querySelectorAll('.settings-tab').forEach(tab => {
             tab.addEventListener('click', (e) => {
                 const currentTab = e.currentTarget;
@@ -978,7 +1648,7 @@
                     showToast(`Importing ${importedNotes.length} notes...`);
                     const colRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
                     for (let note of importedNotes) {
-                        await addDoc(colRef, { title: note.title || 'Imported Note', content: note.content || '', color: note.color || '#ffffff', timestamp: Date.now() });
+                        await addDoc(colRef, { title: note.title || 'Imported Note', content: note.content || '', color: note.color || '#ffffff', folderId: note.folderId || null, timestamp: Date.now() });
                     }
                     showToast("Import successful!");
                 } catch (err) { showToast("Failed to read JSON file."); }
@@ -1018,8 +1688,17 @@
                 let snippet = formatSnippet(note.content, 120);
                 const dateStr = note.timestamp ? new Date(note.timestamp).toLocaleDateString() : '';
                 
+                let folderBadge = '';
+                if (note.folderId) {
+                    const fold = foldersData.find(f => f.id === note.folderId);
+                    if (fold) {
+                        folderBadge = `<span class="inline-flex items-center gap-1 bg-white/50 dark:bg-black/20 text-gray-900 text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-2 border border-black/5"><i data-lucide="folder" class="w-3 h-3"></i> ${escapeHtml(fold.name)}</span>`;
+                    }
+                }
+
                 div.innerHTML = `
                     <div class="transition-transform duration-500 ease-smooth group-hover:translate-x-1 flex-1">
+                        ${folderBadge}
                         <h3 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-900 mb-2 leading-tight line-clamp-2">${escapeHtml(note.title) || 'Untitled Note'}</h3>
                         <p class="text-gray-800/80 dark:text-gray-800/90 font-medium text-sm md:text-base leading-relaxed line-clamp-3">${snippet || 'No content'}</p>
                     </div>
@@ -1055,7 +1734,6 @@
                     openEditorModal(note);
                 });
                 
-                // Right-click copy Link (Navigator Clipboard and Fallback)
                 div.addEventListener('contextmenu', (e) => {
                     e.preventDefault();
                     const shareUrl = window.location.origin + window.location.pathname + "?note=" + note.id;
@@ -1070,7 +1748,6 @@
                     }
                 });
 
-                // Long-press copy Link (for Touch devices)
                 let pressTimer;
                 div.addEventListener('touchstart', (e) => {
                     pressTimer = window.setTimeout(() => {
@@ -1080,7 +1757,7 @@
                         } else {
                             fallbackCopy(shareUrl);
                         }
-                    }, 800); // 800ms Long press
+                    }, 800);
                 });
                 div.addEventListener('touchend', () => clearTimeout(pressTimer));
                 div.addEventListener('touchmove', () => clearTimeout(pressTimer));
@@ -1090,7 +1767,6 @@
             lucide.createIcons();
         }
 
-        // Fallback Copy Function
         function fallbackCopy(text) {
             const el = document.createElement('textarea');
             el.value = text;
@@ -1109,9 +1785,13 @@
                 notesData = []; 
                 snapshot.forEach(doc => notesData.push({ id: doc.id, ...doc.data() })); 
                 notesData.sort((a, b) => b.timestamp - a.timestamp); 
-                renderNotes(notesData);
                 
-                // Process URL Parameter after data loads
+                if (currentFolderFilter) {
+                    renderNotes(notesData.filter(n => n.folderId === currentFolderFilter));
+                } else {
+                    renderNotes(notesData);
+                }
+                
                 processUrlParam();
             });
         }
@@ -1133,16 +1813,27 @@
             document.getElementById('view-title').textContent = note.title || 'Untitled Note';
             document.getElementById('view-color-indicator').style.backgroundColor = note.color || '#ccc';
             
-            // Protect LaTeX Math before parsing Markdown
+            const tagsCont = document.getElementById('view-tags-container');
+            tagsCont.innerHTML = '';
+            const extracted = extractTags(note.content);
+            if (extracted.length > 0) {
+                extracted.forEach(tag => {
+                    tagsCont.innerHTML += `<span class="bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs px-2.5 py-1 rounded-full font-bold cursor-pointer hover:underline">${tag}</span>`;
+                });
+            }
+
             let processedContent = (note.content || '').replace(/==([^=]+)==/g, '<mark>$1</mark>');
             const protectedMath = protectMath(processedContent);
-            let parsedHtml = marked.parse(protectedMath.text);
-            parsedHtml = restoreMath(parsedHtml, protectedMath.blocks); // Restore Math Blocks
+            
+            let wikiHtml = processWikiLinks(protectedMath.text);
+
+            let parsedHtml = marked.parse(wikiHtml);
+            parsedHtml = restoreMath(parsedHtml, protectedMath.blocks); 
             
             document.getElementById('view-content').innerHTML = parsedHtml;
             
-            try { renderMathInElement(document.getElementById('view-content'), katexConfig); } catch(e){}
             processHtmlWidgets(document.getElementById('view-content')); 
+            renderDynamicContent(document.getElementById('view-content'));
 
             viewModal.classList.remove('hidden');
             setTimeout(() => {
@@ -1169,10 +1860,8 @@
             if (!document.fullscreenElement) document.getElementById('view-modal-content').requestFullscreen(); else document.exitFullscreen();
         });
 
-        // Toggle Fullscreen with Enter key in View Modal
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && !viewModal.classList.contains('hidden') && viewModal.classList.contains('opacity-100')) {
-                // Check if Settings/Editor are open
                 if (editorModal.classList.contains('hidden') && settingsModal.classList.contains('hidden')) {
                     e.preventDefault();
                     document.getElementById('fullscreen-view-btn').click();
@@ -1203,6 +1892,7 @@
             activeNoteId = note ? note.id : null; activeColor = note ? note.color : color;
             document.getElementById('note-title-input').value = note ? note.title : '';
             document.getElementById('note-content-input').value = note ? note.content : '';
+            document.getElementById('note-folder-select').value = (note && note.folderId) ? note.folderId : '';
             document.getElementById('modal-color-indicator').style.backgroundColor = activeColor;
             
             const delBtn = document.getElementById('delete-note-btn');
@@ -1230,11 +1920,14 @@
 
         document.getElementById('save-note-btn').addEventListener('click', async () => {
             if (!currentUser) return showToast("Authentication error. Please try again.");
-            const title = document.getElementById('note-title-input').value.trim(); const content = document.getElementById('note-content-input').value.trim();
+            const title = document.getElementById('note-title-input').value.trim(); 
+            const content = document.getElementById('note-content-input').value.trim();
+            const folderId = document.getElementById('note-folder-select').value || null;
+
             if (!title && !content) return closeEditorModal();
             
             const colRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'notes');
-            const data = { title, content, color: activeColor, timestamp: Date.now() };
+            const data = { title, content, folderId, color: activeColor, timestamp: Date.now() };
             try {
                 if (activeNoteId) await setDoc(doc(colRef, activeNoteId), data); else await addDoc(colRef, data);
                 closeEditorModal();
@@ -1245,29 +1938,28 @@
             document.getElementById('preview-title').textContent = document.getElementById('note-title-input').value;
             let rawContent = document.getElementById('note-content-input').value || '';
             
-            // Update Word and Character Count (Live Update)
             const charCount = rawContent.length;
             const wordCount = rawContent.trim() === '' ? 0 : rawContent.trim().split(/\s+/).length;
             document.getElementById('char-count').textContent = charCount;
             document.getElementById('word-count').textContent = wordCount;
 
-            // Markdown Parse and LaTeX protection
             let processedContent = rawContent.replace(/==([^=]+)==/g, '<mark>$1</mark>');
             const protectedMath = protectMath(processedContent);
-            let parsedHtml = marked.parse(protectedMath.text);
+            
+            let wikiHtml = processWikiLinks(protectedMath.text);
+
+            let parsedHtml = marked.parse(wikiHtml);
             parsedHtml = restoreMath(parsedHtml, protectedMath.blocks);
             
-            // Insert into preview (Triggers flash animation)
             document.getElementById('preview-content').innerHTML = parsedHtml;
-            try { renderMathInElement(document.getElementById('preview-content'), katexConfig); } catch(e){}
             processHtmlWidgets(document.getElementById('preview-content'));
+            renderDynamicContent(document.getElementById('preview-content'));
         }
 
         document.getElementById('note-title-input').addEventListener('input', updatePreview);
         document.getElementById('note-content-input').addEventListener('input', updatePreview);
 
-        // Markdown Formatting Buttons
-        document.querySelectorAll('.format-btn').forEach(btn => {
+        document.querySelectorAll('.format-btn:not(#open-drawing-board-btn)').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const input = document.getElementById('note-content-input');
@@ -1282,7 +1974,7 @@
                 if (isBlockFormat) {
                     newText = input.value.substring(0, start) + format + selectedText + input.value.substring(end);
                     newCursorPos = end + format.length;
-                } else if (format === '```\n' || btn.getAttribute('title') === 'Live HTML Widget') {
+                } else if (format === '```\n' || btn.getAttribute('title') === 'Live HTML Widget' || btn.getAttribute('title') === 'Mermaid Diagram') {
                     newText = input.value.substring(0, start) + format + selectedText + suffix + input.value.substring(end);
                     newCursorPos = start + format.length;
                 } else {
@@ -1295,7 +1987,6 @@
             });
         });
 
-        // Tab & Enter Markdown Shortcuts
         document.getElementById('note-content-input').addEventListener('keydown', function(e) {
             if (e.key === 'Tab') {
                 e.preventDefault();
@@ -1334,7 +2025,6 @@
             }
         });
 
-        // Toggle Palette
         document.getElementById('toggle-palette-btn').addEventListener('click', (e) => {
             e.stopPropagation(); isPaletteOpen = !isPaletteOpen;
             if (isPaletteOpen) { document.getElementById('palette-menu').classList.add('open'); document.getElementById('toggle-palette-btn').classList.add('open'); } 
@@ -1354,15 +2044,18 @@
 
         document.getElementById('search-input').addEventListener('input', (e) => {
             const q = e.target.value.toLowerCase();
-            renderNotes(notesData.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q)));
+            let baseNotesList = notesData;
+            if (currentFolderFilter) {
+                baseNotesList = notesData.filter(n => n.folderId === currentFolderFilter);
+            }
+            renderNotes(baseNotesList.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q)));
         });
 
-        // Show Skeleton UI before data loads
         renderSkeletons();
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) { try { await signInAnonymously(auth); } catch (err) {} } 
-            else { currentUser = user; updateSettingsUI(user); fetchNotesFromFirestore(); }
+            else { currentUser = user; updateSettingsUI(user); fetchNotesFromFirestore(); fetchFoldersFromFirestore(); }
         });
 
         lucide.createIcons();
