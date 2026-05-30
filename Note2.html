@@ -836,14 +836,16 @@
             // Protect block and inline math: $$...$$, \[...\], \(...\), and $...$
             let protectedText = text.replace(/(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^$\n]+\$)/g, (match) => {
                 mathBlocks.push(match);
-                return `__MATH_BLOCK_${mathBlocks.length - 1}__`;
+                return `MATHBLOCKPLACEHOLDER${mathBlocks.length - 1}END`;
             });
             return { text: protectedText, blocks: mathBlocks };
         }
 
         function restoreMath(text, blocks) {
             blocks.forEach((block, index) => {
-                text = text.replace(`__MATH_BLOCK_${index}__`, block);
+                // Escape < and > to prevent them from breaking the HTML structure before KaTeX runs
+                let safeBlock = block.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                text = text.replace(`MATHBLOCKPLACEHOLDER${index}END`, safeBlock);
             });
             return text;
         }
