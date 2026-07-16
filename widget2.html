@@ -356,43 +356,39 @@
             </button>
             
             <h2 id="modal-heading" class="text-xl font-bold mb-6 text-zinc-950 dark:text-white tracking-tight flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#4F56A5] dark:text-[#BEC2FF]">post_add</span>
+                <span class="material-symbols-outlined text-[#4F56A5] dark:text-[#BEC2FF]">note_add</span>
                 <span>Add Workspace Card</span>
             </h2>
             
-            <form id="add-form" class="space-y-6">
-                
-                <!-- MD3 Floating Label Input for Title -->
-                <div class="relative">
-                    <input type="text" id="input-title" placeholder=" " required class="block w-full px-4 pt-6 pb-2 rounded-[16px] bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white text-base transition-all" />
-                    <label for="input-title" class="absolute text-base text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-3 scale-75 top-4.5 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-[#4F56A5] dark:peer-focus:text-[#BEC2FF] pointer-events-none font-medium">Card Title (e.g. Physics Theory)</label>
+            <form id="add-form" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold mb-1.5 text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Card Title</label>
+                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white placeholder-zinc-400 text-sm md3-transition" />
                 </div>
 
-                <!-- MD3 Floating Label Input for Image -->
-                <div class="relative">
-                    <input type="url" id="input-image" placeholder=" " class="block w-full px-4 pt-6 pb-2 rounded-[16px] bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:ring-0 focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white text-base transition-all" />
-                    <label for="input-image" class="absolute text-base text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-3 scale-75 top-4.5 z-10 origin-[0] left-4 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-3 peer-focus:text-[#4F56A5] dark:peer-focus:text-[#BEC2FF] pointer-events-none font-medium">Card Icon Image URL (Optional)</label>
+                <div>
+                    <label class="block text-xs font-bold mb-1.5 text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Card Icon Image URL <span class="text-zinc-400 font-normal capitalize">(Optional)</span></label>
+                    <input type="url" id="input-image" placeholder="Paste an image link..." class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white placeholder-zinc-400 text-sm md3-transition" />
                 </div>
                 
                 <div class="border-t border-zinc-200 dark:border-zinc-800 pt-5 mt-2">
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-between mb-3">
                         <label class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Resource URLs / Links</label>
                         <button type="button" onclick="window.addLinkField()" class="text-xs font-bold text-[#4F56A5] dark:text-[#BEC2FF] bg-[#E0E0FF] dark:bg-[#373D8C] px-3.5 py-1.5 rounded-full hover:opacity-90 transition-all flex items-center gap-1.5 active:scale-95">
                             <span class="material-symbols-outlined text-[14px]">add</span>
                             <span>Add Field</span>
                         </button>
                     </div>
-                    <div id="dynamic-links-container" class="space-y-4">
+                    <div id="dynamic-links-container" class="space-y-3">
                         <!-- Dynamic fields injected here -->
                     </div>
                 </div>
 
-                <!-- MD3 Styled Buttons (Text Button for Cancel, Filled for Save) -->
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-full font-semibold text-[#4F56A5] hover:bg-[#4F56A5]/10 dark:text-[#BEC2FF] dark:hover:bg-[#BEC2FF]/10 text-sm active:scale-95 transition-all">
+                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-full font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm active:scale-95 transition-all">
                         Cancel
                     </button>
-                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-full font-semibold bg-[#4F56A5] hover:bg-[#3E4484] dark:bg-[#BEC2FF] dark:text-zinc-950 text-white text-sm active:scale-95 transition-all flex justify-center items-center gap-1 shadow-md">
+                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-full font-semibold bg-[#4F56A5] hover:bg-[#3E4484] dark:bg-[#BEC2FF] dark:text-zinc-950 text-white text-sm active:scale-95 transition-all flex justify-center items-center gap-1">
                         <span class="material-symbols-outlined text-sm">done</span>
                         <span>Save Workspace</span>
                     </button>
@@ -877,7 +873,7 @@
             if(!linkData) return;
 
             editingCardId = id;
-            document.getElementById('modal-heading').querySelector('span:last-child').innerText = "Modify Reference Card";
+            document.getElementById('modal-heading').querySelector('span').innerText = "Modify Reference Card";
             document.getElementById('btn-save').querySelector('span:last-child').innerText = "Update Workspace";
 
             document.getElementById('input-title').value = linkData.title;
@@ -895,15 +891,9 @@
                 const newDiv = document.createElement('div');
                 newDiv.className = 'link-entry flex gap-2 items-center';
                 newDiv.innerHTML = `
-                    <div class="relative w-1/3 shrink-0">
-                        <input type="text" value="${l.name}" placeholder=" " required class="link-name block w-full px-3 pt-5 pb-1.5 text-sm rounded-xl bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white transition-all" />
-                        <label class="absolute text-xs text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-2.5 scale-75 top-3 z-10 origin-[0] left-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2.5 pointer-events-none">Tag</label>
-                    </div>
-                    <div class="relative flex-1">
-                        <input type="url" value="${l.url}" placeholder=" " required class="link-url block w-full px-3 pt-5 pb-1.5 text-sm rounded-xl bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white transition-all" />
-                        <label class="absolute text-xs text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-2.5 scale-75 top-3 z-10 origin-[0] left-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2.5 pointer-events-none">URL Link</label>
-                    </div>
-                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center transition-colors">
+                    <input type="text" value="${l.name}" placeholder="Tag (e.g. Theory)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <input type="url" value="${l.url}" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
                         <span class="material-symbols-outlined text-lg">delete</span>
                     </button>
                 `;
@@ -921,15 +911,9 @@
             const newDiv = document.createElement('div');
             newDiv.className = 'link-entry flex gap-2 items-center';
             newDiv.innerHTML = `
-                <div class="relative w-1/3 shrink-0">
-                    <input type="text" placeholder=" " required class="link-name block w-full px-3 pt-5 pb-1.5 text-sm rounded-xl bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white transition-all" />
-                    <label class="absolute text-xs text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-2.5 scale-75 top-3 z-10 origin-[0] left-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2.5 pointer-events-none">Tag</label>
-                </div>
-                <div class="relative flex-1">
-                    <input type="url" placeholder=" " required class="link-url block w-full px-3 pt-5 pb-1.5 text-sm rounded-xl bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white transition-all" />
-                    <label class="absolute text-xs text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-2.5 scale-75 top-3 z-10 origin-[0] left-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2.5 pointer-events-none">URL Link</label>
-                </div>
-                <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center transition-colors">
+                <input type="text" placeholder="Tag (e.g. Chat)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                <input type="url" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
                     <span class="material-symbols-outlined text-lg">delete</span>
                 </button>
             `;
@@ -939,20 +923,14 @@
         function resetForm() {
             elAddForm.reset();
             editingCardId = null;
-            document.getElementById('modal-heading').querySelector('span:last-child').innerText = "Add Workspace Card";
+            document.getElementById('modal-heading').querySelector('span').innerText = "Add Workspace Card";
             document.getElementById('btn-save').querySelector('span:last-child').innerText = "Save Workspace";
             
             document.getElementById('dynamic-links-container').innerHTML = `
                 <div class="link-entry flex gap-2 items-center">
-                    <div class="relative w-1/3 shrink-0">
-                        <input type="text" placeholder=" " required class="link-name block w-full px-3 pt-5 pb-1.5 text-sm rounded-xl bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white transition-all" />
-                        <label class="absolute text-xs text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-2.5 scale-75 top-3 z-10 origin-[0] left-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2.5 pointer-events-none">Main Tag</label>
-                    </div>
-                    <div class="relative flex-1">
-                        <input type="url" placeholder=" " required class="link-url block w-full px-3 pt-5 pb-1.5 text-sm rounded-xl bg-white dark:bg-[#252731] border border-zinc-200 dark:border-zinc-700 appearance-none focus:outline-none focus:border-2 focus:border-[#4F56A5] dark:focus:border-[#BEC2FF] peer text-zinc-900 dark:text-white transition-all" />
-                        <label class="absolute text-xs text-zinc-500 dark:text-zinc-400 duration-200 transform -translate-y-2.5 scale-75 top-3 z-10 origin-[0] left-3 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-2.5 pointer-events-none">URL Link</label>
-                    </div>
-                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center transition-colors">
+                    <input type="text" placeholder="Tag (e.g. Main Source)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <input type="url" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
                         <span class="material-symbols-outlined text-lg">delete</span>
                     </button>
                 </div>
