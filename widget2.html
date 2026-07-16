@@ -3,428 +3,459 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Study Master - Pro Premium</title>
-    <!-- Premium Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>StudyMaster - Material You 3</title>
+    <!-- Premium Google Fonts: Outfit (Reminiscent of Google Sans) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Material Symbols (Outlined version) -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SortableJS for Drag and Drop -->
+    <!-- SortableJS for Fluid Drag & Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        sans: ['"Outfit"', 'sans-serif'],
                     },
                     colors: {
-                        primary: {"50":"#eef2ff","100":"#e0e7ff","200":"#c7d2fe","300":"#a5b4fc","400":"#818cf8","500":"#6366f1","600":"#4f46e5","700":"#4338ca","800":"#3730a3","900":"#312e81","950":"#1e1b4b"},
-                        darkbg: "#0B1121"
-                    },
-                    animation: {
-                        blob: "blob 7s infinite",
-                    },
-                    keyframes: {
-                        blob: {
-                            "0%": { transform: "translate(0px, 0px) scale(1)" },
-                            "33%": { transform: "translate(30px, -50px) scale(1.1)" },
-                            "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
-                            "100%": { transform: "translate(0px, 0px) scale(1)" }
+                        // Material You Dynamic Tonal Palettes (Indigo/Lavender Base)
+                        md3: {
+                            light: {
+                                primary: '#4F56A5',
+                                onPrimary: '#FFFFFF',
+                                primaryContainer: '#E0E0FF',
+                                onPrimaryContainer: '#050838',
+                                secondary: '#5C5D72',
+                                onSecondary: '#FFFFFF',
+                                secondaryContainer: '#E1E1F9',
+                                tertiary: '#78536B',
+                                background: '#FEFBFF',
+                                onBackground: '#1B1B1F',
+                                surface: '#FAF8FD',
+                                surfaceVariant: '#E3E1EC',
+                                onSurface: '#1B1B1F',
+                                onSurfaceVariant: '#46464F',
+                                outline: '#777680',
+                                outlineVariant: '#C7C5D0',
+                                error: '#BA1A1A',
+                                errorContainer: '#FFDAD6',
+                                onError: '#FFFFFF',
+                            },
+                            dark: {
+                                primary: '#BEC2FF',
+                                onPrimary: '#1E2574',
+                                primaryContainer: '#373D8C',
+                                onPrimaryContainer: '#E0E0FF',
+                                secondary: '#C5C5DD',
+                                onSecondary: '#2E2F42',
+                                secondaryContainer: '#444559',
+                                tertiary: '#E7B9D5',
+                                background: '#111318',
+                                onBackground: '#E3E1EC',
+                                surface: '#121318',
+                                surfaceVariant: '#46464F',
+                                onSurface: '#E3E1EC',
+                                onSurfaceVariant: '#C7C5D0',
+                                outline: '#91909A',
+                                outlineVariant: '#46464F',
+                                error: '#FFB4AB',
+                                errorContainer: '#93000A',
+                                onError: '#690005',
+                            }
                         }
                     }
                 }
             }
         }
     </script>
+    
     <style>
+        /* Base Material Customizations */
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Outfit', sans-serif;
             -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
+            overflow: hidden;
         }
         
         input, textarea {
             -webkit-user-select: auto;
-            -moz-user-select: auto;
-            -ms-user-select: auto;
             user-select: auto;
         }
 
         .hidden-view { display: none !important; }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-        
-        /* Premium Glassmorphism */
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.65);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-        }
-        .dark .glass-panel {
-            background: rgba(17, 24, 33, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+
+        /* Smooth Material State Transitions */
+        .md3-transition {
+            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
         }
 
-        /* Premium Button Gradients */
-        .btn-premium {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            background-size: 200% auto;
-            transition: 0.5s;
-            box-shadow: 0 10px 20px -10px rgba(99, 102, 241, 0.5);
+        /* Sortable JS Animations & Drag Physics */
+        .sortable-ghost {
+            opacity: 0.3;
+            transform: scale(0.97);
         }
-        .btn-premium:hover {
-            background-position: right center;
-            box-shadow: 0 15px 25px -10px rgba(168, 85, 247, 0.6);
-        }
-
-        /* Drag and Drop Animations */
-        .sortable-ghost { opacity: 0; }
-        .sortable-chosen { 
-            transform: scale(1.05) translateY(-4px) rotate(2deg) !important; 
-            box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.4) !important; 
-            background: var(--bg-chosen, rgba(255,255,255,0.95)); 
-            backdrop-filter: blur(10px);
-            z-index: 50 !important; 
+        .sortable-chosen {
+            transform: scale(1.03) rotate(1deg);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
             cursor: grabbing !important;
-            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.2s !important;
+            z-index: 50;
         }
-        .dark .sortable-chosen { --bg-chosen: rgba(31,41,55,0.95); }
-        .sortable-drag { opacity: 1 !important; cursor: grabbing !important; }
         
-        @keyframes dropBounce {
-            0% { transform: scale(1.05) translateY(-4px) rotate(2deg); }
-            50% { transform: scale(0.98) translateY(2px) rotate(-1deg); }
-            100% { transform: scale(1) translateY(0) rotate(0); }
+        /* Floating label transition logic */
+        .material-input-container {
+            position: relative;
         }
-        .dropped-card {
-            animation: dropBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+        .material-input {
+            width: 100%;
+            border-radius: 12px;
+            padding: 16px;
+            outline: none;
+            background: transparent;
         }
-
-        /* Card Hover Physics */
-        .card-hover-physics {
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease;
+        
+        /* Custom scrollbar matching MD3 style */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        .card-hover-physics:hover, .card-hover-physics:active {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-            border-color: #818cf8;
-            z-index: 10;
+        ::-webkit-scrollbar-track {
+            background: transparent;
         }
-        .dark .card-hover-physics:hover {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-            border-color: #6366f1;
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(120, 120, 120, 0.2);
+            border-radius: 8px;
         }
-
-        /* Action Menu Animations */
-        .menu-open {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            pointer-events: auto;
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(120, 120, 120, 0.4);
         }
-        .menu-closed {
-            opacity: 0;
-            transform: scale(0.9) translateY(10px);
-            pointer-events: none;
-        }
-
-        /* UI Animations */
-        @keyframes slideUpFade {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .animate-card {
-            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            opacity: 0; 
-        }
-
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.9) translateY(20px); }
-            100% { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        .animate-modal {
-            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        @keyframes fadeInTab {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-tab {
-            animation: fadeInTab 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        /* Custom Scrollbar for sleekness */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(156, 163, 175, 0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(156, 163, 175, 0.5); }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-darkbg text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-100/60 via-slate-50 to-purple-50/40 dark:from-indigo-900/20 dark:via-darkbg dark:to-purple-900/10">
 
-    <!-- LOADING SCREEN -->
-    <div id="loading-screen" class="flex items-center justify-center h-screen glass-panel absolute inset-0 z-50 transition-opacity duration-500 rounded-none border-none">
-        <div class="relative w-20 h-20">
-            <div class="absolute inset-0 rounded-full border-t-4 border-primary-500 animate-[spin_1s_linear_infinite]"></div>
-            <div class="absolute inset-3 rounded-full border-r-4 border-purple-500 animate-[spin_1.5s_linear_infinite_reverse]"></div>
-            <div class="absolute inset-0 flex items-center justify-center font-bold text-primary-500 text-xs">SM</div>
+<body class="bg-slate-50 dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 min-h-screen transition-colors duration-300 md3-transition">
+
+    <!-- MD3 LOADING SCREEN -->
+    <div id="loading-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-[#FEFBFF] dark:bg-[#111318] z-50 transition-opacity duration-300">
+        <div class="relative w-16 h-16 mb-6">
+            <!-- MD3 Circular Progress Indicator -->
+            <div class="absolute inset-0 rounded-full border-4 border-zinc-200 dark:border-zinc-800"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-[#4F56A5] dark:border-[#BEC2FF] border-t-transparent animate-[spin_1s_cubic-bezier(0.4,0,0.2,1)_infinite]"></div>
         </div>
+        <h2 class="text-xl font-medium tracking-wide text-zinc-800 dark:text-zinc-200">StudyMaster</h2>
+        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Loading material workspace...</p>
     </div>
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="hidden-view flex items-center justify-center h-screen w-full px-4 relative overflow-hidden">
-        <!-- Decorative Background Blobs -->
-        <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob dark:opacity-20"></div>
-        <div class="absolute top-1/3 right-1/4 w-72 h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob [animation-delay:2s] dark:opacity-20"></div>
-        <div class="absolute -bottom-8 left-1/3 w-72 h-72 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob [animation-delay:4s] dark:opacity-20"></div>
+    <!-- CUSTOM SNACKBAR (TOAST) SYSTEM -->
+    <div id="snackbar-container" class="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-[100] flex flex-col gap-2 pointer-events-none w-full max-w-sm px-4">
+        <!-- Dynamically Spat Toasts go here -->
+    </div>
 
-        <div class="glass-panel p-10 rounded-[2.5rem] shadow-2xl max-w-sm w-full text-center relative z-10 animate-modal">
-            <div class="bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/40 dark:to-purple-900/40 w-24 h-24 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-inner transform rotate-3 hover:rotate-6 transition-transform">
-                <svg class="w-12 h-12 text-primary-600 dark:text-primary-400 transform -rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+    <!-- MD3 LOGIN SCREEN -->
+    <div id="login-screen" class="hidden-view flex items-center justify-center min-h-screen w-full px-4 bg-[#FEFBFF] dark:bg-[#111318]">
+        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] p-8 md:p-12 rounded-[28px] max-w-md w-full text-center border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm md3-transition">
+            <div class="bg-[#E0E0FF] dark:bg-[#373D8C] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outpined text-3xl text-[#4F56A5] dark:text-[#BEC2FF] material-symbols-outlined">auto_stories</span>
             </div>
-            <h1 class="text-4xl font-extrabold mb-3 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-purple-600 dark:from-primary-400 dark:to-purple-400">StudyMaster</h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-10 font-medium">Your premium hub for saved links.</p>
-            <button id="btn-login" class="w-full btn-premium text-white font-bold py-4 px-4 rounded-2xl flex items-center justify-center gap-3 transform active:scale-95 text-lg">
-                <svg class="w-6 h-6 bg-white rounded-full p-1" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            <h1 class="text-3xl font-bold mb-2 tracking-tight text-zinc-900 dark:text-white">StudyMaster</h1>
+            <p class="text-base text-zinc-500 dark:text-zinc-400 mb-8 font-normal">Organize your academic references, documents, and vital channels elegantly in one dynamic hub.</p>
+            
+            <button id="btn-login" class="w-full bg-[#4F56A5] hover:bg-[#434994] dark:bg-[#BEC2FF] dark:hover:bg-[#ACAFE8] text-white dark:text-zinc-950 font-semibold py-4 px-6 rounded-full flex items-center justify-center gap-3 active:scale-[0.97] transition-all duration-200 shadow-sm">
+                <svg class="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                </svg>
                 Continue with Google
             </button>
         </div>
     </div>
 
-    <!-- MAIN APP SCREEN -->
-    <div id="app-screen" class="hidden-view flex h-screen w-full relative">
+    <!-- MD3 MAIN APP WORKSPACE -->
+    <div id="app-screen" class="hidden-view flex h-screen w-full overflow-hidden bg-[#FEFBFF] dark:bg-[#111318]">
         
-        <!-- DESKTOP SIDEBAR -->
-        <aside class="hidden md:flex flex-col w-72 glass-panel border-r border-white/30 dark:border-white/5 sticky top-0 h-screen z-20 shadow-lg">
-            <div class="p-8 flex items-center gap-4">
-                <div class="bg-gradient-to-br from-primary-500 to-purple-600 text-white p-2.5 rounded-xl shadow-lg shadow-primary-500/30 transform -rotate-3">
-                    <svg class="w-6 h-6 transform rotate-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+        <!-- MD3 DESKTOP NAVIGATION DRAWER (SIDEBAR) -->
+        <aside class="hidden md:flex flex-col w-80 bg-[#FAF8FD] dark:bg-[#171920] border-r border-zinc-200/60 dark:border-zinc-800/60 h-screen shrink-0 z-20">
+            <div class="p-6">
+                <!-- Branding Header -->
+                <div class="flex items-center gap-3 px-3 py-2">
+                    <span class="material-symbols-outlined text-3xl text-[#4F56A5] dark:text-[#BEC2FF]">auto_stories</span>
+                    <h1 class="font-bold text-2xl tracking-tight text-zinc-950 dark:text-white">StudyMaster</h1>
                 </div>
-                <h1 class="font-extrabold text-2xl tracking-tight text-gray-900 dark:text-white">StudyMaster</h1>
+
+                <!-- User Account Profile Card in MD3 Surface Style -->
+                <div class="mt-6 p-4 rounded-3xl bg-[#E1E1F9] dark:bg-[#2F303E] flex items-center gap-3 shadow-sm border border-zinc-200/20 dark:border-zinc-700/20">
+                    <img id="user-avatar" src="" alt="Profile" class="w-11 h-11 rounded-full object-cover border border-zinc-300 dark:border-zinc-600" />
+                    <div class="overflow-hidden">
+                        <p id="user-name" class="text-sm font-bold truncate text-zinc-900 dark:text-zinc-100">Student</p>
+                        <div class="flex items-center gap-1 mt-0.5">
+                            <span class="material-symbols-outlined text-xs text-[#4F56A5] dark:text-[#BEC2FF]">verified</span>
+                            <p class="text-[10px] uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400">PRO MEMBERSHIP</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <nav class="flex-1 px-5 space-y-3 mt-2">
-                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 active:scale-[0.98] bg-primary-50 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300 font-bold shadow-sm border border-primary-100 dark:border-primary-800">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    Dashboard
+
+            <!-- MD3 Navigation Items with Pill Highlight Indicators -->
+            <nav class="flex-1 px-4 space-y-1">
+                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative group text-[#4F56A5] dark:text-[#BEC2FF]">
+                    <!-- Pill highlight background (active state) -->
+                    <div id="pill-home-desktop" class="absolute inset-0 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full -z-10 transition-transform md3-transition"></div>
+                    <span class="material-symbols-outlined text-2xl">dashboard</span>
+                    <span class="font-medium text-base">Dashboard</span>
                 </button>
-                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="nav-btn w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-300 active:scale-[0.98] hover:bg-white/60 dark:hover:bg-gray-800/50 text-gray-600 dark:text-gray-400 font-semibold hover:text-gray-900 dark:hover:text-white border border-transparent">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    Settings
+                
+                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative group text-zinc-600 dark:text-zinc-400">
+                    <div id="pill-settings-desktop" class="absolute inset-0 bg-transparent rounded-full -z-10 scale-x-75 opacity-0 transition-all md3-transition"></div>
+                    <span class="material-symbols-outlined text-2xl">settings</span>
+                    <span class="font-medium text-base">Settings</span>
                 </button>
             </nav>
 
-            <div class="p-6">
-                <div class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-[1.5rem] p-4 flex items-center gap-3 shadow-sm border border-white/40 dark:border-white/10 group cursor-pointer hover:bg-white/80 dark:hover:bg-gray-800/80 transition-colors">
-                    <img id="user-avatar" src="" alt="Profile" class="w-12 h-12 rounded-2xl ring-2 ring-primary-100 dark:ring-primary-900/50 object-cover group-hover:scale-105 transition-transform" />
-                    <div class="overflow-hidden">
-                        <p id="user-name" class="text-sm font-bold truncate text-gray-900 dark:text-white">User</p>
-                        <p class="text-[10px] text-primary-600 dark:text-primary-400 uppercase tracking-widest font-extrabold mt-0.5 flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.381z" clip-rule="evenodd"></path></svg>
-                            PRO
-                        </p>
-                    </div>
-                </div>
+            <!-- Bottom Copyright / Version Tag -->
+            <div class="p-6 text-center text-xs text-zinc-400 dark:text-zinc-600">
+                <p>Material Design 3 v1.0</p>
             </div>
         </aside>
 
-        <!-- MAIN CONTENT AREA -->
-        <main class="flex-1 w-full max-w-5xl mx-auto flex flex-col h-screen overflow-hidden relative z-10" id="main-content">
+        <!-- MAIN WORKSPACE VIEWPORT -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10" id="main-content">
             
-            <!-- Header -->
-            <header class="px-6 py-6 flex items-center justify-between glass-panel border-b border-white/30 dark:border-white/5 sticky top-0 z-30 shadow-sm rounded-none">
-                <h2 id="header-title" class="text-3xl font-extrabold capitalize tracking-tight text-gray-900 dark:text-white">My Links</h2>
-                <button onclick="window.openModal()" id="btn-add-desktop" class="btn-premium text-white rounded-2xl px-6 py-3 shadow-xl transition-all active:scale-95 flex items-center justify-center font-bold tracking-wide">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
-                    <span>Add New</span>
+            <!-- MD3 Header / Top App Bar -->
+            <header class="px-6 py-5 flex items-center justify-between border-b border-zinc-200/60 dark:border-zinc-800/60 bg-[#FEFBFF]/80 dark:bg-[#111318]/80 backdrop-blur-md sticky top-0 z-30">
+                <div class="flex flex-col">
+                    <h2 id="header-title" class="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white capitalize">Dashboard</h2>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:block">Welcome back! Manage your reference catalog.</p>
+                </div>
+
+                <!-- Desktop MD3 Elevated Extended FAB / Regular Button -->
+                <button onclick="window.openModal()" id="btn-add-desktop" class="hidden md:flex bg-[#E0E0FF] hover:bg-[#D1D1FB] dark:bg-[#373D8C] dark:hover:bg-[#464D9E] text-[#050838] dark:text-[#E0E0FF] px-6 py-3 rounded-full font-semibold items-center gap-2 active:scale-95 md3-transition shadow-sm">
+                    <span class="material-symbols-outlined">add</span>
+                    <span>Add Link Card</span>
                 </button>
             </header>
 
-            <!-- Scrollable Content -->
-            <div class="flex-1 overflow-y-auto p-4 pb-28 md:p-8 md:pb-8 overscroll-y-contain" id="scrollable-content">
+            <!-- Scrollable Page Container -->
+            <div class="flex-1 overflow-y-auto p-4 pb-28 md:p-8 overscroll-y-contain bg-[#FEFBFF] dark:bg-[#111318]" id="scrollable-content">
                 
-                <!-- HOME TAB -->
-                <div id="tab-home" class="animate-tab">
+                <!-- HOME TAB CONTENT -->
+                <div id="tab-home" class="space-y-8 animate-tab">
                     
-                    <!-- Pinned Links Section -->
-                    <div id="pinned-section" class="hidden-view mb-10">
-                        <h3 class="text-sm font-extrabold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z"></path></svg>
-                            Pinned Favorites
-                        </h3>
-                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                            <!-- Pinned links injected here -->
+                    <!-- Pinned Section - Styled as MD3 Filled Cards -->
+                    <div id="pinned-section" class="hidden-view">
+                        <div class="flex items-center gap-2 mb-4">
+                            <span class="material-symbols-outlined text-amber-500">push_pin</span>
+                            <h3 class="text-sm font-bold text-[#4F56A5] dark:text-[#BEC2FF] uppercase tracking-wider">Pinned Workspace</h3>
+                        </div>
+                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Injected by script -->
                         </div>
                     </div>
 
-                    <!-- All Other Links -->
+                    <!-- All Unpinned Section - Styled as MD3 Outlined Cards -->
                     <div>
-                        <h3 id="unpinned-title" class="hidden-view text-sm font-extrabold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-4">All Links</h3>
-                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                            <!-- Unpinned links injected here -->
+                        <div id="unpinned-title-wrapper" class="flex items-center gap-2 mb-4 hidden-view">
+                            <span class="material-symbols-outlined text-zinc-500">space_dashboard</span>
+                            <h3 class="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Personal Database</h3>
+                        </div>
+                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <!-- Injected by script -->
                         </div>
                     </div>
                     
-                    <!-- Empty State -->
-                    <div id="empty-state" class="hidden-view col-span-full flex flex-col items-center justify-center h-72 text-gray-400 bg-white/30 dark:bg-gray-800/20 backdrop-blur-sm rounded-[2rem] border border-dashed border-gray-300 dark:border-gray-700 mt-4">
-                        <div class="bg-primary-50 dark:bg-primary-900/30 p-4 rounded-full mb-4">
-                            <svg class="w-12 h-12 text-primary-500 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                    <!-- Empty State Graphic -->
+                    <div id="empty-state" class="hidden-view flex flex-col items-center justify-center h-80 text-zinc-400 bg-[#FAF8FD] dark:bg-[#171920] rounded-[28px] border border-dashed border-zinc-300 dark:border-zinc-800 p-8 max-w-lg mx-auto text-center mt-6">
+                        <div class="bg-[#E0E0FF] dark:bg-[#2E3040] p-4 rounded-full mb-4">
+                            <span class="material-symbols-outlined text-4xl text-[#4F56A5] dark:text-[#BEC2FF]">cloud_off</span>
                         </div>
-                        <p class="text-xl font-extrabold text-gray-700 dark:text-gray-200">No links saved yet!</p>
-                        <p class="text-sm mt-2 font-medium">Click the Add button to create your first card.</p>
+                        <p class="text-lg font-bold text-zinc-800 dark:text-zinc-200">Workspace is empty</p>
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-xs">You have no shortcut cards saved. Click on the button below or top menu to register your study URLs.</p>
+                        <button onclick="window.openModal()" class="mt-5 bg-[#4F56A5] text-white dark:bg-[#BEC2FF] dark:text-zinc-950 px-6 py-2.5 rounded-full text-xs font-semibold hover:opacity-90 md3-transition active:scale-95">Create First Card</button>
                     </div>
                 </div>
 
-                <!-- SETTINGS TAB -->
-                <div id="tab-settings" class="hidden-view max-w-2xl mx-auto space-y-6 animate-tab">
-                    <div class="glass-panel rounded-[2rem] p-8">
-                        <h3 class="text-xl font-extrabold mb-6 flex items-center gap-3">
-                            <div class="p-2 bg-primary-100 dark:bg-primary-900/50 rounded-xl text-primary-600 dark:text-primary-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg></div>
-                            Appearance
+                <!-- SETTINGS TAB CONTENT -->
+                <div id="tab-settings" class="hidden-view max-w-2xl mx-auto space-y-6">
+                    <!-- Preferences Section -->
+                    <div class="bg-[#FAF8FD] dark:bg-[#171920] border border-zinc-200/50 dark:border-zinc-800/50 rounded-[28px] p-6 md:p-8">
+                        <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#4F56A5] dark:text-[#BEC2FF]">
+                            <span class="material-symbols-outlined">palette</span>
+                            <span>Personalization</span>
                         </h3>
-                        <div class="flex items-center justify-between p-4 bg-white/50 dark:bg-gray-800/50 rounded-2xl border border-gray-100 dark:border-gray-700/50">
-                            <div class="flex items-center gap-4">
-                                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-xl">
-                                    <svg id="theme-icon-dark" class="hidden w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                                    <svg id="theme-icon-light" class="w-6 h-6 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                </div>
+                        
+                        <!-- Theme Toggle (Pill Switch UI) -->
+                        <div class="flex items-center justify-between p-4 bg-[#FEFBFF] dark:bg-[#1A1B22] border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-2xl text-zinc-500">dark_mode</span>
                                 <div>
-                                    <h4 class="font-bold text-gray-900 dark:text-white text-lg">Dark Mode</h4>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5">Toggle beautiful dark theme</p>
+                                    <h4 class="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Dark Theme Spectrum</h4>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Adapt visual components for low light</p>
                                 </div>
                             </div>
-                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-14 h-7 rounded-full transition-colors relative bg-gray-300 shadow-inner">
-                                <div id="theme-toggle-dot" class="w-5 h-5 rounded-full bg-white absolute top-1 shadow-md transition-transform translate-x-1"></div>
+                            
+                            <!-- MD3 Design Toggle Switch -->
+                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-14 h-8 rounded-full transition-colors relative bg-zinc-300 dark:bg-[#373D8C] focus:outline-none md3-transition">
+                                <div id="theme-toggle-dot" class="w-6 h-6 rounded-full bg-white dark:bg-[#BEC2FF] absolute top-1 left-1 shadow-sm md3-transition flex items-center justify-center">
+                                    <span id="theme-toggle-dot-icon" class="material-symbols-outlined text-[14px] text-zinc-600 dark:text-zinc-950">light_mode</span>
+                                </div>
                             </button>
                         </div>
                     </div>
 
-                    <div class="glass-panel rounded-[2rem] p-8 border-red-100 dark:border-red-900/30">
-                        <h3 class="text-xl font-extrabold mb-6 text-red-500 flex items-center gap-3">
-                            <div class="p-2 bg-red-100 dark:bg-red-900/30 rounded-xl text-red-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg></div>
-                            Danger Zone
+                    <!-- Safety Zone -->
+                    <div class="bg-[#FAF8FD] dark:bg-[#171920] border border-red-200/40 dark:border-red-950/40 rounded-[28px] p-6 md:p-8">
+                        <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-red-600 dark:text-red-400">
+                            <span class="material-symbols-outlined">gpp_maybe</span>
+                            <span>System & Integrity</span>
                         </h3>
-                        <button id="btn-logout" class="flex items-center gap-3 text-red-500 hover:text-red-600 font-bold px-6 py-4 rounded-2xl bg-red-50 hover:bg-red-100 dark:bg-red-900/10 dark:hover:bg-red-900/20 transition-all active:scale-95 w-full justify-center border border-red-100 dark:border-red-900/30">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                            Secure Sign Out
+                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Disconnect authentication to close study portal. Saved references remain safely protected in your personal storage container.</p>
+                        
+                        <button id="btn-logout" class="flex items-center justify-center gap-2 text-red-600 hover:text-red-700 font-semibold px-6 py-3.5 rounded-full bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/30 transition-all duration-200 active:scale-95 w-full border border-red-200 dark:border-red-900/30 text-sm">
+                            <span class="material-symbols-outlined">logout</span>
+                            <span>Sign out and Secure Workspace</span>
                         </button>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- MOBILE BOTTOM NAVIGATION BAR -->
-        <nav class="md:hidden fixed bottom-0 w-full glass-panel border-t border-white/30 dark:border-white/5 flex justify-around items-center p-2 pb-safe z-40 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.3)] rounded-t-[2rem]">
-            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="nav-btn flex flex-col items-center gap-1.5 p-3 text-primary-600 dark:text-primary-400 transition-all duration-300 active:scale-90">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                <span class="text-[10px] font-bold tracking-wide">Home</span>
+        <!-- MD3 MOBILE BOTTOM NAVIGATION BAR -->
+        <nav class="md:hidden fixed bottom-0 w-full bg-[#FAF8FD]/95 dark:bg-[#111318]/95 border-t border-zinc-200/60 dark:border-zinc-800/60 flex justify-around items-center p-2.5 pb-safe z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] backdrop-blur-md rounded-t-[20px]">
+            
+            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-[#4F56A5] dark:text-[#BEC2FF]">
+                <!-- Pill highlight back -->
+                <div id="pill-home-mobile" class="w-16 h-8 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full absolute top-1 -z-10 transition-transform scale-x-100 opacity-100 md3-transition"></div>
+                <span class="material-symbols-outlined text-2xl">dashboard</span>
+                <span class="text-[10px] font-bold tracking-wide mt-1.5">Dashboard</span>
             </button>
             
-            <button onclick="window.openModal()" id="btn-add-mobile" class="btn-premium text-white rounded-full p-4 shadow-xl shadow-primary-500/40 transform -translate-y-6 border-4 border-slate-50 dark:border-darkbg transition-transform active:scale-90 relative">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+            <!-- Floating Mobile Add Action (Pill FAB style) -->
+            <button onclick="window.openModal()" id="btn-add-mobile" class="bg-[#E0E0FF] dark:bg-[#373D8C] text-[#050838] dark:text-[#E0E0FF] rounded-2xl p-4 shadow-md transform -translate-y-4 border-4 border-[#FEFBFF] dark:border-[#111318] active:scale-[0.88] transition-transform z-50">
+                <span class="material-symbols-outlined text-3xl">add</span>
             </button>
 
-            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="nav-btn flex flex-col items-center gap-1.5 p-3 text-gray-400 dark:text-gray-500 transition-all duration-300 active:scale-90">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <span class="text-[10px] font-bold tracking-wide">Settings</span>
+            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-zinc-500 dark:text-zinc-500">
+                <div id="pill-settings-mobile" class="w-16 h-8 bg-transparent rounded-full absolute top-1 -z-10 transition-transform scale-x-50 opacity-0 md3-transition"></div>
+                <span class="material-symbols-outlined text-2xl">settings</span>
+                <span class="text-[10px] font-bold tracking-wide mt-1.5">Settings</span>
             </button>
         </nav>
     </div>
 
-    <!-- ADD / EDIT LINK MODAL -->
-    <div id="add-modal" class="hidden-view fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[2rem] p-8 shadow-2xl transition-all relative animate-modal">
-            <button onclick="window.closeModal()" class="absolute top-5 right-5 p-2 bg-gray-100/50 dark:bg-gray-800/50 text-gray-500 hover:text-gray-800 dark:hover:text-white rounded-full transition-all active:scale-90 hover:bg-gray-200 dark:hover:bg-gray-700">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <!-- MD3 FORM MODAL (ADD / EDIT LINK CARD) -->
+    <div id="add-modal" class="hidden-view fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[28px] p-6 md:p-8 border border-zinc-200/60 dark:border-zinc-800/60 shadow-2xl transition-all relative">
+            <button onclick="window.closeModal()" class="absolute top-5 right-5 p-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-500 rounded-full transition-all active:scale-90 flex items-center justify-center">
+                <span class="material-symbols-outlined text-base">close</span>
             </button>
-            <h2 id="modal-heading" class="text-2xl font-extrabold mb-6 tracking-tight text-gray-900 dark:text-white">Add New Card</h2>
+            
+            <h2 id="modal-heading" class="text-xl font-bold mb-6 text-zinc-950 dark:text-white tracking-tight flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#4F56A5] dark:text-[#BEC2FF]">note_add</span>
+                <span>Add Workspace Card</span>
+            </h2>
+            
             <form id="add-form" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Card Title</label>
-                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-5 py-3.5 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner font-medium text-gray-900 dark:text-white placeholder-gray-400" />
+                    <label class="block text-xs font-bold mb-1.5 text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Card Title</label>
+                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white placeholder-zinc-400 text-sm md3-transition" />
                 </div>
 
                 <div>
-                    <label class="block text-sm font-bold mb-1.5 text-gray-700 dark:text-gray-300">Profile Image URL <span class="text-gray-400 font-normal">(Optional)</span></label>
-                    <input type="url" id="input-image" placeholder="Paste an image link here..." class="w-full px-5 py-3.5 rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:bg-white dark:focus:bg-gray-800 transition-all shadow-inner font-medium text-gray-900 dark:text-white placeholder-gray-400" />
+                    <label class="block text-xs font-bold mb-1.5 text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Card Icon Image URL <span class="text-zinc-400 font-normal capitalize">(Optional)</span></label>
+                    <input type="url" id="input-image" placeholder="Paste an image link..." class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white placeholder-zinc-400 text-sm md3-transition" />
                 </div>
                 
-                <div class="border-t border-gray-200/50 dark:border-gray-700/50 pt-5 mt-2">
-                    <label class="block text-sm font-bold mb-3 text-gray-700 dark:text-gray-300 flex items-center justify-between">
-                        Telegram Links
-                        <button type="button" onclick="window.addLinkField()" class="text-xs font-bold text-primary-600 dark:text-primary-400 hover:text-primary-700 bg-primary-50 dark:bg-primary-900/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg> Add
+                <div class="border-t border-zinc-200 dark:border-zinc-800 pt-5 mt-2">
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Resource URLs / Links</label>
+                        <button type="button" onclick="window.addLinkField()" class="text-xs font-bold text-[#4F56A5] dark:text-[#BEC2FF] bg-[#E0E0FF] dark:bg-[#373D8C] px-3.5 py-1.5 rounded-full hover:opacity-90 transition-all flex items-center gap-1.5 active:scale-95">
+                            <span class="material-symbols-outlined text-[14px]">add</span>
+                            <span>Add Field</span>
                         </button>
-                    </label>
+                    </div>
                     <div id="dynamic-links-container" class="space-y-3">
-                        <!-- Dynamic links injected here -->
+                        <!-- Dynamic fields injected here -->
                     </div>
                 </div>
 
-                <div class="flex gap-4 pt-5">
-                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3.5 px-4 rounded-2xl font-bold bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300 transition-all active:scale-95">
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-full font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm active:scale-95 transition-all">
                         Cancel
                     </button>
-                    <button type="submit" id="btn-save" class="flex-1 py-3.5 px-4 rounded-2xl font-bold btn-premium text-white transition-all active:scale-95 flex justify-center items-center">
-                        Save Card
+                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-full font-semibold bg-[#4F56A5] hover:bg-[#3E4484] dark:bg-[#BEC2FF] dark:text-zinc-950 text-white text-sm active:scale-95 transition-all flex justify-center items-center gap-1">
+                        <span class="material-symbols-outlined text-sm">done</span>
+                        <span>Save Workspace</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- LINK SELECTOR POPUP -->
-    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md z-[60] flex items-center justify-center p-4">
-        <div class="glass-panel w-full max-w-sm rounded-[2rem] p-6 shadow-2xl transition-all animate-modal">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="text-xl font-extrabold text-gray-900 dark:text-white" id="select-modal-title">Select Link</h3>
-                <button onclick="window.closeLinkModal()" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <!-- MD3 MULTI-LINK SELECTOR DIALOG -->
+    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] w-full max-w-sm rounded-[28px] p-6 border border-zinc-200/60 dark:border-zinc-800/60 shadow-2xl transition-all">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="text-lg font-bold text-zinc-950 dark:text-white" id="select-modal-title">Select Link</h3>
+                <button onclick="window.closeLinkModal()" class="p-1.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 transition-colors">
+                    <span class="material-symbols-outlined text-base">close</span>
                 </button>
             </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-5 font-medium">Multiple destinations available.</p>
-            <div id="select-modal-links" class="flex flex-col gap-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-                <!-- Buttons injected dynamically -->
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-5">There are multiple destinations configured for this card. Choose your path:</p>
+            <div id="select-modal-links" class="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1">
+                <!-- Dynamic Buttons -->
             </div>
         </div>
     </div>
 
-    <!-- FLOATING ACTION MENU -->
-    <div id="action-menu" class="menu-closed fixed z-[70] glass-panel rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.3)] flex items-center p-2.5 gap-1.5 transition-all duration-300 origin-bottom sm:origin-top-right border border-white/50 dark:border-white/10">
-        
-        <button id="btn-action-pin" onclick="window.triggerAction('pin')" class="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-gray-700/50 transition-colors w-[4.5rem] group">
-            <svg id="icon-action-pin" class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-yellow-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path></svg>
-            <span id="text-action-pin" class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1.5 tracking-wide">Pin</span>
-        </button>
-
-        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700/50"></div>
-        
-        <button onclick="window.triggerAction('edit')" class="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-white/60 dark:hover:bg-gray-700/50 transition-colors w-[4.5rem] group">
-            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-primary-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1.5 tracking-wide">Edit</span>
-        </button>
-
-        <div class="w-px h-8 bg-gray-200 dark:bg-gray-700/50"></div>
-
-        <button onclick="window.triggerAction('delete')" class="flex flex-col items-center justify-center p-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-[4.5rem] group">
-            <svg class="w-6 h-6 text-gray-500 dark:text-gray-400 group-hover:text-red-500 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-            <span class="text-[10px] font-bold text-gray-500 dark:text-gray-400 mt-1.5 group-hover:text-red-500 tracking-wide">Delete</span>
-        </button>
-
+    <!-- MD3 DELETE CONFIRMATION DIALOG -->
+    <div id="delete-confirm-modal" class="hidden-view fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
+        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] w-full max-w-sm rounded-[28px] p-6 border border-red-200/40 dark:border-red-950/40 shadow-2xl transition-all text-center">
+            <span class="material-symbols-outlined text-red-500 text-4xl mb-3">delete_forever</span>
+            <h3 class="text-lg font-bold text-zinc-950 dark:text-white mb-2">Delete Resource?</h3>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">This will permanently delete this educational shortcut and all attached links. This action cannot be undone.</p>
+            <div class="flex gap-3">
+                <button onclick="window.closeDeleteConfirmModal()" class="flex-1 py-2.5 rounded-full font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-xs active:scale-95">Cancel</button>
+                <button id="btn-confirm-delete" class="flex-1 py-2.5 rounded-full font-semibold bg-red-600 hover:bg-red-700 text-white text-xs active:scale-95">Delete</button>
+            </div>
+        </div>
     </div>
 
-    <!-- FIREBASE & APP LOGIC -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    <!-- MD3 FLOATING ACTION MENU / SHEET -->
+    <div id="action-menu" class="hidden-view fixed z-[70] bg-[#FAF8FD] dark:bg-[#1C1C24] rounded-2xl shadow-xl flex items-center p-1.5 gap-1.5 transition-all duration-300 border border-zinc-200 dark:border-zinc-800">
+        
+        <button id="btn-action-pin" onclick="window.triggerAction('pin')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors w-16 group">
+            <span id="icon-action-pin" class="material-symbols-outlined text-2xl text-zinc-500 group-hover:text-amber-500 group-hover:scale-105 transition-transform">push_pin</span>
+            <span id="text-action-pin" class="text-[10px] font-bold text-zinc-500 mt-1 tracking-wide">Pin</span>
+        </button>
 
+        <div class="w-[1px] h-7 bg-zinc-200 dark:bg-zinc-800"></div>
+        
+        <button onclick="window.triggerAction('edit')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors w-16 group">
+            <span class="material-symbols-outlined text-2xl text-zinc-500 group-hover:text-[#4F56A5] dark:group-hover:text-[#BEC2FF] group-hover:scale-105 transition-transform">edit</span>
+            <span class="text-[10px] font-bold text-zinc-500 mt-1 tracking-wide">Edit</span>
+        </button>
+
+        <div class="w-[1px] h-7 bg-zinc-200 dark:bg-zinc-800"></div>
+
+        <button onclick="window.triggerAction('delete')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors w-16 group">
+            <span class="material-symbols-outlined text-2xl text-zinc-500 group-hover:text-red-500 group-hover:scale-105 transition-transform">delete</span>
+            <span class="text-[10px] font-bold text-zinc-500 mt-1 group-hover:text-red-500 tracking-wide">Delete</span>
+        </button>
+    </div>
+
+    <script type="module">
+        // Firebase Core Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -439,6 +470,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // App Identity Rules (STRICT PATHS: /artifacts/{appId}/users/{userId}/{collectionName})
         const APP_ID = 'studyflow-pro';
 
         let currentUser = null;
@@ -447,6 +480,7 @@
         let linksUnsubscribe = null;
         let allLinksData = []; 
         let editingCardId = null; 
+        let deleteCandidateId = null;
 
         let actionMenuTargetId = null;
         let actionMenuTargetIsPinned = false;
@@ -461,32 +495,73 @@
         const elPinnedSection = document.getElementById('pinned-section');
         const elPinnedContainer = document.getElementById('pinned-container');
         const elUnpinnedContainer = document.getElementById('unpinned-container');
-        const elUnpinnedTitle = document.getElementById('unpinned-title');
+        const elUnpinnedTitleWrapper = document.getElementById('unpinned-title-wrapper');
         const elEmptyState = document.getElementById('empty-state');
         
         const elModal = document.getElementById('add-modal');
         const elLinkModal = document.getElementById('link-select-modal');
+        const elDeleteConfirmModal = document.getElementById('delete-confirm-modal');
         const elAddForm = document.getElementById('add-form');
         const elActionMenu = document.getElementById('action-menu');
 
+        // MD3 Snackbar Toast System
+        function showToast(message, isError = false) {
+            const container = document.getElementById('snackbar-container');
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto max-w-sm ${
+                isError 
+                    ? 'bg-red-50 text-red-900 border border-red-200 dark:bg-red-950 dark:text-red-100' 
+                    : 'bg-[#1B1B1F] text-[#F4F0F4] dark:bg-[#E3E1EC] dark:text-[#1B1B1F]'
+            }`;
+            
+            toast.innerHTML = `
+                <span class="material-symbols-outlined text-lg shrink-0">${isError ? 'error' : 'info'}</span>
+                <p class="text-xs font-semibold leading-snug">${message}</p>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+            
+            // Dismiss automatically
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Initialize Workspace Settings
         function init() {
+            // Apply Theme Spectrum
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 isDarkMode = true;
                 document.documentElement.classList.add('dark');
-                updateThemeUI();
+            } else {
+                isDarkMode = false;
+                document.documentElement.classList.remove('dark');
             }
+            updateThemeUI();
 
+            // Track Authentic Auth States
             onAuthStateChanged(auth, (user) => {
-                setTimeout(() => elLoading.classList.add('hidden-view'), 600); // Smooth fade out delay
+                setTimeout(() => {
+                    elLoading.style.opacity = '0';
+                    setTimeout(() => elLoading.classList.add('hidden-view'), 300);
+                }, 800);
+
                 if (user) {
                     currentUser = user;
                     elLogin.classList.add('hidden-view');
                     elApp.classList.remove('hidden-view');
                     
-                    document.getElementById('user-name').textContent = user.displayName;
-                    document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName + '&background=6366f1&color=fff';
+                    document.getElementById('user-name').textContent = user.displayName || 'Learner';
+                    document.getElementById('user-avatar').src = user.photoURL || 'https://placehold.co/150x150/4F56A5/FFFFFF?text=Student';
                     
+                    showToast(`Active Session established for: ${user.displayName || 'user'}`);
                     fetchLinks();
                 } else {
                     currentUser = null;
@@ -496,6 +571,7 @@
                 }
             });
 
+            // Universal listener to close contextual sheet menus
             document.addEventListener('click', (e) => {
                 if (!elActionMenu.contains(e.target) && !e.target.closest('.action-btn-trigger')) {
                     closeActionMenu();
@@ -505,26 +581,31 @@
             document.getElementById('scrollable-content').addEventListener('scroll', closeActionMenu);
         }
 
+        // Google Authentication Logic
         document.getElementById('btn-login').addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error("Login Error:", error);
+                showToast("Identity verification failed. Please try again.", true);
             }
         });
 
         document.getElementById('btn-logout').addEventListener('click', async () => {
             try {
                 await signOut(auth);
+                showToast("Workspace locked safely.");
             } catch (error) {
                 console.error("Logout Error:", error);
             }
         });
 
+        // Fetch User Data Snapshot with Order Configuration
         function fetchLinks() {
             if (!currentUser) return;
             
+            // STRICT PATH: /artifacts/{appId}/users/{userId}/{collectionName}
             const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
             
             linksUnsubscribe = onSnapshot(linksColRef, (snapshot) => {
@@ -533,6 +614,7 @@
                     ...doc.data()
                 }));
                 
+                // Sort array natively inside memory buffer to obey RULE 2 (Avoid Firestore complex queries)
                 links.sort((a, b) => {
                     if (a.isPinned && !b.isPinned) return -1;
                     if (!a.isPinned && b.isPinned) return 1;
@@ -549,13 +631,15 @@
                 allLinksData = links;
                 renderLinks(links);
             }, (error) => {
-                console.error("Error fetching links: ", error);
+                console.error("Critical Firestore failure: ", error);
+                showToast("An unexpected sync failure occurred with the database.", true);
             });
         }
 
+        // Redraw Material cards dynamically
         function renderLinks(links) {
             elPinnedSection.classList.add('hidden-view');
-            elUnpinnedTitle.classList.add('hidden-view');
+            elUnpinnedTitleWrapper.classList.add('hidden-view');
             elEmptyState.classList.add('hidden-view');
             elPinnedContainer.innerHTML = '';
             elUnpinnedContainer.innerHTML = '';
@@ -569,82 +653,90 @@
             const pinnedLinks = links.filter(l => l.isPinned);
             const unpinnedLinks = links.filter(l => !l.isPinned);
 
+            // Filled MD3 cards representing pinned links
             if (pinnedLinks.length > 0) {
                 elPinnedSection.classList.remove('hidden-view');
-                elPinnedContainer.innerHTML = pinnedLinks.map((l, i) => createCardHTML(l, i)).join('');
+                elPinnedContainer.innerHTML = pinnedLinks.map((l, i) => createCardHTML(l, true, i)).join('');
             }
 
+            // Outlined MD3 cards representing standard items
             if (unpinnedLinks.length > 0) {
-                if (pinnedLinks.length > 0) elUnpinnedTitle.classList.remove('hidden-view');
-                elUnpinnedContainer.innerHTML = unpinnedLinks.map((l, i) => createCardHTML(l, i)).join('');
+                elUnpinnedTitleWrapper.classList.remove('hidden-view');
+                elUnpinnedContainer.innerHTML = unpinnedLinks.map((l, i) => createCardHTML(l, false, i)).join('');
             }
 
             initDragAndDrop();
         }
 
-        function createCardHTML(link, index = 0) {
+        // Card Element Generation: Implements custom image onError logic and Material State Tokens
+        function createCardHTML(link, isPinned, index = 0) {
             let linksArray = link.links || [];
             if (linksArray.length === 0 && link.url) {
-                linksArray = [{ name: 'Main Link', url: link.url }];
+                linksArray = [{ name: 'Default Link', url: link.url }];
             }
 
+            // MD3 Badges
             const linkCountBadge = linksArray.length > 1 
-                ? `<span class="bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 text-[10px] px-2.5 py-1 rounded-md ml-2 font-extrabold uppercase tracking-widest border border-primary-200 dark:border-primary-800 shadow-sm">${linksArray.length} links</span>` 
+                ? `<span class="bg-[#E0E0FF] dark:bg-[#373D8C] text-[#050838] dark:text-[#E0E0FF] text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ml-1 shadow-xs">${linksArray.length} links</span>` 
                 : '';
 
-            const animationDelay = index * 60; 
+            const animationDelay = index * 40; 
+            
+            // MD3 Styling Matrix: Filled Card (for pinned favorites) vs Outlined Card (regular references)
+            const cardBgStyle = isPinned 
+                ? 'bg-[#E1E1F9]/50 hover:bg-[#E1E1F9] dark:bg-[#232431] dark:hover:bg-[#2A2B3A] border border-zinc-200/40 dark:border-zinc-700/40' 
+                : 'bg-[#FEFBFF] hover:bg-[#FAF8FD] dark:bg-[#121318] dark:hover:bg-[#1A1B22] border border-zinc-200 dark:border-zinc-800';
 
             return `
-                <div class="group animate-card glass-panel rounded-[1.25rem] p-3 shadow-sm hover:shadow-xl transition-all duration-300 flex items-center gap-3 relative card-hover-physics border border-white/50 dark:border-white/10" style="animation-delay: ${animationDelay}ms;" data-id="${link.id}">
+                <div class="group relative rounded-[24px] p-4 transition-all duration-300 md3-transition flex items-center gap-4 ${cardBgStyle}" style="animation: slideUp 0.4s ease forwards; animation-delay: ${animationDelay}ms;" data-id="${link.id}">
                     
-                    <div class="drag-handle cursor-grab active:cursor-grabbing p-2.5 text-gray-300 hover:text-primary-500 transition-colors hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM8 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zM20 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"></path></svg>
+                    <!-- Material drag handles shown on hover -->
+                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 text-zinc-400 hover:text-[#4F56A5] dark:hover:text-[#BEC2FF] hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span class="material-symbols-outlined text-lg">drag_indicator</span>
                     </div>
 
-                    <div onclick="window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-4 cursor-pointer overflow-hidden py-1.5 pl-2 sm:pl-0">
-                        <div class="shrink-0 w-14 h-14 rounded-[1rem] overflow-hidden bg-gradient-to-br from-primary-50 to-purple-50 dark:from-primary-900/40 dark:to-purple-900/40 flex items-center justify-center border border-primary-100 dark:border-primary-800 shadow-inner transform transition-transform group-hover:scale-105 group-hover:rotate-3">
+                    <div onclick="window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-4 cursor-pointer overflow-hidden py-1">
+                        <!-- Card Avatar -->
+                        <div class="shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
                             ${link.imageUrl ? 
-                                `<img src="${link.imageUrl}" alt="Avatar" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : 
-                                `<svg class="w-7 h-7 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>`
+                                `<img src="${link.imageUrl}" alt="Link Visual" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/4F56A5/FFFFFF?text=URL'" />` : 
+                                `<span class="material-symbols-outlined text-zinc-500">link</span>`
                             }
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-[1.05rem] font-bold text-gray-900 dark:text-white truncate flex items-center tracking-tight">
+                            <h3 class="text-base font-bold text-zinc-900 dark:text-white truncate flex items-center gap-1.5 tracking-tight">
                                 ${link.title}
-                                ${linkCountBadge}
                             </h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 truncate mt-1 flex items-center gap-1.5 font-semibold">
-                                <svg class="w-3.5 h-3.5 shrink-0 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                                ${linksArray.length === 1 ? linksArray[0].name || 'Link' : 'Tap to select link'}
+                            <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-1 flex items-center gap-1 font-semibold">
+                                <span class="material-symbols-outlined text-sm shrink-0">bookmark</span>
+                                ${linksArray.length === 1 ? linksArray[0].name || 'Link' : 'Tap to expand shortcut list'}
+                                ${linkCountBadge}
                             </p>
                         </div>
                     </div>
                     
-                    <button onclick="window.openActionMenu(event, '${link.id}', ${!!link.isPinned})" class="action-btn-trigger p-2.5 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all duration-200 z-10 shrink-0">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"></path></svg>
+                    <!-- Contextual menu selector -->
+                    <button onclick="window.openActionMenu(event, '${link.id}', ${!!link.isPinned})" class="action-btn-trigger p-2 text-zinc-400 hover:text-[#4F56A5] dark:hover:text-[#BEC2FF] rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all z-10 shrink-0 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-2xl">more_vert</span>
                     </button>
                 </div>
             `;
         }
 
+        // Initialize Drag and drop handlers
         function initDragAndDrop() {
             if (sortablePinned) sortablePinned.destroy();
             if (sortableUnpinned) sortableUnpinned.destroy();
 
             const commonConfig = {
-                animation: 400, 
-                easing: "cubic-bezier(0.34, 1.56, 0.64, 1)", 
+                animation: 250, 
+                easing: "cubic-bezier(0.2, 0, 0, 1)", 
                 handle: '.drag-handle',
-                delay: 150, 
+                delay: 100, 
                 delayOnTouchOnly: true,
                 ghostClass: "sortable-ghost",
                 chosenClass: "sortable-chosen",
-                dragClass: "sortable-drag",
                 onEnd: async function (evt) {
-                    const itemEl = evt.item;
-                    itemEl.classList.add('dropped-card');
-                    setTimeout(() => itemEl.classList.remove('dropped-card'), 500);
-
                     const container = evt.to;
                     const items = container.children;
                     for(let i=0; i<items.length; i++) {
@@ -654,6 +746,7 @@
                             updateDoc(docRef, { order: i }).catch(e => console.error(e));
                         }
                     }
+                    showToast("Order synchronized to storage cloud");
                 }
             };
 
@@ -661,6 +754,7 @@
             sortableUnpinned = Sortable.create(elUnpinnedContainer, commonConfig);
         }
 
+        // Opens the MD3 floating context actions sheet near the button
         window.openActionMenu = (event, id, isPinned) => {
             event.stopPropagation();
             
@@ -670,38 +764,57 @@
             const pinIcon = document.getElementById('icon-action-pin');
             const pinText = document.getElementById('text-action-pin');
             if (isPinned) {
-                pinIcon.classList.add('text-yellow-500', 'fill-yellow-500');
-                pinIcon.classList.remove('text-gray-500', 'dark:text-gray-400');
+                pinIcon.textContent = "unpin_scroll";
+                pinIcon.classList.add('text-amber-500');
                 pinText.innerText = "Unpin";
             } else {
-                pinIcon.classList.remove('text-yellow-500', 'fill-yellow-500');
-                pinIcon.classList.add('text-gray-500', 'dark:text-gray-400');
+                pinIcon.textContent = "push_pin";
+                pinIcon.classList.remove('text-amber-500');
                 pinText.innerText = "Pin";
             }
 
             const rect = event.currentTarget.getBoundingClientRect();
             
-            let top = rect.top - 85; 
-            let left = rect.left - 120; 
+            // Positioning mechanics (ensures sheet opens logically based on viewport bounds)
+            let top = rect.top + window.scrollY - 85; 
+            let left = rect.left + window.scrollX - 110; 
 
             if (window.innerWidth < 640) {
-                top = rect.top - 75;
-                left = Math.max(10, (window.innerWidth / 2) - 110); 
+                top = rect.top + window.scrollY - 75;
+                left = Math.max(10, (window.innerWidth / 2) - 100); 
             }
 
             elActionMenu.style.top = `${top}px`;
             elActionMenu.style.left = `${left}px`;
             
-            elActionMenu.classList.remove('menu-closed');
-            elActionMenu.classList.add('menu-open');
+            elActionMenu.classList.remove('hidden-view');
         };
 
         function closeActionMenu() {
-            elActionMenu.classList.remove('menu-open');
-            elActionMenu.classList.add('menu-closed');
+            elActionMenu.classList.add('hidden-view');
             actionMenuTargetId = null;
         }
 
+        // Handles custom Modal Confirmation box instead of alert()
+        window.closeDeleteConfirmModal = () => {
+            elDeleteConfirmModal.classList.add('hidden-view');
+            deleteCandidateId = null;
+        }
+
+        document.getElementById('btn-confirm-delete').addEventListener('click', async () => {
+            if (deleteCandidateId && currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', deleteCandidateId));
+                    showToast("Card wiped permanently.");
+                } catch (e) {
+                    showToast("Delete failure, try again.", true);
+                } finally {
+                    window.closeDeleteConfirmModal();
+                }
+            }
+        });
+
+        // Trigger chosen context actions
         window.triggerAction = async (actionType) => {
             const id = actionMenuTargetId;
             if(!id || !currentUser) return;
@@ -712,10 +825,12 @@
                 if (actionType === 'pin') {
                     const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
                     await updateDoc(docRef, { isPinned: !actionMenuTargetIsPinned });
+                    showToast(actionMenuTargetIsPinned ? "Removed from Pinned list." : "Pinned to workspace dashboard!");
                 } 
                 else if (actionType === 'delete') {
-                    if(!confirm("Are you sure you want to delete this card?")) return;
-                    await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id));
+                    // Triggers gorgeous custom MD3 confirmation layout, avoiding ALERT/CONFIRM
+                    deleteCandidateId = id;
+                    elDeleteConfirmModal.classList.remove('hidden-view');
                 }
                 else if (actionType === 'edit') {
                     window.editCard(id);
@@ -725,13 +840,14 @@
             }
         };
 
+        // Handles direct redirects or prompts dynamic choices modal
         window.handleCardClick = (id) => {
             const linkData = allLinksData.find(l => l.id === id);
             if(!linkData) return;
 
             let linksArray = linkData.links || [];
             if (linksArray.length === 0 && linkData.url) {
-                linksArray = [{ name: 'Main Link', url: linkData.url }];
+                linksArray = [{ name: 'Primary Link', url: linkData.url }];
             }
 
             if (linksArray.length === 1) {
@@ -741,9 +857,9 @@
                 const linksContainer = document.getElementById('select-modal-links');
                 
                 linksContainer.innerHTML = linksArray.map(l => `
-                    <button onclick="window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-white/50 dark:bg-gray-800/50 hover:bg-primary-50 dark:hover:bg-primary-900/30 rounded-2xl border border-gray-200/50 dark:border-gray-700/50 transition-all shadow-sm flex justify-between items-center group">
-                        <span class="font-bold text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">${l.name}</span>
-                        <svg class="w-5 h-5 text-gray-400 group-hover:text-primary-500 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                    <button onclick="window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-white hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 transition-all shadow-xs flex justify-between items-center group">
+                        <span class="font-bold text-sm text-zinc-800 dark:text-zinc-200 group-hover:text-[#4F56A5] dark:group-hover:text-[#BEC2FF] transition-colors">${l.name}</span>
+                        <span class="material-symbols-outlined text-zinc-400 group-hover:text-[#4F56A5] dark:group-hover:text-[#BEC2FF] transform group-hover:translate-x-1 transition-all text-base">arrow_forward</span>
                     </button>
                 `).join('');
                 
@@ -751,20 +867,21 @@
             }
         };
 
+        // Setup editing environment for existing card configuration
         window.editCard = (id) => {
             const linkData = allLinksData.find(l => l.id === id);
             if(!linkData) return;
 
             editingCardId = id;
-            document.getElementById('modal-heading').innerText = "Edit Card";
-            document.getElementById('btn-save').innerHTML = "Update Card";
+            document.getElementById('modal-heading').querySelector('span').innerText = "Modify Reference Card";
+            document.getElementById('btn-save').querySelector('span:last-child').innerText = "Update Workspace";
 
             document.getElementById('input-title').value = linkData.title;
             document.getElementById('input-image').value = linkData.imageUrl || "";
 
             let linksArray = linkData.links || [];
             if (linksArray.length === 0 && linkData.url) {
-                linksArray = [{ name: 'Main Link', url: linkData.url }];
+                linksArray = [{ name: 'Default Link', url: linkData.url }];
             }
 
             const container = document.getElementById('dynamic-links-container');
@@ -774,10 +891,10 @@
                 const newDiv = document.createElement('div');
                 newDiv.className = 'link-entry flex gap-2 items-center';
                 newDiv.innerHTML = `
-                    <input type="text" value="${l.name}" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
-                    <input type="url" value="${l.url}" placeholder="https://t.me/..." required class="link-url flex-1 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
-                    <button type="button" onclick="this.parentElement.remove()" class="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-transform active:scale-90 bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <input type="text" value="${l.name}" placeholder="Tag (e.g. Theory)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <input type="url" value="${l.url}" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-lg">delete</span>
                     </button>
                 `;
                 container.appendChild(newDiv);
@@ -788,15 +905,16 @@
             elModal.classList.remove('hidden-view');
         };
 
+        // Generates empty forms fields
         window.addLinkField = () => {
             const container = document.getElementById('dynamic-links-container');
             const newDiv = document.createElement('div');
-            newDiv.className = 'link-entry flex gap-2 items-center animate-modal';
+            newDiv.className = 'link-entry flex gap-2 items-center';
             newDiv.innerHTML = `
-                <input type="text" placeholder="Name (e.g. Part 2)" required class="link-name w-1/3 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
-                <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
-                <button type="button" onclick="this.parentElement.remove()" class="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-transform active:scale-90 bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                <input type="text" placeholder="Tag (e.g. Chat)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                <input type="url" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">delete</span>
                 </button>
             `;
             container.appendChild(newDiv);
@@ -805,20 +923,21 @@
         function resetForm() {
             elAddForm.reset();
             editingCardId = null;
-            document.getElementById('modal-heading').innerText = "Add New Card";
-            document.getElementById('btn-save').innerHTML = "Save Card";
+            document.getElementById('modal-heading').querySelector('span').innerText = "Add Workspace Card";
+            document.getElementById('btn-save').querySelector('span:last-child').innerText = "Save Workspace";
             
             document.getElementById('dynamic-links-container').innerHTML = `
                 <div class="link-entry flex gap-2 items-center">
-                    <input type="text" placeholder="Name (e.g. Part 1)" required class="link-name w-1/3 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
-                    <input type="url" placeholder="https://t.me/..." required class="link-url flex-1 px-4 py-3 text-sm rounded-xl bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 font-medium text-gray-900 dark:text-white transition-all shadow-sm" />
-                    <button type="button" onclick="this.parentElement.remove()" class="p-3 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-transform active:scale-90 bg-white/50 dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <input type="text" placeholder="Tag (e.g. Main Source)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <input type="url" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-lg">delete</span>
                     </button>
                 </div>
             `;
         }
 
+        // Form Submit Handler
         elAddForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
@@ -838,14 +957,15 @@
             });
 
             if(links.length === 0) {
-                alert("Please add at least one valid link.");
+                showToast("Please add at least one valid reference link.", true);
                 return;
             }
 
             btn.disabled = true;
-            btn.innerHTML = `<div class="w-6 h-6 border-4 border-white border-t-transparent rounded-full animate-spin"></div>`;
+            btn.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Saving...</span>`;
 
             try {
+                // STRICT PATH: /artifacts/{appId}/users/{userId}/{collectionName}
                 if (editingCardId) {
                     const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', editingCardId);
                     await updateDoc(docRef, {
@@ -853,6 +973,7 @@
                         links: links,
                         imageUrl: img || ''
                     });
+                    showToast("Reference Card upgraded successfully.");
                 } else {
                     const maxOrder = allLinksData.length > 0 ? Math.max(...allLinksData.map(l => typeof l.order === 'number' ? l.order : 0)) : 0;
                     
@@ -865,17 +986,22 @@
                         order: maxOrder + 1,
                         createdAt: serverTimestamp()
                     });
+                    showToast("New Shortcut created inside personal database.");
                 }
                 
                 window.closeModal();
             } catch (error) {
-                console.error("Error saving document: ", error);
+                console.error("Database writing error: ", error);
+                showToast("An unexpected error blocked saving.", true);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = editingCardId ? "Update Card" : "Save Card";
+                btn.innerHTML = editingCardId 
+                    ? `<span class="material-symbols-outlined text-sm">done</span> <span>Update Workspace</span>` 
+                    : `<span class="material-symbols-outlined text-sm">done</span> <span>Save Workspace</span>`;
             }
         });
 
+        // Tab switching controller with MD3 Pill indicators sliding animations
         window.switchTab = (tab) => {
             activeTab = tab;
             
@@ -884,51 +1010,50 @@
 
             elTabHome.classList.toggle('hidden-view', tab !== 'home');
             elTabSettings.classList.toggle('hidden-view', tab !== 'settings');
-
-            if(tab === 'home') {
-                elTabHome.classList.remove('animate-tab');
-                void elTabHome.offsetWidth; 
-                elTabHome.classList.add('animate-tab');
-            } else {
-                elTabSettings.classList.remove('animate-tab');
-                void elTabSettings.offsetWidth; 
-                elTabSettings.classList.add('animate-tab');
-            }
             
             document.getElementById('btn-add-desktop').classList.toggle('hidden-view', tab !== 'home');
-            document.getElementById('btn-add-mobile').classList.toggle('hidden-view', tab !== 'home');
             
-            document.getElementById('header-title').textContent = tab === 'home' ? 'My Links' : 'Settings';
+            document.getElementById('header-title').textContent = tab === 'home' ? 'Dashboard' : 'Settings';
 
-            const activeClassDesk = ['bg-primary-50', 'dark:bg-primary-900/40', 'text-primary-600', 'dark:text-primary-300', 'font-bold', 'shadow-sm', 'border', 'border-primary-100', 'dark:border-primary-800'];
-            const inactiveClassDesk = ['hover:bg-white/60', 'dark:hover:bg-gray-800/50', 'text-gray-600', 'dark:text-gray-400', 'font-semibold', 'border-transparent'];
-            
+            // Active / Inactive State Switch UI for Sidebar
+            const pillHomeD = document.getElementById('pill-home-desktop');
+            const pillSetD = document.getElementById('pill-settings-desktop');
             const btnHomeD = document.getElementById('nav-home-desktop');
             const btnSetD = document.getElementById('nav-settings-desktop');
-            
-            if (tab === 'home') {
-                btnHomeD.classList.remove(...inactiveClassDesk);
-                btnHomeD.classList.add(...activeClassDesk);
-                btnSetD.classList.remove(...activeClassDesk);
-                btnSetD.classList.add(...inactiveClassDesk);
-                
-                document.getElementById('nav-home-mobile').classList.replace('text-gray-400', 'text-primary-600');
-                document.getElementById('nav-home-mobile').classList.replace('dark:text-gray-500', 'dark:text-primary-400');
-                document.getElementById('nav-settings-mobile').classList.replace('text-primary-600', 'text-gray-400');
-                document.getElementById('nav-settings-mobile').classList.replace('dark:text-primary-400', 'dark:text-gray-500');
-            } else {
-                btnSetD.classList.remove(...inactiveClassDesk);
-                btnSetD.classList.add(...activeClassDesk);
-                btnHomeD.classList.remove(...activeClassDesk);
-                btnHomeD.classList.add(...inactiveClassDesk);
 
-                document.getElementById('nav-settings-mobile').classList.replace('text-gray-400', 'text-primary-600');
-                document.getElementById('nav-settings-mobile').classList.replace('dark:text-gray-500', 'dark:text-primary-400');
-                document.getElementById('nav-home-mobile').classList.replace('text-primary-600', 'text-gray-400');
-                document.getElementById('nav-home-mobile').classList.replace('dark:text-primary-400', 'dark:text-gray-500');
+            const pillHomeM = document.getElementById('pill-home-mobile');
+            const pillSetM = document.getElementById('pill-settings-mobile');
+            const btnHomeM = document.getElementById('nav-home-mobile');
+            const btnSetM = document.getElementById('nav-settings-mobile');
+
+            if (tab === 'home') {
+                // Desktop pill states
+                pillHomeD.className = "absolute inset-0 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
+                pillSetD.className = "absolute inset-0 bg-transparent rounded-full -z-10 scale-x-75 opacity-0 transition-all duration-200 md3-transition";
+                btnHomeD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-[#4F56A5] dark:text-[#BEC2FF]";
+                btnSetD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-zinc-500 dark:text-zinc-400";
+
+                // Mobile pill states
+                pillHomeM.className = "w-16 h-8 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full absolute top-1 -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
+                pillSetM.className = "w-16 h-8 bg-transparent rounded-full absolute top-1 -z-10 scale-x-50 opacity-0 transition-all duration-200 md3-transition";
+                btnHomeM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-[#4F56A5] dark:text-[#BEC2FF]";
+                btnSetM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-zinc-500 dark:text-zinc-500";
+            } else {
+                // Desktop pill states
+                pillHomeD.className = "absolute inset-0 bg-transparent rounded-full -z-10 scale-x-75 opacity-0 transition-all duration-200 md3-transition";
+                pillSetD.className = "absolute inset-0 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
+                btnHomeD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-zinc-500 dark:text-zinc-400";
+                btnSetD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-[#4F56A5] dark:text-[#BEC2FF]";
+
+                // Mobile pill states
+                pillHomeM.className = "w-16 h-8 bg-transparent rounded-full absolute top-1 -z-10 scale-x-50 opacity-0 transition-all duration-200 md3-transition";
+                pillSetM.className = "w-16 h-8 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full absolute top-1 -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
+                btnHomeM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-zinc-500 dark:text-zinc-500";
+                btnSetM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-[#4F56A5] dark:text-[#BEC2FF]";
             }
         };
 
+        // Switch color spectrum
         window.toggleTheme = () => {
             isDarkMode = !isDarkMode;
             if (isDarkMode) {
@@ -939,24 +1064,24 @@
                 localStorage.setItem('theme', 'light');
             }
             updateThemeUI();
+            showToast(isDarkMode ? "Dark Theme spectrum activated" : "Light Theme spectrum activated");
         };
 
         function updateThemeUI() {
             const btn = document.getElementById('btn-theme');
             const dot = document.getElementById('theme-toggle-dot');
-            const iconDark = document.getElementById('theme-icon-dark');
-            const iconLight = document.getElementById('theme-icon-light');
+            const icon = document.getElementById('theme-toggle-dot-icon');
 
             if (isDarkMode) {
-                btn.classList.replace('bg-gray-300', 'bg-primary-500');
-                dot.classList.replace('translate-x-1', 'translate-x-8');
-                iconDark.classList.remove('hidden');
-                iconLight.classList.add('hidden');
+                btn.className = "w-14 h-8 rounded-full transition-colors relative bg-[#373D8C] focus:outline-none md3-transition";
+                dot.className = "w-6 h-6 rounded-full bg-[#BEC2FF] absolute top-1 left-7 shadow-sm md3-transition flex items-center justify-center";
+                icon.textContent = "dark_mode";
+                icon.className = "material-symbols-outlined text-[14px] text-zinc-950";
             } else {
-                btn.classList.replace('bg-primary-500', 'bg-gray-300');
-                dot.classList.replace('translate-x-8', 'translate-x-1');
-                iconLight.classList.remove('hidden');
-                iconDark.classList.add('hidden');
+                btn.className = "w-14 h-8 rounded-full transition-colors relative bg-zinc-300 focus:outline-none md3-transition";
+                dot.className = "w-6 h-6 rounded-full bg-white absolute top-1 left-1 shadow-sm md3-transition flex items-center justify-center";
+                icon.textContent = "light_mode";
+                icon.className = "material-symbols-outlined text-[14px] text-zinc-600";
             }
         }
 
@@ -973,6 +1098,7 @@
             elLinkModal.classList.add('hidden-view');
         };
 
+        // Start App Instance on load complete
         init();
     </script>
 </body>
