@@ -3,16 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>StudyMaster - Material You 3</title>
-    <!-- Premium Google Fonts: Outfit (Reminiscent of Google Sans) -->
+    <title>Study Master - Pro Premium</title>
+    
+    <!-- Premium Google Fonts: Outfit for Modern MD3 Feel -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Google Material Symbols (Outlined version) -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
+    
+    <!-- Material Symbols Outlined -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SortableJS for Fluid Drag & Drop -->
+    
+    <!-- SortableJS for Drag and Drop -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-
+    
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -22,374 +26,317 @@
                         sans: ['"Outfit"', 'sans-serif'],
                     },
                     colors: {
-                        // Material You Dynamic Tonal Palettes (Indigo/Lavender Base)
                         md3: {
-                            light: {
-                                primary: '#4F56A5',
-                                onPrimary: '#FFFFFF',
-                                primaryContainer: '#E0E0FF',
-                                onPrimaryContainer: '#050838',
-                                secondary: '#5C5D72',
-                                onSecondary: '#FFFFFF',
-                                secondaryContainer: '#E1E1F9',
-                                tertiary: '#78536B',
-                                background: '#FEFBFF',
-                                onBackground: '#1B1B1F',
-                                surface: '#FAF8FD',
-                                surfaceVariant: '#E3E1EC',
-                                onSurface: '#1B1B1F',
-                                onSurfaceVariant: '#46464F',
-                                outline: '#777680',
-                                outlineVariant: '#C7C5D0',
-                                error: '#BA1A1A',
-                                errorContainer: '#FFDAD6',
-                                onError: '#FFFFFF',
-                            },
-                            dark: {
-                                primary: '#BEC2FF',
-                                onPrimary: '#1E2574',
-                                primaryContainer: '#373D8C',
-                                onPrimaryContainer: '#E0E0FF',
-                                secondary: '#C5C5DD',
-                                onSecondary: '#2E2F42',
-                                secondaryContainer: '#444559',
-                                tertiary: '#E7B9D5',
-                                background: '#111318',
-                                onBackground: '#E3E1EC',
-                                surface: '#121318',
-                                surfaceVariant: '#46464F',
-                                onSurface: '#E3E1EC',
-                                onSurfaceVariant: '#C7C5D0',
-                                outline: '#91909A',
-                                outlineVariant: '#46464F',
-                                error: '#FFB4AB',
-                                errorContainer: '#93000A',
-                                onError: '#690005',
-                            }
-                        }
+                            primary: '#4F56A5',
+                            onPrimary: '#FFFFFF',
+                            primaryContainer: '#E0E0FF',
+                            onPrimaryContainer: '#080E5E',
+                            secondary: '#5C5D72',
+                            secondaryContainer: '#E1E0F9',
+                            onSecondaryContainer: '#191A2C',
+                            surface: '#FAF8FD',
+                            onSurface: '#1C1B20',
+                            surfaceVariant: '#E4E1EC',
+                            onSurfaceVariant: '#46464F',
+                            outline: '#777680',
+                            error: '#BA1A1A',
+                            errorContainer: '#FFDAD6',
+                            
+                            // Dark Mode MD3 Colors
+                            darkPrimary: '#BEC2FF',
+                            darkOnPrimary: '#1E2573',
+                            darkPrimaryContainer: '#373D8C',
+                            darkOnPrimaryContainer: '#E0E0FF',
+                            darkSurface: '#131316',
+                            darkOnSurface: '#E5E1E6',
+                            darkSurfaceVariant: '#46464F',
+                            darkOutline: '#918F9A'
+                        },
+                        darkbg: "#131316"
+                    },
+                    boxShadow: {
+                        'md3-elevation-1': '0px 1px 3px 1px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30)',
+                        'md3-elevation-2': '0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30)',
+                        'md3-elevation-3': '0px 1px 3px 0px rgba(0, 0, 0, 0.30), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)'
                     }
                 }
             }
         }
     </script>
-    
+
     <style>
-        /* Base Material Customizations */
         body {
             font-family: 'Outfit', sans-serif;
             -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
-            overflow: hidden;
+            background-color: theme('colors.md3.surface');
+            color: theme('colors.md3.onSurface');
         }
         
+        body.dark {
+            background-color: theme('colors.md3.darkSurface');
+            color: theme('colors.md3.darkOnSurface');
+        }
+
         input, textarea {
             -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
             user-select: auto;
         }
 
         .hidden-view { display: none !important; }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-
-        /* Smooth Material State Transitions */
-        .md3-transition {
-            transition: all 0.25s cubic-bezier(0.2, 0, 0, 1);
-        }
-
-        /* Sortable JS Animations & Drag Physics */
-        .sortable-ghost {
-            opacity: 0.3;
-            transform: scale(0.97);
-        }
-        .sortable-chosen {
-            transform: scale(1.03) rotate(1deg);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+        .pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); }
+        
+        .sortable-ghost { opacity: 0; }
+        .sortable-chosen { 
+            transform: scale(1.03) translateY(-4px) !important; 
+            box-shadow: theme('boxShadow.md3-elevation-3') !important;
+            z-index: 50 !important; 
             cursor: grabbing !important;
-            z-index: 50;
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
         }
-        
-        /* Floating label transition logic */
-        .material-input-container {
-            position: relative;
+        .sortable-drag { opacity: 1 !important; cursor: grabbing !important; }
+
+        /* Action Menu Animations */
+        .menu-open {
+            opacity: 1; transform: scale(1); pointer-events: auto;
         }
-        .material-input {
-            width: 100%;
-            border-radius: 12px;
-            padding: 16px;
-            outline: none;
-            background: transparent;
+        .menu-closed {
+            opacity: 0; transform: scale(0.9); pointer-events: none;
         }
-        
-        /* Custom scrollbar matching MD3 style */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+
+        /* Material UI Animations */
+        @keyframes fadeZoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
-        ::-webkit-scrollbar-track {
-            background: transparent;
+        .animate-modal {
+            animation: fadeZoomIn 0.3s cubic-bezier(0.2, 0, 0, 1) forwards;
         }
-        ::-webkit-scrollbar-thumb {
-            background-color: rgba(120, 120, 120, 0.2);
-            border-radius: 8px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background-color: rgba(120, 120, 120, 0.4);
-        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(119, 118, 128, 0.4); border-radius: 10px; }
     </style>
 </head>
+<body class="min-h-screen transition-colors duration-300">
 
-<body class="bg-slate-50 dark:bg-zinc-950 text-zinc-950 dark:text-zinc-50 min-h-screen transition-colors duration-300 md3-transition">
-
-    <!-- MD3 LOADING SCREEN -->
-    <div id="loading-screen" class="fixed inset-0 flex flex-col items-center justify-center bg-[#FEFBFF] dark:bg-[#111318] z-50 transition-opacity duration-300">
-        <div class="relative w-16 h-16 mb-6">
-            <!-- MD3 Circular Progress Indicator -->
-            <div class="absolute inset-0 rounded-full border-4 border-zinc-200 dark:border-zinc-800"></div>
-            <div class="absolute inset-0 rounded-full border-4 border-[#4F56A5] dark:border-[#BEC2FF] border-t-transparent animate-[spin_1s_cubic-bezier(0.4,0,0.2,1)_infinite]"></div>
+    <!-- LOADING SCREEN -->
+    <div id="loading-screen" class="flex flex-col items-center justify-center h-screen absolute inset-0 z-[100] bg-md3-surface dark:bg-md3-darkSurface transition-opacity duration-500">
+        <div class="relative w-16 h-16">
+            <div class="absolute inset-0 rounded-full border-4 border-md3-primaryContainer dark:border-md3-darkPrimaryContainer"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-md3-primary dark:border-md3-darkPrimary border-t-transparent animate-spin"></div>
         </div>
-        <h2 class="text-xl font-medium tracking-wide text-zinc-800 dark:text-zinc-200">StudyMaster</h2>
-        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Loading material workspace...</p>
+        <p class="mt-4 font-semibold text-md3-primary dark:text-md3-darkPrimary tracking-widest text-sm uppercase">StudyMaster</p>
     </div>
 
-    <!-- CUSTOM SNACKBAR (TOAST) SYSTEM -->
-    <div id="snackbar-container" class="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 md:left-6 md:translate-x-0 z-[100] flex flex-col gap-2 pointer-events-none w-full max-w-sm px-4">
-        <!-- Dynamically Spat Toasts go here -->
-    </div>
-
-    <!-- MD3 LOGIN SCREEN -->
-    <div id="login-screen" class="hidden-view flex items-center justify-center min-h-screen w-full px-4 bg-[#FEFBFF] dark:bg-[#111318]">
-        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] p-8 md:p-12 rounded-[28px] max-w-md w-full text-center border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm md3-transition">
-            <div class="bg-[#E0E0FF] dark:bg-[#373D8C] w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span class="material-symbols-outpined text-3xl text-[#4F56A5] dark:text-[#BEC2FF] material-symbols-outlined">auto_stories</span>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="hidden-view flex items-center justify-center h-screen w-full px-4 bg-md3-surface dark:bg-md3-darkSurface relative overflow-hidden">
+        <div class="bg-white dark:bg-[#1E1E24] p-10 rounded-[28px] shadow-md3-elevation-2 max-w-sm w-full text-center relative z-10 animate-modal border border-md3-surfaceVariant dark:border-md3-darkSurfaceVariant">
+            <div class="bg-md3-primaryContainer dark:bg-md3-darkPrimaryContainer w-20 h-20 rounded-[20px] flex items-center justify-center mx-auto mb-6">
+                <span class="material-symbols-outlined text-4xl text-md3-onPrimaryContainer dark:text-md3-darkOnPrimaryContainer">school</span>
             </div>
-            <h1 class="text-3xl font-bold mb-2 tracking-tight text-zinc-900 dark:text-white">StudyMaster</h1>
-            <p class="text-base text-zinc-500 dark:text-zinc-400 mb-8 font-normal">Organize your academic references, documents, and vital channels elegantly in one dynamic hub.</p>
+            <h1 class="text-3xl font-bold mb-2 text-md3-onSurface dark:text-md3-darkOnSurface">StudyMaster</h1>
+            <p class="text-sm text-md3-onSurfaceVariant dark:text-md3-darkSurfaceVariant mb-10">Sign in to sync your workspace</p>
             
-            <button id="btn-login" class="w-full bg-[#4F56A5] hover:bg-[#434994] dark:bg-[#BEC2FF] dark:hover:bg-[#ACAFE8] text-white dark:text-zinc-950 font-semibold py-4 px-6 rounded-full flex items-center justify-center gap-3 active:scale-[0.97] transition-all duration-200 shadow-sm">
-                <svg class="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
+            <button id="btn-login" class="w-full bg-md3-primary dark:bg-md3-darkPrimary text-md3-onPrimary dark:text-md3-darkOnPrimary font-semibold py-3.5 px-4 rounded-full flex items-center justify-center gap-3 active:scale-[0.98] transition-transform text-base shadow-md3-elevation-1 hover:shadow-md3-elevation-2">
+                <svg class="w-5 h-5 bg-white rounded-full p-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
                 Continue with Google
             </button>
         </div>
     </div>
 
-    <!-- MD3 MAIN APP WORKSPACE -->
-    <div id="app-screen" class="hidden-view flex h-screen w-full overflow-hidden bg-[#FEFBFF] dark:bg-[#111318]">
+    <!-- MAIN APP SCREEN -->
+    <div id="app-screen" class="hidden-view flex h-screen w-full relative">
         
-        <!-- MD3 DESKTOP NAVIGATION DRAWER (SIDEBAR) -->
-        <aside class="hidden md:flex flex-col w-80 bg-[#FAF8FD] dark:bg-[#171920] border-r border-zinc-200/60 dark:border-zinc-800/60 h-screen shrink-0 z-20">
-            <div class="p-6">
-                <!-- Branding Header -->
-                <div class="flex items-center gap-3 px-3 py-2">
-                    <span class="material-symbols-outlined text-3xl text-[#4F56A5] dark:text-[#BEC2FF]">auto_stories</span>
-                    <h1 class="font-bold text-2xl tracking-tight text-zinc-950 dark:text-white">StudyMaster</h1>
+        <!-- DESKTOP SIDEBAR (MD3 Navigation Drawer style) -->
+        <aside class="hidden md:flex flex-col w-72 bg-md3-surface dark:bg-md3-darkSurface border-r border-md3-surfaceVariant dark:border-md3-darkSurfaceVariant sticky top-0 h-screen z-20 transition-colors">
+            <div class="p-6 flex items-center gap-3">
+                <div class="bg-md3-primary text-white p-2 rounded-xl flex items-center justify-center">
+                    <span class="material-symbols-outlined text-xl">school</span>
                 </div>
-
-                <!-- User Account Profile Card in MD3 Surface Style -->
-                <div class="mt-6 p-4 rounded-3xl bg-[#E1E1F9] dark:bg-[#2F303E] flex items-center gap-3 shadow-sm border border-zinc-200/20 dark:border-zinc-700/20">
-                    <img id="user-avatar" src="" alt="Profile" class="w-11 h-11 rounded-full object-cover border border-zinc-300 dark:border-zinc-600" />
-                    <div class="overflow-hidden">
-                        <p id="user-name" class="text-sm font-bold truncate text-zinc-900 dark:text-zinc-100">Student</p>
-                        <div class="flex items-center gap-1 mt-0.5">
-                            <span class="material-symbols-outlined text-xs text-[#4F56A5] dark:text-[#BEC2FF]">verified</span>
-                            <p class="text-[10px] uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400">PRO MEMBERSHIP</p>
-                        </div>
-                    </div>
-                </div>
+                <h1 class="font-bold text-xl tracking-wide text-md3-onSurface dark:text-md3-darkOnSurface">StudyMaster</h1>
             </div>
-
-            <!-- MD3 Navigation Items with Pill Highlight Indicators -->
-            <nav class="flex-1 px-4 space-y-1">
-                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative group text-[#4F56A5] dark:text-[#BEC2FF]">
-                    <!-- Pill highlight background (active state) -->
-                    <div id="pill-home-desktop" class="absolute inset-0 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full -z-10 transition-transform md3-transition"></div>
-                    <span class="material-symbols-outlined text-2xl">dashboard</span>
-                    <span class="font-medium text-base">Dashboard</span>
+            
+            <nav class="flex-1 px-4 space-y-1 mt-4">
+                <button onclick="window.switchTab('home')" id="nav-home-desktop" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 bg-md3-secondaryContainer dark:bg-[#373D8C] text-md3-onSecondaryContainer dark:text-md3-darkOnPrimary font-semibold">
+                    <span class="material-symbols-outlined" id="icon-home-desktop" style="font-variation-settings: 'FILL' 1;">space_dashboard</span>
+                    Dashboard
                 </button>
-                
-                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative group text-zinc-600 dark:text-zinc-400">
-                    <div id="pill-settings-desktop" class="absolute inset-0 bg-transparent rounded-full -z-10 scale-x-75 opacity-0 transition-all md3-transition"></div>
-                    <span class="material-symbols-outlined text-2xl">settings</span>
-                    <span class="font-medium text-base">Settings</span>
+                <button onclick="window.switchTab('settings')" id="nav-settings-desktop" class="w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 hover:bg-md3-surfaceVariant dark:hover:bg-md3-darkSurfaceVariant text-md3-onSurfaceVariant dark:text-md3-darkOnSurface font-medium">
+                    <span class="material-symbols-outlined" id="icon-settings-desktop">settings</span>
+                    Settings
                 </button>
             </nav>
 
-            <!-- Bottom Copyright / Version Tag -->
-            <div class="p-6 text-center text-xs text-zinc-400 dark:text-zinc-600">
-                <p>Material Design 3 v1.0</p>
+            <div class="p-4 mb-2">
+                <div class="bg-md3-primaryContainer dark:bg-md3-darkPrimaryContainer rounded-[20px] p-4 flex items-center gap-3">
+                    <img id="user-avatar" src="" alt="Profile" class="w-10 h-10 rounded-full object-cover" />
+                    <div class="overflow-hidden flex-1">
+                        <p id="user-name" class="text-sm font-semibold truncate text-md3-onPrimaryContainer dark:text-md3-darkOnPrimaryContainer">User</p>
+                        <p class="text-[11px] text-md3-primary dark:text-md3-darkPrimary font-bold uppercase tracking-wide">Pro Member</p>
+                    </div>
+                </div>
             </div>
         </aside>
 
-        <!-- MAIN WORKSPACE VIEWPORT -->
-        <main class="flex-1 flex flex-col h-screen overflow-hidden relative z-10" id="main-content">
+        <!-- MAIN CONTENT AREA -->
+        <main class="flex-1 w-full max-w-5xl mx-auto flex flex-col h-screen overflow-hidden relative z-10" id="main-content">
             
-            <!-- MD3 Header / Top App Bar -->
-            <header class="px-6 py-5 flex items-center justify-between border-b border-zinc-200/60 dark:border-zinc-800/60 bg-[#FEFBFF]/80 dark:bg-[#111318]/80 backdrop-blur-md sticky top-0 z-30">
-                <div class="flex flex-col">
-                    <h2 id="header-title" class="text-2xl font-bold tracking-tight text-zinc-950 dark:text-white capitalize">Dashboard</h2>
-                    <p class="text-xs text-zinc-500 dark:text-zinc-400 hidden sm:block">Welcome back! Manage your reference catalog.</p>
-                </div>
-
-                <!-- Desktop MD3 Elevated Extended FAB / Regular Button -->
-                <button onclick="window.openModal()" id="btn-add-desktop" class="hidden md:flex bg-[#E0E0FF] hover:bg-[#D1D1FB] dark:bg-[#373D8C] dark:hover:bg-[#464D9E] text-[#050838] dark:text-[#E0E0FF] px-6 py-3 rounded-full font-semibold items-center gap-2 active:scale-95 md3-transition shadow-sm">
+            <!-- Header -->
+            <header class="px-4 py-4 md:px-8 md:py-6 flex items-center justify-between bg-md3-surface/90 dark:bg-md3-darkSurface/90 backdrop-blur-md sticky top-0 z-30 transition-colors">
+                <h2 id="header-title" class="text-2xl md:text-3xl font-bold tracking-tight text-md3-onSurface dark:text-md3-darkOnSurface">My Workspace</h2>
+                <button onclick="window.openModal()" id="btn-add-desktop" class="bg-md3-primary dark:bg-md3-darkPrimary text-white dark:text-md3-darkOnPrimary rounded-[16px] px-5 py-2.5 shadow-md3-elevation-1 transition-all active:scale-95 flex items-center justify-center font-semibold gap-2 hover:shadow-md3-elevation-2">
                     <span class="material-symbols-outlined">add</span>
-                    <span>Add Link Card</span>
+                    <span class="hidden sm:block">Add Card</span>
                 </button>
             </header>
 
-            <!-- Scrollable Page Container -->
-            <div class="flex-1 overflow-y-auto p-4 pb-28 md:p-8 overscroll-y-contain bg-[#FEFBFF] dark:bg-[#111318]" id="scrollable-content">
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-28 md:pb-8" id="scrollable-content">
                 
-                <!-- HOME TAB CONTENT -->
-                <div id="tab-home" class="space-y-8 animate-tab">
+                <!-- HOME TAB -->
+                <div id="tab-home" class="animate-modal">
                     
-                    <!-- Pinned Section - Styled as MD3 Filled Cards -->
-                    <div id="pinned-section" class="hidden-view">
-                        <div class="flex items-center gap-2 mb-4">
-                            <span class="material-symbols-outlined text-amber-500">push_pin</span>
-                            <h3 class="text-sm font-bold text-[#4F56A5] dark:text-[#BEC2FF] uppercase tracking-wider">Pinned Workspace</h3>
-                        </div>
-                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Injected by script -->
+                    <!-- Pinned Links Section -->
+                    <div id="pinned-section" class="hidden-view mb-8">
+                        <h3 class="text-xs font-bold text-md3-primary dark:text-md3-darkPrimary uppercase tracking-widest mb-3 flex items-center gap-2 px-1">
+                            <span class="material-symbols-outlined text-base">keep</span>
+                            Pinned
+                        </h3>
+                        <div id="pinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                            <!-- Pinned links injected here -->
                         </div>
                     </div>
 
-                    <!-- All Unpinned Section - Styled as MD3 Outlined Cards -->
+                    <!-- All Other Links -->
                     <div>
-                        <div id="unpinned-title-wrapper" class="flex items-center gap-2 mb-4 hidden-view">
-                            <span class="material-symbols-outlined text-zinc-500">space_dashboard</span>
-                            <h3 class="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Personal Database</h3>
-                        </div>
-                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <!-- Injected by script -->
+                        <h3 id="unpinned-title" class="hidden-view text-xs font-bold text-md3-onSurfaceVariant dark:text-md3-darkOutline uppercase tracking-widest mb-3 px-1">Everything Else</h3>
+                        <div id="unpinned-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+                            <!-- Unpinned links injected here -->
                         </div>
                     </div>
                     
-                    <!-- Empty State Graphic -->
-                    <div id="empty-state" class="hidden-view flex flex-col items-center justify-center h-80 text-zinc-400 bg-[#FAF8FD] dark:bg-[#171920] rounded-[28px] border border-dashed border-zinc-300 dark:border-zinc-800 p-8 max-w-lg mx-auto text-center mt-6">
-                        <div class="bg-[#E0E0FF] dark:bg-[#2E3040] p-4 rounded-full mb-4">
-                            <span class="material-symbols-outlined text-4xl text-[#4F56A5] dark:text-[#BEC2FF]">cloud_off</span>
+                    <!-- Empty State -->
+                    <div id="empty-state" class="hidden-view col-span-full flex flex-col items-center justify-center h-[50vh] text-center">
+                        <div class="bg-md3-secondaryContainer dark:bg-[#373D8C]/50 w-24 h-24 rounded-full flex items-center justify-center mb-4">
+                            <span class="material-symbols-outlined text-4xl text-md3-onSecondaryContainer dark:text-md3-darkPrimary">post_add</span>
                         </div>
-                        <p class="text-lg font-bold text-zinc-800 dark:text-zinc-200">Workspace is empty</p>
-                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mt-2 max-w-xs">You have no shortcut cards saved. Click on the button below or top menu to register your study URLs.</p>
-                        <button onclick="window.openModal()" class="mt-5 bg-[#4F56A5] text-white dark:bg-[#BEC2FF] dark:text-zinc-950 px-6 py-2.5 rounded-full text-xs font-semibold hover:opacity-90 md3-transition active:scale-95">Create First Card</button>
+                        <p class="text-xl font-bold text-md3-onSurface dark:text-md3-darkOnSurface">Your workspace is empty</p>
+                        <p class="text-sm mt-2 text-md3-onSurfaceVariant dark:text-md3-darkSurfaceVariant max-w-xs">Create your first card to organize links and resources.</p>
                     </div>
                 </div>
 
-                <!-- SETTINGS TAB CONTENT -->
-                <div id="tab-settings" class="hidden-view max-w-2xl mx-auto space-y-6">
-                    <!-- Preferences Section -->
-                    <div class="bg-[#FAF8FD] dark:bg-[#171920] border border-zinc-200/50 dark:border-zinc-800/50 rounded-[28px] p-6 md:p-8">
-                        <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-[#4F56A5] dark:text-[#BEC2FF]">
-                            <span class="material-symbols-outlined">palette</span>
-                            <span>Personalization</span>
+                <!-- SETTINGS TAB -->
+                <div id="tab-settings" class="hidden-view max-w-2xl mx-auto space-y-4 animate-modal">
+                    
+                    <!-- Appearance Settings -->
+                    <div class="bg-white dark:bg-[#1E1E24] rounded-[24px] p-6 shadow-sm border border-md3-surfaceVariant dark:border-md3-darkSurfaceVariant">
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-md3-onSurface dark:text-md3-darkOnSurface">
+                            <span class="material-symbols-outlined text-md3-primary dark:text-md3-darkPrimary">palette</span>
+                            Appearance
                         </h3>
                         
-                        <!-- Theme Toggle (Pill Switch UI) -->
-                        <div class="flex items-center justify-between p-4 bg-[#FEFBFF] dark:bg-[#1A1B22] border border-zinc-200/60 dark:border-zinc-800/60 rounded-2xl">
-                            <div class="flex items-center gap-3">
-                                <span class="material-symbols-outlined text-2xl text-zinc-500">dark_mode</span>
-                                <div>
-                                    <h4 class="font-bold text-zinc-900 dark:text-zinc-100 text-sm">Dark Theme Spectrum</h4>
-                                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">Adapt visual components for low light</p>
-                                </div>
+                        <div class="flex items-center justify-between mt-4">
+                            <div>
+                                <h4 class="font-semibold text-md3-onSurface dark:text-md3-darkOnSurface text-base">Dark Theme</h4>
+                                <p class="text-sm text-md3-onSurfaceVariant dark:text-md3-darkSurfaceVariant">Switch to a darker, eye-friendly layout</p>
                             </div>
-                            
-                            <!-- MD3 Design Toggle Switch -->
-                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-14 h-8 rounded-full transition-colors relative bg-zinc-300 dark:bg-[#373D8C] focus:outline-none md3-transition">
-                                <div id="theme-toggle-dot" class="w-6 h-6 rounded-full bg-white dark:bg-[#BEC2FF] absolute top-1 left-1 shadow-sm md3-transition flex items-center justify-center">
-                                    <span id="theme-toggle-dot-icon" class="material-symbols-outlined text-[14px] text-zinc-600 dark:text-zinc-950">light_mode</span>
+                            <!-- MD3 Switch -->
+                            <button onclick="window.toggleTheme()" id="btn-theme" class="w-14 h-8 rounded-full flex items-center transition-colors relative bg-md3-surfaceVariant dark:bg-md3-darkPrimary px-1 outline-none border-[2px] border-transparent">
+                                <div id="theme-toggle-dot" class="w-6 h-6 rounded-full bg-md3-outline dark:bg-[#1E2573] shadow-sm transition-transform transform translate-x-0 dark:translate-x-6 flex items-center justify-center">
+                                    <span id="theme-icon" class="material-symbols-outlined text-[14px] text-white dark:text-md3-darkPrimary" style="font-variation-settings: 'FILL' 1;">light_mode</span>
                                 </div>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Safety Zone -->
-                    <div class="bg-[#FAF8FD] dark:bg-[#171920] border border-red-200/40 dark:border-red-950/40 rounded-[28px] p-6 md:p-8">
-                        <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-red-600 dark:text-red-400">
-                            <span class="material-symbols-outlined">gpp_maybe</span>
-                            <span>System & Integrity</span>
+                    <!-- Account Settings -->
+                    <div class="bg-white dark:bg-[#1E1E24] rounded-[24px] p-6 shadow-sm border border-md3-errorContainer dark:border-md3-error/30">
+                        <h3 class="text-lg font-bold mb-4 flex items-center gap-2 text-md3-error">
+                            <span class="material-symbols-outlined">security</span>
+                            Account Security
                         </h3>
-                        <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-4">Disconnect authentication to close study portal. Saved references remain safely protected in your personal storage container.</p>
+                        <p class="text-sm text-md3-onSurfaceVariant dark:text-md3-darkSurfaceVariant mb-4">Manage your session on this device.</p>
                         
-                        <button id="btn-logout" class="flex items-center justify-center gap-2 text-red-600 hover:text-red-700 font-semibold px-6 py-3.5 rounded-full bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/30 transition-all duration-200 active:scale-95 w-full border border-red-200 dark:border-red-900/30 text-sm">
+                        <button id="btn-logout" class="flex items-center gap-2 text-md3-error font-semibold px-5 py-2.5 rounded-full hover:bg-md3-errorContainer dark:hover:bg-md3-error/20 transition-colors active:scale-95 w-max border border-md3-error/20">
                             <span class="material-symbols-outlined">logout</span>
-                            <span>Sign out and Secure Workspace</span>
+                            Sign Out Securely
                         </button>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- MD3 MOBILE BOTTOM NAVIGATION BAR -->
-        <nav class="md:hidden fixed bottom-0 w-full bg-[#FAF8FD]/95 dark:bg-[#111318]/95 border-t border-zinc-200/60 dark:border-zinc-800/60 flex justify-around items-center p-2.5 pb-safe z-40 shadow-[0_-4px_16px_rgba(0,0,0,0.03)] backdrop-blur-md rounded-t-[20px]">
-            
-            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-[#4F56A5] dark:text-[#BEC2FF]">
-                <!-- Pill highlight back -->
-                <div id="pill-home-mobile" class="w-16 h-8 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full absolute top-1 -z-10 transition-transform scale-x-100 opacity-100 md3-transition"></div>
-                <span class="material-symbols-outlined text-2xl">dashboard</span>
-                <span class="text-[10px] font-bold tracking-wide mt-1.5">Dashboard</span>
+        <!-- MOBILE BOTTOM NAVIGATION BAR -->
+        <nav class="md:hidden fixed bottom-0 w-full bg-md3-surfaceContainer dark:bg-[#1E1E24] flex justify-around items-center p-2 pb-safe z-40 border-t border-md3-surfaceVariant dark:border-md3-darkSurfaceVariant shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+            <button onclick="window.switchTab('home')" id="nav-home-mobile" class="flex flex-col items-center gap-1 p-2 w-16 group transition-all">
+                <div id="nav-home-indicator" class="w-16 h-8 rounded-full flex items-center justify-center bg-md3-secondaryContainer dark:bg-md3-darkPrimaryContainer transition-colors">
+                    <span class="material-symbols-outlined text-md3-onSecondaryContainer dark:text-md3-darkOnPrimaryContainer" id="icon-home-mobile" style="font-variation-settings: 'FILL' 1;">space_dashboard</span>
+                </div>
+                <span class="text-[11px] font-semibold text-md3-onSurface dark:text-md3-darkOnSurface">Home</span>
             </button>
             
-            <!-- Floating Mobile Add Action (Pill FAB style) -->
-            <button onclick="window.openModal()" id="btn-add-mobile" class="bg-[#E0E0FF] dark:bg-[#373D8C] text-[#050838] dark:text-[#E0E0FF] rounded-2xl p-4 shadow-md transform -translate-y-4 border-4 border-[#FEFBFF] dark:border-[#111318] active:scale-[0.88] transition-transform z-50">
+            <button onclick="window.openModal()" id="btn-add-mobile" class="bg-md3-primary text-md3-onPrimary dark:bg-md3-darkPrimary dark:text-md3-darkOnPrimary rounded-2xl w-14 h-14 shadow-md3-elevation-2 flex items-center justify-center transform -translate-y-4 active:scale-95 transition-transform">
                 <span class="material-symbols-outlined text-3xl">add</span>
             </button>
 
-            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-zinc-500 dark:text-zinc-500">
-                <div id="pill-settings-mobile" class="w-16 h-8 bg-transparent rounded-full absolute top-1 -z-10 transition-transform scale-x-50 opacity-0 md3-transition"></div>
-                <span class="material-symbols-outlined text-2xl">settings</span>
-                <span class="text-[10px] font-bold tracking-wide mt-1.5">Settings</span>
+            <button onclick="window.switchTab('settings')" id="nav-settings-mobile" class="flex flex-col items-center gap-1 p-2 w-16 group transition-all">
+                <div id="nav-settings-indicator" class="w-16 h-8 rounded-full flex items-center justify-center transition-colors">
+                    <span class="material-symbols-outlined text-md3-onSurfaceVariant dark:text-md3-darkOutline" id="icon-settings-mobile">settings</span>
+                </div>
+                <span class="text-[11px] font-medium text-md3-onSurfaceVariant dark:text-md3-darkOutline">Settings</span>
             </button>
         </nav>
     </div>
 
-    <!-- MD3 FORM MODAL (ADD / EDIT LINK CARD) -->
-    <div id="add-modal" class="hidden-view fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[28px] p-6 md:p-8 border border-zinc-200/60 dark:border-zinc-800/60 shadow-2xl transition-all relative">
-            <button onclick="window.closeModal()" class="absolute top-5 right-5 p-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-500 rounded-full transition-all active:scale-90 flex items-center justify-center">
-                <span class="material-symbols-outlined text-base">close</span>
+    <!-- MD3 ADD / EDIT LINK MODAL -->
+    <div id="add-modal" class="hidden-view fixed inset-0 bg-zinc-950/40 dark:bg-zinc-950/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
+        <div class="bg-md3-surface dark:bg-[#1A1B22] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-[28px] p-6 sm:p-8 shadow-md3-elevation-3 transition-all relative">
+            <button type="button" onclick="window.closeModal()" class="absolute top-6 right-6 p-2 rounded-full hover:bg-md3-surfaceVariant dark:hover:bg-md3-darkSurfaceVariant text-md3-onSurfaceVariant transition-colors outline-none">
+                <span class="material-symbols-outlined">close</span>
             </button>
             
-            <h2 id="modal-heading" class="text-xl font-bold mb-6 text-zinc-950 dark:text-white tracking-tight flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#4F56A5] dark:text-[#BEC2FF]">note_add</span>
-                <span>Add Workspace Card</span>
-            </h2>
+            <div class="flex items-center gap-3 mb-6 text-md3-onSurface dark:text-md3-darkOnSurface">
+                <span class="material-symbols-outlined text-2xl text-md3-primary dark:text-md3-darkPrimary">library_add</span>
+                <h2 id="modal-heading" class="text-2xl font-bold tracking-tight">Add Workspace Card</h2>
+            </div>
             
-            <form id="add-form" class="space-y-5">
-                <div>
-                    <label class="block text-xs font-bold mb-1.5 text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Card Title</label>
-                    <input type="text" id="input-title" placeholder="e.g. Physics Theory 01" required class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white placeholder-zinc-400 text-sm md3-transition" />
+            <form id="add-form" class="space-y-6">
+                <!-- Floating Label Text Field 1 -->
+                <div class="relative">
+                    <input type="text" id="input-title" required class="peer w-full bg-transparent border-2 border-md3-outline dark:border-md3-darkOutline rounded-[12px] px-4 pt-5 pb-3 text-base text-md3-onSurface dark:text-md3-darkOnSurface placeholder-transparent focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary focus:ring-0 transition-colors" placeholder="Title" />
+                    <label class="absolute left-4 top-1.5 text-xs font-semibold text-md3-primary dark:text-md3-darkPrimary transition-all bg-md3-surface dark:bg-[#1A1B22] px-1 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-md3-outline peer-placeholder-shown:font-normal peer-focus:top-1.5 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-md3-primary dark:peer-focus:text-md3-darkPrimary">Card Title (e.g. Physics Theory)</label>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold mb-1.5 text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Card Icon Image URL <span class="text-zinc-400 font-normal capitalize">(Optional)</span></label>
-                    <input type="url" id="input-image" placeholder="Paste an image link..." class="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-2 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white placeholder-zinc-400 text-sm md3-transition" />
+                <!-- Floating Label Text Field 2 -->
+                <div class="relative">
+                    <input type="url" id="input-image" class="peer w-full bg-transparent border-2 border-md3-outline dark:border-md3-darkOutline rounded-[12px] px-4 pt-5 pb-3 text-base text-md3-onSurface dark:text-md3-darkOnSurface placeholder-transparent focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary focus:ring-0 transition-colors" placeholder="URL" />
+                    <label class="absolute left-4 top-1.5 text-xs font-semibold text-md3-primary dark:text-md3-darkPrimary transition-all bg-md3-surface dark:bg-[#1A1B22] px-1 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-placeholder-shown:text-md3-outline peer-placeholder-shown:font-normal peer-focus:top-1.5 peer-focus:text-xs peer-focus:font-semibold peer-focus:text-md3-primary dark:peer-focus:text-md3-darkPrimary">Image URL (Optional)</label>
                 </div>
                 
-                <div class="border-t border-zinc-200 dark:border-zinc-800 pt-5 mt-2">
-                    <div class="flex items-center justify-between mb-3">
-                        <label class="text-xs font-bold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">Resource URLs / Links</label>
-                        <button type="button" onclick="window.addLinkField()" class="text-xs font-bold text-[#4F56A5] dark:text-[#BEC2FF] bg-[#E0E0FF] dark:bg-[#373D8C] px-3.5 py-1.5 rounded-full hover:opacity-90 transition-all flex items-center gap-1.5 active:scale-95">
-                            <span class="material-symbols-outlined text-[14px]">add</span>
-                            <span>Add Field</span>
+                <div class="border-t border-md3-surfaceVariant dark:border-md3-darkSurfaceVariant pt-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="text-sm font-semibold text-md3-onSurface dark:text-md3-darkOnSurface">Resource Links</label>
+                        <button type="button" onclick="window.addLinkField()" class="text-sm font-bold text-md3-primary dark:text-md3-darkPrimary bg-md3-primaryContainer dark:bg-md3-darkPrimaryContainer px-3 py-1.5 rounded-full hover:opacity-80 transition-opacity flex items-center gap-1">
+                            <span class="material-symbols-outlined text-sm">add</span> Add Field
                         </button>
                     </div>
                     <div id="dynamic-links-container" class="space-y-3">
-                        <!-- Dynamic fields injected here -->
+                        <!-- Dynamic links injected here -->
                     </div>
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-full font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 text-sm active:scale-95 transition-all">
+                    <button type="button" onclick="window.closeModal()" class="flex-1 py-3 px-4 rounded-full font-semibold text-md3-primary dark:text-md3-darkPrimary hover:bg-md3-primaryContainer/50 dark:hover:bg-md3-darkPrimaryContainer/50 transition-colors">
                         Cancel
                     </button>
-                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-full font-semibold bg-[#4F56A5] hover:bg-[#3E4484] dark:bg-[#BEC2FF] dark:text-zinc-950 text-white text-sm active:scale-95 transition-all flex justify-center items-center gap-1">
-                        <span class="material-symbols-outlined text-sm">done</span>
+                    <button type="submit" id="btn-save" class="flex-1 py-3 px-4 rounded-full font-semibold bg-md3-primary text-md3-onPrimary dark:bg-md3-darkPrimary dark:text-md3-darkOnPrimary shadow-md3-elevation-1 hover:shadow-md3-elevation-2 active:scale-95 transition-all flex justify-center items-center gap-2">
+                        <span class="material-symbols-outlined text-[20px]">check</span>
                         <span>Save Workspace</span>
                     </button>
                 </div>
@@ -397,65 +344,77 @@
         </div>
     </div>
 
-    <!-- MD3 MULTI-LINK SELECTOR DIALOG -->
-    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] w-full max-w-sm rounded-[28px] p-6 border border-zinc-200/60 dark:border-zinc-800/60 shadow-2xl transition-all">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-lg font-bold text-zinc-950 dark:text-white" id="select-modal-title">Select Link</h3>
-                <button onclick="window.closeLinkModal()" class="p-1.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-500 transition-colors">
-                    <span class="material-symbols-outlined text-base">close</span>
-                </button>
+    <!-- MD3 MULTI-LINK SELECTOR DIALOG (TWO-COLUMN LAYOUT) -->
+    <div id="link-select-modal" class="hidden-view fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
+        <div class="bg-md3-surface dark:bg-[#1A1B22] w-full max-w-3xl rounded-[28px] sm:p-2 shadow-md3-elevation-3 transition-all flex flex-col sm:flex-row relative overflow-hidden">
+            
+            <button onclick="window.closeLinkModal()" class="absolute top-4 right-4 z-20 p-2 rounded-full bg-white/50 hover:bg-white/80 dark:bg-black/50 dark:hover:bg-black/80 text-md3-onSurface dark:text-md3-darkOnSurface transition-colors backdrop-blur-md outline-none">
+                <span class="material-symbols-outlined text-base">close</span>
+            </button>
+
+            <!-- Left Side: Image or Icon Showcase -->
+            <div id="select-modal-image-container" class="w-full sm:w-2/5 h-48 sm:h-auto bg-md3-secondaryContainer dark:bg-md3-darkPrimaryContainer sm:rounded-[20px] rounded-t-[28px] overflow-hidden flex items-center justify-center shrink-0 relative">
+                <!-- Dynamically injected via JS -->
             </div>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-5">There are multiple destinations configured for this card. Choose your path:</p>
-            <div id="select-modal-links" class="flex flex-col gap-2.5 max-h-64 overflow-y-auto pr-1">
-                <!-- Dynamic Buttons -->
+
+            <!-- Right Side: Links List -->
+            <div class="w-full sm:w-3/5 p-6 sm:p-8 flex flex-col max-h-[60vh] sm:max-h-[80vh]">
+                <h3 class="text-xl sm:text-2xl font-bold text-md3-onSurface dark:text-md3-darkOnSurface mb-1 pr-8 tracking-tight" id="select-modal-title">Select Link</h3>
+                <p class="text-xs sm:text-sm text-md3-onSurfaceVariant dark:text-md3-darkOutline mb-6">Choose a destination from this card:</p>
+                
+                <div id="select-modal-links" class="flex flex-col gap-2.5 overflow-y-auto pr-1 pb-2 custom-scrollbar">
+                    <!-- Dynamic Buttons injected here -->
+                </div>
             </div>
         </div>
     </div>
 
     <!-- MD3 DELETE CONFIRMATION DIALOG -->
     <div id="delete-confirm-modal" class="hidden-view fixed inset-0 bg-zinc-950/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4">
-        <div class="bg-[#FAF8FD] dark:bg-[#1A1B22] w-full max-w-sm rounded-[28px] p-6 border border-red-200/40 dark:border-red-950/40 shadow-2xl transition-all text-center">
-            <span class="material-symbols-outlined text-red-500 text-4xl mb-3">delete_forever</span>
-            <h3 class="text-lg font-bold text-zinc-950 dark:text-white mb-2">Delete Resource?</h3>
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-6 leading-relaxed">This will permanently delete this educational shortcut and all attached links. This action cannot be undone.</p>
-            <div class="flex gap-3">
-                <button onclick="window.closeDeleteConfirmModal()" class="flex-1 py-2.5 rounded-full font-semibold bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-xs active:scale-95">Cancel</button>
-                <button id="btn-confirm-delete" class="flex-1 py-2.5 rounded-full font-semibold bg-red-600 hover:bg-red-700 text-white text-xs active:scale-95">Delete</button>
+        <div class="bg-md3-surface dark:bg-[#1A1B22] w-full max-w-sm rounded-[28px] p-6 shadow-md3-elevation-3 transform transition-all text-center">
+            <div class="bg-md3-errorContainer w-16 h-16 rounded-full mx-auto flex items-center justify-center mb-4 text-md3-error">
+                <span class="material-symbols-outlined text-3xl">delete_forever</span>
+            </div>
+            <h3 class="text-xl font-bold text-md3-onSurface dark:text-md3-darkOnSurface mb-2">Delete this card?</h3>
+            <p class="text-sm text-md3-onSurfaceVariant dark:text-md3-darkSurfaceVariant mb-6">This action cannot be undone. All links inside this card will be permanently removed.</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="window.closeDeleteConfirmModal()" class="px-5 py-2.5 rounded-full font-semibold text-md3-onSurfaceVariant dark:text-md3-darkOnSurface hover:bg-md3-surfaceVariant dark:hover:bg-md3-darkSurfaceVariant transition-colors">
+                    Cancel
+                </button>
+                <button id="btn-confirm-delete" class="px-6 py-2.5 rounded-full font-semibold bg-md3-error text-white hover:bg-red-700 shadow-md3-elevation-1 transition-all active:scale-95">
+                    Delete
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- MD3 FLOATING ACTION MENU / SHEET -->
-    <div id="action-menu" class="hidden-view fixed z-[70] bg-[#FAF8FD] dark:bg-[#1C1C24] rounded-2xl shadow-xl flex items-center p-1.5 gap-1.5 transition-all duration-300 border border-zinc-200 dark:border-zinc-800">
-        
-        <button id="btn-action-pin" onclick="window.triggerAction('pin')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors w-16 group">
-            <span id="icon-action-pin" class="material-symbols-outlined text-2xl text-zinc-500 group-hover:text-amber-500 group-hover:scale-105 transition-transform">push_pin</span>
-            <span id="text-action-pin" class="text-[10px] font-bold text-zinc-500 mt-1 tracking-wide">Pin</span>
+    <!-- FLOATING ACTION MENU -->
+    <div id="action-menu" class="menu-closed fixed z-[50] bg-white dark:bg-[#2B2B36] rounded-[16px] shadow-md3-elevation-2 flex flex-col p-1.5 min-w-[140px] transition-all duration-200 origin-top-right border border-md3-surfaceVariant dark:border-md3-darkSurfaceVariant">
+        <button id="btn-action-pin" onclick="window.triggerAction('pin')" class="flex items-center gap-3 p-3 rounded-[12px] hover:bg-md3-surfaceVariant dark:hover:bg-white/5 transition-colors w-full text-left text-md3-onSurface dark:text-md3-darkOnSurface">
+            <span id="icon-action-pin" class="material-symbols-outlined text-[20px]">keep</span>
+            <span id="text-action-pin" class="text-sm font-medium">Pin</span>
         </button>
-
-        <div class="w-[1px] h-7 bg-zinc-200 dark:bg-zinc-800"></div>
-        
-        <button onclick="window.triggerAction('edit')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors w-16 group">
-            <span class="material-symbols-outlined text-2xl text-zinc-500 group-hover:text-[#4F56A5] dark:group-hover:text-[#BEC2FF] group-hover:scale-105 transition-transform">edit</span>
-            <span class="text-[10px] font-bold text-zinc-500 mt-1 tracking-wide">Edit</span>
+        <button onclick="window.triggerAction('edit')" class="flex items-center gap-3 p-3 rounded-[12px] hover:bg-md3-surfaceVariant dark:hover:bg-white/5 transition-colors w-full text-left text-md3-onSurface dark:text-md3-darkOnSurface">
+            <span class="material-symbols-outlined text-[20px]">edit</span>
+            <span class="text-sm font-medium">Edit</span>
         </button>
-
-        <div class="w-[1px] h-7 bg-zinc-200 dark:bg-zinc-800"></div>
-
-        <button onclick="window.triggerAction('delete')" class="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors w-16 group">
-            <span class="material-symbols-outlined text-2xl text-zinc-500 group-hover:text-red-500 group-hover:scale-105 transition-transform">delete</span>
-            <span class="text-[10px] font-bold text-zinc-500 mt-1 group-hover:text-red-500 tracking-wide">Delete</span>
+        <div class="w-full h-px bg-md3-surfaceVariant dark:bg-white/10 my-1"></div>
+        <button onclick="window.triggerAction('delete')" class="flex items-center gap-3 p-3 rounded-[12px] hover:bg-md3-errorContainer hover:text-md3-error text-md3-error transition-colors w-full text-left">
+            <span class="material-symbols-outlined text-[20px]">delete</span>
+            <span class="text-sm font-medium">Delete</span>
         </button>
     </div>
 
-    <script type="module">
-        // Firebase Core Imports
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    <!-- CUSTOM TOAST NOTIFICATION -->
+    <div id="toast-container" class="fixed bottom-20 md:bottom-10 left-1/2 transform -translate-x-1/2 z-[100] flex flex-col gap-2 pointer-events-none"></div>
 
-        // Firebase Configuration
+    <!-- FIREBASE & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // Firebase Configuration provided by user
         const firebaseConfig = {
             apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
             authDomain: "studymaster-919ba.firebaseapp.com",
@@ -470,8 +429,6 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        
-        // App Identity Rules (STRICT PATHS: /artifacts/{appId}/users/{userId}/{collectionName})
         const APP_ID = 'studyflow-pro';
 
         let currentUser = null;
@@ -495,7 +452,7 @@
         const elPinnedSection = document.getElementById('pinned-section');
         const elPinnedContainer = document.getElementById('pinned-container');
         const elUnpinnedContainer = document.getElementById('unpinned-container');
-        const elUnpinnedTitleWrapper = document.getElementById('unpinned-title-wrapper');
+        const elUnpinnedTitle = document.getElementById('unpinned-title');
         const elEmptyState = document.getElementById('empty-state');
         
         const elModal = document.getElementById('add-modal');
@@ -504,64 +461,49 @@
         const elAddForm = document.getElementById('add-form');
         const elActionMenu = document.getElementById('action-menu');
 
-        // MD3 Snackbar Toast System
-        function showToast(message, isError = false) {
-            const container = document.getElementById('snackbar-container');
+        // Custom Toast Notification System
+        window.showToast = (message, isError = false) => {
+            const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = `flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg transition-all duration-300 opacity-0 translate-y-2 pointer-events-auto max-w-sm ${
-                isError 
-                    ? 'bg-red-50 text-red-900 border border-red-200 dark:bg-red-950 dark:text-red-100' 
-                    : 'bg-[#1B1B1F] text-[#F4F0F4] dark:bg-[#E3E1EC] dark:text-[#1B1B1F]'
-            }`;
             
+            const bgColor = isError ? 'bg-md3-error' : 'bg-[#313033] dark:bg-[#E6E1E5]';
+            const textColor = isError ? 'text-white' : 'text-[#F4EFF4] dark:text-[#313033]';
+            
+            toast.className = `${bgColor} ${textColor} px-4 py-3 rounded-[8px] shadow-md3-elevation-2 text-sm font-medium flex items-center gap-3 transform translate-y-10 opacity-0 transition-all duration-300`;
             toast.innerHTML = `
-                <span class="material-symbols-outlined text-lg shrink-0">${isError ? 'error' : 'info'}</span>
-                <p class="text-xs font-semibold leading-snug">${message}</p>
+                <span class="material-symbols-outlined text-[20px]">${isError ? 'error' : 'info'}</span>
+                ${message}
             `;
-            
             container.appendChild(toast);
             
-            // Trigger animation
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-10', 'opacity-0');
+            });
+
             setTimeout(() => {
-                toast.classList.remove('opacity-0', 'translate-y-2');
-            }, 10);
-            
-            // Dismiss automatically
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
+                toast.classList.add('opacity-0');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
-        }
+        };
 
-        // Initialize Workspace Settings
         function init() {
-            // Apply Theme Spectrum
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 isDarkMode = true;
                 document.documentElement.classList.add('dark');
-            } else {
-                isDarkMode = false;
-                document.documentElement.classList.remove('dark');
             }
             updateThemeUI();
 
-            // Track Authentic Auth States
             onAuthStateChanged(auth, (user) => {
-                setTimeout(() => {
-                    elLoading.style.opacity = '0';
-                    setTimeout(() => elLoading.classList.add('hidden-view'), 300);
-                }, 800);
-
+                setTimeout(() => elLoading.classList.add('hidden-view'), 600);
                 if (user) {
                     currentUser = user;
                     elLogin.classList.add('hidden-view');
                     elApp.classList.remove('hidden-view');
                     
-                    document.getElementById('user-name').textContent = user.displayName || 'Learner';
-                    document.getElementById('user-avatar').src = user.photoURL || 'https://placehold.co/150x150/4F56A5/FFFFFF?text=Student';
+                    document.getElementById('user-name').textContent = user.displayName;
+                    document.getElementById('user-avatar').src = user.photoURL || 'https://ui-avatars.com/api/?name=' + user.displayName + '&background=E0E0FF&color=080E5E';
                     
-                    showToast(`Active Session established for: ${user.displayName || 'user'}`);
                     fetchLinks();
                 } else {
                     currentUser = null;
@@ -571,7 +513,6 @@
                 }
             });
 
-            // Universal listener to close contextual sheet menus
             document.addEventListener('click', (e) => {
                 if (!elActionMenu.contains(e.target) && !e.target.closest('.action-btn-trigger')) {
                     closeActionMenu();
@@ -581,40 +522,29 @@
             document.getElementById('scrollable-content').addEventListener('scroll', closeActionMenu);
         }
 
-        // Google Authentication Logic
         document.getElementById('btn-login').addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
-                console.error("Login Error:", error);
-                showToast("Identity verification failed. Please try again.", true);
+                showToast("Login Failed.", true);
             }
         });
 
         document.getElementById('btn-logout').addEventListener('click', async () => {
             try {
                 await signOut(auth);
-                showToast("Workspace locked safely.");
-            } catch (error) {
-                console.error("Logout Error:", error);
-            }
+            } catch (error) {}
         });
 
-        // Fetch User Data Snapshot with Order Configuration
         function fetchLinks() {
             if (!currentUser) return;
             
-            // STRICT PATH: /artifacts/{appId}/users/{userId}/{collectionName}
             const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
             
             linksUnsubscribe = onSnapshot(linksColRef, (snapshot) => {
-                const links = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const links = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 
-                // Sort array natively inside memory buffer to obey RULE 2 (Avoid Firestore complex queries)
                 links.sort((a, b) => {
                     if (a.isPinned && !b.isPinned) return -1;
                     if (!a.isPinned && b.isPinned) return 1;
@@ -630,16 +560,12 @@
                 
                 allLinksData = links;
                 renderLinks(links);
-            }, (error) => {
-                console.error("Critical Firestore failure: ", error);
-                showToast("An unexpected sync failure occurred with the database.", true);
             });
         }
 
-        // Redraw Material cards dynamically
         function renderLinks(links) {
             elPinnedSection.classList.add('hidden-view');
-            elUnpinnedTitleWrapper.classList.add('hidden-view');
+            elUnpinnedTitle.classList.add('hidden-view');
             elEmptyState.classList.add('hidden-view');
             elPinnedContainer.innerHTML = '';
             elUnpinnedContainer.innerHTML = '';
@@ -653,89 +579,69 @@
             const pinnedLinks = links.filter(l => l.isPinned);
             const unpinnedLinks = links.filter(l => !l.isPinned);
 
-            // Filled MD3 cards representing pinned links
             if (pinnedLinks.length > 0) {
                 elPinnedSection.classList.remove('hidden-view');
-                elPinnedContainer.innerHTML = pinnedLinks.map((l, i) => createCardHTML(l, true, i)).join('');
+                elPinnedContainer.innerHTML = pinnedLinks.map(l => createCardHTML(l)).join('');
             }
 
-            // Outlined MD3 cards representing standard items
             if (unpinnedLinks.length > 0) {
-                elUnpinnedTitleWrapper.classList.remove('hidden-view');
-                elUnpinnedContainer.innerHTML = unpinnedLinks.map((l, i) => createCardHTML(l, false, i)).join('');
+                if (pinnedLinks.length > 0) elUnpinnedTitle.classList.remove('hidden-view');
+                elUnpinnedContainer.innerHTML = unpinnedLinks.map(l => createCardHTML(l)).join('');
             }
 
             initDragAndDrop();
         }
 
-        // Card Element Generation: Implements custom image onError logic and Material State Tokens
-        function createCardHTML(link, isPinned, index = 0) {
+        function createCardHTML(link) {
             let linksArray = link.links || [];
-            if (linksArray.length === 0 && link.url) {
-                linksArray = [{ name: 'Default Link', url: link.url }];
-            }
+            if (linksArray.length === 0 && link.url) linksArray = [{ name: 'Primary', url: link.url }];
 
-            // MD3 Badges
-            const linkCountBadge = linksArray.length > 1 
-                ? `<span class="bg-[#E0E0FF] dark:bg-[#373D8C] text-[#050838] dark:text-[#E0E0FF] text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider ml-1 shadow-xs">${linksArray.length} links</span>` 
+            const hasMultiple = linksArray.length > 1;
+            const badgeHTML = hasMultiple 
+                ? `<span class="bg-md3-secondaryContainer dark:bg-[#373D8C] text-md3-onSecondaryContainer dark:text-md3-darkOnPrimaryContainer text-[10px] px-2 py-0.5 rounded-full ml-2 font-bold">${linksArray.length} items</span>` 
                 : '';
 
-            const animationDelay = index * 40; 
-            
-            // MD3 Styling Matrix: Filled Card (for pinned favorites) vs Outlined Card (regular references)
-            const cardBgStyle = isPinned 
-                ? 'bg-[#E1E1F9]/50 hover:bg-[#E1E1F9] dark:bg-[#232431] dark:hover:bg-[#2A2B3A] border border-zinc-200/40 dark:border-zinc-700/40' 
-                : 'bg-[#FEFBFF] hover:bg-[#FAF8FD] dark:bg-[#121318] dark:hover:bg-[#1A1B22] border border-zinc-200 dark:border-zinc-800';
-
             return `
-                <div class="group relative rounded-[24px] p-4 transition-all duration-300 md3-transition flex items-center gap-4 ${cardBgStyle}" style="animation: slideUp 0.4s ease forwards; animation-delay: ${animationDelay}ms;" data-id="${link.id}">
+                <div class="group bg-white dark:bg-[#1E1E24] rounded-[20px] p-2 pr-1 shadow-sm hover:shadow-md3-elevation-1 border border-md3-surfaceVariant dark:border-md3-darkSurfaceVariant transition-all flex items-center gap-2 relative" data-id="${link.id}">
                     
-                    <!-- Material drag handles shown on hover -->
-                    <div class="drag-handle cursor-grab active:cursor-grabbing p-1.5 text-zinc-400 hover:text-[#4F56A5] dark:hover:text-[#BEC2FF] hidden sm:flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <span class="material-symbols-outlined text-lg">drag_indicator</span>
+                    <div class="drag-handle cursor-grab active:cursor-grabbing p-2 text-md3-outline hidden sm:flex items-center justify-center hover:bg-md3-surfaceVariant dark:hover:bg-md3-darkSurfaceVariant rounded-full opacity-0 group-hover:opacity-100 transition-all">
+                        <span class="material-symbols-outlined text-[20px]">drag_indicator</span>
                     </div>
 
-                    <div onclick="window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-4 cursor-pointer overflow-hidden py-1">
-                        <!-- Card Avatar -->
-                        <div class="shrink-0 w-12 h-12 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
-                            ${link.imageUrl ? 
-                                `<img src="${link.imageUrl}" alt="Link Visual" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/150x150/4F56A5/FFFFFF?text=URL'" />` : 
-                                `<span class="material-symbols-outlined text-zinc-500">link</span>`
-                            }
+                    <div onclick="window.handleCardClick('${link.id}')" class="flex-1 flex items-center gap-3 cursor-pointer py-1 pl-1 sm:pl-0">
+                        <div class="shrink-0 w-12 h-12 rounded-[14px] overflow-hidden bg-md3-surfaceVariant dark:bg-[#2B2B36] flex items-center justify-center text-md3-primary dark:text-md3-darkPrimary border border-md3-outline/20">
+                            ${link.imageUrl ? `<img src="${link.imageUrl}" alt="" class="w-full h-full object-cover" onerror="this.style.display='none'" />` : `<span class="material-symbols-outlined">folder</span>`}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <h3 class="text-base font-bold text-zinc-900 dark:text-white truncate flex items-center gap-1.5 tracking-tight">
-                                ${link.title}
+                            <h3 class="text-[15px] font-bold text-md3-onSurface dark:text-md3-darkOnSurface truncate flex items-center tracking-tight">
+                                ${link.title} ${badgeHTML}
                             </h3>
-                            <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate mt-1 flex items-center gap-1 font-semibold">
-                                <span class="material-symbols-outlined text-sm shrink-0">bookmark</span>
-                                ${linksArray.length === 1 ? linksArray[0].name || 'Link' : 'Tap to expand shortcut list'}
-                                ${linkCountBadge}
+                            <p class="text-xs text-md3-onSurfaceVariant dark:text-md3-darkOutline truncate mt-0.5 font-medium flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">link</span>
+                                ${hasMultiple ? 'Tap to view resources' : linksArray[0].name}
                             </p>
                         </div>
                     </div>
                     
-                    <!-- Contextual menu selector -->
-                    <button onclick="window.openActionMenu(event, '${link.id}', ${!!link.isPinned})" class="action-btn-trigger p-2 text-zinc-400 hover:text-[#4F56A5] dark:hover:text-[#BEC2FF] rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all z-10 shrink-0 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-2xl">more_vert</span>
+                    <button onclick="window.openActionMenu(event, '${link.id}', ${!!link.isPinned})" class="action-btn-trigger p-2 text-md3-onSurfaceVariant hover:bg-md3-surfaceVariant dark:hover:bg-[#2B2B36] rounded-full transition-colors shrink-0 outline-none">
+                        <span class="material-symbols-outlined">more_vert</span>
                     </button>
                 </div>
             `;
         }
 
-        // Initialize Drag and drop handlers
         function initDragAndDrop() {
             if (sortablePinned) sortablePinned.destroy();
             if (sortableUnpinned) sortableUnpinned.destroy();
 
             const commonConfig = {
                 animation: 250, 
-                easing: "cubic-bezier(0.2, 0, 0, 1)", 
                 handle: '.drag-handle',
-                delay: 100, 
+                delay: 150, 
                 delayOnTouchOnly: true,
                 ghostClass: "sortable-ghost",
                 chosenClass: "sortable-chosen",
+                dragClass: "sortable-drag",
                 onEnd: async function (evt) {
                     const container = evt.to;
                     const items = container.children;
@@ -746,7 +652,6 @@
                             updateDoc(docRef, { order: i }).catch(e => console.error(e));
                         }
                     }
-                    showToast("Order synchronized to storage cloud");
                 }
             };
 
@@ -754,7 +659,6 @@
             sortableUnpinned = Sortable.create(elUnpinnedContainer, commonConfig);
         }
 
-        // Opens the MD3 floating context actions sheet near the button
         window.openActionMenu = (event, id, isPinned) => {
             event.stopPropagation();
             
@@ -764,38 +668,33 @@
             const pinIcon = document.getElementById('icon-action-pin');
             const pinText = document.getElementById('text-action-pin');
             if (isPinned) {
-                pinIcon.textContent = "unpin_scroll";
-                pinIcon.classList.add('text-amber-500');
+                pinIcon.style.fontVariationSettings = "'FILL' 1";
                 pinText.innerText = "Unpin";
             } else {
-                pinIcon.textContent = "push_pin";
-                pinIcon.classList.remove('text-amber-500');
+                pinIcon.style.fontVariationSettings = "'FILL' 0";
                 pinText.innerText = "Pin";
             }
 
             const rect = event.currentTarget.getBoundingClientRect();
             
-            // Positioning mechanics (ensures sheet opens logically based on viewport bounds)
-            let top = rect.top + window.scrollY - 85; 
-            let left = rect.left + window.scrollX - 110; 
+            let top = rect.bottom + 5; 
+            let left = rect.left - 100; 
 
-            if (window.innerWidth < 640) {
-                top = rect.top + window.scrollY - 75;
-                left = Math.max(10, (window.innerWidth / 2) - 100); 
-            }
+            if (top + 150 > window.innerHeight) top = rect.top - 150;
 
             elActionMenu.style.top = `${top}px`;
             elActionMenu.style.left = `${left}px`;
             
-            elActionMenu.classList.remove('hidden-view');
+            elActionMenu.classList.remove('menu-closed');
+            elActionMenu.classList.add('menu-open');
         };
 
         function closeActionMenu() {
-            elActionMenu.classList.add('hidden-view');
+            elActionMenu.classList.remove('menu-open');
+            elActionMenu.classList.add('menu-closed');
             actionMenuTargetId = null;
         }
 
-        // Handles custom Modal Confirmation box instead of alert()
         window.closeDeleteConfirmModal = () => {
             elDeleteConfirmModal.classList.add('hidden-view');
             deleteCandidateId = null;
@@ -805,61 +704,70 @@
             if (deleteCandidateId && currentUser) {
                 try {
                     await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', deleteCandidateId));
-                    showToast("Card wiped permanently.");
+                    showToast("Workspace card deleted.");
                 } catch (e) {
-                    showToast("Delete failure, try again.", true);
+                    showToast("Error deleting card.", true);
                 } finally {
                     window.closeDeleteConfirmModal();
                 }
             }
         });
 
-        // Trigger chosen context actions
         window.triggerAction = async (actionType) => {
             const id = actionMenuTargetId;
             if(!id || !currentUser) return;
-
             closeActionMenu();
 
-            try {
-                if (actionType === 'pin') {
-                    const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
-                    await updateDoc(docRef, { isPinned: !actionMenuTargetIsPinned });
-                    showToast(actionMenuTargetIsPinned ? "Removed from Pinned list." : "Pinned to workspace dashboard!");
-                } 
-                else if (actionType === 'delete') {
-                    // Triggers gorgeous custom MD3 confirmation layout, avoiding ALERT/CONFIRM
-                    deleteCandidateId = id;
-                    elDeleteConfirmModal.classList.remove('hidden-view');
-                }
-                else if (actionType === 'edit') {
-                    window.editCard(id);
-                }
-            } catch (error) {
-                console.error("Action error:", error);
+            if (actionType === 'pin') {
+                const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', id);
+                await updateDoc(docRef, { isPinned: !actionMenuTargetIsPinned });
+                showToast(actionMenuTargetIsPinned ? "Card unpinned." : "Card pinned to top.");
+            } 
+            else if (actionType === 'delete') {
+                deleteCandidateId = id;
+                elDeleteConfirmModal.classList.remove('hidden-view');
+            }
+            else if (actionType === 'edit') {
+                window.editCard(id);
             }
         };
 
-        // Handles direct redirects or prompts dynamic choices modal
         window.handleCardClick = (id) => {
             const linkData = allLinksData.find(l => l.id === id);
             if(!linkData) return;
 
             let linksArray = linkData.links || [];
-            if (linksArray.length === 0 && linkData.url) {
-                linksArray = [{ name: 'Primary Link', url: linkData.url }];
-            }
+            if (linksArray.length === 0 && linkData.url) linksArray = [{ name: 'Primary Link', url: linkData.url }];
 
             if (linksArray.length === 1) {
                 window.open(linksArray[0].url, '_blank');
             } else if (linksArray.length > 1) {
                 document.getElementById('select-modal-title').innerText = linkData.title;
                 const linksContainer = document.getElementById('select-modal-links');
+                const imageContainer = document.getElementById('select-modal-image-container');
                 
+                // Set Left Side Image or Fallback Icon
+                if (linkData.imageUrl) {
+                    imageContainer.innerHTML = `
+                        <img src="${linkData.imageUrl}" alt="${linkData.title}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x400/4F56A5/FFFFFF?text=Card'" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent sm:bg-gradient-to-l sm:from-black/30 opacity-60"></div>
+                    `;
+                } else {
+                    imageContainer.innerHTML = `
+                        <div class="w-full h-full flex flex-col items-center justify-center bg-md3-primaryContainer dark:bg-md3-darkPrimaryContainer">
+                            <span class="material-symbols-outlined text-6xl text-md3-primary dark:text-md3-darkPrimary mb-2 opacity-80">account_tree</span>
+                        </div>
+                    `;
+                }
+
+                // Generate Styled Links on the Right Side
                 linksContainer.innerHTML = linksArray.map(l => `
-                    <button onclick="window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-white hover:bg-zinc-100 dark:bg-zinc-900 dark:hover:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-800 transition-all shadow-xs flex justify-between items-center group">
-                        <span class="font-bold text-sm text-zinc-800 dark:text-zinc-200 group-hover:text-[#4F56A5] dark:group-hover:text-[#BEC2FF] transition-colors">${l.name}</span>
-                        <span class="material-symbols-outlined text-zinc-400 group-hover:text-[#4F56A5] dark:group-hover:text-[#BEC2FF] transform group-hover:translate-x-1 transition-all text-base">arrow_forward</span>
+                    <button onclick="window.open('${l.url}', '_blank'); window.closeLinkModal()" class="w-full text-left p-4 bg-transparent hover:bg-md3-surfaceVariant dark:hover:bg-[#2B2B36] rounded-[16px] border border-md3-outline/30 dark:border-md3-darkOutline/30 transition-all flex justify-between items-center group outline-none">
+                        <div class="flex flex-col overflow-hidden pr-3">
+                            <span class="font-bold text-sm text-md3-onSurface dark:text-md3-darkOnSurface group-hover:text-md3-primary dark:group-hover:text-md3-darkPrimary transition-colors truncate">${l.name}</span>
+                            <span class="text-[11px] text-md3-onSurfaceVariant dark:text-md3-darkOutline truncate mt-0.5">${l.url}</span>
+                        </div>
+                        <span class="material-symbols-outlined text-md3-onSurfaceVariant group-hover:text-md3-primary dark:group-hover:text-md3-darkPrimary text-lg shrink-0">arrow_forward</span>
                     </button>
                 `).join('');
                 
@@ -867,22 +775,19 @@
             }
         };
 
-        // Setup editing environment for existing card configuration
         window.editCard = (id) => {
             const linkData = allLinksData.find(l => l.id === id);
             if(!linkData) return;
 
             editingCardId = id;
-            document.getElementById('modal-heading').querySelector('span').innerText = "Modify Reference Card";
-            document.getElementById('btn-save').querySelector('span:last-child').innerText = "Update Workspace";
+            document.getElementById('modal-heading').innerText = "Edit Card";
+            document.getElementById('btn-save').innerHTML = `<span class="material-symbols-outlined text-[20px]">save</span> <span>Update Card</span>`;
 
             document.getElementById('input-title').value = linkData.title;
             document.getElementById('input-image').value = linkData.imageUrl || "";
 
             let linksArray = linkData.links || [];
-            if (linksArray.length === 0 && linkData.url) {
-                linksArray = [{ name: 'Default Link', url: linkData.url }];
-            }
+            if (linksArray.length === 0 && linkData.url) linksArray = [{ name: 'Main Link', url: linkData.url }];
 
             const container = document.getElementById('dynamic-links-container');
             container.innerHTML = ''; 
@@ -891,30 +796,28 @@
                 const newDiv = document.createElement('div');
                 newDiv.className = 'link-entry flex gap-2 items-center';
                 newDiv.innerHTML = `
-                    <input type="text" value="${l.name}" placeholder="Tag (e.g. Theory)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
-                    <input type="url" value="${l.url}" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
-                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-lg">delete</span>
+                    <input type="text" value="${l.name}" placeholder="Label" required class="link-name w-1/3 bg-transparent border-2 border-md3-outline/50 dark:border-md3-darkOutline/50 rounded-[12px] px-3 py-3 text-sm text-md3-onSurface dark:text-md3-darkOnSurface focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary transition-colors" />
+                    <input type="url" value="${l.url}" placeholder="URL" required class="link-url flex-1 bg-transparent border-2 border-md3-outline/50 dark:border-md3-darkOutline/50 rounded-[12px] px-3 py-3 text-sm text-md3-onSurface dark:text-md3-darkOnSurface focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary transition-colors" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-3 text-md3-error hover:bg-md3-errorContainer rounded-full transition-colors outline-none flex items-center justify-center">
+                        <span class="material-symbols-outlined">delete</span>
                     </button>
                 `;
                 container.appendChild(newDiv);
             });
 
             if(linksArray.length === 0) window.addLinkField(); 
-            
             elModal.classList.remove('hidden-view');
         };
 
-        // Generates empty forms fields
         window.addLinkField = () => {
             const container = document.getElementById('dynamic-links-container');
             const newDiv = document.createElement('div');
-            newDiv.className = 'link-entry flex gap-2 items-center';
+            newDiv.className = 'link-entry flex gap-2 items-center animate-modal';
             newDiv.innerHTML = `
-                <input type="text" placeholder="Tag (e.g. Chat)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
-                <input type="url" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
-                <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-lg">delete</span>
+                <input type="text" placeholder="Label" required class="link-name w-1/3 bg-transparent border-2 border-md3-outline/50 dark:border-md3-darkOutline/50 rounded-[12px] px-3 py-3 text-sm text-md3-onSurface dark:text-md3-darkOnSurface focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary transition-colors" />
+                <input type="url" placeholder="URL" required class="link-url flex-1 bg-transparent border-2 border-md3-outline/50 dark:border-md3-darkOutline/50 rounded-[12px] px-3 py-3 text-sm text-md3-onSurface dark:text-md3-darkOnSurface focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary transition-colors" />
+                <button type="button" onclick="this.parentElement.remove()" class="p-3 text-md3-error hover:bg-md3-errorContainer rounded-full transition-colors outline-none flex items-center justify-center">
+                    <span class="material-symbols-outlined">delete</span>
                 </button>
             `;
             container.appendChild(newDiv);
@@ -923,21 +826,20 @@
         function resetForm() {
             elAddForm.reset();
             editingCardId = null;
-            document.getElementById('modal-heading').querySelector('span').innerText = "Add Workspace Card";
-            document.getElementById('btn-save').querySelector('span:last-child').innerText = "Save Workspace";
+            document.getElementById('modal-heading').innerText = "Add Workspace Card";
+            document.getElementById('btn-save').innerHTML = `<span class="material-symbols-outlined text-[20px]">check</span> <span>Save Workspace</span>`;
             
             document.getElementById('dynamic-links-container').innerHTML = `
                 <div class="link-entry flex gap-2 items-center">
-                    <input type="text" placeholder="Tag (e.g. Main Source)" required class="link-name w-1/3 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
-                    <input type="url" placeholder="https://..." required class="link-url flex-1 px-3 py-2.5 text-xs rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-[#4F56A5] dark:focus:ring-[#BEC2FF] text-zinc-900 dark:text-white" />
-                    <button type="button" onclick="this.parentElement.remove()" class="p-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-xl border border-zinc-200 dark:border-zinc-800 shrink-0 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-lg">delete</span>
+                    <input type="text" placeholder="Label" required class="link-name w-1/3 bg-transparent border-2 border-md3-outline/50 dark:border-md3-darkOutline/50 rounded-[12px] px-3 py-3 text-sm text-md3-onSurface dark:text-md3-darkOnSurface focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary transition-colors" />
+                    <input type="url" placeholder="URL" required class="link-url flex-1 bg-transparent border-2 border-md3-outline/50 dark:border-md3-darkOutline/50 rounded-[12px] px-3 py-3 text-sm text-md3-onSurface dark:text-md3-darkOnSurface focus:outline-none focus:border-md3-primary dark:focus:border-md3-darkPrimary transition-colors" />
+                    <button type="button" onclick="this.parentElement.remove()" class="p-3 text-md3-error hover:bg-md3-errorContainer rounded-full transition-colors outline-none flex items-center justify-center">
+                        <span class="material-symbols-outlined">delete</span>
                     </button>
                 </div>
             `;
         }
 
-        // Form Submit Handler
         elAddForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) return;
@@ -951,57 +853,38 @@
             linkEntries.forEach(entry => {
                 const name = entry.querySelector('.link-name').value;
                 const url = entry.querySelector('.link-url').value;
-                if(name && url) {
-                    links.push({ name, url });
-                }
+                if(name && url) links.push({ name, url });
             });
 
             if(links.length === 0) {
-                showToast("Please add at least one valid reference link.", true);
+                showToast("Add at least one link.", true);
                 return;
             }
 
             btn.disabled = true;
-            btn.innerHTML = `<span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> <span>Saving...</span>`;
+            btn.innerHTML = `<span class="material-symbols-outlined animate-spin">sync</span>`;
 
             try {
-                // STRICT PATH: /artifacts/{appId}/users/{userId}/{collectionName}
                 if (editingCardId) {
                     const docRef = doc(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks', editingCardId);
-                    await updateDoc(docRef, {
-                        title: title,
-                        links: links,
-                        imageUrl: img || ''
-                    });
-                    showToast("Reference Card upgraded successfully.");
+                    await updateDoc(docRef, { title, links, imageUrl: img || '' });
+                    showToast("Card updated successfully.");
                 } else {
                     const maxOrder = allLinksData.length > 0 ? Math.max(...allLinksData.map(l => typeof l.order === 'number' ? l.order : 0)) : 0;
-                    
                     const linksColRef = collection(db, 'artifacts', APP_ID, 'users', currentUser.uid, 'savedLinks');
                     await addDoc(linksColRef, {
-                        title: title,
-                        links: links,
-                        imageUrl: img || '',
-                        isPinned: false,
-                        order: maxOrder + 1,
-                        createdAt: serverTimestamp()
+                        title, links, imageUrl: img || '', isPinned: false, order: maxOrder + 1, createdAt: serverTimestamp()
                     });
-                    showToast("New Shortcut created inside personal database.");
+                    showToast("Card created successfully.");
                 }
-                
                 window.closeModal();
             } catch (error) {
-                console.error("Database writing error: ", error);
-                showToast("An unexpected error blocked saving.", true);
+                showToast("Error saving card.", true);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = editingCardId 
-                    ? `<span class="material-symbols-outlined text-sm">done</span> <span>Update Workspace</span>` 
-                    : `<span class="material-symbols-outlined text-sm">done</span> <span>Save Workspace</span>`;
             }
         });
 
-        // Tab switching controller with MD3 Pill indicators sliding animations
         window.switchTab = (tab) => {
             activeTab = tab;
             
@@ -1011,49 +894,57 @@
             elTabHome.classList.toggle('hidden-view', tab !== 'home');
             elTabSettings.classList.toggle('hidden-view', tab !== 'settings');
             
-            document.getElementById('btn-add-desktop').classList.toggle('hidden-view', tab !== 'home');
-            
-            document.getElementById('header-title').textContent = tab === 'home' ? 'Dashboard' : 'Settings';
+            document.getElementById('header-title').textContent = tab === 'home' ? 'My Workspace' : 'Settings';
 
-            // Active / Inactive State Switch UI for Sidebar
-            const pillHomeD = document.getElementById('pill-home-desktop');
-            const pillSetD = document.getElementById('pill-settings-desktop');
+            // Desktop Tab Active States
             const btnHomeD = document.getElementById('nav-home-desktop');
             const btnSetD = document.getElementById('nav-settings-desktop');
-
-            const pillHomeM = document.getElementById('pill-home-mobile');
-            const pillSetM = document.getElementById('pill-settings-mobile');
-            const btnHomeM = document.getElementById('nav-home-mobile');
-            const btnSetM = document.getElementById('nav-settings-mobile');
+            const iconHomeD = document.getElementById('icon-home-desktop');
+            const iconSetD = document.getElementById('icon-settings-desktop');
+            
+            // Mobile Tab Active States
+            const indHomeM = document.getElementById('nav-home-indicator');
+            const indSetM = document.getElementById('nav-settings-indicator');
+            const iconHomeM = document.getElementById('icon-home-mobile');
+            const iconSetM = document.getElementById('icon-settings-mobile');
+            const textHomeM = document.getElementById('nav-home-mobile').querySelector('span:last-child');
+            const textSetM = document.getElementById('nav-settings-mobile').querySelector('span:last-child');
 
             if (tab === 'home') {
-                // Desktop pill states
-                pillHomeD.className = "absolute inset-0 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
-                pillSetD.className = "absolute inset-0 bg-transparent rounded-full -z-10 scale-x-75 opacity-0 transition-all duration-200 md3-transition";
-                btnHomeD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-[#4F56A5] dark:text-[#BEC2FF]";
-                btnSetD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-zinc-500 dark:text-zinc-400";
+                btnHomeD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 bg-md3-secondaryContainer dark:bg-[#373D8C] text-md3-onSecondaryContainer dark:text-md3-darkOnPrimary font-semibold";
+                iconHomeD.style.fontVariationSettings = "'FILL' 1";
+                
+                btnSetD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 hover:bg-md3-surfaceVariant dark:hover:bg-md3-darkSurfaceVariant text-md3-onSurfaceVariant dark:text-md3-darkOnSurface font-medium";
+                iconSetD.style.fontVariationSettings = "'FILL' 0";
 
-                // Mobile pill states
-                pillHomeM.className = "w-16 h-8 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full absolute top-1 -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
-                pillSetM.className = "w-16 h-8 bg-transparent rounded-full absolute top-1 -z-10 scale-x-50 opacity-0 transition-all duration-200 md3-transition";
-                btnHomeM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-[#4F56A5] dark:text-[#BEC2FF]";
-                btnSetM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-zinc-500 dark:text-zinc-500";
+                indHomeM.className = "w-16 h-8 rounded-full flex items-center justify-center bg-md3-secondaryContainer dark:bg-[#373D8C] transition-colors";
+                iconHomeM.className = "material-symbols-outlined text-md3-onSecondaryContainer dark:text-md3-darkOnPrimaryContainer";
+                iconHomeM.style.fontVariationSettings = "'FILL' 1";
+                textHomeM.className = "text-[11px] font-semibold text-md3-onSurface dark:text-md3-darkOnSurface";
+
+                indSetM.className = "w-16 h-8 rounded-full flex items-center justify-center transition-colors";
+                iconSetM.className = "material-symbols-outlined text-md3-onSurfaceVariant dark:text-md3-darkOutline";
+                iconSetM.style.fontVariationSettings = "'FILL' 0";
+                textSetM.className = "text-[11px] font-medium text-md3-onSurfaceVariant dark:text-md3-darkOutline";
             } else {
-                // Desktop pill states
-                pillHomeD.className = "absolute inset-0 bg-transparent rounded-full -z-10 scale-x-75 opacity-0 transition-all duration-200 md3-transition";
-                pillSetD.className = "absolute inset-0 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
-                btnHomeD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-zinc-500 dark:text-zinc-400";
-                btnSetD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 relative text-[#4F56A5] dark:text-[#BEC2FF]";
+                btnSetD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 bg-md3-secondaryContainer dark:bg-[#373D8C] text-md3-onSecondaryContainer dark:text-md3-darkOnPrimary font-semibold";
+                iconSetD.style.fontVariationSettings = "'FILL' 1";
 
-                // Mobile pill states
-                pillHomeM.className = "w-16 h-8 bg-transparent rounded-full absolute top-1 -z-10 scale-x-50 opacity-0 transition-all duration-200 md3-transition";
-                pillSetM.className = "w-16 h-8 bg-[#E0E0FF] dark:bg-[#373D8C] rounded-full absolute top-1 -z-10 scale-x-100 opacity-100 transition-all duration-200 md3-transition";
-                btnHomeM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-zinc-500 dark:text-zinc-500";
-                btnSetM.className = "flex flex-col items-center p-2 relative shrink-0 transition-transform active:scale-90 text-[#4F56A5] dark:text-[#BEC2FF]";
+                btnHomeD.className = "w-full flex items-center gap-4 px-4 py-3.5 rounded-full transition-all duration-200 hover:bg-md3-surfaceVariant dark:hover:bg-md3-darkSurfaceVariant text-md3-onSurfaceVariant dark:text-md3-darkOnSurface font-medium";
+                iconHomeD.style.fontVariationSettings = "'FILL' 0";
+
+                indSetM.className = "w-16 h-8 rounded-full flex items-center justify-center bg-md3-secondaryContainer dark:bg-[#373D8C] transition-colors";
+                iconSetM.className = "material-symbols-outlined text-md3-onSecondaryContainer dark:text-md3-darkOnPrimaryContainer";
+                iconSetM.style.fontVariationSettings = "'FILL' 1";
+                textSetM.className = "text-[11px] font-semibold text-md3-onSurface dark:text-md3-darkOnSurface";
+
+                indHomeM.className = "w-16 h-8 rounded-full flex items-center justify-center transition-colors";
+                iconHomeM.className = "material-symbols-outlined text-md3-onSurfaceVariant dark:text-md3-darkOutline";
+                iconHomeM.style.fontVariationSettings = "'FILL' 0";
+                textHomeM.className = "text-[11px] font-medium text-md3-onSurfaceVariant dark:text-md3-darkOutline";
             }
         };
 
-        // Switch color spectrum
         window.toggleTheme = () => {
             isDarkMode = !isDarkMode;
             if (isDarkMode) {
@@ -1064,24 +955,18 @@
                 localStorage.setItem('theme', 'light');
             }
             updateThemeUI();
-            showToast(isDarkMode ? "Dark Theme spectrum activated" : "Light Theme spectrum activated");
         };
 
         function updateThemeUI() {
-            const btn = document.getElementById('btn-theme');
             const dot = document.getElementById('theme-toggle-dot');
-            const icon = document.getElementById('theme-toggle-dot-icon');
+            const icon = document.getElementById('theme-icon');
 
             if (isDarkMode) {
-                btn.className = "w-14 h-8 rounded-full transition-colors relative bg-[#373D8C] focus:outline-none md3-transition";
-                dot.className = "w-6 h-6 rounded-full bg-[#BEC2FF] absolute top-1 left-7 shadow-sm md3-transition flex items-center justify-center";
-                icon.textContent = "dark_mode";
-                icon.className = "material-symbols-outlined text-[14px] text-zinc-950";
+                dot.classList.replace('translate-x-0', 'translate-x-6');
+                icon.innerText = 'dark_mode';
             } else {
-                btn.className = "w-14 h-8 rounded-full transition-colors relative bg-zinc-300 focus:outline-none md3-transition";
-                dot.className = "w-6 h-6 rounded-full bg-white absolute top-1 left-1 shadow-sm md3-transition flex items-center justify-center";
-                icon.textContent = "light_mode";
-                icon.className = "material-symbols-outlined text-[14px] text-zinc-600";
+                dot.classList.replace('translate-x-6', 'translate-x-0');
+                icon.innerText = 'light_mode';
             }
         }
 
@@ -1090,15 +975,9 @@
             elModal.classList.remove('hidden-view');
         };
 
-        window.closeModal = () => {
-            elModal.classList.add('hidden-view');
-        };
+        window.closeModal = () => elModal.classList.add('hidden-view');
+        window.closeLinkModal = () => elLinkModal.classList.add('hidden-view');
 
-        window.closeLinkModal = () => {
-            elLinkModal.classList.add('hidden-view');
-        };
-
-        // Start App Instance on load complete
         init();
     </script>
 </body>
