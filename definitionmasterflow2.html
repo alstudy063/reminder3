@@ -127,7 +127,7 @@
         .backface-hidden { backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
         
-        /* Prevent text selection security (from previous app version) */
+        /* Prevent text selection security */
         body { 
             transition: background-color 0.3s ease, color 0.3s ease; 
             -webkit-user-select: none;
@@ -155,6 +155,17 @@
             transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
         input:active, textarea:active { transform: none !important; }
+
+        /* Modern Scroll Animation Classes */
+        .scroll-animate {
+            opacity: 0;
+            transform: translateY(20px) scale(0.98);
+            transition: opacity 0.5s cubic-bezier(0.2, 1, 0.4, 1), transform 0.5s cubic-bezier(0.2, 1, 0.4, 1);
+        }
+        .scroll-animate.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     </style>
 </head>
 
@@ -233,21 +244,21 @@
             
             <div id="view-explore" class="max-w-6xl mx-auto space-y-8 animate-fade-in">
                 
-                <div id="daily-card" class="p-8 rounded-[32px] bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container relative overflow-hidden flex flex-col md:flex-row gap-6 items-start md:items-center shadow-sm">
+                <div id="daily-card" class="p-8 rounded-[32px] bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container relative overflow-hidden flex flex-col md:flex-row gap-6 items-start md:items-center shadow-sm hidden">
                     <div class="flex-1 space-y-4 z-10 w-full">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2 text-md-primary dark:text-md-dark-primary">
                                 <span class="material-symbols-rounded text-[20px]">auto_awesome</span>
-                                <span class="text-sm font-bold uppercase tracking-widest">Daily Concept</span>
+                                <span class="text-sm font-bold uppercase tracking-widest">Random Concept</span>
                             </div>
                             <button onclick="app.pickRandomDaily()" class="w-10 h-10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
                                 <span class="material-symbols-rounded text-xl">refresh</span>
                             </button>
                         </div>
-                        <h3 id="daily-term" class="text-4xl md:text-5xl font-normal leading-tight">Photosynthesis</h3>
-                        <p id="daily-def" class="text-base md:text-lg opacity-90 leading-relaxed max-w-3xl">The process by which green plants and some other organisms use sunlight to synthesize foods from carbon dioxide and water.</p>
+                        <h3 id="daily-term" class="text-4xl md:text-5xl font-normal leading-tight">...</h3>
+                        <p id="daily-def" class="text-base md:text-lg opacity-90 leading-relaxed max-w-3xl">...</p>
                         <div class="pt-2">
-                            <span id="daily-category" class="inline-flex items-center px-4 py-1.5 rounded-full bg-md-primary/10 dark:bg-md-dark-primary/20 text-sm font-medium">Botany</span>
+                            <span id="daily-category" class="inline-flex items-center px-4 py-1.5 rounded-full bg-md-primary/10 dark:bg-md-dark-primary/20 text-sm font-medium">...</span>
                         </div>
                     </div>
                     <span class="material-symbols-rounded absolute -right-10 -bottom-10 text-[200px] opacity-[0.05] pointer-events-none transform rotate-12">biotech</span>
@@ -265,37 +276,73 @@
                 </div>
             </div>
 
-            <div id="view-flashcards" class="hidden h-full flex-col max-w-3xl mx-auto py-4">
-                <div class="flex-1 flex flex-col justify-center perspective-1000 w-full cursor-pointer group" onclick="app.flipCard()">
-                    <div id="flashcard-inner" class="transform-style-3d transition-transform duration-[600ms] w-full min-h-[400px] relative rounded-[32px] shadow-md3-2 hover:shadow-md3-3 bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest flex flex-col justify-between items-center text-center">
-                        
-                        <div class="backface-hidden w-full h-full absolute inset-0 p-10 flex flex-col justify-center items-center">
-                            <span class="text-sm font-bold tracking-wider text-md-primary dark:text-md-dark-primary mb-6 px-4 py-1 rounded-full bg-md-primary/10 dark:bg-md-dark-primary/20" id="fc-category">Category</span>
-                            <h2 class="text-4xl md:text-5xl font-normal text-md-on-surface dark:text-md-dark-on-surface" id="fc-term">Term</h2>
-                            <div class="absolute bottom-8 flex items-center gap-2 text-md-on-surface-variant dark:text-md-dark-on-surface-variant opacity-70 group-hover:opacity-100 transition-opacity">
-                                <span class="material-symbols-rounded">touch_app</span> 
-                                <span class="text-sm font-medium">Tap to flip</span>
-                            </div>
-                        </div>
+            <div id="view-flashcards" class="hidden h-full flex-col max-w-3xl mx-auto py-4 relative">
+                
+                <!-- Empty State -->
+                <div id="fc-empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-md-surface dark:bg-md-dark-surface z-10">
+                    <span class="material-symbols-rounded text-6xl text-md-on-surface-variant dark:text-md-dark-on-surface-variant opacity-50 mb-4">note_add</span>
+                    <h3 class="text-2xl font-medium mb-2 text-md-on-surface dark:text-md-dark-on-surface">No Terms Available</h3>
+                    <p class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant mb-6">Add some terms in the Explore tab to start learning.</p>
+                    <button onclick="app.setTab('explore'); app.openModal('addModal')" class="px-6 py-3 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary shadow-sm hover:shadow-md transition-shadow font-medium">Add New Term</button>
+                </div>
 
-                        <div class="backface-hidden rotate-y-180 absolute inset-0 p-10 rounded-[32px] bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container flex flex-col justify-center items-center text-center shadow-inner">
-                            <p class="text-xl md:text-2xl leading-relaxed font-light" id="fc-def">Definition goes here.</p>
-                            <div class="absolute bottom-8 flex items-center gap-2 opacity-70">
-                                <span class="material-symbols-rounded">refresh</span> 
-                                <span class="text-sm font-medium">Tap to return</span>
+                <!-- Completion State -->
+                <div id="fc-complete-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-md-surface dark:bg-md-dark-surface z-10">
+                    <span class="material-symbols-rounded text-6xl text-md-primary dark:text-md-dark-primary mb-4">celebration</span>
+                    <h3 class="text-3xl font-normal mb-2 text-md-on-surface dark:text-md-dark-on-surface">Great Job!</h3>
+                    <p class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant mb-6">You've completed your flashcards for this session.</p>
+                    <button onclick="app.startNewSession()" class="px-8 py-3 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary shadow-md hover:shadow-lg transition-shadow font-medium">Play Again</button>
+                </div>
+
+                <!-- Active Flashcard Container -->
+                <div id="fc-card-container" class="flex-1 flex flex-col w-full h-full">
+                    <div class="flex-1 flex flex-col justify-center perspective-1000 w-full cursor-pointer group" onclick="app.flipCard()">
+                        <div id="flashcard-inner" class="transform-style-3d transition-transform duration-[600ms] w-full min-h-[400px] relative rounded-[32px] shadow-md3-2 hover:shadow-md3-3 bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest flex flex-col justify-between items-center text-center">
+                            
+                            <div class="backface-hidden w-full h-full absolute inset-0 p-10 flex flex-col justify-center items-center">
+                                <span class="text-sm font-bold tracking-wider text-md-primary dark:text-md-dark-primary mb-6 px-4 py-1 rounded-full bg-md-primary/10 dark:bg-md-dark-primary/20" id="fc-category">Category</span>
+                                <h2 class="text-4xl md:text-5xl font-normal text-md-on-surface dark:text-md-dark-on-surface" id="fc-term">Term</h2>
+                                <div class="absolute bottom-8 flex items-center gap-2 text-md-on-surface-variant dark:text-md-dark-on-surface-variant opacity-70 group-hover:opacity-100 transition-opacity">
+                                    <span class="material-symbols-rounded">touch_app</span> 
+                                    <span class="text-sm font-medium">Tap to flip</span>
+                                </div>
+                            </div>
+
+                            <div class="backface-hidden rotate-y-180 absolute inset-0 p-10 rounded-[32px] bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container flex flex-col justify-center items-center text-center shadow-inner">
+                                <p class="text-xl md:text-2xl leading-relaxed font-light" id="fc-def">Definition goes here.</p>
+                                <div class="absolute bottom-8 flex items-center gap-2 opacity-70">
+                                    <span class="material-symbols-rounded">refresh</span> 
+                                    <span class="text-sm font-medium">Tap to return</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="flex items-center justify-center gap-8 pt-10 pb-4">
-                    <button onclick="app.prevCard()" class="w-16 h-16 flex items-center justify-center rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container hover:bg-md-primary-container dark:hover:bg-md-dark-primary-container transition-colors shadow-sm hover:shadow-md">
-                        <span class="material-symbols-rounded text-2xl">arrow_back</span>
-                    </button>
-                    <span id="fc-counter" class="text-lg font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant w-20 text-center bg-md-surface-container dark:bg-md-dark-surface-container py-2 rounded-full">1 / 10</span>
-                    <button onclick="app.nextCard()" class="w-16 h-16 flex items-center justify-center rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container hover:bg-md-primary-container dark:hover:bg-md-dark-primary-container transition-colors shadow-sm hover:shadow-md">
-                        <span class="material-symbols-rounded text-2xl">arrow_forward</span>
-                    </button>
+                    <!-- Flashcard Controls -->
+                    <div class="h-24 flex items-center justify-center pt-10 pb-4 relative">
+                        
+                        <!-- Navigation (Hidden when flipped) -->
+                        <div id="fc-nav-controls" class="flex items-center justify-center gap-6 w-full transition-opacity duration-300">
+                            <button onclick="app.prevSessionCard(event)" class="w-14 h-14 rounded-full flex items-center justify-center bg-md-surface-variant/80 dark:bg-md-dark-surface-variant/80 text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors shadow-none">
+                                <span class="material-symbols-rounded">arrow_back</span>
+                            </button>
+                            <span id="fc-counter" class="text-lg font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant bg-md-surface-container dark:bg-md-dark-surface-container py-3 px-8 rounded-full shadow-sm">1 / 30</span>
+                            <button onclick="app.skipSessionCard(event)" class="w-14 h-14 rounded-full flex items-center justify-center bg-md-surface-variant/80 dark:bg-md-dark-surface-variant/80 text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors shadow-none">
+                                <span class="material-symbols-rounded">arrow_forward</span>
+                            </button>
+                        </div>
+
+                        <!-- Action Buttons (Shown when flipped) -->
+                        <div id="fc-action-controls" class="absolute inset-0 flex items-center justify-center gap-4 opacity-0 pointer-events-none transition-opacity duration-300 pt-10 pb-4">
+                            <button onclick="app.markWrong(event)" class="px-6 md:px-8 py-3 rounded-full bg-md-error-container dark:bg-md-dark-error-container text-md-on-error-container dark:text-md-dark-on-error-container hover:bg-md-error dark:hover:bg-md-dark-error hover:text-md-on-error dark:hover:text-md-dark-on-error font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2">
+                                <span class="material-symbols-rounded">close</span> Wrong
+                            </button>
+                            <button onclick="app.markCorrect(event)" class="px-6 md:px-8 py-3 rounded-full bg-[#146c2e] dark:bg-[#1a8a3a] text-white hover:bg-[#0f5122] dark:hover:bg-[#146c2e] font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2">
+                                <span class="material-symbols-rounded">check</span> Correct
+                            </button>
+                        </div>
+
+                    </div>
                 </div>
             </div>
 
@@ -307,7 +354,7 @@
 
             <div id="view-settings" class="hidden max-w-3xl mx-auto space-y-6">
                 
-                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-6">
+                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-6 scroll-animate">
                     <div class="flex items-center gap-5">
                         <div class="w-14 h-14 rounded-full bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container flex items-center justify-center shadow-inner">
                             <span class="material-symbols-rounded text-3xl">cloud_done</span>
@@ -323,7 +370,7 @@
                 </div>
 
                 <!-- Font Selection -->
-                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-4">
+                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-4 scroll-animate" style="transition-delay: 50ms;">
                     <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-4">Display & Language</h3>
                     
                     <div class="relative group mt-4">
@@ -337,7 +384,8 @@
                     </div>
                 </div>
 
-                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-4">
+                <!-- Export/Import System -->
+                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-4 scroll-animate" style="transition-delay: 100ms;">
                     <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-4">Data Management</h3>
                     
                     <div class="flex flex-col gap-3">
@@ -401,6 +449,7 @@
         </nav>
     </main>
 
+    <!-- Add/Edit Modal -->
     <div id="addModal" class="hidden fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high w-full max-w-lg rounded-[28px] p-8 shadow-md3-4 transform transition-all scale-100">
             <div class="flex items-center justify-between mb-8">
@@ -489,6 +538,7 @@
         </div>
     </div>
 
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-24 md:bottom-8 left-1/2 -translate-x-1/2 bg-md-on-surface dark:bg-md-dark-on-surface text-md-surface dark:text-md-dark-surface text-sm px-4 py-3 rounded-[8px] shadow-md3-3 z-[60] opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-3 min-w-[320px]">
         <span id="toast-message" class="flex-1 font-medium">Notification</span>
         <button onclick="document.getElementById('toast').classList.add('opacity-0')" class="text-md-primary-container dark:text-md-dark-primary-container font-medium hover:opacity-80 transition-opacity">OK</button>
@@ -496,20 +546,17 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const PRESET_DEFINITIONS = [
-            { id: "p1", term: "Photosynthesis", category: "Botany", definition: "Process by which plants use sunlight, water and carbon dioxide to create oxygen and energy in the form of sugar.", favorite: false },
-            { id: "p2", term: "Mitosis", category: "Cell Biology", definition: "A type of cell division that results in two daughter cells each having the same number and kind of chromosomes.", favorite: false },
-            { id: "p3", term: "DNA Replication", category: "Genetics", definition: "The biological process of producing two identical replicas of DNA from one original DNA molecule.", favorite: false },
-            { id: "p4", term: "Homeostasis", category: "Anatomy", definition: "The state of steady internal, physical, and chemical conditions maintained by living systems.", favorite: false },
-            { id: "p5", term: "Osmosis", category: "Cell Biology", definition: "Net movement of water molecules across a selectively permeable membrane from higher to lower water potential.", favorite: false }
-        ];
+        // Removed samples. Starts fresh.
+        const PRESET_DEFINITIONS = [];
 
         const state = {
             definitions: [], activeTab: 'explore', selectedCategory: 'All', searchQuery: '',
-            darkMode: false, user: null, flashcardIndex: 0, isCardFlipped: false
+            darkMode: false, user: null, 
+            sessionCards: [], sessionIndex: 0, isCardFlipped: false, maxSessionIndex: 0,
+            skipsToday: 0, lastSkipDate: ''
         };
 
         let db = null; let auth = null; let unsubscribeSnapshot = null;
@@ -520,10 +567,25 @@
             return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         };
 
+        // Scroll Animation Observer Setup
+        const initScrollAnimations = () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Only animate once
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+            
+            document.querySelectorAll('.scroll-animate').forEach(el => {
+                observer.observe(el);
+            });
+        };
+
         const initFirebase = async () => {
             try {
                 let firebaseConfig;
-                // Use system provided config first, fallback to manual config
                 if (typeof __firebase_config !== 'undefined') {
                     firebaseConfig = JSON.parse(__firebase_config);
                 } else {
@@ -541,7 +603,6 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
 
-                // ALWAYS authenticate first before any snapshot or database queries
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     try { 
                         await signInWithCustomToken(auth, __initial_auth_token); 
@@ -586,15 +647,24 @@
         const appWindow = {
             init: () => {
                 const stored = localStorage.getItem('bioterms_md3_v2');
-                if (stored) { try { state.definitions = JSON.parse(stored); } catch(e) { state.definitions = [...PRESET_DEFINITIONS]; } } 
+                if (stored) { 
+                    try { 
+                        state.definitions = JSON.parse(stored); 
+                        // Ensure legacy data has learningStatus
+                        state.definitions.forEach(d => { if(!d.learningStatus) d.learningStatus = 'new'; });
+                    } catch(e) { state.definitions = [...PRESET_DEFINITIONS]; } 
+                } 
                 else { state.definitions = [...PRESET_DEFINITIONS]; appWindow.saveLocalState(); }
+
+                const skipsData = JSON.parse(localStorage.getItem('bioterms_skips') || '{"count":0, "date":""}');
+                state.skipsToday = skipsData.count || 0;
+                state.lastSkipDate = skipsData.date || '';
 
                 if (localStorage.getItem('bioterms_theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     state.darkMode = true; document.documentElement.classList.add('dark');
                     document.getElementById('dark-mode-icon').textContent = 'light_mode';
                 }
 
-                // Load User Font Preference
                 const savedFont = localStorage.getItem('bioterms_font') || 'sans';
                 document.getElementById('font-selector').value = savedFont;
                 appWindow.changeFont(savedFont);
@@ -603,9 +673,9 @@
                 appWindow.renderCategories(); 
                 appWindow.pickRandomDaily(); 
                 appWindow.renderExplore();
+                initScrollAnimations();
             },
 
-            // Handling Font Switching for Sinhala Support
             changeFont: (fontName) => {
                 localStorage.setItem('bioterms_font', fontName);
                 document.body.classList.remove('font-sans', 'font-noto', 'font-yaldevi');
@@ -651,7 +721,6 @@
                     await signInWithPopup(auth, provider);
                     appWindow.closeModal('authModal');
                     appWindow.showToast('Signed in with Google Successfully');
-                    // updateAuthUI is automatically called by onAuthStateChanged
                 } catch (e) {
                     appWindow.showToast('Sign in failed: ' + e.message);
                 }
@@ -689,6 +758,79 @@
                 document.documentElement.classList.toggle('dark', state.darkMode);
                 document.getElementById('dark-mode-icon').textContent = state.darkMode ? 'light_mode' : 'dark_mode';
                 localStorage.setItem('bioterms_theme', state.darkMode ? 'dark' : 'light');
+            },
+
+            exportData: () => {
+                if (state.definitions.length === 0) {
+                    appWindow.showToast("No data to export.");
+                    return;
+                }
+                const dataStr = JSON.stringify(state.definitions, null, 2);
+                const blob = new Blob([dataStr], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'bioterms_backup.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                appWindow.showToast("Data exported successfully");
+            },
+
+            importData: (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (Array.isArray(importedData)) {
+                            // Merge with existing logic based on ID
+                            const currentMap = new Map(state.definitions.map(d => [d.id, d]));
+                            importedData.forEach(item => {
+                                if (item.term && item.definition) { // Basic validation
+                                    if (!item.id) item.id = 'term_' + Date.now() + Math.random().toString(36).substr(2, 5);
+                                    if (!item.learningStatus) item.learningStatus = 'new';
+                                    if (typeof item.favorite === 'undefined') item.favorite = false;
+                                    currentMap.set(item.id, item);
+                                }
+                            });
+                            
+                            state.definitions = Array.from(currentMap.values());
+                            appWindow.saveLocalState();
+                            
+                            // Sync all to cloud if logged in
+                            if (state.user && !state.user.isAnonymous && db) {
+                                state.definitions.forEach(item => {
+                                    setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item).catch(()=>{});
+                                });
+                            }
+
+                            appWindow.renderCurrentView();
+                            appWindow.renderCategories();
+                            appWindow.showToast(`Imported successfully. Total terms: ${state.definitions.length}`);
+                        } else {
+                            appWindow.showToast("Invalid backup file format. Must be an array of terms.");
+                        }
+                    } catch (err) {
+                        appWindow.showToast("Error parsing backup file.");
+                    }
+                };
+                reader.readAsText(file);
+                // Reset file input so same file can be selected again
+                event.target.value = '';
+            },
+
+            resetData: () => {
+                // Keep preset clear requirement. Just reset to empty.
+                state.definitions = [];
+                appWindow.saveLocalState();
+                appWindow.renderCurrentView();
+                appWindow.renderCategories();
+                appWindow.showToast('All local data has been reset.');
+                // Note: intentional not deleting from cloud automatically to prevent accidental nuke.
             },
 
             setTab: (tab) => {
@@ -739,7 +881,16 @@
                     document.getElementById('top-search-container').classList.add('hidden');
                     document.getElementById('header-title').classList.remove('hidden');
                 }
+
+                // If opening flashcards, generate a session if needed
+                if (tab === 'flashcards' && (!state.sessionCards || state.sessionCards.length === 0)) {
+                    appWindow.startNewSession();
+                }
+
                 appWindow.renderCurrentView();
+                
+                // Re-init observers for dynamically rendered content like Explore grid
+                setTimeout(initScrollAnimations, 100);
             },
 
             renderCurrentView: () => {
@@ -778,7 +929,12 @@
             },
 
             pickRandomDaily: () => {
-                if(state.definitions.length === 0) return;
+                const cardEl = document.getElementById('daily-card');
+                if(state.definitions.length === 0) {
+                    cardEl.classList.add('hidden');
+                    return;
+                }
+                cardEl.classList.remove('hidden');
                 const rand = state.definitions[Math.floor(Math.random() * state.definitions.length)];
                 document.getElementById('daily-term').textContent = rand.term;
                 document.getElementById('daily-def').textContent = rand.definition;
@@ -800,14 +956,19 @@
                     return;
                 }
 
-                grid.innerHTML = items.map(item => `
-                    <div class="p-6 rounded-[24px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low shadow-sm hover:shadow-md3-2 transition-shadow flex flex-col justify-between group">
+                // Inject scroll-animate class for modern reveal
+                grid.innerHTML = items.map((item, index) => `
+                    <div class="scroll-animate p-6 rounded-[24px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low shadow-sm hover:shadow-md3-2 transition-all flex flex-col justify-between group" style="transition-delay: ${(index % 6) * 50}ms;">
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <span class="text-xs font-bold uppercase tracking-wider text-md-primary dark:text-md-dark-primary">${escapeHtml(item.category)}</span>
-                                <button onclick="app.toggleFavorite('${item.id}')" class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:text-md-primary dark:hover:text-md-dark-primary transition-colors">
-                                    <span class="material-symbols-rounded ${item.favorite ? 'fill text-md-primary dark:text-md-dark-primary' : ''}">bookmark</span>
-                                </button>
+                                <div class="flex items-center gap-1">
+                                    ${item.learningStatus === 'wrong' ? '<span class="material-symbols-rounded text-[16px] text-md-error">warning</span>' : ''}
+                                    ${item.learningStatus === 'correct' ? '<span class="material-symbols-rounded text-[16px] text-[#146c2e]">check_circle</span>' : ''}
+                                    <button onclick="app.toggleFavorite('${item.id}')" class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:text-md-primary dark:hover:text-md-dark-primary transition-colors ml-1">
+                                        <span class="material-symbols-rounded ${item.favorite ? 'fill text-md-primary dark:text-md-dark-primary' : ''}">bookmark</span>
+                                    </button>
+                                </div>
                             </div>
                             <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(item.term)}</h3>
                             <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant line-clamp-3">${escapeHtml(item.definition)}</p>
@@ -818,6 +979,8 @@
                         </div>
                     </div>
                 `).join('');
+                
+                setTimeout(initScrollAnimations, 50);
             },
 
             saveDefinition: async (e) => {
@@ -828,12 +991,14 @@
                     term: document.getElementById('input-term').value,
                     category: document.getElementById('input-category').value,
                     definition: document.getElementById('input-def').value,
-                    favorite: false
+                    favorite: false,
+                    learningStatus: 'new' // Default status
                 };
 
                 const existingIdx = state.definitions.findIndex(d => d.id === id);
                 if (existingIdx > -1) {
                     data.favorite = state.definitions[existingIdx].favorite;
+                    data.learningStatus = state.definitions[existingIdx].learningStatus || 'new'; // Preserve status on edit
                     state.definitions[existingIdx] = data;
                 } else {
                     state.definitions.push(data);
@@ -844,6 +1009,7 @@
                 appWindow.renderCurrentView();
                 appWindow.renderCategories();
                 appWindow.showToast('Term saved successfully');
+                appWindow.pickRandomDaily(); // Refresh daily if empty
 
                 if (state.user && !state.user.isAnonymous && db) {
                     try {
@@ -865,10 +1031,14 @@
 
             deleteDefinition: async (id) => {
                 state.definitions = state.definitions.filter(d => d.id !== id);
+                // Also remove from active session if present
+                state.sessionCards = state.sessionCards.filter(d => d.id !== id);
+                
                 appWindow.saveLocalState();
                 appWindow.renderCurrentView();
                 appWindow.renderCategories();
                 appWindow.showToast('Term deleted');
+                appWindow.pickRandomDaily(); // In case deleted daily
                 
                 if (state.user && !state.user.isAnonymous && db) {
                     try { await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id)); } 
@@ -890,34 +1060,204 @@
                 }
             },
 
-            renderFlashcard: () => {
-                if(state.definitions.length === 0) return;
+            startNewSession: () => {
+                if (state.definitions.length === 0) {
+                    state.sessionCards = [];
+                    return;
+                }
+
+                // Shuffle helper
+                const shuffle = (array) => {
+                    for (let i = array.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [array[i], array[j]] = [array[j], array[i]];
+                    }
+                    return array;
+                };
+
+                // Prioritize based on constraints: Focus new, wrong flashcards
+                let wrongCards = shuffle(state.definitions.filter(d => d.learningStatus === 'wrong'));
+                let newCards = shuffle(state.definitions.filter(d => !d.learningStatus || d.learningStatus === 'new'));
+                let correctCards = shuffle(state.definitions.filter(d => d.learningStatus === 'correct'));
+
+                let session = [...wrongCards, ...newCards];
+                
+                // Fill up to 30 if needed with correct cards for review
+                if (session.length < 30) {
+                    session = [...session, ...correctCards];
+                }
+
+                // Limit to max 30 per day/session
+                state.sessionCards = session.slice(0, 30);
+                state.sessionIndex = 0;
+                state.maxSessionIndex = 0;
+                
+                // Reset card UI
                 state.isCardFlipped = false;
                 document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
                 
-                if(state.flashcardIndex >= state.definitions.length) state.flashcardIndex = 0;
+                appWindow.renderFlashcard();
+            },
+
+            renderFlashcard: () => {
+                const emptyEl = document.getElementById('fc-empty-state');
+                const completeEl = document.getElementById('fc-complete-state');
+                const cardContEl = document.getElementById('fc-card-container');
+
+                if(state.definitions.length === 0) {
+                    emptyEl.classList.remove('hidden');
+                    completeEl.classList.add('hidden');
+                    cardContEl.classList.add('hidden');
+                    return;
+                }
+
+                if(state.sessionCards.length === 0 || state.sessionIndex >= state.sessionCards.length) {
+                    emptyEl.classList.add('hidden');
+                    completeEl.classList.remove('hidden');
+                    cardContEl.classList.add('hidden');
+                    return;
+                }
+
+                // We have cards to show
+                emptyEl.classList.add('hidden');
+                completeEl.classList.add('hidden');
+                cardContEl.classList.remove('hidden');
                 
-                const card = state.definitions[state.flashcardIndex];
+                const card = state.sessionCards[state.sessionIndex];
                 document.getElementById('fc-category').textContent = card.category;
                 document.getElementById('fc-term').textContent = card.term;
                 document.getElementById('fc-def').textContent = card.definition;
-                document.getElementById('fc-counter').textContent = `${state.flashcardIndex + 1} / ${state.definitions.length}`;
+                document.getElementById('fc-counter').textContent = `${state.sessionIndex + 1} / ${state.sessionCards.length}`;
+
+                appWindow.updateFlashcardControls();
             },
 
             flipCard: () => {
                 state.isCardFlipped = !state.isCardFlipped;
-                if(state.isCardFlipped) document.getElementById('flashcard-inner').classList.add('rotate-y-180');
-                else document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                if(state.isCardFlipped) {
+                    document.getElementById('flashcard-inner').classList.add('rotate-y-180');
+                } else {
+                    document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                }
+                appWindow.updateFlashcardControls();
             },
 
-            nextCard: () => {
-                state.flashcardIndex = (state.flashcardIndex + 1) % state.definitions.length;
-                appWindow.renderFlashcard();
+            updateFlashcardControls: () => {
+                const navCtrl = document.getElementById('fc-nav-controls');
+                const actCtrl = document.getElementById('fc-action-controls');
+
+                if (state.isCardFlipped) {
+                    // Hide arrows/counter, show Correct/Wrong
+                    navCtrl.classList.add('opacity-0', 'pointer-events-none');
+                    actCtrl.classList.remove('opacity-0', 'pointer-events-none');
+                } else {
+                    // Show arrows/counter, hide Correct/Wrong
+                    navCtrl.classList.remove('opacity-0', 'pointer-events-none');
+                    actCtrl.classList.add('opacity-0', 'pointer-events-none');
+                }
             },
-            
-            prevCard: () => {
-                state.flashcardIndex = (state.flashcardIndex - 1 + state.definitions.length) % state.definitions.length;
-                appWindow.renderFlashcard();
+
+            markCorrect: (e) => {
+                e.stopPropagation(); // prevent card flip toggle
+                const card = state.sessionCards[state.sessionIndex];
+                appWindow.updateLearningStatus(card.id, 'correct');
+                appWindow.nextSessionCard();
+            },
+
+            markWrong: (e) => {
+                e.stopPropagation(); // prevent card flip toggle
+                const card = state.sessionCards[state.sessionIndex];
+                appWindow.updateLearningStatus(card.id, 'wrong');
+                appWindow.nextSessionCard();
+            },
+
+            updateLearningStatus: (id, status) => {
+                const defIndex = state.definitions.findIndex(d => d.id === id);
+                if(defIndex > -1) {
+                    state.definitions[defIndex].learningStatus = status;
+                    appWindow.saveLocalState();
+                    
+                    if (state.user && !state.user.isAnonymous && db) {
+                        setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id), state.definitions[defIndex]).catch(()=>{});
+                    }
+                }
+            },
+
+            nextSessionCard: () => {
+                // Flip back to front visually first
+                state.isCardFlipped = false;
+                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                appWindow.updateFlashcardControls();
+                
+                // Wait for flip animation before loading next content
+                setTimeout(() => {
+                    state.sessionIndex++;
+                    if (state.sessionIndex > state.maxSessionIndex) {
+                        state.maxSessionIndex = state.sessionIndex;
+                    }
+                    appWindow.renderFlashcard();
+                }, 300); // Should roughly match the CSS transition duration
+            },
+
+            prevSessionCard: (e) => {
+                if (e) e.stopPropagation();
+                if (state.sessionIndex > 0) {
+                    state.isCardFlipped = false;
+                    document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                    appWindow.updateFlashcardControls();
+                    
+                    setTimeout(() => {
+                        state.sessionIndex--;
+                        appWindow.renderFlashcard();
+                    }, 300);
+                } else {
+                    appWindow.showToast("This is the first card of the session.");
+                }
+            },
+
+            skipSessionCard: (e) => {
+                if (e) e.stopPropagation();
+                
+                // If just navigating forward in history, don't count as a skip
+                if (state.sessionIndex < state.maxSessionIndex) {
+                    state.isCardFlipped = false;
+                    document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                    appWindow.updateFlashcardControls();
+                    
+                    setTimeout(() => {
+                        state.sessionIndex++;
+                        appWindow.renderFlashcard();
+                    }, 300);
+                    return;
+                }
+
+                // Actually skipping a new card
+                const today = new Date().toDateString();
+                if (state.lastSkipDate !== today) {
+                    state.skipsToday = 0;
+                    state.lastSkipDate = today;
+                }
+                
+                if (state.skipsToday >= 5) {
+                    appWindow.showToast("Daily skip limit (5) reached. Please answer the card.");
+                    return;
+                }
+                
+                state.skipsToday++;
+                localStorage.setItem('bioterms_skips', JSON.stringify({count: state.skipsToday, date: state.lastSkipDate}));
+                appWindow.showToast(`Skipped (${5 - state.skipsToday} skips remaining today)`);
+                
+                state.isCardFlipped = false;
+                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                appWindow.updateFlashcardControls();
+                
+                setTimeout(() => {
+                    state.sessionIndex++;
+                    if (state.sessionIndex > state.maxSessionIndex) {
+                        state.maxSessionIndex = state.sessionIndex;
+                    }
+                    appWindow.renderFlashcard();
+                }, 300);
             },
 
             renderBookmarks: () => {
@@ -929,8 +1269,8 @@
                     return;
                 }
 
-                grid.innerHTML = items.map(item => `
-                    <div class="p-6 rounded-[24px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low shadow-sm flex flex-col justify-between">
+                grid.innerHTML = items.map((item, index) => `
+                    <div class="scroll-animate p-6 rounded-[24px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low shadow-sm flex flex-col justify-between" style="transition-delay: ${(index % 6) * 50}ms;">
                         <div>
                             <div class="flex justify-between items-start mb-3">
                                 <span class="text-xs font-bold uppercase tracking-wider text-md-primary dark:text-md-dark-primary">${escapeHtml(item.category)}</span>
@@ -943,6 +1283,8 @@
                         </div>
                     </div>
                 `).join('');
+
+                setTimeout(initScrollAnimations, 50);
             },
 
             openModal: (id) => {
@@ -954,8 +1296,7 @@
                 }
                 const m = document.getElementById(id);
                 m.classList.remove('hidden');
-                // trigger reflow
-                void m.offsetWidth;
+                void m.offsetWidth; // trigger reflow
                 m.querySelector('div').classList.add('scale-100');
                 m.querySelector('div').classList.remove('scale-95');
             },
