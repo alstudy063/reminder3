@@ -587,13 +587,11 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script>
-        // Use Global Variables from environment if available, else defaults (Required for Canvas Firestore strict rules)
         const __app_id = typeof window.__app_id !== 'undefined' ? window.__app_id : 'bio-def-material-app';
         const __firebase_config = typeof window.__firebase_config !== 'undefined' ? window.__firebase_config : '{}';
         const __initial_auth_token = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
 
         const App = (() => {
-            // State
             let state = {
                 lessons: [],
                 definitions: [],
@@ -608,11 +606,8 @@
 
             let confirmCallback = null;
             let unsubscribeSnapshot = null;
-            
-            // Firebase Instances
             let app, auth, db;
 
-            // DOM Elements
             const els = {
                 sections: ['home', 'today', 'history', 'settings'],
                 navItems: document.querySelectorAll('.nav-item'),
@@ -620,7 +615,6 @@
                 html: document.documentElement
             };
 
-            // Initialization
             const init = async () => {
                 loadLocalData();
                 initTheme();
@@ -629,7 +623,6 @@
                 navigate('home');
             };
 
-            // Data Persistence (Local & Cloud)
             const loadLocalData = () => {
                 try {
                     state.lessons = JSON.parse(localStorage.getItem('md3_bio_lessons') || '[]');
@@ -651,11 +644,21 @@
                     const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.firebaseImports;
                     
                     let config = {};
+                    
                     if (__firebase_config && __firebase_config !== '{}') {
                         config = JSON.parse(__firebase_config);
                     } else {
-                        // Fallback dummy config to prevent errors if not in standard env
-                        config = { apiKey: "dummy", projectId: "dummy" };
+                        // ==========================================
+                        // ඔයාගේ Firebase SDK Config එක මෙතනට දාන්න 👇
+                        // ==========================================
+                        config = {
+                            apiKey: "YOUR_API_KEY",
+                            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+                            projectId: "YOUR_PROJECT_ID",
+                            storageBucket: "YOUR_PROJECT_ID.firebasestorage.app",
+                            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                            appId: "YOUR_APP_ID"
+                        };
                     }
                     
                     app = initializeApp(config);
@@ -672,12 +675,10 @@
                         }
                     });
 
-                    // Follow Strict Rule 3: Auth before Queries
                     if (__initial_auth_token) {
                         await signInWithCustomToken(auth, __initial_auth_token);
-                    } else if(config.apiKey !== 'dummy') {
-                        // For generic web usage outside canvas
-                        // await signInAnonymously(auth); 
+                    } else if(config.apiKey !== 'dummy' && config.apiKey !== 'YOUR_API_KEY') {
+                        // For generic web usage outside canvas, fallback to anonymous auth if needed.
                     }
 
                 } catch (e) {
@@ -688,7 +689,6 @@
             const getDbRef = () => {
                 if (!state.user || !db) return null;
                 const { doc } = window.firebaseImports;
-                // Follow Strict Rule 1: Correct path
                 return doc(db, 'artifacts', __app_id, 'users', state.user.uid, 'appData', 'main');
             };
 
@@ -722,13 +722,11 @@
                 unsubscribeSnapshot = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        // Basic conflict resolution: check if cloud has data
                         if(data.lessons && data.definitions) {
                             state.lessons = data.lessons;
                             state.definitions = data.definitions;
                             state.history = data.history || [];
                             
-                            // Save back to local to keep in sync
                             localStorage.setItem('md3_bio_lessons', JSON.stringify(state.lessons));
                             localStorage.setItem('md3_bio_defs', JSON.stringify(state.definitions));
                             localStorage.setItem('md3_bio_history', JSON.stringify(state.history));
@@ -800,7 +798,6 @@
             const navigate = (target) => {
                 state.currentSection = target;
                 
-                // Update Nav UI
                 els.navItems.forEach(item => {
                     const iconClass = item.querySelector('i').className;
                     const matches = (target === 'home' && iconClass.includes('layer-group')) ||
@@ -811,18 +808,15 @@
                     else item.classList.remove('active');
                 });
 
-                // Update Title
                 const titles = { home: 'Lessons', today: 'Daily Study', history: 'History', settings: 'Settings' };
                 els.topTitle.textContent = titles[target];
 
-                // Show Section
                 els.sections.forEach(sec => {
                     const el = document.getElementById(`sec-${sec}`);
                     if (sec === target) {
                         el.classList.remove('hidden');
-                        // Re-trigger animation
                         el.style.animation = 'none';
-                        el.offsetHeight; /* trigger reflow */
+                        el.offsetHeight; 
                         el.style.animation = null; 
                     } else {
                         el.classList.add('hidden');
@@ -858,12 +852,10 @@
                 }, 3000);
             };
 
-            // Modals
             const openModal = (id) => {
                 const m = document.getElementById(id);
                 if(m) {
                     m.classList.remove('hidden');
-                    // slight delay to allow display:flex to apply before opacity transition
                     setTimeout(() => m.classList.add('open'), 10);
                 }
                 if (id === 'addModal') updateLessonDropdown('in-def-lesson');
@@ -873,7 +865,7 @@
                 const m = document.getElementById(id);
                 if(m) {
                     m.classList.remove('open');
-                    setTimeout(() => m.classList.add('hidden'), 300); // match transition time
+                    setTimeout(() => m.classList.add('hidden'), 300);
                 }
             };
 
@@ -965,7 +957,6 @@
                 });
             };
 
-            // Add Logic
             const switchAddTab = (tab) => {
                 document.getElementById('tab-lesson').classList.replace(tab==='lesson'?'border-transparent':'border-md-primary', tab==='lesson'?'border-md-primary':'border-transparent');
                 document.getElementById('tab-lesson').classList.replace(tab==='lesson'?'text-md-on-surface-variant':'text-md-primary', tab==='lesson'?'text-md-primary':'text-md-on-surface-variant');
@@ -1014,51 +1005,44 @@
                 saveData();
                 showToast("Definition saved!");
                 
-                // If viewing a lesson, refresh it
                 if (state.currentLessonViewId === lessonId && document.getElementById('lessonViewModal').classList.contains('open')) {
                     openLessonView(lessonId);
                 }
+                closeModal('addModal');
             };
 
             const openLessonView = (lessonId) => {
                 state.currentLessonViewId = lessonId;
                 const lesson = state.lessons.find(l => l.id === lessonId);
                 if(!lesson) return;
-                
+
                 document.getElementById('lesson-view-title').textContent = lesson.name;
-                const content = document.getElementById('lesson-view-content');
-                content.innerHTML = '';
-                
+                const container = document.getElementById('lesson-view-content');
+                container.innerHTML = '';
+
                 const defs = state.definitions.filter(d => d.lessonId === lessonId);
                 if(defs.length === 0) {
-                    content.innerHTML = '<p class="text-md-on-surface-variant text-center py-4">No definitions here yet.</p>';
+                    container.innerHTML = '<p class="text-md-on-surface-variant text-center py-4">No definitions in this lesson yet.</p>';
                 } else {
                     defs.forEach(d => {
                         const div = document.createElement('div');
-                        div.className = 'md-card bg-md-surface-container-highest p-4 rounded-[16px] cursor-pointer hover:bg-md-surface-variant transition';
-                        div.onclick = () => openEditDef(d);
+                        div.className = 'md-card bg-md-surface-container flex justify-between items-center mb-3';
                         div.innerHTML = `
-                            <div class="font-medium text-md-on-surface mb-1">${escapeHTML(d.topic)}</div>
-                            <div class="text-sm text-md-on-surface-variant line-clamp-2">${escapeHTML(d.text)}</div>
+                            <div>
+                                <div class="font-medium text-md-on-surface">${escapeHTML(d.topic)}</div>
+                                <div class="text-sm text-md-on-surface-variant line-clamp-1">${escapeHTML(d.text)}</div>
+                            </div>
+                            <button class="md-btn md-btn-text md-btn-tonal text-xs px-3 h-8" onclick="app.openEditDef('${d.id}')">Edit</button>
                         `;
-                        content.appendChild(div);
+                        container.appendChild(div);
                     });
                 }
                 openModal('lessonViewModal');
             };
 
-            const deleteCurrentLesson = () => {
-                if(!state.currentLessonViewId) return;
-                confirmAction("Delete this lesson and all its definitions?", () => {
-                    state.definitions = state.definitions.filter(d => d.lessonId !== state.currentLessonViewId);
-                    state.lessons = state.lessons.filter(l => l.id !== state.currentLessonViewId);
-                    saveData();
-                    closeModal('lessonViewModal');
-                    showToast("Lesson deleted");
-                });
-            };
-
-            const openEditDef = (def) => {
+            const openEditDef = (id) => {
+                const def = state.definitions.find(d => d.id === id);
+                if(!def) return;
                 document.getElementById('edit-def-id').value = def.id;
                 document.getElementById('edit-def-topic').value = def.topic;
                 document.getElementById('edit-def-text').value = def.text;
@@ -1069,16 +1053,14 @@
                 const id = document.getElementById('edit-def-id').value;
                 const topic = document.getElementById('edit-def-topic').value.trim();
                 const text = document.getElementById('edit-def-text').value.trim();
-                
-                if(!topic || !text) return;
-                
-                const idx = state.definitions.findIndex(d => d.id === id);
-                if(idx > -1) {
-                    state.definitions[idx].topic = topic;
-                    state.definitions[idx].text = text;
+
+                const def = state.definitions.find(d => d.id === id);
+                if(def) {
+                    def.topic = topic;
+                    def.text = text;
                     saveData();
+                    showToast("Updated successfully");
                     closeModal('editDefModal');
-                    showToast("Updated!");
                     if(state.currentLessonViewId) openLessonView(state.currentLessonViewId);
                 }
             };
@@ -1088,147 +1070,105 @@
                 confirmAction("Delete this definition?", () => {
                     state.definitions = state.definitions.filter(d => d.id !== id);
                     saveData();
-                    closeModal('editDefModal');
                     showToast("Deleted");
+                    closeModal('editDefModal');
                     if(state.currentLessonViewId) openLessonView(state.currentLessonViewId);
                 });
             };
 
-            const prepareStudySession = () => {
-                if(state.definitions.length === 0) {
-                    renderStudyCardEnd("Add some definitions first!");
-                    return;
-                }
-
-                const today = new Date().toISOString().slice(0,10);
-                let dailyEntry = state.history.find(h => h.date === today);
-                
-                if (!dailyEntry) {
-                    // Create new session: max 10, prioritize least passed or failed
-                    let pool = [...state.definitions].sort((a,b) => {
-                        let scoreA = (a.passCount || 0) - (a.failCount || 0);
-                        let scoreB = (b.passCount || 0) - (b.failCount || 0);
-                        return scoreA - scoreB;
-                    });
-                    
-                    let selected = pool.slice(0, 10).map(d => ({ id: d.id, status: 'pending' }));
-                    dailyEntry = { date: today, definitions: selected, results: [] };
-                    state.history.push(dailyEntry);
+            const deleteCurrentLesson = () => {
+                const id = state.currentLessonViewId;
+                confirmAction("Delete this lesson and all its definitions?", () => {
+                    state.lessons = state.lessons.filter(l => l.id !== id);
+                    state.definitions = state.definitions.filter(d => d.lessonId !== id);
                     saveData();
-                }
+                    showToast("Lesson deleted");
+                    closeModal('lessonViewModal');
+                });
+            };
 
-                state.studySession = dailyEntry.definitions.filter(d => d.status === 'pending');
+            const prepareStudySession = () => {
+                state.studySession = [...state.definitions].sort((a,b) => (a.passCount || 0) - (b.passCount || 0)).slice(0, 10);
                 state.studyIndex = 0;
-                
                 document.getElementById('home-daily-count').textContent = state.studySession.length;
-
-                if (state.studySession.length > 0) {
-                    renderStudyCard();
-                    document.getElementById('study-actions').classList.remove('hidden');
-                } else {
-                    renderStudyCardEnd("All caught up for today!");
-                }
-                updateProgressBar();
+                if(state.currentSection === 'today') renderStudyCard();
             };
 
             const renderStudyCard = () => {
-                const defId = state.studySession[state.studyIndex].id;
-                const def = state.definitions.find(d => d.id === defId);
-                if(!def) return;
+                const container = document.getElementById('flashcard-container');
+                const actions = document.getElementById('study-actions');
+                const progText = document.getElementById('study-progress-text');
+                const progBar = document.getElementById('study-progress-bar');
 
-                const cont = document.getElementById('flashcard-container');
-                cont.innerHTML = `
-                    <div class="flashcard w-full h-full relative cursor-pointer group perspective-1000" onclick="this.classList.toggle('flipped')">
-                        <div class="flashcard-inner w-full h-full relative transition-transform duration-500 shadow-lg rounded-[24px]">
-                            
+                if(state.studySession.length === 0 || state.studyIndex >= state.studySession.length) {
+                    container.innerHTML = `
+                        <div class="md-card bg-md-surface-container flex items-center justify-center h-full text-center p-8 w-full">
+                            <div>
+                                <i class="fas fa-check-circle text-4xl text-md-primary mb-4"></i>
+                                <h3 class="text-xl font-medium text-md-on-surface">All caught up!</h3>
+                                <p class="text-md-on-surface-variant mt-2 text-sm">You've finished your reviews.</p>
+                            </div>
+                        </div>
+                    `;
+                    actions.classList.add('hidden');
+                    progText.textContent = `${state.studySession.length}/${state.studySession.length}`;
+                    progBar.style.width = '100%';
+                    return;
+                }
+
+                const def = state.studySession[state.studyIndex];
+                progText.textContent = `${state.studyIndex}/${state.studySession.length}`;
+                progBar.style.width = `${(state.studyIndex / state.studySession.length) * 100}%`;
+
+                container.innerHTML = `
+                    <div class="flashcard w-full h-full cursor-pointer" onclick="this.classList.toggle('flipped')">
+                        <div class="flashcard-inner w-full h-full relative transition-transform duration-500" style="transform-style: preserve-3d;">
                             <!-- Front -->
-                            <div class="flashcard-front absolute inset-0 bg-md-primary-container text-md-on-primary-container rounded-[24px] p-6 flex flex-col justify-center items-center text-center backface-hidden">
-                                <span class="absolute top-4 right-4 text-xs font-medium opacity-60"><i class="fas fa-hand-pointer"></i> Tap</span>
-                                <h3 class="text-2xl font-medium">${escapeHTML(def.topic)}</h3>
+                            <div class="flashcard-front absolute inset-0 md-card bg-md-primary-container flex flex-col items-center justify-center p-6 text-center shadow-lg" style="backface-visibility: hidden;">
+                                <span class="text-sm font-medium text-md-on-primary-container opacity-70 mb-2">Tap to flip</span>
+                                <h2 class="text-3xl font-bold text-md-on-primary-container">${escapeHTML(def.topic)}</h2>
                             </div>
-                            
                             <!-- Back -->
-                            <div class="flashcard-back absolute inset-0 bg-md-surface-container-high text-md-on-surface rounded-[24px] p-6 flex flex-col justify-center overflow-y-auto backface-hidden border border-md-outline">
-                                <h4 class="text-sm font-bold text-md-primary mb-2">${escapeHTML(def.topic)}</h4>
-                                <p class="text-base leading-relaxed">${escapeHTML(def.text)}</p>
+                            <div class="flashcard-back absolute inset-0 md-card bg-md-tertiary-container flex flex-col items-center justify-center p-6 text-center shadow-lg" style="backface-visibility: hidden; transform: rotateY(180deg);">
+                                <p class="text-lg text-md-on-tertiary-container">${escapeHTML(def.text)}</p>
                             </div>
-                            
                         </div>
                     </div>
                 `;
+                actions.classList.remove('hidden');
             };
 
-            const renderStudyCardEnd = (msg) => {
-                document.getElementById('flashcard-container').innerHTML = `
-                    <div class="md-card bg-md-surface-container flex items-center justify-center h-full text-center p-8 w-full shadow-lg border border-md-outline">
-                        <div>
-                            <i class="fas fa-check-circle text-5xl text-md-primary mb-4"></i>
-                            <h3 class="text-xl font-medium text-md-on-surface">${msg}</h3>
-                            <button class="md-btn md-btn-tonal mt-6" onclick="app.navigate('home')">Back to Home</button>
-                        </div>
-                    </div>
-                `;
-                document.getElementById('study-actions').classList.add('hidden');
-            };
-
-            const updateProgressBar = () => {
-                const today = new Date().toISOString().slice(0,10);
-                const dailyEntry = state.history.find(h => h.date === today);
-                if(!dailyEntry) return;
-
-                const total = dailyEntry.definitions.length;
-                const done = total - state.studySession.length + state.studyIndex;
-                
-                document.getElementById('study-progress-text').textContent = `${done}/${total}`;
-                document.getElementById('study-progress-bar').style.width = total === 0 ? '100%' : `${(done/total)*100}%`;
-            };
-
-            const markStudy = (passed) => {
-                const item = state.studySession[state.studyIndex];
-                const defIdx = state.definitions.findIndex(d => d.id === item.id);
-                
-                if(defIdx > -1) {
-                    state.definitions[defIdx].count = (state.definitions[defIdx].count || 0) + 1;
-                    if(passed) state.definitions[defIdx].passCount = (state.definitions[defIdx].passCount || 0) + 1;
-                    else state.definitions[defIdx].failCount = (state.definitions[defIdx].failCount || 0) + 1;
+            const markStudy = (success) => {
+                const def = state.studySession[state.studyIndex];
+                if(def) {
+                    if(success) def.passCount = (def.passCount || 0) + 1;
+                    else def.failCount = (def.failCount || 0) + 1;
+                    def.count = (def.count || 0) + 1;
+                    
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    let hEntry = state.history.find(h => h.date.startsWith(todayStr));
+                    if(!hEntry) {
+                        hEntry = { date: new Date().toISOString(), results: [] };
+                        state.history.push(hEntry);
+                    }
+                    hEntry.results.push(success ? 'passed' : 'failed');
                 }
-
-                // Update History
-                const today = new Date().toISOString().slice(0,10);
-                const histIdx = state.history.findIndex(h => h.date === today);
-                if(histIdx > -1) {
-                    const defInHist = state.history[histIdx].definitions.find(d => d.id === item.id);
-                    if(defInHist) defInHist.status = passed ? 'passed' : 'failed';
-                    state.history[histIdx].results.push(passed ? 'passed' : 'failed');
-                }
-
+                
+                state.studyIndex++;
                 saveData();
-
-                // Move next
-                state.studySession.splice(state.studyIndex, 1);
-                
-                if (state.studySession.length > 0) {
-                    renderStudyCard();
-                    updateProgressBar();
-                } else {
-                    renderStudyCardEnd("Session Complete! Great job.");
-                    updateProgressBar();
-                }
+                renderStudyCard();
             };
-
-            // Utilities
-            const escapeHTML = (str) => String(str).replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
-            );
 
             const exportData = () => {
-                const dataStr = JSON.stringify({ lessons: state.lessons, definitions: state.definitions, history: state.history });
-                const blob = new Blob([dataStr], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `bio_master_backup_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                    lessons: state.lessons,
+                    definitions: state.definitions,
+                    history: state.history
+                }));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "bio_master_backup.json");
+                dlAnchorElem.click();
             };
 
             const importData = (event) => {
@@ -1241,40 +1181,46 @@
                         if(data.lessons && data.definitions) {
                             state.lessons = data.lessons;
                             state.definitions = data.definitions;
-                            if(data.history) state.history = data.history;
+                            state.history = data.history || [];
                             saveData();
-                            showToast("Data restored successfully");
-                        } else throw new Error("Invalid format");
+                            showToast("Data imported successfully!");
+                        } else {
+                            showToast("Invalid file format");
+                        }
                     } catch(err) {
-                        showToast("Failed to restore: Invalid file");
+                        showToast("Error reading file");
                     }
                 };
                 reader.readAsText(file);
-                event.target.value = ''; // reset
             };
 
             const clearAllData = () => {
-                state.lessons = []; state.definitions = []; state.history = [];
+                state.lessons = [];
+                state.definitions = [];
+                state.history = [];
                 saveData();
                 showToast("All data cleared");
-                navigate('home');
             };
 
-            // Expose public API
+            const escapeHTML = (str) => {
+                const p = document.createElement('p');
+                p.textContent = str;
+                return p.innerHTML;
+            };
+
             return {
                 init, navigate, toggleTheme, openModal, closeModal, openAuthModal,
-                switchAddTab, saveLesson, saveDefinition, openLessonView, deleteCurrentLesson,
-                openEditDef, updateDefinition, deleteCurrentEditingDef,
-                markStudy, confirmAction, executeConfirm,
-                signInGoogle, signOut: signOutUser, exportData, importData, clearAllData
+                signInGoogle, signOut: signOutUser, confirmAction, executeConfirm,
+                switchAddTab, saveLesson, saveDefinition, openLessonView, openEditDef,
+                updateDefinition, deleteCurrentEditingDef, deleteCurrentLesson,
+                markStudy, exportData, importData, clearAllData
             };
         })();
 
-        // Start App on load
-        window.onload = () => {
-            window.app = App; // Attach to window for inline onclick handlers
-            App.init();
-        };
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app = App;
+            app.init();
+        });
     </script>
 </body>
 </html>
