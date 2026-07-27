@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioTerms - Biology Definitions & Concepts</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Roboto (Material Standard) & Material Symbols Outlined -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <!-- FontAwesome for fallback icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    },
+                    colors: {
+                        // Material You 3 Dynamic Palette (Green/Nature Theme)
+                        // Light Mode
+                        md: {
+                            'primary': '#1A6B50',
+                            'on-primary': '#FFFFFF',
+                            'primary-container': '#A5F2D0',
+                            'on-primary-container': '#002114',
+                            'secondary': '#4C6357',
+                            'on-secondary': '#FFFFFF',
+                            'secondary-container': '#CEE9D8',
+                            'on-secondary-container': '#092016',
+                            'tertiary': '#3D6373',
+                            'on-tertiary': '#FFFFFF',
+                            'tertiary-container': '#C1E8FB',
+                            'on-tertiary-container': '#001F29',
+                            'error': '#BA1A1A',
+                            'on-error': '#FFFFFF',
+                            'error-container': '#FFDAD6',
+                            'on-error-container': '#410002',
+                            'background': '#FBFDF8',
+                            'on-background': '#191C1A',
+                            'surface': '#FBFDF8',
+                            'on-surface': '#191C1A',
+                            'surface-variant': '#DBE5DE',
+                            'on-surface-variant': '#404943',
+                            'outline': '#707973',
+                            'surface-container-low': '#F5F7F2',
+                            'surface-container': '#EFF1ED',
+                            'surface-container-high': '#E9EBE7',
+                            'surface-container-highest': '#E3E6E1',
+                        },
+                        // Dark Mode
+                        'md-dark': {
+                            'primary': '#8AD5B5',
+                            'on-primary': '#003825',
+                            'primary-container': '#005137',
+                            'on-primary-container': '#A5F2D0',
+                            'secondary': '#B2CCBD',
+                            'on-secondary': '#1E352A',
+                            'secondary-container': '#354B40',
+                            'on-secondary-container': '#CEE9D8',
+                            'tertiary': '#A5CCDF',
+                            'on-tertiary': '#073543',
+                            'tertiary-container': '#244B5B',
+                            'on-tertiary-container': '#C1E8FB',
+                            'background': '#111412',
+                            'on-background': '#E1E3DF',
+                            'surface': '#111412',
+                            'on-surface': '#E1E3DF',
+                            'surface-variant': '#404943',
+                            'on-surface-variant': '#BFC9C2',
+                            'outline': '#8A938C',
+                            'surface-container-low': '#191C1A',
+                            'surface-container': '#1D201E',
+                            'surface-container-high': '#272A29',
+                            'surface-container-highest': '#323533',
+                        }
+                    },
+                    boxShadow: {
+                        'md3-1': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15)',
+                        'md3-2': '0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15)',
+                        'md3-3': '0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom Scrollbar for MD3 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(112, 121, 115, 0.4);
+            border-radius: 9999px;
+        }
+        
+        /* MD3 Active Nav Pill transition */
+        .nav-pill {
+            transition: width 0.2s cubic-bezier(0.2, 0, 0, 1), background-color 0.2s;
+        }
+
+        /* Card Flip 3D Effect */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* Smooth transitions */
+        body { transition: background-color 0.3s ease, color 0.3s ease; }
+    </style>
+</head>
+
+<body class="bg-md-background dark:bg-md-dark-background text-md-on-background dark:text-md-dark-on-background h-full flex flex-col md:flex-row overflow-hidden select-none md:select-auto">
+
+    <aside class="hidden md:flex flex-col w-[280px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low h-full rounded-r-[24px] overflow-hidden flex-shrink-0 z-20 shadow-md3-1 transition-colors">
+        <!-- Logo Header -->
+        <div class="px-7 py-8 flex items-center gap-4">
+            <div class="w-8 h-8 flex items-center justify-center text-md-primary dark:text-md-dark-primary">
+                <span class="material-symbols-outlined fill text-3xl">local_florist</span>
+            </div>
+            <h1 class="font-bold text-xl tracking-tight text-md-on-surface dark:text-md-dark-on-surface">BioTerms</h1>
+        </div>
+
+        <!-- Add FAB (Floating Action Button) -->
+        <div class="px-4 mb-6">
+            <button onclick="app.openModal('addModal')" class="flex items-center gap-3 px-4 py-4 bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container rounded-[16px] shadow-md3-1 hover:shadow-md3-2 transition-all w-full font-medium">
+                <span class="material-symbols-outlined">add</span>
+                <span>Add Definition</span>
+            </button>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 px-3 space-y-1 overflow-y-auto">
+            <button onclick="app.setTab('explore')" id="nav-desk-explore" class="group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium transition-colors bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container">
+                <span class="material-symbols-outlined fill">search</span>
+                <span>Explore</span>
+            </button>
+            <button onclick="app.setTab('flashcards')" id="nav-desk-flashcards" class="group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 transition-colors">
+                <span class="material-symbols-outlined">style</span>
+                <span>Flashcards</span>
+            </button>
+            <button onclick="app.setTab('bookmarks')" id="nav-desk-bookmarks" class="group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 transition-colors">
+                <span class="material-symbols-outlined">bookmark</span>
+                <span>Bookmarks</span>
+            </button>
+            <button onclick="app.setTab('settings')" id="nav-desk-settings" class="group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 transition-colors">
+                <span class="material-symbols-outlined">settings</span>
+                <span>Settings</span>
+            </button>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative bg-md-background dark:bg-md-dark-background">
+        
+        <!-- Top App Bar (MD3) -->
+        <header class="h-[64px] flex items-center justify-between px-4 md:px-6 z-10 transition-colors">
+            <div class="flex items-center gap-3 md:hidden text-md-primary dark:text-md-dark-primary">
+                <span class="material-symbols-outlined fill text-2xl">local_florist</span>
+                <span class="font-medium text-lg text-md-on-surface dark:text-md-dark-on-surface">BioTerms</span>
+            </div>
+
+            <!-- Page Title (Desktop) -->
+            <h2 id="header-title" class="hidden md:block text-xl md:text-2xl font-normal text-md-on-surface dark:text-md-dark-on-surface">Explore</h2>
+
+            <!-- Right Utilities -->
+            <div class="flex items-center gap-3 ml-auto">
+                <button onclick="app.toggleDarkMode()" class="p-2 rounded-full hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 text-md-on-surface-variant dark:text-md-dark-on-surface-variant transition-colors">
+                    <span id="dark-mode-icon" class="material-symbols-outlined">dark_mode</span>
+                </button>
+                
+                <button onclick="app.openModal('authModal')" class="flex items-center justify-center w-8 h-8 rounded-full bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container relative">
+                    <span class="material-symbols-outlined text-[20px]">person</span>
+                    <!-- Sync Indicator Dot -->
+                    <span id="sync-dot" class="absolute -bottom-1 -right-1 w-3 h-3 border-2 border-md-background dark:border-md-dark-background rounded-full bg-gray-400"></span>
+                </button>
+            </div>
+        </header>
+
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-6 pb-[100px] md:pb-6" id="main-scroll-area">
+            
+            <!-- VIEW 1: EXPLORE -->
+            <div id="view-explore" class="space-y-6 max-w-5xl mx-auto">
+                
+                <!-- MD3 Search Bar (Tall & Pill-shaped) -->
+                <div class="relative h-[56px] w-full max-w-3xl mx-auto">
+                    <span class="material-symbols-outlined absolute left-4 top-4 text-md-on-surface-variant dark:text-md-dark-on-surface-variant">search</span>
+                    <input type="text" id="search-input" oninput="app.handleSearch()" placeholder="Search definitions..." 
+                        class="w-full h-full pl-14 pr-12 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high text-md-on-surface dark:text-md-dark-on-surface border-none outline-none text-base focus:bg-md-surface-container-highest dark:focus:bg-md-dark-surface-container-highest transition-colors shadow-none placeholder-md-on-surface-variant dark:placeholder-md-dark-on-surface-variant">
+                    <button onclick="app.clearSearch()" id="clear-search-btn" class="hidden absolute right-4 top-4 text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:text-md-on-surface">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <!-- Daily Concept (MD3 Filled Card) -->
+                <div id="daily-card" class="p-6 rounded-[24px] bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container relative overflow-hidden flex flex-col md:flex-row gap-6 md:items-center">
+                    <div class="flex-1 space-y-3 z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold uppercase tracking-wider text-md-secondary dark:text-md-dark-secondary">Concept of the Day</span>
+                            <button onclick="app.pickRandomDaily()" class="p-1 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                                <span class="material-symbols-outlined text-sm">refresh</span>
+                            </button>
+                        </div>
+                        <h3 id="daily-term" class="text-3xl font-normal">Photosynthesis</h3>
+                        <p id="daily-def" class="text-sm md:text-base opacity-90 leading-relaxed max-w-2xl">The process by which green plants and some other organisms use sunlight to synthesize foods from carbon dioxide and water.</p>
+                        <div>
+                            <span id="daily-category" class="inline-block px-3 py-1 rounded-[8px] bg-md-secondary/10 dark:bg-md-dark-secondary/20 text-xs font-medium">Botany</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MD3 Filter Chips -->
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="categories-container">
+                        <!-- Chips dynamically rendered -->
+                    </div>
+                </div>
+
+                <!-- Definitions List (Elevated Cards) -->
+                <div class="space-y-4 pt-2">
+                    <div class="flex items-center justify-between px-1">
+                        <h4 class="text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant" id="results-count">Definitions</h4>
+                    </div>
+                    <div id="definitions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Cards injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: FLASHCARDS -->
+            <div id="view-flashcards" class="hidden h-full flex-col max-w-2xl mx-auto py-2">
+                
+                <div class="flex-1 flex flex-col justify-center perspective-1000 w-full cursor-pointer" onclick="app.flipCard()">
+                    <div id="flashcard-inner" class="transform-style-3d transition-transform duration-500 w-full min-h-[350px] relative rounded-[28px] shadow-md3-2 bg-md-surface-container dark:bg-md-dark-surface-container flex flex-col justify-between items-center text-center">
+                        
+                        <!-- Front Side -->
+                        <div class="backface-hidden w-full h-full absolute inset-0 p-8 flex flex-col justify-center items-center">
+                            <span class="text-sm font-medium text-md-primary dark:text-md-dark-primary mb-4" id="fc-category">Category</span>
+                            <h2 class="text-3xl md:text-4xl font-normal text-md-on-surface dark:text-md-dark-on-surface" id="fc-term">Term</h2>
+                            <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant mt-8 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">touch_app</span> Tap to reveal
+                            </p>
+                        </div>
+
+                        <!-- Back Side -->
+                        <div class="backface-hidden rotate-y-180 absolute inset-0 p-8 rounded-[28px] bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary flex flex-col justify-center items-center text-center">
+                            <p class="text-lg md:text-xl leading-relaxed" id="fc-def">Definition goes here.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex items-center justify-center gap-6 pt-8 pb-4">
+                    <button onclick="app.prevCard()" class="w-14 h-14 flex items-center justify-center rounded-full bg-md-surface-variant dark:bg-md-dark-surface-variant text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-primary-container dark:hover:bg-md-dark-primary-container transition-colors">
+                        <span class="material-symbols-outlined">arrow_back</span>
+                    </button>
+                    <span id="fc-counter" class="text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant w-16 text-center">1 / 10</span>
+                    <button onclick="app.nextCard()" class="w-14 h-14 flex items-center justify-center rounded-full bg-md-surface-variant dark:bg-md-dark-surface-variant text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-primary-container dark:hover:bg-md-dark-primary-container transition-colors">
+                        <span class="material-symbols-outlined">arrow_forward</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- VIEW 3: BOOKMARKS -->
+            <div id="view-bookmarks" class="hidden max-w-5xl mx-auto space-y-6">
+                <div id="bookmarks-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Bookmarked cards -->
+                </div>
+            </div>
+
+            <!-- VIEW 4: SETTINGS -->
+            <div id="view-settings" class="hidden max-w-2xl mx-auto space-y-4">
+                
+                <!-- Cloud Card -->
+                <div class="p-6 rounded-[24px] bg-md-surface-container dark:bg-md-dark-surface-container space-y-4 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-full bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container flex items-center justify-center">
+                            <span class="material-symbols-outlined">cloud_sync</span>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-normal text-md-on-surface dark:text-md-dark-on-surface">Account & Sync</h3>
+                            <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant" id="settings-auth-info">Local device storage only</p>
+                        </div>
+                    </div>
+                    <button onclick="app.openModal('authModal')" class="px-6 py-2.5 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary text-sm font-medium transition-colors hover:shadow-md">
+                        Manage Account
+                    </button>
+                </div>
+
+                <!-- Data Management Card -->
+                <div class="p-6 rounded-[24px] bg-md-surface-container dark:bg-md-dark-surface-container space-y-4 shadow-sm">
+                    <h3 class="text-lg font-normal text-md-on-surface dark:text-md-dark-on-surface mb-2">Data Management</h3>
+                    
+                    <div class="flex flex-col gap-3">
+                        <button onclick="app.exportData()" class="flex items-center gap-3 px-4 py-3 rounded-[12px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high hover:bg-md-surface-container-highest transition-colors text-left w-full">
+                            <span class="material-symbols-outlined text-md-primary dark:text-md-dark-primary">download</span>
+                            <span class="text-sm font-medium text-md-on-surface dark:text-md-dark-on-surface">Export Backup (JSON)</span>
+                        </button>
+                        
+                        <label class="flex items-center gap-3 px-4 py-3 rounded-[12px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high hover:bg-md-surface-container-highest transition-colors text-left w-full cursor-pointer">
+                            <span class="material-symbols-outlined text-md-primary dark:text-md-dark-primary">upload</span>
+                            <span class="text-sm font-medium text-md-on-surface dark:text-md-dark-on-surface">Import Backup (JSON)</span>
+                            <input type="file" id="import-file-input" onchange="app.importData(event)" accept=".json" class="hidden">
+                        </label>
+                        
+                        <button onclick="app.resetData()" class="flex items-center gap-3 px-4 py-3 rounded-[12px] bg-md-error-container dark:bg-md-dark-error-container text-md-on-error-container dark:text-md-dark-on-error-container hover:opacity-90 transition-colors text-left w-full mt-2">
+                            <span class="material-symbols-outlined">delete_forever</span>
+                            <span class="text-sm font-medium">Reset All Data</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <nav class="md:hidden fixed bottom-0 inset-x-0 h-[80px] bg-md-surface-container dark:bg-md-dark-surface-container flex items-center justify-around px-2 pb-2 pt-3 z-30 shadow-[0_-1px_3px_rgba(0,0,0,0.05)] transition-colors">
+            
+            <button onclick="app.setTab('explore')" id="nav-mob-explore" class="flex flex-col items-center gap-1 group w-16">
+                <div class="nav-pill w-16 h-8 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container flex items-center justify-center text-md-on-secondary-container dark:text-md-dark-on-secondary-container">
+                    <span class="material-symbols-outlined fill text-[24px]">search</span>
+                </div>
+                <span class="text-[12px] font-medium text-md-on-surface dark:text-md-dark-on-surface">Explore</span>
+            </button>
+            
+            <button onclick="app.setTab('flashcards')" id="nav-mob-flashcards" class="flex flex-col items-center gap-1 group w-16">
+                <div class="nav-pill w-0 h-8 rounded-full group-hover:w-16 group-hover:bg-md-surface-variant/50 flex items-center justify-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant">
+                    <span class="material-symbols-outlined text-[24px]">style</span>
+                </div>
+                <span class="text-[12px] font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant">Cards</span>
+            </button>
+
+            <!-- Mobile FAB embedded in nav area -->
+            <button onclick="app.openModal('addModal')" class="flex flex-col items-center group -mt-6">
+                <div class="w-14 h-14 rounded-[16px] bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container shadow-md3-2 flex items-center justify-center mb-1">
+                    <span class="material-symbols-outlined text-[24px]">add</span>
+                </div>
+                <span class="text-[12px] font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant sr-only">Add</span>
+            </button>
+            
+            <button onclick="app.setTab('bookmarks')" id="nav-mob-bookmarks" class="flex flex-col items-center gap-1 group w-16">
+                <div class="nav-pill w-0 h-8 rounded-full group-hover:w-16 group-hover:bg-md-surface-variant/50 flex items-center justify-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant">
+                    <span class="material-symbols-outlined text-[24px]">bookmark</span>
+                </div>
+                <span class="text-[12px] font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant">Saved</span>
+            </button>
+            
+            <button onclick="app.setTab('settings')" id="nav-mob-settings" class="flex flex-col items-center gap-1 group w-16">
+                <div class="nav-pill w-0 h-8 rounded-full group-hover:w-16 group-hover:bg-md-surface-variant/50 flex items-center justify-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant">
+                    <span class="material-symbols-outlined text-[24px]">settings</span>
+                </div>
+                <span class="text-[12px] font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant">Settings</span>
+            </button>
+        </nav>
+    </main>
+
+    <!-- MODAL 1: ADD / EDIT (MD3 Full Screen / Centered Dialog) -->
+    <div id="addModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-md-surface-container-low dark:bg-md-dark-surface-container-low w-full max-w-md rounded-[28px] p-6 shadow-md3-3">
+            <div class="flex items-center justify-between mb-6">
+                <h3 id="modal-add-title" class="text-2xl font-normal text-md-on-surface dark:text-md-dark-on-surface">Add Term</h3>
+                <button onclick="app.closeModal('addModal')" class="p-2 rounded-full hover:bg-md-surface-variant/50 text-md-on-surface-variant">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            
+            <form onsubmit="app.saveDefinition(event)" class="space-y-4">
+                <input type="hidden" id="edit-id" value="">
+                
+                <!-- MD3 Style Outlined Text Field approximation -->
+                <div class="relative">
+                    <label class="absolute -top-2 left-3 px-1 text-xs font-medium bg-md-surface-container-low dark:bg-md-dark-surface-container-low text-md-primary dark:text-md-dark-primary">Term</label>
+                    <input type="text" id="input-term" required class="w-full p-4 rounded-[4px] bg-transparent border-2 border-md-outline dark:border-md-dark-outline text-md-on-surface dark:text-md-dark-on-surface focus:border-md-primary dark:focus:border-md-dark-primary outline-none transition-colors">
+                </div>
+                
+                <div class="relative mt-4">
+                    <label class="absolute -top-2 left-3 px-1 text-xs font-medium bg-md-surface-container-low dark:bg-md-dark-surface-container-low text-md-primary dark:text-md-dark-primary">Category</label>
+                    <select id="input-category" class="w-full p-4 rounded-[4px] bg-transparent border-2 border-md-outline dark:border-md-dark-outline text-md-on-surface dark:text-md-dark-on-surface focus:border-md-primary outline-none appearance-none">
+                        <option value="Cell Biology">Cell Biology</option>
+                        <option value="Genetics">Genetics</option>
+                        <option value="Botany">Botany</option>
+                        <option value="Zoology">Zoology</option>
+                        <option value="Ecology">Ecology</option>
+                        <option value="Anatomy">Anatomy</option>
+                        <option value="Biochemistry">Biochemistry</option>
+                    </select>
+                </div>
+                
+                <div class="relative mt-4">
+                    <label class="absolute -top-2 left-3 px-1 text-xs font-medium bg-md-surface-container-low dark:bg-md-dark-surface-container-low text-md-primary dark:text-md-dark-primary">Definition</label>
+                    <textarea id="input-def" required rows="3" class="w-full p-4 rounded-[4px] bg-transparent border-2 border-md-outline dark:border-md-dark-outline text-md-on-surface dark:text-md-dark-on-surface focus:border-md-primary outline-none transition-colors resize-none"></textarea>
+                </div>
+                
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" onclick="app.closeModal('addModal')" class="px-6 py-2.5 rounded-full text-sm font-medium text-md-primary dark:text-md-dark-primary hover:bg-md-primary/10 transition-colors">Cancel</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary font-medium text-sm transition-colors shadow-sm">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: AUTH & CLOUD SYNC -->
+    <div id="authModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-md-surface-container-low dark:bg-md-dark-surface-container-low w-full max-w-sm rounded-[28px] p-6 text-center space-y-4 shadow-md3-3">
+            <div class="w-12 h-12 mx-auto rounded-full bg-md-secondary-container text-md-on-secondary-container flex items-center justify-center mb-2">
+                <span class="material-symbols-outlined text-[24px]">cloud_sync</span>
+            </div>
+            
+            <h3 class="text-2xl font-normal text-md-on-surface dark:text-md-dark-on-surface">Cloud Sync</h3>
+            <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant">Sync definitions across your devices.</p>
+
+            <div id="auth-logged-out" class="space-y-3 pt-4">
+                <!-- Google Login Button -->
+                <button onclick="app.signInGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full border border-md-outline dark:border-md-dark-outline text-md-on-surface dark:text-md-dark-on-surface hover:bg-md-surface-variant/30 font-medium text-sm transition-colors">
+                    <i class="fab fa-google text-[#4285F4]"></i> Continue with Google
+                </button>
+                <!-- Anonymous / Guest Button explicitly requested by standard logic -->
+                <button onclick="app.signInGuest()" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full bg-md-surface-variant/50 text-md-on-surface hover:bg-md-surface-variant transition-colors text-sm font-medium">
+                    <span class="material-symbols-outlined text-[20px]">person_outline</span> Continue as Guest
+                </button>
+                <button onclick="app.closeModal('authModal')" class="text-sm text-md-primary dark:text-md-dark-primary font-medium mt-2 p-2">
+                    Cancel
+                </button>
+            </div>
+
+            <div id="auth-logged-in" class="hidden space-y-4 pt-4">
+                <div class="p-4 rounded-[16px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high flex items-center gap-4 text-left">
+                    <img id="auth-modal-avatar" class="w-12 h-12 rounded-full object-cover" src="https://placehold.co/100/1A6B50/ffffff?text=U" alt="User">
+                    <div class="overflow-hidden">
+                        <div id="auth-modal-name" class="font-medium text-md-on-surface dark:text-md-dark-on-surface truncate">User</div>
+                        <div id="auth-modal-email" class="text-xs text-md-on-surface-variant truncate">Synced</div>
+                    </div>
+                </div>
+                <button onclick="app.signOutUser()" class="w-full py-3 rounded-full text-md-error bg-md-error-container text-md-on-error-container font-medium text-sm transition-colors">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MD3 SNACKBAR (Toast) -->
+    <div id="toast" class="fixed bottom-24 md:bottom-6 left-1/2 -translate-x-1/2 bg-md-on-surface dark:bg-md-dark-on-surface text-md-surface dark:text-md-dark-surface text-sm px-4 py-3 rounded-[4px] shadow-md3-2 z-[60] opacity-0 pointer-events-none transition-opacity duration-300 flex items-center gap-3 min-w-[300px]">
+        <span id="toast-message" class="flex-1">Notification</span>
+        <button onclick="document.getElementById('toast').classList.add('opacity-0')" class="text-md-primary-container dark:text-md-dark-primary-container font-medium">OK</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.firebaseImports = { signInWithPopup, GoogleAuthProvider, signInAnonymously, signOut };
+
+        const PRESET_DEFINITIONS = [
+            { id: "p1", term: "Photosynthesis", category: "Botany", definition: "Process by which plants use sunlight, water and carbon dioxide to create oxygen and energy in the form of sugar.", favorite: false },
+            { id: "p2", term: "Mitosis", category: "Cell Biology", definition: "A type of cell division that results in two daughter cells each having the same number and kind of chromosomes.", favorite: false },
+            { id: "p3", term: "DNA Replication", category: "Genetics", definition: "The biological process of producing two identical replicas of DNA from one original DNA molecule.", favorite: false },
+            { id: "p4", term: "Homeostasis", category: "Anatomy", definition: "The state of steady internal, physical, and chemical conditions maintained by living systems.", favorite: false },
+            { id: "p5", term: "Osmosis", category: "Cell Biology", definition: "Net movement of water molecules across a selectively permeable membrane from higher to lower water potential.", favorite: false },
+            { id: "p6", term: "Enzyme", category: "Biochemistry", definition: "A biological catalyst, usually a protein, that speeds up a chemical reaction in a cell.", favorite: false },
+            { id: "p7", term: "Ecosystem", category: "Ecology", definition: "A biological community of interacting organisms and their physical environment.", favorite: false }
+        ];
+
+        const state = {
+            definitions: [], activeTab: 'explore', selectedCategory: 'All', searchQuery: '',
+            darkMode: false, user: null, flashcardIndex: 0, isCardFlipped: false
+        };
+
+        let db = null; let auth = null; let unsubscribeSnapshot = null;
+
+        const initFirebase = async () => {
+            try {
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'bioterms-default';
+                const configString = typeof __firebase_config !== 'undefined' ? __firebase_config : '{}';
+                const firebaseConfig = JSON.parse(configString);
+
+                if (firebaseConfig.apiKey && firebaseConfig.apiKey !== 'dummy') {
+                    const app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    onAuthStateChanged(auth, (user) => {
+                        state.user = user;
+                        updateAuthUI();
+                        if (user) startCloudSyncListener(appId);
+                        else { if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; } }
+                    });
+
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        try { await signInWithCustomToken(auth, __initial_auth_token); } 
+                        catch (e) { await signInAnonymously(auth); }
+                    } else {
+                        try { await signInAnonymously(auth); } catch(e){}
+                    }
+                }
+            } catch (e) { console.log("Local Mode:", e.message); }
+        };
+
+        const startCloudSyncListener = (appId) => {
+            if (!db || !state.user) return;
+            const ref = collection(db, 'artifacts', appId, 'users', state.user.uid, 'definitions');
+            unsubscribeSnapshot = onSnapshot(ref, (snap) => {
+                const cloudItems = [];
+                snap.forEach(d => cloudItems.push({ id: d.id, ...d.data() }));
+                if (cloudItems.length > 0) {
+                    const customMap = new Map(cloudItems.map(i => [i.id, i]));
+                    state.definitions = state.definitions.map(i => customMap.get(i.id) || i);
+                    cloudItems.forEach(i => { if (!state.definitions.some(d => d.id === i.id)) state.definitions.push(i); });
+                    saveLocalState(); renderCurrentView();
+                }
+            }, e => console.warn("Sync err:", e.message));
+        };
+
+        const app = {
+            init: () => {
+                const stored = localStorage.getItem('bioterms_md3');
+                if (stored) { try { state.definitions = JSON.parse(stored); } catch(e) { state.definitions = [...PRESET_DEFINITIONS]; } } 
+                else { state.definitions = [...PRESET_DEFINITIONS]; saveLocalState(); }
+
+                if (localStorage.getItem('bioterms_theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    state.darkMode = true; document.documentElement.classList.add('dark');
+                    document.getElementById('dark-mode-icon').textContent = 'light_mode';
+                }
+
+                initFirebase(); app.renderCategories(); app.pickRandomDaily(); app.renderExplore();
+            },
+
+            setTab: (tab) => {
+                state.activeTab = tab;
+                ['explore', 'flashcards', 'bookmarks', 'settings'].forEach(t => {
+                    document.getElementById(`view-${t}`).classList.add('hidden');
+                    
+                    // Desktop Desk Active State (MD3 Pill)
+                    const deskBtn = document.getElementById(`nav-desk-${t}`);
+                    if (deskBtn) {
+                        if (t === tab) {
+                            deskBtn.className = "group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium transition-colors bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container";
+                            deskBtn.querySelector('.material-symbols-outlined').classList.add('fill');
+                        } else {
+                            deskBtn.className = "group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 transition-colors";
+                            deskBtn.querySelector('.material-symbols-outlined').classList.remove('fill');
+                        }
+                    }
+
+                    // Mobile Active State (MD3 Nav Pill)
+                    const mobBtn = document.getElementById(`nav-mob-${t}`);
+                    if (mobBtn) {
+                        const pill = mobBtn.querySelector('.nav-pill');
+                        if (t === tab) {
+                            pill.className = "nav-pill w-16 h-8 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container flex items-center justify-center text-md-on-secondary-container dark:text-md-dark-on-secondary-container";
+                            pill.querySelector('.material-symbols-outlined').classList.add('fill');
+                            mobBtn.querySelector('span:not(.material-symbols-outlined)').className = "text-[12px] font-medium text-md-on-surface dark:text-md-dark-on-surface";
+                        } else {
+                            pill.className = "nav-pill w-0 h-8 rounded-full group-hover:w-16 group-hover:bg-md-surface-variant/50 flex items-center justify-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant";
+                            pill.querySelector('.material-symbols-outlined').classList.remove('fill');
+                            mobBtn.querySelector('span:not(.material-symbols-outlined)').className = "text-[12px] font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant";
+                        }
+                    }
+                });
+
+                document.getElementById(`view-${tab}`).classList.remove('hidden');
+                const titles = { explore: 'Explore', flashcards: 'Flashcards', bookmarks: 'Bookmarks', settings: 'Settings' };
+                document.getElementById('header-title').textContent = titles[tab];
+                renderCurrentView();
+            },
+
+            renderCategories: () => {
+                const cats = ['All', ...new Set(state.definitions.map(d => d.category))];
+                document.getElementById('categories-container').innerHTML = cats.map(cat => {
+                    const act = state.selectedCategory === cat;
+                    return `<button onclick="app.selectCategory('${cat}')" class="px-4 py-2 rounded-[8px] text-sm font-medium border border-md-outline/30 flex-shrink-0 transition-colors ${
+                        act ? 'bg-md-secondary dark:bg-md-dark-secondary text-md-on-secondary dark:text-md-dark-on-secondary border-transparent' 
+                            : 'bg-md-surface-container dark:bg-md-dark-surface-container text-md-on-surface-variant hover:bg-md-surface-container-highest'
+                    }">${cat}</button>`;
+                }).join('');
+            },
+
+            selectCategory: (cat) => { state.selectedCategory = cat; app.renderCategories(); app.renderExplore(); },
+            
+            handleSearch: () => {
+                state.searchQuery = document.getElementById('search-input').value.trim();
+                document.getElementById('clear-search-btn').classList.toggle('hidden', state.searchQuery.length === 0);
+                app.renderExplore();
+            },
+            
+            clearSearch: () => { document.getElementById('search-input').value = ''; state.searchQuery = ''; document.getElementById('clear-search-btn').classList.add('hidden'); app.renderExplore(); },
+
+            renderExplore: () => {
+                const grid = document.getElementById('definitions-grid');
+                let items = state.definitions;
+                if (state.selectedCategory !== 'All') items = items.filter(d => d.category === state.selectedCategory);
+                if (state.searchQuery) {
+                    const q = state.searchQuery.toLowerCase();
+                    items = items.filter(d => d.term.toLowerCase().includes(q) || d.definition.toLowerCase().includes(q));
+                }
+                document.getElementById('results-count').textContent = `${items.length} Definitions`;
+
+                if (!items.length) {
+                    grid.innerHTML = `<div class="col-span-full py-10 text-center text-md-on-surface-variant"><span class="material-symbols-outlined text-4xl mb-2">search_off</span><p>No results found.</p></div>`;
+                    return;
+                }
+
+                grid.innerHTML = items.map(item => `
+                    <!-- MD3 Elevated Card -->
+                    <div class="p-4 rounded-[16px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low shadow-md3-1 hover:shadow-md3-2 transition-shadow flex flex-col justify-between group border border-md-outline/10">
+                        <div>
+                            <div class="flex items-start justify-between gap-2 mb-2">
+                                <span class="text-[11px] font-medium text-md-primary dark:text-md-dark-primary px-2 py-0.5 rounded-[4px] border border-md-primary/30">${escapeHtml(item.category)}</span>
+                                <button onclick="app.toggleFavorite('${item.id}')" class="text-md-on-surface-variant hover:text-[#fbbc04]">
+                                    <span class="material-symbols-outlined ${item.favorite ? 'fill text-[#fbbc04]' : ''}">star</span>
+                                </button>
+                            </div>
+                            <h4 class="text-lg font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(item.term)}</h4>
+                            <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant leading-relaxed line-clamp-3">${escapeHtml(item.definition)}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-md-outline/20 flex gap-2 justify-end opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="app.editTerm('${item.id}')" class="px-3 py-1.5 rounded-full text-xs font-medium bg-md-surface-variant dark:bg-md-dark-surface-variant text-md-on-surface-variant hover:bg-md-primary-container hover:text-md-on-primary-container transition-colors">Edit</button>
+                            <button onclick="app.deleteTerm('${item.id}')" class="px-3 py-1.5 rounded-full text-xs font-medium bg-md-error-container/50 text-md-error hover:bg-md-error-container transition-colors">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            toggleFavorite: (id) => {
+                const item = state.definitions.find(d => d.id === id);
+                if (item) {
+                    item.favorite = !item.favorite; saveLocalState(); syncCloud(item); renderCurrentView();
+                    showToast(item.favorite ? "Added to Bookmarks" : "Removed");
+                }
+            },
+
+            renderFlashcards: () => {
+                if (!state.definitions.length) return;
+                const cur = state.definitions[state.flashcardIndex];
+                if (!cur) { state.flashcardIndex = 0; return app.renderFlashcards(); }
+                document.getElementById('fc-category').textContent = cur.category;
+                document.getElementById('fc-term').textContent = cur.term;
+                document.getElementById('fc-def').textContent = cur.definition;
+                document.getElementById('fc-counter').textContent = `${state.flashcardIndex + 1} / ${state.definitions.length}`;
+                state.isCardFlipped = false; document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+            },
+            flipCard: () => { state.isCardFlipped = !state.isCardFlipped; document.getElementById('flashcard-inner').classList.toggle('rotate-y-180', state.isCardFlipped); },
+            nextCard: () => { state.flashcardIndex = (state.flashcardIndex + 1) % state.definitions.length; app.renderFlashcards(); },
+            prevCard: () => { state.flashcardIndex = (state.flashcardIndex - 1 + state.definitions.length) % state.definitions.length; app.renderFlashcards(); },
+
+            renderBookmarks: () => {
+                const grid = document.getElementById('bookmarks-grid');
+                const favs = state.definitions.filter(d => d.favorite);
+                if (!favs.length) { grid.innerHTML = `<div class="col-span-full py-16 text-center text-md-on-surface-variant"><span class="material-symbols-outlined text-5xl mb-2">bookmark_border</span><p>No saved bookmarks.</p></div>`; return; }
+                grid.innerHTML = favs.map(item => `
+                    <div class="p-4 rounded-[16px] bg-md-surface-container-low shadow-md3-1 flex flex-col justify-between border border-md-outline/10">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-[11px] font-medium text-md-primary border border-md-primary/30 px-2 rounded-[4px]">${escapeHtml(item.category)}</span>
+                                <button onclick="app.toggleFavorite('${item.id}')"><span class="material-symbols-outlined fill text-[#fbbc04]">star</span></button>
+                            </div>
+                            <h4 class="text-lg font-medium text-md-on-surface mb-1">${escapeHtml(item.term)}</h4>
+                            <p class="text-sm text-md-on-surface-variant">${escapeHtml(item.definition)}</p>
+                        </div>
+                    </div>
+                `).join('');
+            },
+
+            pickRandomDaily: () => {
+                if(!state.definitions.length) return;
+                const r = state.definitions[Math.floor(Math.random() * state.definitions.length)];
+                document.getElementById('daily-term').textContent = r.term;
+                document.getElementById('daily-def').textContent = r.definition;
+                document.getElementById('daily-category').textContent = r.category;
+            },
+
+            signInGoogle: async () => {
+                if (!auth) return showToast("Cloud not configured");
+                const { signInWithPopup, GoogleAuthProvider } = window.firebaseImports;
+                try {
+                    // Check if Auth Domain exists in config to prevent 'auth-domain-config-required' error
+                    const conf = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                    if (!conf.authDomain) throw new Error("Missing authDomain");
+                    await signInWithPopup(auth, new GoogleAuthProvider());
+                    app.closeModal('authModal'); showToast("Signed in via Google");
+                } catch (e) {
+                    console.warn("Google Sign-In failed, falling back to Guest:", e.message);
+                    app.signInGuest(); // Auto-fallback to Guest
+                }
+            },
+            
+            signInGuest: async () => {
+                if(!auth) return;
+                const { signInAnonymously } = window.firebaseImports;
+                try {
+                    await signInAnonymously(auth);
+                    app.closeModal('authModal'); showToast("Logged in as Guest");
+                } catch(e) { showToast("Guest login failed"); }
+            },
+
+            signOutUser: async () => { if(auth) { await window.firebaseImports.signOut(auth); app.closeModal('authModal'); showToast("Signed out"); } },
+
+            // MODALS & CRUD
+            openModal: (id) => document.getElementById(id).classList.remove('hidden'),
+            closeModal: (id) => { 
+                document.getElementById(id).classList.add('hidden'); 
+                if(id==='addModal') { document.getElementById('edit-id').value=''; document.getElementById('input-term').value=''; document.getElementById('input-def').value=''; }
+            },
+            
+            saveDefinition: (e) => {
+                e.preventDefault();
+                const id = document.getElementById('edit-id').value, term = document.getElementById('input-term').value.trim();
+                const cat = document.getElementById('input-category').value, def = document.getElementById('input-def').value.trim();
+                if(id) {
+                    const item = state.definitions.find(d => d.id === id);
+                    if(item) { item.term=term; item.category=cat; item.definition=def; syncCloud(item); showToast("Updated"); }
+                } else {
+                    const n = { id: 'c_'+Date.now(), term, category:cat, definition:def, favorite:false };
+                    state.definitions.unshift(n); syncCloud(n); showToast("Added");
+                }
+                saveLocalState(); app.closeModal('addModal'); renderCurrentView(); app.renderCategories();
+            },
+            editTerm: (id) => {
+                const i = state.definitions.find(d=>d.id===id); if(!i) return;
+                document.getElementById('edit-id').value = i.id; document.getElementById('input-term').value = i.term;
+                document.getElementById('input-category').value = i.category; document.getElementById('input-def').value = i.definition;
+                document.getElementById('modal-add-title').textContent = "Edit Term"; app.openModal('addModal');
+            },
+            deleteTerm: (id) => {
+                state.definitions = state.definitions.filter(d=>d.id!==id); saveLocalState();
+                if(db && state.user) {
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : 'bioterms-default';
+                    deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id)).catch(()=>{});
+                }
+                renderCurrentView(); app.renderCategories(); showToast("Deleted");
+            },
+
+            toggleDarkMode: () => {
+                state.darkMode = !state.darkMode; document.documentElement.classList.toggle('dark', state.darkMode);
+                localStorage.setItem('bioterms_theme', state.darkMode?'dark':'light');
+                document.getElementById('dark-mode-icon').textContent = state.darkMode?'light_mode':'dark_mode';
+            },
+            
+            exportData: () => {
+                const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.definitions));
+                a.download = `BioTerms_Backup_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a); a.click(); a.remove(); showToast("Exported Backup");
+            },
+            importData: (e) => {
+                const f = e.target.files[0]; if(!f) return;
+                const r = new FileReader(); r.onload = (ev) => {
+                    try { const res = JSON.parse(ev.target.result); if(Array.isArray(res)) { state.definitions = res; saveLocalState(); renderCurrentView(); app.renderCategories(); showToast("Imported"); } } catch(err){}
+                }; r.readAsText(f);
+            },
+            resetData: () => { state.definitions = [...PRESET_DEFINITIONS]; saveLocalState(); renderCurrentView(); app.renderCategories(); showToast("Reset"); }
+        };
+
+        const renderCurrentView = () => { if(state.activeTab==='explore') app.renderExplore(); else if(state.activeTab==='flashcards') app.renderFlashcards(); else if(state.activeTab==='bookmarks') app.renderBookmarks(); };
+        const saveLocalState = () => localStorage.setItem('bioterms_md3', JSON.stringify(state.definitions));
+        
+        const syncCloud = async (item) => {
+            if(!db || !state.user) return;
+            try { const appId = typeof __app_id !== 'undefined' ? __app_id : 'bioterms-default';
+                  await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item, {merge:true});
+            } catch(e){}
+        };
+
+        const updateAuthUI = () => {
+            const dot = document.getElementById('sync-dot'); const info = document.getElementById('settings-auth-info');
+            if(state.user) {
+                dot.className = "absolute -bottom-1 -right-1 w-3 h-3 border-2 border-md-background dark:border-md-dark-background rounded-full bg-green-500";
+                info.innerHTML = `Synced ${state.user.isAnonymous ? '(Guest)' : ''}`;
+                document.getElementById('auth-logged-out').classList.add('hidden'); document.getElementById('auth-logged-in').classList.remove('hidden');
+                document.getElementById('auth-modal-avatar').src = state.user.photoURL || 'https://placehold.co/100/1A6B50/ffffff?text=U';
+                document.getElementById('auth-modal-name').textContent = state.user.isAnonymous ? 'Guest' : (state.user.displayName || 'User');
+            } else {
+                dot.className = "absolute -bottom-1 -right-1 w-3 h-3 border-2 border-md-background dark:border-md-dark-background rounded-full bg-gray-400";
+                info.textContent = "Local storage only";
+                document.getElementById('auth-logged-out').classList.remove('hidden'); document.getElementById('auth-logged-in').classList.add('hidden');
+            }
+        };
+
+        const showToast = (msg) => {
+            const t = document.getElementById('toast'); document.getElementById('toast-message').textContent = msg;
+            t.classList.remove('opacity-0'); setTimeout(() => t.classList.add('opacity-0'), 3000);
+        };
+        const escapeHtml = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+        window.app = app;
+        window.addEventListener('DOMContentLoaded', app.init);
+    </script>
+</body>
+</html>
