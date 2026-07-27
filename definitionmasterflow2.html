@@ -127,7 +127,20 @@
         .backface-hidden { backface-visibility: hidden; }
         .rotate-y-180 { transform: rotateY(180deg); }
         
-        body { transition: background-color 0.3s ease, color 0.3s ease; }
+        /* Prevent text selection security (from previous app version) */
+        body { 
+            transition: background-color 0.3s ease, color 0.3s ease; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        /* Allow typing in inputs */
+        input, textarea, select {
+            -webkit-user-select: auto;
+            user-select: auto;
+        }
+        
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
 
@@ -509,19 +522,36 @@
 
         const initFirebase = async () => {
             try {
-                const firebaseConfig = {
-                    apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
-                    authDomain: "studymaster-919ba.firebaseapp.com",
-                    databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
-                    projectId: "studymaster-919ba",
-                    storageBucket: "studymaster-919ba.firebasestorage.app",
-                    messagingSenderId: "426684063256",
-                    appId: "1:426684063256:web:52c17625a9450ea9662d6d"
-                };
+                let firebaseConfig;
+                // Use system provided config first, fallback to manual config
+                if (typeof __firebase_config !== 'undefined') {
+                    firebaseConfig = JSON.parse(__firebase_config);
+                } else {
+                    firebaseConfig = {
+                        apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+                        authDomain: "studymaster-919ba.firebaseapp.com",
+                        projectId: "studymaster-919ba",
+                        storageBucket: "studymaster-919ba.firebasestorage.app",
+                        messagingSenderId: "426684063256",
+                        appId: "1:426684063256:web:52c17625a9450ea9662d6d"
+                    };
+                }
 
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
+
+                // ALWAYS authenticate first before any snapshot or database queries
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try { 
+                        await signInWithCustomToken(auth, __initial_auth_token); 
+                    } catch (e) { 
+                        console.warn("Custom token auth failed, using anonymous:", e);
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    try { await signInAnonymously(auth); } catch(e) {}
+                }
 
                 onAuthStateChanged(auth, (user) => {
                     state.user = user;
@@ -532,10 +562,6 @@
                         if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; } 
                     }
                 });
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    try { await signInWithCustomToken(auth, __initial_auth_token); } catch (e) { }
-                }
 
             } catch (e) { console.log("Firebase Init Error (Local fallback applied):", e.message); }
         };
