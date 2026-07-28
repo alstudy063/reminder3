@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BioTerms - Biology Definitions</title>
+    <title>BioTerms</title>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -109,9 +109,7 @@
             display: inline-block;
             vertical-align: middle;
         }
-        .material-symbols-rounded.fill {
-            font-variation-settings: 'FILL' 1;
-        }
+        .material-symbols-rounded.fill { font-variation-settings: 'FILL' 1; }
         
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -130,16 +128,9 @@
         /* Prevent text selection security */
         body { 
             transition: background-color 0.3s ease, color 0.3s ease; 
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
         }
-        /* Allow typing in inputs */
-        input, textarea, select {
-            -webkit-user-select: auto;
-            user-select: auto;
-        }
+        input, textarea, select { -webkit-user-select: auto; user-select: auto; }
         
         .scrollbar-none::-webkit-scrollbar { display: none; }
         .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
@@ -158,21 +149,47 @@
 
         /* Modern Scroll Animation Classes */
         .scroll-animate {
-            opacity: 0;
-            transform: translateY(20px) scale(0.98);
+            opacity: 0; transform: translateY(20px) scale(0.98);
             transition: opacity 0.5s cubic-bezier(0.2, 1, 0.4, 1), transform 0.5s cubic-bezier(0.2, 1, 0.4, 1);
         }
-        .scroll-animate.visible {
-            opacity: 1;
-            transform: translateY(0) scale(1);
+        .scroll-animate.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+        /* Material 3 Startup Spinner */
+        @keyframes m3-spin {
+            0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
+            50% { stroke-dasharray: 89, 200; stroke-dashoffset: -35px; }
+            100% { stroke-dasharray: 89, 200; stroke-dashoffset: -124px; }
+        }
+        @keyframes m3-rotate { 100% { transform: rotate(360deg); } }
+        .m3-spinner circle { animation: m3-spin 1.5s ease-in-out infinite; stroke-linecap: round; }
+        .m3-spinner { animation: m3-rotate 2s linear infinite; }
+
+        /* FAB Mobile Hiding Logic based on Context */
+        @media (max-width: 767px) {
+            body[data-active-tab="flashcards"] #fab-add,
+            body[data-active-tab="settings"] #fab-add {
+                display: none !important;
+            }
         }
     </style>
 </head>
 
-<body class="bg-md-background dark:bg-md-dark-background text-md-on-background dark:text-md-dark-on-background h-full flex overflow-hidden font-sans">
+<body data-active-tab="explore" class="bg-md-background dark:bg-md-dark-background text-md-on-background dark:text-md-dark-on-background h-full flex overflow-hidden font-sans">
 
-    <!-- Desktop Navigation Drawer (Floating & Rounded) -->
-    <aside class="hidden md:flex flex-col w-[320px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low h-[calc(100%-2rem)] my-4 ml-4 rounded-[28px] shadow-md3-2 flex-shrink-0 z-20 transition-colors">
+    <!-- Startup Loading Screen -->
+    <div id="startup-loader" class="fixed inset-0 z-[100] bg-md-surface dark:bg-md-dark-surface flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="relative w-16 h-16 m3-spinner">
+            <svg viewBox="25 25 50 50" class="absolute inset-0">
+                <circle cx="50" cy="50" r="20" fill="none" stroke-width="4" stroke="currentColor" class="text-md-primary dark:text-md-dark-primary"></circle>
+            </svg>
+        </div>
+        <h1 class="mt-8 font-bold text-2xl tracking-tight text-md-on-surface dark:text-md-dark-on-surface flex items-center gap-2">
+            BioTerms
+        </h1>
+    </div>
+
+    <!-- Desktop Navigation Drawer -->
+    <aside class="hidden md:flex flex-col w-[320px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low h-[calc(100%-2rem)] my-4 ml-4 rounded-[28px] border border-md-outline-variant/20 dark:border-md-dark-outline-variant/20 flex-shrink-0 z-20 transition-colors">
         
         <div class="px-6 pt-10 pb-6 flex items-center gap-4">
             <div class="w-10 h-10 rounded-full bg-md-primary dark:bg-md-dark-primary flex items-center justify-center text-md-on-primary dark:text-md-dark-on-primary shadow-md3-1">
@@ -192,7 +209,7 @@
             </button>
             <button onclick="app.setTab('bookmarks')" id="nav-desk-bookmarks" class="group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 transition-colors">
                 <span class="material-symbols-rounded">bookmarks</span>
-                <span class="text-base">Saved Bookmarks</span>
+                <span class="text-base">Bookmarks</span>
             </button>
             
             <div class="h-[1px] w-full bg-md-outline-variant/30 dark:bg-md-dark-outline-variant/30 my-4"></div>
@@ -211,7 +228,7 @@
                 </div>
                 <div class="flex-1 overflow-hidden">
                     <p class="text-sm font-medium text-md-on-surface dark:text-md-dark-on-surface truncate" id="desk-auth-name">Guest Mode</p>
-                    <p class="text-xs text-md-on-surface-variant dark:text-md-dark-on-surface-variant truncate">Tap to sync / login</p>
+                    <p class="text-xs text-md-on-surface-variant dark:text-md-dark-on-surface-variant truncate">Tap to sync / profile</p>
                 </div>
             </div>
         </div>
@@ -234,14 +251,20 @@
                     <span class="material-symbols-rounded">close</span>
                 </button>
             </div>
-
-            <button onclick="app.toggleDarkMode()" class="p-2 ml-auto rounded-full hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 text-md-on-surface-variant dark:text-md-dark-on-surface-variant transition-colors flex-shrink-0">
-                <span id="dark-mode-icon" class="material-symbols-rounded">dark_mode</span>
-            </button>
+            
+            <div class="flex items-center gap-2">
+                <button onclick="app.toggleDarkMode()" class="p-2 ml-auto rounded-full hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 text-md-on-surface-variant dark:text-md-dark-on-surface-variant transition-colors flex-shrink-0">
+                    <span id="dark-mode-icon" class="material-symbols-rounded">dark_mode</span>
+                </button>
+                <button onclick="app.openModal('authModal')" class="p-2 md:hidden rounded-full hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 text-md-on-surface-variant dark:text-md-dark-on-surface-variant transition-colors flex-shrink-0">
+                    <span class="material-symbols-rounded">account_circle</span>
+                </button>
+            </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-[100px] md:pb-24" id="main-scroll-area">
             
+            <!-- Explore View -->
             <div id="view-explore" class="max-w-6xl mx-auto space-y-8 animate-fade-in">
                 
                 <div id="daily-card" class="p-8 rounded-[32px] bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container relative overflow-hidden flex flex-col md:flex-row gap-6 items-start md:items-center shadow-sm hidden">
@@ -267,26 +290,25 @@
                 <div class="space-y-3">
                     <h4 class="text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant px-1" id="results-count">Browse Definitions</h4>
                     <div class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none" id="categories-container">
-                        <!-- Chips -->
+                        <!-- Categories injected here -->
                     </div>
                 </div>
 
                 <div id="definitions-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    <!-- Cards -->
+                    <!-- Cards injected here -->
                 </div>
             </div>
 
+            <!-- Flashcards View -->
             <div id="view-flashcards" class="hidden h-full flex-col max-w-3xl mx-auto py-4 relative">
                 
-                <!-- Empty State -->
                 <div id="fc-empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-md-surface dark:bg-md-dark-surface z-10">
                     <span class="material-symbols-rounded text-6xl text-md-on-surface-variant dark:text-md-dark-on-surface-variant opacity-50 mb-4">note_add</span>
                     <h3 class="text-2xl font-medium mb-2 text-md-on-surface dark:text-md-dark-on-surface">No Terms Available</h3>
                     <p class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant mb-6">Add some terms in the Explore tab to start learning.</p>
-                    <button onclick="app.setTab('explore'); app.openModal('addModal')" class="px-6 py-3 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary shadow-sm hover:shadow-md transition-shadow font-medium">Add New Term</button>
+                    <button onclick="app.setTab('explore'); app.openModal('addModal')" class="px-6 py-3 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary shadow-sm hover:shadow-md transition-shadow font-medium">Explore Terms</button>
                 </div>
 
-                <!-- Completion State -->
                 <div id="fc-complete-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-md-surface dark:bg-md-dark-surface z-10">
                     <span class="material-symbols-rounded text-6xl text-md-primary dark:text-md-dark-primary mb-4">celebration</span>
                     <h3 class="text-3xl font-normal mb-2 text-md-on-surface dark:text-md-dark-on-surface">Great Job!</h3>
@@ -294,7 +316,6 @@
                     <button onclick="app.startNewSession()" class="px-8 py-3 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary shadow-md hover:shadow-lg transition-shadow font-medium">Play Again</button>
                 </div>
 
-                <!-- Active Flashcard Container -->
                 <div id="fc-card-container" class="flex-1 flex flex-col w-full h-full">
                     <div class="flex-1 flex flex-col justify-center perspective-1000 w-full cursor-pointer group" onclick="app.flipCard()">
                         <div id="flashcard-inner" class="transform-style-3d transition-transform duration-[600ms] w-full min-h-[400px] relative rounded-[32px] shadow-md3-2 hover:shadow-md3-3 bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest flex flex-col justify-between items-center text-center">
@@ -318,10 +339,7 @@
                         </div>
                     </div>
 
-                    <!-- Flashcard Controls -->
                     <div class="h-24 flex items-center justify-center pt-10 pb-4 relative">
-                        
-                        <!-- Navigation (Hidden when flipped) -->
                         <div id="fc-nav-controls" class="flex items-center justify-center gap-6 w-full transition-opacity duration-300">
                             <button onclick="app.prevSessionCard(event)" class="w-14 h-14 rounded-full flex items-center justify-center bg-md-surface-variant/80 dark:bg-md-dark-surface-variant/80 text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors shadow-none">
                                 <span class="material-symbols-rounded">arrow_back</span>
@@ -331,93 +349,119 @@
                                 <span class="material-symbols-rounded">arrow_forward</span>
                             </button>
                         </div>
-
-                        <!-- Action Buttons (Shown when flipped) -->
                         <div id="fc-action-controls" class="absolute inset-0 flex items-center justify-center gap-4 opacity-0 pointer-events-none transition-opacity duration-300 pt-10 pb-4">
                             <button onclick="app.markWrong(event)" class="px-6 md:px-8 py-3 rounded-full bg-md-error-container dark:bg-md-dark-error-container text-md-on-error-container dark:text-md-dark-on-error-container hover:bg-md-error dark:hover:bg-md-dark-error hover:text-md-on-error dark:hover:text-md-dark-on-error font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2">
-                                <span class="material-symbols-rounded">close</span> Wrong
+                                <span class="material-symbols-rounded">close</span> Needs Work
                             </button>
                             <button onclick="app.markCorrect(event)" class="px-6 md:px-8 py-3 rounded-full bg-[#146c2e] dark:bg-[#1a8a3a] text-white hover:bg-[#0f5122] dark:hover:bg-[#146c2e] font-medium transition-colors shadow-sm hover:shadow-md flex items-center gap-2">
-                                <span class="material-symbols-rounded">check</span> Correct
+                                <span class="material-symbols-rounded">check</span> Mastered
                             </button>
                         </div>
-
                     </div>
                 </div>
             </div>
 
+            <!-- Bookmarks View -->
             <div id="view-bookmarks" class="hidden max-w-6xl mx-auto space-y-6">
                 <div id="bookmarks-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     <!-- Bookmarked cards injected here -->
                 </div>
             </div>
 
-            <div id="view-settings" class="hidden max-w-3xl mx-auto space-y-6">
+            <!-- Settings View -->
+            <div id="view-settings" class="hidden max-w-3xl mx-auto space-y-6 pb-8">
                 
-                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-6 scroll-animate">
-                    <div class="flex items-center gap-5">
-                        <div class="w-14 h-14 rounded-full bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container flex items-center justify-center shadow-inner">
-                            <span class="material-symbols-rounded text-3xl">cloud_done</span>
-                        </div>
-                        <div>
-                            <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface">Account & Cloud Sync</h3>
-                            <p class="text-base text-md-on-surface-variant dark:text-md-dark-on-surface-variant mt-1" id="settings-auth-info">Local device storage only</p>
-                        </div>
-                    </div>
-                    <button onclick="app.openModal('authModal')" class="px-8 py-3 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary text-sm font-medium transition-colors shadow-md hover:shadow-lg">
-                        Manage Account
-                    </button>
-                </div>
-
-                <!-- Font Selection -->
-                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-4 scroll-animate" style="transition-delay: 50ms;">
-                    <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-4">Display & Language</h3>
-                    
-                    <div class="relative group mt-4">
-                        <select id="font-selector" onchange="app.changeFont(this.value)" class="block w-full px-4 pt-6 pb-2 text-base text-md-on-surface dark:text-md-dark-on-surface bg-transparent border border-md-outline dark:border-md-dark-outline rounded-[4px] appearance-none focus:outline-none focus:ring-0 focus:border-md-primary dark:focus:border-md-dark-primary focus:border-2 peer transition-colors">
-                            <option value="sans">Roboto (Default)</option>
-                            <option value="noto">Noto Sans Sinhala</option>
-                            <option value="yaldevi">Yaldevi</option>
-                        </select>
-                        <label class="absolute text-sm text-md-primary dark:text-md-dark-primary duration-200 transform -translate-y-3 scale-75 top-4 z-10 origin-[0] bg-md-surface-container-high dark:bg-md-dark-surface-container-high px-1 left-3">App Font</label>
-                        <span class="material-symbols-rounded absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-md-on-surface-variant dark:text-md-dark-on-surface-variant">expand_more</span>
-                    </div>
-                </div>
-
-                <!-- Export/Import System -->
-                <div class="p-6 md:p-8 rounded-[28px] bg-md-surface-container-high dark:bg-md-dark-surface-container-high space-y-4 scroll-animate" style="transition-delay: 100ms;">
-                    <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-4">Data Management</h3>
-                    
-                    <div class="flex flex-col gap-3">
-                        <button onclick="app.exportData()" class="flex items-center justify-between px-6 py-4 rounded-[16px] bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest hover:bg-md-outline-variant/20 dark:hover:bg-md-dark-outline-variant/20 transition-colors text-left w-full group">
-                            <div class="flex items-center gap-4">
-                                <span class="material-symbols-rounded text-md-secondary dark:text-md-dark-secondary group-hover:text-md-primary dark:group-hover:text-md-dark-primary transition-colors">download</span>
-                                <span class="text-base font-medium text-md-on-surface dark:text-md-dark-on-surface">Export Backup (JSON)</span>
+                <!-- Modern Account Card -->
+                <div class="rounded-3xl bg-md-surface-container dark:bg-md-dark-surface-container overflow-hidden border border-md-outline-variant/20 dark:border-md-dark-outline-variant/20">
+                    <div class="p-6 md:p-8 flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container flex items-center justify-center shadow-inner">
+                                <span class="material-symbols-rounded">account_circle</span>
                             </div>
-                            <span class="material-symbols-rounded text-md-on-surface-variant dark:text-md-dark-on-surface-variant opacity-50">chevron_right</span>
+                            <div>
+                                <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface">Cloud Sync & Profile</h3>
+                                <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant mt-1" id="settings-auth-info">Local device storage only</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-6 pb-6 md:px-8 md:pb-8">
+                        <button onclick="app.openModal('authModal')" class="w-full md:w-auto px-8 py-3 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary text-sm font-medium transition-colors shadow-sm hover:shadow-md flex items-center justify-center gap-2">
+                            <span class="material-symbols-rounded text-[18px]">manage_accounts</span> Manage Profile
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modern Display Settings -->
+                <div class="rounded-3xl bg-md-surface-container dark:bg-md-dark-surface-container overflow-hidden border border-md-outline-variant/20 dark:border-md-dark-outline-variant/20">
+                    <div class="px-6 py-4 flex items-center gap-4 bg-md-surface-container-low dark:bg-md-dark-surface-container-low border-b border-md-outline-variant/10 dark:border-md-dark-outline-variant/10">
+                        <span class="material-symbols-rounded text-md-primary dark:text-md-dark-primary">palette</span>
+                        <h3 class="text-lg font-medium text-md-on-surface dark:text-md-dark-on-surface">Appearance</h3>
+                    </div>
+                    
+                    <div class="p-6 md:p-8">
+                        <label class="block text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant mb-2">Application Font Family</label>
+                        <div class="relative group max-w-sm">
+                            <select id="font-selector" onchange="app.changeFont(this.value)" class="block w-full px-4 py-3 text-base text-md-on-surface dark:text-md-dark-on-surface bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest border border-transparent rounded-[12px] appearance-none focus:outline-none focus:ring-2 focus:ring-md-primary dark:focus:ring-md-dark-primary transition-colors cursor-pointer">
+                                <option value="sans">Roboto (Default)</option>
+                                <option value="noto">Noto Sans Sinhala</option>
+                                <option value="yaldevi">Yaldevi</option>
+                            </select>
+                            <span class="material-symbols-rounded absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-md-on-surface-variant dark:text-md-dark-on-surface-variant">expand_more</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modern Data Management -->
+                <div class="rounded-3xl bg-md-surface-container dark:bg-md-dark-surface-container overflow-hidden border border-md-outline-variant/20 dark:border-md-dark-outline-variant/20">
+                    <div class="px-6 py-4 flex items-center gap-4 bg-md-surface-container-low dark:bg-md-dark-surface-container-low border-b border-md-outline-variant/10 dark:border-md-dark-outline-variant/10">
+                        <span class="material-symbols-rounded text-md-primary dark:text-md-dark-primary">storage</span>
+                        <h3 class="text-lg font-medium text-md-on-surface dark:text-md-dark-on-surface">Data Management</h3>
+                    </div>
+                    
+                    <div class="flex flex-col">
+                        <button onclick="app.exportData()" class="flex items-center justify-between px-6 py-5 hover:bg-md-surface-container-highest dark:hover:bg-md-dark-surface-container-highest transition-colors text-left w-full group border-b border-md-outline-variant/10 dark:border-md-dark-outline-variant/10">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container flex items-center justify-center text-md-on-secondary-container dark:text-md-dark-on-secondary-container">
+                                    <span class="material-symbols-rounded text-[20px]">download</span>
+                                </div>
+                                <div>
+                                    <span class="block text-base font-medium text-md-on-surface dark:text-md-dark-on-surface">Export Backup</span>
+                                    <span class="block text-xs text-md-on-surface-variant dark:text-md-dark-on-surface-variant mt-0.5">Save all definitions as a JSON file</span>
+                                </div>
+                            </div>
                         </button>
                         
-                        <label class="flex items-center justify-between px-6 py-4 rounded-[16px] bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest hover:bg-md-outline-variant/20 dark:hover:bg-md-dark-outline-variant/20 transition-colors text-left w-full cursor-pointer group">
+                        <label class="flex items-center justify-between px-6 py-5 hover:bg-md-surface-container-highest dark:hover:bg-md-dark-surface-container-highest transition-colors text-left w-full cursor-pointer group border-b border-md-outline-variant/10 dark:border-md-dark-outline-variant/10">
                             <div class="flex items-center gap-4">
-                                <span class="material-symbols-rounded text-md-secondary dark:text-md-dark-secondary group-hover:text-md-primary dark:group-hover:text-md-dark-primary transition-colors">upload</span>
-                                <span class="text-base font-medium text-md-on-surface dark:text-md-dark-on-surface">Import Backup (JSON)</span>
+                                <div class="w-10 h-10 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container flex items-center justify-center text-md-on-secondary-container dark:text-md-dark-on-secondary-container">
+                                    <span class="material-symbols-rounded text-[20px]">upload</span>
+                                </div>
+                                <div>
+                                    <span class="block text-base font-medium text-md-on-surface dark:text-md-dark-on-surface">Import Backup</span>
+                                    <span class="block text-xs text-md-on-surface-variant dark:text-md-dark-on-surface-variant mt-0.5">Restore definitions from a JSON file</span>
+                                </div>
                             </div>
-                            <span class="material-symbols-rounded text-md-on-surface-variant dark:text-md-dark-on-surface-variant opacity-50">chevron_right</span>
                             <input type="file" id="import-file-input" onchange="app.importData(event)" accept=".json" class="hidden">
                         </label>
-                        
-                        <div class="h-[1px] bg-md-outline-variant/30 dark:bg-md-dark-outline-variant/30 my-2"></div>
 
-                        <button onclick="app.resetData()" class="flex items-center gap-4 px-6 py-4 rounded-[16px] text-md-error dark:text-md-dark-error hover:bg-md-error-container/30 dark:hover:bg-md-dark-error-container/30 transition-colors text-left w-full">
-                            <span class="material-symbols-rounded">delete_forever</span>
-                            <span class="text-base font-medium">Reset All Data</span>
+                        <button onclick="app.resetData()" class="flex items-center justify-between px-6 py-5 hover:bg-md-error-container/20 dark:hover:bg-md-dark-error-container/20 transition-colors text-left w-full group">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-md-error-container/50 dark:bg-md-dark-error-container/50 flex items-center justify-center text-md-error dark:text-md-dark-error">
+                                    <span class="material-symbols-rounded text-[20px]">delete_forever</span>
+                                </div>
+                                <div>
+                                    <span class="block text-base font-medium text-md-error dark:text-md-dark-error">Factory Reset</span>
+                                    <span class="block text-xs text-md-on-surface-variant dark:text-md-dark-on-surface-variant mt-0.5">Delete all local and synchronized data</span>
+                                </div>
+                            </div>
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <button onclick="app.openModal('addModal')" class="fixed right-6 bottom-24 md:bottom-8 z-40 flex items-center justify-center w-16 h-16 rounded-[16px] bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container shadow-md3-3 hover:shadow-md3-4 transition-all hover:-translate-y-1 group">
+        <!-- Floating Action Button -->
+        <button id="fab-add" onclick="app.openModal('addModal')" class="fixed right-6 bottom-24 md:bottom-8 z-40 flex items-center justify-center w-16 h-16 rounded-[20px] bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container shadow-md3-3 hover:shadow-md3-4 transition-all hover:-translate-y-1 group">
             <span class="material-symbols-rounded text-[28px] group-hover:scale-110 transition-transform">add</span>
         </button>
 
@@ -494,45 +538,64 @@
         </div>
     </div>
 
-    <!-- Auth / Sync Modal -->
+    <!-- Redesigned Profile / Sync Modal -->
     <div id="authModal" class="hidden fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
-        <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high w-full max-w-sm rounded-[28px] p-8 text-center space-y-4 shadow-md3-4">
-            <div class="w-16 h-16 mx-auto rounded-full bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container flex items-center justify-center mb-4">
-                <span class="material-symbols-rounded text-3xl">cloud_sync</span>
-            </div>
+        <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high w-full max-w-sm rounded-[32px] p-1 shadow-md3-4 overflow-hidden relative">
             
-            <h3 class="text-2xl font-normal text-md-on-surface dark:text-md-dark-on-surface">Cloud Sync</h3>
-            <p class="text-base text-md-on-surface-variant dark:text-md-dark-on-surface-variant">Back up and sync your definitions across all your devices.</p>
-
-            <div id="auth-logged-out" class="space-y-3 pt-6">
-                <button onclick="app.signInGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary font-medium text-sm transition-colors shadow-sm hover:shadow-md">
-                    <i class="fab fa-google"></i> Continue with Google
-                </button>
-                <button onclick="app.signInGuest()" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full border border-md-outline dark:border-md-dark-outline text-md-on-surface dark:text-md-dark-on-surface hover:bg-md-surface-variant/30 dark:hover:bg-md-dark-surface-variant/30 transition-colors text-sm font-medium">
-                    <span class="material-symbols-rounded text-[20px]">person_outline</span> Continue as Guest
-                </button>
-                <div class="pt-2">
-                    <button onclick="app.closeModal('authModal')" class="text-sm text-md-primary dark:text-md-dark-primary font-medium p-2 hover:bg-md-primary/10 dark:hover:bg-md-dark-primary/10 rounded-full px-6 transition-colors">
-                        Cancel
-                    </button>
+            <!-- Modal Header Art -->
+            <div class="h-24 bg-gradient-to-r from-md-primary-container to-md-secondary-container dark:from-md-dark-primary-container dark:to-md-dark-secondary-container absolute top-0 inset-x-0 z-0 rounded-t-[31px]"></div>
+            
+            <!-- Modal Content -->
+            <div class="relative z-10 pt-16 px-6 pb-6 text-center">
+                <!-- Avatar -->
+                <div class="w-20 h-20 mx-auto rounded-full bg-md-surface dark:bg-md-dark-surface p-1 shadow-sm mb-4">
+                    <img id="auth-modal-avatar" class="w-full h-full rounded-full object-cover" src="https://placehold.co/150/6750A4/ffffff?text=U" alt="User Avatar">
                 </div>
-            </div>
+                
+                <!-- Info -->
+                <h3 id="auth-modal-name" class="text-2xl font-normal text-md-on-surface dark:text-md-dark-on-surface">Guest User</h3>
+                <p id="auth-modal-email" class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant mt-1">Local Storage Mode</p>
 
-            <div id="auth-logged-in" class="hidden space-y-6 pt-6">
-                <div class="p-4 rounded-[16px] bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest flex items-center gap-4 text-left border border-md-outline-variant/30 dark:border-md-dark-outline-variant/30">
-                    <img id="auth-modal-avatar" class="w-12 h-12 rounded-full object-cover shadow-sm" src="https://placehold.co/100/6750A4/ffffff?text=U" alt="User">
-                    <div class="overflow-hidden">
-                        <div id="auth-modal-name" class="font-medium text-md-on-surface dark:text-md-dark-on-surface truncate text-lg">User</div>
-                        <div id="auth-modal-email" class="text-sm text-md-primary dark:text-md-dark-primary truncate">Synced & Active</div>
+                <!-- Stats Row -->
+                <div class="flex items-center justify-around mt-6 mb-6 py-4 bg-md-surface-container-lowest dark:bg-md-dark-surface-container-lowest rounded-[20px] shadow-sm border border-md-outline-variant/10 dark:border-md-dark-outline-variant/10">
+                    <div class="flex flex-col items-center">
+                        <span id="stat-total" class="text-xl font-bold text-md-on-surface dark:text-md-dark-on-surface">0</span>
+                        <span class="text-[10px] uppercase font-bold text-md-on-surface-variant dark:text-md-dark-on-surface-variant tracking-wider">Total</span>
+                    </div>
+                    <div class="w-[1px] h-8 bg-md-outline-variant/30 dark:bg-md-dark-outline-variant/30"></div>
+                    <div class="flex flex-col items-center">
+                        <span id="stat-pass" class="text-xl font-bold text-[#146c2e] dark:text-[#1a8a3a]">0</span>
+                        <span class="text-[10px] uppercase font-bold text-[#146c2e]/70 dark:text-[#1a8a3a]/70 tracking-wider">Mastered</span>
+                    </div>
+                    <div class="w-[1px] h-8 bg-md-outline-variant/30 dark:bg-md-dark-outline-variant/30"></div>
+                    <div class="flex flex-col items-center">
+                        <span id="stat-fail" class="text-xl font-bold text-md-error dark:text-md-dark-error">0</span>
+                        <span class="text-[10px] uppercase font-bold text-md-error/70 dark:text-md-dark-error/70 tracking-wider">Learning</span>
                     </div>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="app.closeModal('authModal')" class="flex-1 py-3 rounded-full text-md-primary dark:text-md-dark-primary bg-md-primary/10 dark:bg-md-dark-primary/10 font-medium text-sm transition-colors">
-                        Close
+
+                <!-- Auth/Actions Buttons -->
+                <div id="auth-logged-out" class="space-y-3">
+                    <button onclick="app.signInGoogle()" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary font-medium text-sm transition-colors shadow-sm hover:shadow-md">
+                        <i class="fab fa-google"></i> Connect Google Account
                     </button>
-                    <button onclick="app.signOutUser()" class="flex-1 py-3 rounded-full text-md-error dark:text-md-dark-error bg-md-error-container dark:bg-md-dark-error-container text-md-on-error-container dark:text-md-dark-on-error-container font-medium text-sm transition-colors">
-                        Sign Out
+                    <button onclick="app.closeModal('authModal')" class="w-full flex items-center justify-center gap-3 py-3 px-4 rounded-full bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest text-md-on-surface dark:text-md-dark-on-surface hover:bg-md-outline-variant/20 dark:hover:bg-md-dark-outline-variant/20 transition-colors text-sm font-medium">
+                        Continue as Guest
                     </button>
+                </div>
+
+                <div id="auth-logged-in" class="hidden space-y-3">
+                    <button onclick="app.showToast('Activity history feature coming soon!')" class="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-full bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest text-md-on-surface dark:text-md-dark-on-surface hover:bg-md-outline-variant/20 dark:hover:bg-md-dark-outline-variant/20 transition-colors text-sm font-medium border border-md-outline-variant/10 dark:border-md-dark-outline-variant/10">
+                        <span class="material-symbols-rounded text-[18px]">history</span> View Activity History
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="app.closeModal('authModal')" class="flex-1 py-3 rounded-full text-md-primary dark:text-md-dark-primary bg-md-primary/10 dark:bg-md-dark-primary/10 font-medium text-sm transition-colors hover:bg-md-primary/20 dark:hover:bg-md-dark-primary/20">
+                            Close
+                        </button>
+                        <button onclick="app.signOutUser()" class="flex-1 py-3 rounded-full text-md-error dark:text-md-dark-error bg-md-error-container dark:bg-md-dark-error-container font-medium text-sm transition-colors hover:bg-md-error/20 dark:hover:bg-md-dark-error/20">
+                            Sign Out
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -549,14 +612,15 @@
         import { getAuth, signInAnonymously, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Removed samples. Starts fresh.
-        const PRESET_DEFINITIONS = [];
+        const PRESET_DEFINITIONS = [
+            { id: 'pre1', term: 'Mitochondria', category: 'Cell Biology', definition: 'An organelle found in large numbers in most cells, in which the biochemical processes of respiration and energy production occur. It has a double membrane, the inner layer being folded inward to form layers (cristae).', bookmarked: false, learningStatus: 'new' },
+            { id: 'pre2', term: 'Photosynthesis', category: 'Botany', definition: 'The process by which green plants and some other organisms use sunlight to synthesize foods from carbon dioxide and water. Photosynthesis in plants generally involves the green pigment chlorophyll and generates oxygen as a byproduct.', bookmarked: false, learningStatus: 'new' }
+        ];
 
         const state = {
             definitions: [], activeTab: 'explore', selectedCategory: 'All', searchQuery: '',
             darkMode: false, user: null, 
-            sessionCards: [], sessionIndex: 0, isCardFlipped: false, maxSessionIndex: 0,
-            skipsToday: 0, lastSkipDate: ''
+            sessionCards: [], sessionIndex: 0, isCardFlipped: false, maxSessionIndex: 0
         };
 
         let db = null; let auth = null; let unsubscribeSnapshot = null;
@@ -565,22 +629,6 @@
         const escapeHtml = (unsafe) => {
             if(!unsafe) return "";
             return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-        };
-
-        // Scroll Animation Observer Setup
-        const initScrollAnimations = () => {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target); // Only animate once
-                    }
-                });
-            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-            
-            document.querySelectorAll('.scroll-animate').forEach(el => {
-                observer.observe(el);
-            });
         };
 
         const initFirebase = async () => {
@@ -599,9 +647,9 @@
                     };
                 }
 
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
+                const firebaseApp = initializeApp(firebaseConfig);
+                db = getFirestore(firebaseApp);
+                auth = getAuth(firebaseApp);
 
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     try { 
@@ -650,15 +698,11 @@
                 if (stored) { 
                     try { 
                         state.definitions = JSON.parse(stored); 
-                        // Ensure legacy data has learningStatus
                         state.definitions.forEach(d => { if(!d.learningStatus) d.learningStatus = 'new'; });
                     } catch(e) { state.definitions = [...PRESET_DEFINITIONS]; } 
-                } 
-                else { state.definitions = [...PRESET_DEFINITIONS]; appWindow.saveLocalState(); }
-
-                const skipsData = JSON.parse(localStorage.getItem('bioterms_skips') || '{"count":0, "date":""}');
-                state.skipsToday = skipsData.count || 0;
-                state.lastSkipDate = skipsData.date || '';
+                } else { 
+                    state.definitions = [...PRESET_DEFINITIONS]; appWindow.saveLocalState(); 
+                }
 
                 if (localStorage.getItem('bioterms_theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     state.darkMode = true; document.documentElement.classList.add('dark');
@@ -673,7 +717,26 @@
                 appWindow.renderCategories(); 
                 appWindow.pickRandomDaily(); 
                 appWindow.renderExplore();
-                initScrollAnimations();
+
+                // Remove startup loader after a small delay to allow UI render
+                setTimeout(() => {
+                    const loader = document.getElementById('startup-loader');
+                    if(loader) {
+                        loader.style.opacity = '0';
+                        setTimeout(() => loader.remove(), 500);
+                    }
+                }, 800);
+            },
+
+            saveLocalState: () => {
+                localStorage.setItem('bioterms_md3_v2', JSON.stringify(state.definitions));
+            },
+
+            showToast: (msg) => {
+                const toast = document.getElementById('toast');
+                document.getElementById('toast-message').textContent = msg;
+                toast.classList.remove('opacity-0', 'pointer-events-none');
+                setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 3000);
             },
 
             changeFont: (fontName) => {
@@ -684,21 +747,84 @@
                 else document.body.classList.add('font-sans');
             },
 
+            toggleDarkMode: () => {
+                state.darkMode = !state.darkMode;
+                document.documentElement.classList.toggle('dark');
+                document.getElementById('dark-mode-icon').textContent = state.darkMode ? 'light_mode' : 'dark_mode';
+                localStorage.setItem('bioterms_theme', state.darkMode ? 'dark' : 'light');
+            },
+
+            setTab: (tabId) => {
+                state.activeTab = tabId;
+                document.body.setAttribute('data-active-tab', tabId); // For CSS conditional logic (FAB)
+
+                // Desktop Nav Update
+                ['explore', 'flashcards', 'bookmarks', 'settings'].forEach(id => {
+                    const btn = document.getElementById(`nav-desk-${id}`);
+                    if(!btn) return;
+                    if(id === tabId) {
+                        btn.className = "group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium transition-colors bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container";
+                        btn.querySelector('.material-symbols-rounded').classList.add('fill');
+                    } else {
+                        btn.className = "group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 transition-colors";
+                        btn.querySelector('.material-symbols-rounded').classList.remove('fill');
+                    }
+                });
+
+                // Mobile Nav Update
+                ['explore', 'flashcards', 'bookmarks', 'settings'].forEach(id => {
+                    const btn = document.getElementById(`nav-mob-${id}`);
+                    if(!btn) return;
+                    const pill = btn.querySelector('.nav-pill');
+                    const icon = btn.querySelector('.material-symbols-rounded');
+                    const text = btn.querySelector('span:not(.material-symbols-rounded)');
+                    if(id === tabId) {
+                        pill.className = "nav-pill w-16 h-8 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container flex items-center justify-center text-md-on-secondary-container dark:text-md-dark-on-secondary-container";
+                        icon.classList.add('fill');
+                        text.className = "text-[12px] font-medium text-md-on-surface dark:text-md-dark-on-surface";
+                    } else {
+                        pill.className = "nav-pill w-0 h-8 rounded-full group-hover:w-16 group-hover:bg-md-surface-variant/50 dark:group-hover:bg-md-dark-surface-variant/50 flex items-center justify-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant";
+                        icon.classList.remove('fill');
+                        text.className = "text-[12px] font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant";
+                    }
+                });
+
+                // Content View Toggles
+                ['explore', 'flashcards', 'bookmarks', 'settings'].forEach(id => {
+                    document.getElementById(`view-${id}`).classList.add('hidden');
+                });
+                document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+                // Header Titles
+                const titleMap = { 'explore': 'Explore', 'flashcards': 'Practice', 'bookmarks': 'Saved Terms', 'settings': 'Settings' };
+                document.getElementById('header-title').textContent = titleMap[tabId];
+
+                appWindow.renderCurrentView();
+                
+                // Clear search input if moving away from explore
+                if (tabId !== 'explore') {
+                    appWindow.clearSearch();
+                }
+            },
+
             updateAuthUI: () => {
                 const syncDot = document.getElementById('sync-dot');
                 if (state.user) {
                     const isAnon = state.user.isAnonymous;
                     const name = isAnon ? 'Guest Mode' : (state.user.displayName || 'Google User');
-                    const email = state.user.email || 'Cloud Synced';
-                    const dp = state.user.photoURL || `https://placehold.co/100/6750A4/ffffff?text=${name[0]}`;
+                    const email = state.user.email || 'Local Mode';
+                    
+                    // Create initials avatar if no photo
+                    const photoUrl = state.user.photoURL || `https://placehold.co/150/6750A4/ffffff?text=${name.charAt(0).toUpperCase()}`;
 
                     document.getElementById('desk-auth-name').textContent = name;
+                    document.getElementById('auth-modal-name').textContent = name;
+                    document.getElementById('auth-modal-email').textContent = isAnon ? 'Local Storage Only' : 'Cloud Sync Active';
+                    document.getElementById('auth-modal-avatar').src = photoUrl;
+                    
                     syncDot.className = `absolute top-0 right-0 w-3 h-3 border-2 border-md-surface-container dark:border-md-dark-surface-container rounded-full ${isAnon ? 'bg-gray-400' : 'bg-green-500'}`;
 
                     if (!isAnon) {
-                        document.getElementById('auth-modal-name').textContent = name;
-                        document.getElementById('auth-modal-email').textContent = email;
-                        document.getElementById('auth-modal-avatar').src = dp;
                         document.getElementById('auth-logged-in').classList.remove('hidden');
                         document.getElementById('auth-logged-out').classList.add('hidden');
                         document.getElementById('settings-auth-info').textContent = "Synced with " + email;
@@ -707,608 +833,345 @@
                         document.getElementById('auth-logged-out').classList.remove('hidden');
                         document.getElementById('settings-auth-info').textContent = "Local device storage only";
                     }
-                } else {
-                    document.getElementById('desk-auth-name').textContent = 'Guest Mode';
-                    syncDot.className = "absolute top-0 right-0 w-3 h-3 border-2 border-md-surface-container dark:border-md-dark-surface-container rounded-full bg-gray-400";
-                    document.getElementById('auth-logged-in').classList.add('hidden');
-                    document.getElementById('auth-logged-out').classList.remove('hidden');
                 }
             },
 
             signInGoogle: async () => {
+                if(!auth) return appWindow.showToast("Authentication not initialized.");
                 try {
                     const provider = new GoogleAuthProvider();
                     await signInWithPopup(auth, provider);
+                    appWindow.showToast("Signed in successfully. Syncing enabled.");
                     appWindow.closeModal('authModal');
-                    appWindow.showToast('Signed in with Google Successfully');
-                } catch (e) {
-                    appWindow.showToast('Sign in failed: ' + e.message);
-                }
+                } catch(e) { appWindow.showToast("Sign in failed: " + e.message); }
             },
 
             signInGuest: async () => {
-                try {
-                    await signInAnonymously(auth);
-                    appWindow.closeModal('authModal');
-                    appWindow.showToast('Continuing as Guest');
-                } catch (e) {
-                    appWindow.showToast('Error: ' + e.message);
+                appWindow.closeModal('authModal');
+                if(auth && state.user && !state.user.isAnonymous) {
+                    await appWindow.signOutUser();
                 }
             },
 
             signOutUser: async () => {
+                if(!auth) return;
                 try {
+                    if(unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
                     await signOut(auth);
+                    await signInAnonymously(auth);
+                    appWindow.showToast("Signed out. Operating in Guest Mode.");
                     appWindow.closeModal('authModal');
-                    appWindow.showToast('Signed out successfully');
-                } catch (e) { }
+                } catch (e) { appWindow.showToast("Sign out failed."); }
             },
 
-            saveLocalState: () => localStorage.setItem('bioterms_md3_v2', JSON.stringify(state.definitions)),
-            
-            showToast: (msg) => {
-                const t = document.getElementById('toast');
-                document.getElementById('toast-message').textContent = msg;
-                t.classList.remove('opacity-0');
-                setTimeout(() => t.classList.add('opacity-0'), 3000);
-            },
-
-            toggleDarkMode: () => {
-                state.darkMode = !state.darkMode;
-                document.documentElement.classList.toggle('dark', state.darkMode);
-                document.getElementById('dark-mode-icon').textContent = state.darkMode ? 'light_mode' : 'dark_mode';
-                localStorage.setItem('bioterms_theme', state.darkMode ? 'dark' : 'light');
-            },
-
-            exportData: () => {
-                if (state.definitions.length === 0) {
-                    appWindow.showToast("No data to export.");
-                    return;
-                }
-                const dataStr = JSON.stringify(state.definitions, null, 2);
-                const blob = new Blob([dataStr], { type: "application/json" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'bioterms_backup.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                appWindow.showToast("Data exported successfully");
-            },
-
-            importData: (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
+            openModal: (modalId, editId = null) => {
+                const modal = document.getElementById(modalId);
                 
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const importedData = JSON.parse(e.target.result);
-                        if (Array.isArray(importedData)) {
-                            // Merge with existing logic based on ID
-                            const currentMap = new Map(state.definitions.map(d => [d.id, d]));
-                            importedData.forEach(item => {
-                                if (item.term && item.definition) { // Basic validation
-                                    if (!item.id) item.id = 'term_' + Date.now() + Math.random().toString(36).substr(2, 5);
-                                    if (!item.learningStatus) item.learningStatus = 'new';
-                                    if (typeof item.favorite === 'undefined') item.favorite = false;
-                                    currentMap.set(item.id, item);
-                                }
-                            });
-                            
-                            state.definitions = Array.from(currentMap.values());
-                            appWindow.saveLocalState();
-                            
-                            // Sync all to cloud if logged in
-                            if (state.user && !state.user.isAnonymous && db) {
-                                state.definitions.forEach(item => {
-                                    setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item).catch(()=>{});
-                                });
-                            }
+                // Populate profile stats dynamically
+                if(modalId === 'authModal') {
+                    const total = state.definitions.length;
+                    const pass = state.definitions.filter(d => d.learningStatus === 'mastered').length;
+                    const fail = state.definitions.filter(d => d.learningStatus === 'learning').length;
+                    document.getElementById('stat-total').textContent = total;
+                    document.getElementById('stat-pass').textContent = pass;
+                    document.getElementById('stat-fail').textContent = fail;
+                }
 
-                            appWindow.renderCurrentView();
-                            appWindow.renderCategories();
-                            appWindow.showToast(`Imported successfully. Total terms: ${state.definitions.length}`);
-                        } else {
-                            appWindow.showToast("Invalid backup file format. Must be an array of terms.");
-                        }
-                    } catch (err) {
-                        appWindow.showToast("Error parsing backup file.");
-                    }
-                };
-                reader.readAsText(file);
-                // Reset file input so same file can be selected again
-                event.target.value = '';
-            },
-
-            resetData: () => {
-                // Keep preset clear requirement. Just reset to empty.
-                state.definitions = [];
-                appWindow.saveLocalState();
-                appWindow.renderCurrentView();
-                appWindow.renderCategories();
-                appWindow.showToast('All local data has been reset.');
-                // Note: intentional not deleting from cloud automatically to prevent accidental nuke.
-            },
-
-            setTab: (tab) => {
-                state.activeTab = tab;
-                ['explore', 'flashcards', 'bookmarks', 'settings'].forEach(t => {
-                    const viewEl = document.getElementById(`view-${t}`);
-                    viewEl.classList.add('hidden');
-                    viewEl.classList.remove('view-transition');
-                    
-                    const deskBtn = document.getElementById(`nav-desk-${t}`);
-                    if (deskBtn) {
-                        if (t === tab) {
-                            deskBtn.className = "group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium transition-colors bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container";
-                            deskBtn.querySelector('.material-symbols-rounded').classList.add('fill');
-                        } else {
-                            deskBtn.className = "group w-full flex items-center gap-4 px-4 py-4 rounded-full text-sm font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 transition-colors";
-                            deskBtn.querySelector('.material-symbols-rounded').classList.remove('fill');
+                if(modalId === 'addModal') {
+                    const form = modal.querySelector('form');
+                    form.reset();
+                    document.getElementById('edit-id').value = '';
+                    document.getElementById('modal-add-title').textContent = 'Add New Term';
+                    if (editId) {
+                        const item = state.definitions.find(d => d.id === editId);
+                        if (item) {
+                            document.getElementById('modal-add-title').textContent = 'Edit Term';
+                            document.getElementById('edit-id').value = item.id;
+                            document.getElementById('input-term').value = item.term;
+                            document.getElementById('input-category').value = item.category;
+                            document.getElementById('input-def').value = item.definition;
                         }
                     }
-
-                    const mobBtn = document.getElementById(`nav-mob-${t}`);
-                    if (mobBtn) {
-                        const pill = mobBtn.querySelector('.nav-pill');
-                        if (t === tab) {
-                            pill.className = "nav-pill w-16 h-8 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container flex items-center justify-center text-md-on-secondary-container dark:text-md-dark-on-secondary-container";
-                            pill.querySelector('.material-symbols-rounded').classList.add('fill');
-                            mobBtn.querySelector('span:not(.material-symbols-rounded)').className = "text-[12px] font-medium text-md-on-surface dark:text-md-dark-on-surface";
-                        } else {
-                            pill.className = "nav-pill w-0 h-8 rounded-full group-hover:w-16 group-hover:bg-md-surface-variant/50 dark:group-hover:bg-md-dark-surface-variant/50 flex items-center justify-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant";
-                            pill.querySelector('.material-symbols-rounded').classList.remove('fill');
-                            mobBtn.querySelector('span:not(.material-symbols-rounded)').className = "text-[12px] font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant";
-                        }
-                    }
-                });
-
-                const targetView = document.getElementById(`view-${tab}`);
-                targetView.classList.remove('hidden');
-                void targetView.offsetWidth;
-                targetView.classList.add('view-transition');
-                
-                const titles = { explore: 'Explore', flashcards: 'Flashcards', bookmarks: 'Bookmarks', settings: 'Settings' };
-                document.getElementById('header-title').textContent = titles[tab];
-                
-                if (tab === 'explore') {
-                    document.getElementById('top-search-container').classList.remove('hidden');
-                    document.getElementById('header-title').classList.add('hidden');
-                } else {
-                    document.getElementById('top-search-container').classList.add('hidden');
-                    document.getElementById('header-title').classList.remove('hidden');
                 }
-
-                // If opening flashcards, generate a session if needed
-                if (tab === 'flashcards' && (!state.sessionCards || state.sessionCards.length === 0)) {
-                    appWindow.startNewSession();
-                }
-
-                appWindow.renderCurrentView();
-                
-                // Re-init observers for dynamically rendered content like Explore grid
-                setTimeout(initScrollAnimations, 100);
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.add('opacity-100'), 10);
             },
 
-            renderCurrentView: () => {
-                if (state.activeTab === 'explore') appWindow.renderExplore();
-                else if (state.activeTab === 'flashcards') appWindow.renderFlashcard();
-                else if (state.activeTab === 'bookmarks') appWindow.renderBookmarks();
-            },
-
-            renderCategories: () => {
-                const cats = ['All', ...new Set(state.definitions.map(d => d.category))];
-                document.getElementById('categories-container').innerHTML = cats.map(cat => {
-                    const act = state.selectedCategory === cat;
-                    return `<button onclick="app.selectCategory('${cat}')" class="px-5 py-2 rounded-[8px] text-sm font-medium flex items-center gap-2 flex-shrink-0 transition-colors border ${
-                        act ? 'bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container border-transparent' 
-                            : 'bg-transparent text-md-on-surface-variant dark:text-md-dark-on-surface-variant border-md-outline dark:border-md-dark-outline hover:bg-md-surface-variant/30 dark:hover:bg-md-dark-surface-variant/30'
-                    }">
-                        ${act ? '<span class="material-symbols-rounded text-[18px]">check</span>' : ''}
-                        ${cat}
-                    </button>`;
-                }).join('');
-            },
-
-            selectCategory: (cat) => { state.selectedCategory = cat; appWindow.renderCategories(); appWindow.renderExplore(); },
-            
-            handleSearch: () => {
-                state.searchQuery = document.getElementById('search-input').value.trim();
-                document.getElementById('clear-search-btn').classList.toggle('hidden', state.searchQuery.length === 0);
-                appWindow.renderExplore();
-            },
-            
-            clearSearch: () => { 
-                document.getElementById('search-input').value = ''; 
-                state.searchQuery = ''; 
-                document.getElementById('clear-search-btn').classList.add('hidden'); 
-                appWindow.renderExplore(); 
-            },
-
-            pickRandomDaily: () => {
-                const cardEl = document.getElementById('daily-card');
-                if(state.definitions.length === 0) {
-                    cardEl.classList.add('hidden');
-                    return;
-                }
-                cardEl.classList.remove('hidden');
-                const rand = state.definitions[Math.floor(Math.random() * state.definitions.length)];
-                document.getElementById('daily-term').textContent = rand.term;
-                document.getElementById('daily-def').textContent = rand.definition;
-                document.getElementById('daily-category').textContent = rand.category;
-            },
-
-            renderExplore: () => {
-                const grid = document.getElementById('definitions-grid');
-                let items = state.definitions;
-                if (state.selectedCategory !== 'All') items = items.filter(d => d.category === state.selectedCategory);
-                if (state.searchQuery) {
-                    const q = state.searchQuery.toLowerCase();
-                    items = items.filter(d => d.term.toLowerCase().includes(q) || d.definition.toLowerCase().includes(q));
-                }
-                document.getElementById('results-count').textContent = `${items.length} ${items.length === 1 ? 'Term' : 'Terms'} found`;
-
-                if (!items.length) {
-                    grid.innerHTML = `<div class="col-span-full py-16 text-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant bg-md-surface-container dark:bg-md-dark-surface-container rounded-[24px]"><span class="material-symbols-rounded text-6xl mb-4 opacity-50">search_off</span><p class="text-lg">No biology terms found.</p></div>`;
-                    return;
-                }
-
-                // Inject scroll-animate class for modern reveal
-                grid.innerHTML = items.map((item, index) => `
-                    <div class="scroll-animate p-6 rounded-[24px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low shadow-sm hover:shadow-md3-2 transition-all flex flex-col justify-between group" style="transition-delay: ${(index % 6) * 50}ms;">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="text-xs font-bold uppercase tracking-wider text-md-primary dark:text-md-dark-primary">${escapeHtml(item.category)}</span>
-                                <div class="flex items-center gap-1">
-                                    ${item.learningStatus === 'wrong' ? '<span class="material-symbols-rounded text-[16px] text-md-error">warning</span>' : ''}
-                                    ${item.learningStatus === 'correct' ? '<span class="material-symbols-rounded text-[16px] text-[#146c2e]">check_circle</span>' : ''}
-                                    <button onclick="app.toggleFavorite('${item.id}')" class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:text-md-primary dark:hover:text-md-dark-primary transition-colors ml-1">
-                                        <span class="material-symbols-rounded ${item.favorite ? 'fill text-md-primary dark:text-md-dark-primary' : ''}">bookmark</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(item.term)}</h3>
-                            <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant line-clamp-3">${escapeHtml(item.definition)}</p>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-md-outline-variant/30 dark:border-md-dark-outline-variant/30 flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="app.editDefinition('${item.id}')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-md-surface-variant/50 dark:hover:bg-md-dark-surface-variant/50 text-md-on-surface-variant dark:text-md-dark-on-surface-variant"><span class="material-symbols-rounded text-[20px]">edit</span></button>
-                            <button onclick="app.deleteDefinition('${item.id}')" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-md-error-container dark:hover:bg-md-dark-error-container text-md-error dark:text-md-dark-error"><span class="material-symbols-rounded text-[20px]">delete</span></button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                setTimeout(initScrollAnimations, 50);
+            closeModal: (modalId) => {
+                const modal = document.getElementById(modalId);
+                modal.classList.remove('opacity-100');
+                setTimeout(() => modal.classList.add('hidden'), 300);
             },
 
             saveDefinition: async (e) => {
                 e.preventDefault();
-                const id = document.getElementById('edit-id').value || 'term_' + Date.now();
-                const data = {
-                    id: id,
-                    term: document.getElementById('input-term').value,
-                    category: document.getElementById('input-category').value,
-                    definition: document.getElementById('input-def').value,
-                    favorite: false,
-                    learningStatus: 'new' // Default status
-                };
+                const term = document.getElementById('input-term').value.trim();
+                const category = document.getElementById('input-category').value;
+                const definition = document.getElementById('input-def').value.trim();
+                const editId = document.getElementById('edit-id').value;
 
-                const existingIdx = state.definitions.findIndex(d => d.id === id);
-                if (existingIdx > -1) {
-                    data.favorite = state.definitions[existingIdx].favorite;
-                    data.learningStatus = state.definitions[existingIdx].learningStatus || 'new'; // Preserve status on edit
-                    state.definitions[existingIdx] = data;
+                if (!term || !definition) return appWindow.showToast("Fields cannot be empty.");
+
+                let savedItem = null;
+                if (editId) {
+                    const index = state.definitions.findIndex(d => d.id === editId);
+                    if (index !== -1) {
+                        state.definitions[index] = { ...state.definitions[index], term, category, definition };
+                        savedItem = state.definitions[index];
+                    }
                 } else {
-                    state.definitions.push(data);
+                    savedItem = { id: Date.now().toString(), term, category, definition, bookmarked: false, learningStatus: 'new' };
+                    state.definitions.push(savedItem);
                 }
 
                 appWindow.saveLocalState();
-                appWindow.closeModal('addModal');
-                appWindow.renderCurrentView();
-                appWindow.renderCategories();
-                appWindow.showToast('Term saved successfully');
-                appWindow.pickRandomDaily(); // Refresh daily if empty
-
-                if (state.user && !state.user.isAnonymous && db) {
+                
+                // Cloud Sync
+                if (db && state.user && !state.user.isAnonymous && savedItem) {
                     try {
-                        await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id), data);
-                    } catch(err) { console.warn('Cloud sync failed', err); }
+                        const docRef = doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', savedItem.id);
+                        await setDoc(docRef, savedItem);
+                    } catch(err) { console.warn("Cloud save failed:", err); }
                 }
-            },
 
-            editDefinition: (id) => {
-                const item = state.definitions.find(d => d.id === id);
-                if(!item) return;
-                document.getElementById('edit-id').value = item.id;
-                document.getElementById('input-term').value = item.term;
-                document.getElementById('input-category').value = item.category;
-                document.getElementById('input-def').value = item.definition;
-                document.getElementById('modal-add-title').textContent = 'Edit Term';
-                appWindow.openModal('addModal');
+                appWindow.closeModal('addModal');
+                appWindow.showToast(editId ? "Term updated successfully!" : "New term added!");
+                appWindow.renderCategories();
+                appWindow.renderExplore();
             },
 
             deleteDefinition: async (id) => {
                 state.definitions = state.definitions.filter(d => d.id !== id);
-                // Also remove from active session if present
-                state.sessionCards = state.sessionCards.filter(d => d.id !== id);
-                
                 appWindow.saveLocalState();
-                appWindow.renderCurrentView();
-                appWindow.renderCategories();
-                appWindow.showToast('Term deleted');
-                appWindow.pickRandomDaily(); // In case deleted daily
                 
-                if (state.user && !state.user.isAnonymous && db) {
-                    try { await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id)); } 
-                    catch(err) { }
+                // Cloud Sync
+                if (db && state.user && !state.user.isAnonymous) {
+                    try {
+                        await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id));
+                    } catch(err) { console.warn("Cloud delete failed", err); }
+                }
+                
+                appWindow.showToast("Term deleted.");
+                appWindow.renderCategories();
+                appWindow.renderCurrentView();
+            },
+
+            toggleBookmark: async (id) => {
+                const item = state.definitions.find(d => d.id === id);
+                if (item) {
+                    item.bookmarked = !item.bookmarked;
+                    appWindow.saveLocalState();
+                    
+                    if (db && state.user && !state.user.isAnonymous) {
+                        try {
+                            await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id), item);
+                        } catch(err) {}
+                    }
+                    appWindow.renderCurrentView();
                 }
             },
 
-            toggleFavorite: async (id) => {
-                const item = state.definitions.find(d => d.id === id);
-                if(item) {
-                    item.favorite = !item.favorite;
-                    appWindow.saveLocalState();
-                    appWindow.renderCurrentView();
-                    
-                    if (state.user && !state.user.isAnonymous && db) {
-                        try { await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id), item); } 
-                        catch(err) { }
-                    }
-                }
+            renderCategories: () => {
+                const container = document.getElementById('categories-container');
+                const cats = ['All', ...new Set(state.definitions.map(d => d.category))];
+                container.innerHTML = cats.map(c => `
+                    <button onclick="app.setCategory('${c}')" class="whitespace-nowrap px-5 py-2 rounded-full text-sm font-medium transition-colors ${state.selectedCategory === c ? 'bg-md-primary dark:bg-md-dark-primary text-md-on-primary dark:text-md-dark-on-primary shadow-sm' : 'bg-md-surface-container-high dark:bg-md-dark-surface-container-high text-md-on-surface-variant dark:text-md-dark-on-surface-variant hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant'}">${c}</button>
+                `).join('');
+            },
+
+            setCategory: (cat) => { state.selectedCategory = cat; appWindow.renderCategories(); appWindow.renderExplore(); },
+            handleSearch: () => { state.searchQuery = document.getElementById('search-input').value.trim().toLowerCase(); appWindow.renderExplore(); },
+            clearSearch: () => { document.getElementById('search-input').value = ''; state.searchQuery = ''; appWindow.renderExplore(); },
+            
+            pickRandomDaily: () => {
+                const card = document.getElementById('daily-card');
+                if (state.definitions.length === 0) return card.classList.add('hidden');
+                card.classList.remove('hidden');
+                
+                const r = state.definitions[Math.floor(Math.random() * state.definitions.length)];
+                document.getElementById('daily-term').textContent = r.term;
+                document.getElementById('daily-def').textContent = r.definition;
+                document.getElementById('daily-category').textContent = r.category;
+            },
+
+            renderExplore: () => {
+                const grid = document.getElementById('definitions-grid');
+                const searchBtn = document.getElementById('clear-search-btn');
+                searchBtn.style.display = state.searchQuery ? 'block' : 'none';
+
+                let filtered = state.definitions.filter(d => 
+                    (state.selectedCategory === 'All' || d.category === state.selectedCategory) &&
+                    (d.term.toLowerCase().includes(state.searchQuery) || d.definition.toLowerCase().includes(state.searchQuery))
+                );
+
+                document.getElementById('results-count').textContent = `Browse Definitions (${filtered.length})`;
+
+                grid.innerHTML = filtered.map(d => `
+                    <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-none hover:shadow-md3-2 transition-shadow flex flex-col h-full group border border-transparent hover:border-md-outline-variant/30 dark:hover:border-md-dark-outline-variant/30">
+                        <div class="flex justify-between items-start mb-3 gap-2">
+                            <span class="text-xs font-bold tracking-wider text-md-primary dark:text-md-dark-primary px-3 py-1 rounded-full bg-md-primary/10 dark:bg-md-dark-primary/10 uppercase">${escapeHtml(d.category)}</span>
+                            <div class="flex gap-1">
+                                <button onclick="app.openModal('addModal', '${d.id}')" class="p-1.5 rounded-full text-md-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity hover:bg-md-surface-variant"><span class="material-symbols-rounded text-lg">edit</span></button>
+                                <button onclick="app.deleteDefinition('${d.id}')" class="p-1.5 rounded-full text-md-error opacity-0 group-hover:opacity-100 transition-opacity hover:bg-md-error-container"><span class="material-symbols-rounded text-lg">delete</span></button>
+                                <button onclick="app.toggleBookmark('${d.id}')" class="p-1.5 rounded-full text-md-primary dark:text-md-dark-primary hover:bg-md-surface-variant transition-colors"><span class="material-symbols-rounded text-[22px] ${d.bookmarked ? 'fill' : ''}">${d.bookmarked ? 'bookmark' : 'bookmark_border'}</span></button>
+                            </div>
+                        </div>
+                        <h3 class="text-2xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(d.term)}</h3>
+                        <p class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1 leading-relaxed text-[15px]">${escapeHtml(d.definition)}</p>
+                    </div>
+                `).join('') || `<div class="col-span-full py-12 text-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant"><span class="material-symbols-rounded text-4xl mb-2 opacity-50">search_off</span><p>No terms found.</p></div>`;
             },
 
             startNewSession: () => {
-                if (state.definitions.length === 0) {
-                    state.sessionCards = [];
-                    return;
-                }
-
-                // Shuffle helper
-                const shuffle = (array) => {
-                    for (let i = array.length - 1; i > 0; i--) {
-                        const j = Math.floor(Math.random() * (i + 1));
-                        [array[i], array[j]] = [array[j], array[i]];
-                    }
-                    return array;
-                };
-
-                // Prioritize based on constraints: Focus new, wrong flashcards
-                let wrongCards = shuffle(state.definitions.filter(d => d.learningStatus === 'wrong'));
-                let newCards = shuffle(state.definitions.filter(d => !d.learningStatus || d.learningStatus === 'new'));
-                let correctCards = shuffle(state.definitions.filter(d => d.learningStatus === 'correct'));
-
-                let session = [...wrongCards, ...newCards];
-                
-                // Fill up to 30 if needed with correct cards for review
-                if (session.length < 30) {
-                    session = [...session, ...correctCards];
-                }
-
-                // Limit to max 30 per day/session
-                state.sessionCards = session.slice(0, 30);
+                if (state.definitions.length === 0) return;
+                // Shuffle terms
+                let arr = [...state.definitions].sort(() => Math.random() - 0.5);
+                state.sessionCards = arr;
                 state.sessionIndex = 0;
-                state.maxSessionIndex = 0;
-                
-                // Reset card UI
-                state.isCardFlipped = false;
-                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
-                
+                state.maxSessionIndex = state.sessionCards.length;
                 appWindow.renderFlashcard();
             },
 
             renderFlashcard: () => {
-                const emptyEl = document.getElementById('fc-empty-state');
-                const completeEl = document.getElementById('fc-complete-state');
-                const cardContEl = document.getElementById('fc-card-container');
+                const emptyState = document.getElementById('fc-empty-state');
+                const compState = document.getElementById('fc-complete-state');
+                const cardCont = document.getElementById('fc-card-container');
 
-                if(state.definitions.length === 0) {
-                    emptyEl.classList.remove('hidden');
-                    completeEl.classList.add('hidden');
-                    cardContEl.classList.add('hidden');
+                if (state.definitions.length === 0) {
+                    emptyState.classList.remove('hidden'); cardCont.classList.add('hidden'); compState.classList.add('hidden');
                     return;
                 }
-
-                if(state.sessionCards.length === 0 || state.sessionIndex >= state.sessionCards.length) {
-                    emptyEl.classList.add('hidden');
-                    completeEl.classList.remove('hidden');
-                    cardContEl.classList.add('hidden');
-                    return;
-                }
-
-                // We have cards to show
-                emptyEl.classList.add('hidden');
-                completeEl.classList.add('hidden');
-                cardContEl.classList.remove('hidden');
                 
-                const card = state.sessionCards[state.sessionIndex];
-                document.getElementById('fc-category').textContent = card.category;
-                document.getElementById('fc-term').textContent = card.term;
-                document.getElementById('fc-def').textContent = card.definition;
-                document.getElementById('fc-counter').textContent = `${state.sessionIndex + 1} / ${state.sessionCards.length}`;
+                if (state.sessionIndex >= state.maxSessionIndex || state.sessionCards.length === 0) {
+                    emptyState.classList.add('hidden'); cardCont.classList.add('hidden'); compState.classList.remove('hidden');
+                    return;
+                }
 
-                appWindow.updateFlashcardControls();
+                emptyState.classList.add('hidden'); compState.classList.add('hidden'); cardCont.classList.remove('hidden');
+                
+                state.isCardFlipped = false;
+                const inner = document.getElementById('flashcard-inner');
+                inner.classList.remove('rotate-y-180');
+                
+                document.getElementById('fc-nav-controls').classList.remove('opacity-0', 'pointer-events-none');
+                document.getElementById('fc-action-controls').classList.add('opacity-0', 'pointer-events-none');
+
+                const d = state.sessionCards[state.sessionIndex];
+                document.getElementById('fc-term').textContent = d.term;
+                document.getElementById('fc-category').textContent = d.category;
+                document.getElementById('fc-def').textContent = d.definition;
+                document.getElementById('fc-counter').textContent = `${state.sessionIndex + 1} / ${state.maxSessionIndex}`;
             },
 
             flipCard: () => {
                 state.isCardFlipped = !state.isCardFlipped;
-                if(state.isCardFlipped) {
-                    document.getElementById('flashcard-inner').classList.add('rotate-y-180');
-                } else {
-                    document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
-                }
-                appWindow.updateFlashcardControls();
-            },
-
-            updateFlashcardControls: () => {
-                const navCtrl = document.getElementById('fc-nav-controls');
-                const actCtrl = document.getElementById('fc-action-controls');
-
+                document.getElementById('flashcard-inner').classList.toggle('rotate-y-180');
+                
+                const nav = document.getElementById('fc-nav-controls');
+                const acts = document.getElementById('fc-action-controls');
+                
                 if (state.isCardFlipped) {
-                    // Hide arrows/counter, show Correct/Wrong
-                    navCtrl.classList.add('opacity-0', 'pointer-events-none');
-                    actCtrl.classList.remove('opacity-0', 'pointer-events-none');
+                    nav.classList.add('opacity-0', 'pointer-events-none');
+                    acts.classList.remove('opacity-0', 'pointer-events-none');
                 } else {
-                    // Show arrows/counter, hide Correct/Wrong
-                    navCtrl.classList.remove('opacity-0', 'pointer-events-none');
-                    actCtrl.classList.add('opacity-0', 'pointer-events-none');
+                    nav.classList.remove('opacity-0', 'pointer-events-none');
+                    acts.classList.add('opacity-0', 'pointer-events-none');
                 }
             },
 
+            nextSessionCard: () => { state.sessionIndex++; appWindow.renderFlashcard(); },
+            prevSessionCard: (e) => { e.stopPropagation(); if (state.sessionIndex > 0) { state.sessionIndex--; appWindow.renderFlashcard(); } },
+            skipSessionCard: (e) => { e.stopPropagation(); appWindow.nextSessionCard(); },
+            
             markCorrect: (e) => {
-                e.stopPropagation(); // prevent card flip toggle
-                const card = state.sessionCards[state.sessionIndex];
-                appWindow.updateLearningStatus(card.id, 'correct');
+                e.stopPropagation();
+                const d = state.sessionCards[state.sessionIndex];
+                const glob = state.definitions.find(x => x.id === d.id);
+                if(glob) { glob.learningStatus = 'mastered'; appWindow.saveLocalState(); }
                 appWindow.nextSessionCard();
             },
-
             markWrong: (e) => {
-                e.stopPropagation(); // prevent card flip toggle
-                const card = state.sessionCards[state.sessionIndex];
-                appWindow.updateLearningStatus(card.id, 'wrong');
+                e.stopPropagation();
+                const d = state.sessionCards[state.sessionIndex];
+                const glob = state.definitions.find(x => x.id === d.id);
+                if(glob) { glob.learningStatus = 'learning'; appWindow.saveLocalState(); }
                 appWindow.nextSessionCard();
-            },
-
-            updateLearningStatus: (id, status) => {
-                const defIndex = state.definitions.findIndex(d => d.id === id);
-                if(defIndex > -1) {
-                    state.definitions[defIndex].learningStatus = status;
-                    appWindow.saveLocalState();
-                    
-                    if (state.user && !state.user.isAnonymous && db) {
-                        setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', id), state.definitions[defIndex]).catch(()=>{});
-                    }
-                }
-            },
-
-            nextSessionCard: () => {
-                // Flip back to front visually first
-                state.isCardFlipped = false;
-                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
-                appWindow.updateFlashcardControls();
-                
-                // Wait for flip animation before loading next content
-                setTimeout(() => {
-                    state.sessionIndex++;
-                    if (state.sessionIndex > state.maxSessionIndex) {
-                        state.maxSessionIndex = state.sessionIndex;
-                    }
-                    appWindow.renderFlashcard();
-                }, 300); // Should roughly match the CSS transition duration
-            },
-
-            prevSessionCard: (e) => {
-                if (e) e.stopPropagation();
-                if (state.sessionIndex > 0) {
-                    state.isCardFlipped = false;
-                    document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
-                    appWindow.updateFlashcardControls();
-                    
-                    setTimeout(() => {
-                        state.sessionIndex--;
-                        appWindow.renderFlashcard();
-                    }, 300);
-                } else {
-                    appWindow.showToast("This is the first card of the session.");
-                }
-            },
-
-            skipSessionCard: (e) => {
-                if (e) e.stopPropagation();
-                
-                // If just navigating forward in history, don't count as a skip
-                if (state.sessionIndex < state.maxSessionIndex) {
-                    state.isCardFlipped = false;
-                    document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
-                    appWindow.updateFlashcardControls();
-                    
-                    setTimeout(() => {
-                        state.sessionIndex++;
-                        appWindow.renderFlashcard();
-                    }, 300);
-                    return;
-                }
-
-                // Actually skipping a new card
-                const today = new Date().toDateString();
-                if (state.lastSkipDate !== today) {
-                    state.skipsToday = 0;
-                    state.lastSkipDate = today;
-                }
-                
-                if (state.skipsToday >= 5) {
-                    appWindow.showToast("Daily skip limit (5) reached. Please answer the card.");
-                    return;
-                }
-                
-                state.skipsToday++;
-                localStorage.setItem('bioterms_skips', JSON.stringify({count: state.skipsToday, date: state.lastSkipDate}));
-                appWindow.showToast(`Skipped (${5 - state.skipsToday} skips remaining today)`);
-                
-                state.isCardFlipped = false;
-                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
-                appWindow.updateFlashcardControls();
-                
-                setTimeout(() => {
-                    state.sessionIndex++;
-                    if (state.sessionIndex > state.maxSessionIndex) {
-                        state.maxSessionIndex = state.sessionIndex;
-                    }
-                    appWindow.renderFlashcard();
-                }, 300);
             },
 
             renderBookmarks: () => {
                 const grid = document.getElementById('bookmarks-grid');
-                const items = state.definitions.filter(d => d.favorite);
+                const bks = state.definitions.filter(d => d.bookmarked);
                 
-                if (!items.length) {
-                    grid.innerHTML = `<div class="col-span-full py-16 text-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant bg-md-surface-container dark:bg-md-dark-surface-container rounded-[24px]"><span class="material-symbols-rounded text-6xl mb-4 opacity-50">bookmark_border</span><p class="text-lg">No bookmarks yet.</p></div>`;
-                    return;
-                }
-
-                grid.innerHTML = items.map((item, index) => `
-                    <div class="scroll-animate p-6 rounded-[24px] bg-md-surface-container-low dark:bg-md-dark-surface-container-low shadow-sm flex flex-col justify-between" style="transition-delay: ${(index % 6) * 50}ms;">
-                        <div>
-                            <div class="flex justify-between items-start mb-3">
-                                <span class="text-xs font-bold uppercase tracking-wider text-md-primary dark:text-md-dark-primary">${escapeHtml(item.category)}</span>
-                                <button onclick="app.toggleFavorite('${item.id}')" class="text-md-primary dark:text-md-dark-primary">
-                                    <span class="material-symbols-rounded fill">bookmark</span>
-                                </button>
-                            </div>
-                            <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(item.term)}</h3>
-                            <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant">${escapeHtml(item.definition)}</p>
+                grid.innerHTML = bks.map(d => `
+                    <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm border border-transparent hover:border-md-outline-variant/30 flex flex-col h-full group relative">
+                        <div class="absolute right-4 top-4">
+                            <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full text-md-primary dark:text-md-dark-primary hover:bg-md-surface-variant"><span class="material-symbols-rounded fill text-2xl">bookmark</span></button>
                         </div>
+                        <span class="text-xs font-bold tracking-wider text-md-primary dark:text-md-dark-primary px-3 py-1 rounded-full bg-md-primary/10 inline-block w-max mb-3 uppercase">${escapeHtml(d.category)}</span>
+                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2 pr-10">${escapeHtml(d.term)}</h3>
+                        <p class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant leading-relaxed flex-1">${escapeHtml(d.definition)}</p>
                     </div>
-                `).join('');
-
-                setTimeout(initScrollAnimations, 50);
+                `).join('') || `<div class="col-span-full py-12 text-center text-md-on-surface-variant opacity-70"><span class="material-symbols-rounded text-5xl mb-4 block">bookmark_border</span><p class="text-lg">No bookmarked terms yet.</p></div>`;
             },
 
-            openModal: (id) => {
-                if(id === 'addModal') {
-                    document.getElementById('edit-id').value = '';
-                    document.getElementById('input-term').value = '';
-                    document.getElementById('input-def').value = '';
-                    document.getElementById('modal-add-title').textContent = 'Add New Term';
-                }
-                const m = document.getElementById(id);
-                m.classList.remove('hidden');
-                void m.offsetWidth; // trigger reflow
-                m.querySelector('div').classList.add('scale-100');
-                m.querySelector('div').classList.remove('scale-95');
+            renderCurrentView: () => {
+                if (state.activeTab === 'explore') appWindow.renderExplore();
+                else if (state.activeTab === 'flashcards' && state.sessionCards.length === 0) appWindow.startNewSession();
+                else if (state.activeTab === 'bookmarks') appWindow.renderBookmarks();
+            },
+
+            exportData: () => {
+                const data = JSON.stringify(state.definitions, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `bioterms_backup_${new Date().toISOString().slice(0,10)}.json`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                appWindow.showToast("Backup exported successfully.");
             },
             
-            closeModal: (id) => {
-                const m = document.getElementById(id);
-                m.classList.add('hidden');
+            importData: (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if(Array.isArray(imported)) {
+                            state.definitions = imported;
+                            appWindow.saveLocalState();
+                            if (db && state.user && !state.user.isAnonymous) {
+                                for(const item of state.definitions) {
+                                    try { await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item); } catch(err){}
+                                }
+                            }
+                            appWindow.renderCategories(); appWindow.renderCurrentView(); appWindow.pickRandomDaily();
+                            appWindow.showToast("Backup imported successfully!");
+                        } else throw new Error("Invalid format");
+                    } catch (err) { appWindow.showToast("Failed to import. Invalid JSON file."); }
+                    event.target.value = '';
+                };
+                reader.readAsText(file);
             },
+            
+            resetData: () => {
+                if(!confirm("Are you sure you want to delete ALL terms? This cannot be undone.")) return;
+                state.definitions = []; appWindow.saveLocalState();
+                if (db && state.user && !state.user.isAnonymous) {
+                    appWindow.showToast("Local data cleared. Note: Cloud data must be managed separately.");
+                } else {
+                    appWindow.showToast("All data cleared.");
+                }
+                appWindow.renderCategories(); appWindow.renderCurrentView(); appWindow.pickRandomDaily();
+            }
         };
 
+        // Make globally available
         window.app = appWindow;
-        window.addEventListener('DOMContentLoaded', appWindow.init);
+        
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => { appWindow.init(); });
+
     </script>
 </body>
 </html>
