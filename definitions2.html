@@ -322,7 +322,6 @@
             <div id="view-explore" class="view-enter max-w-6xl mx-auto space-y-8 relative">
                 <div id="daily-card" class="p-8 rounded-[32px] bg-md-primary-container dark:bg-md-dark-primary-container text-md-on-primary-container dark:text-md-dark-on-primary-container relative overflow-hidden flex flex-col md:flex-row gap-6 items-start md:items-center shadow-md3-2 hover:shadow-md3-3 transition-all duration-300 hidden group">
                     <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                    
                     <div class="flex-1 space-y-4 z-10 w-full">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2 text-md-primary dark:text-md-dark-primary">
@@ -424,7 +423,6 @@
 
             <!-- Settings View -->
             <div id="view-settings" class="hidden max-w-3xl mx-auto space-y-6 pb-8">
-                
                 <div class="rounded-3xl bg-md-surface-container dark:bg-md-dark-surface-container overflow-hidden border border-md-outline-variant/20 dark:border-md-dark-outline-variant/20 transition-colors shadow-sm hover:shadow-md3-2 duration-300">
                     <div class="p-6 md:p-8 flex items-center justify-between">
                         <div class="flex items-center gap-4">
@@ -628,7 +626,6 @@
 
     <!-- WOW Design Profile / Sync Modal -->
     <div id="authModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-500 opacity-0 bg-black/40 dark:bg-black/70 backdrop-blur-md">
-        <!-- Floating Animated Background Blobs -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none opacity-50 dark:opacity-30">
             <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-md-primary rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob"></div>
             <div class="absolute top-1/3 right-1/4 w-64 h-64 bg-md-tertiary rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-2000"></div>
@@ -636,30 +633,24 @@
         </div>
 
         <div class="glass-panel w-full max-w-sm rounded-[32px] p-1 shadow-glass overflow-hidden relative modal-animate border-t border-l border-white/40 dark:border-white/10">
-            <!-- Modal Header Art (Animated Gradient) -->
             <div class="h-32 animated-gradient absolute top-0 inset-x-0 z-0 rounded-t-[31px] opacity-90"></div>
-            
             <button onclick="app.closeModal('authModal')" class="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-black/20 text-white hover:bg-black/40 transition-colors backdrop-blur-sm">
                 <span class="material-symbols-rounded text-sm">close</span>
             </button>
 
-            <!-- Modal Content -->
             <div class="relative z-10 pt-20 px-6 pb-6 text-center">
-                <!-- Avatar with animated ring -->
                 <div class="w-24 h-24 mx-auto mb-4 profile-ring-container shadow-md3-2 rounded-full">
                     <div class="profile-ring-inner w-full h-full p-1">
                         <img id="auth-modal-avatar" class="w-full h-full rounded-full object-cover" src="https://placehold.co/150/6750A4/ffffff?text=U" alt="User Avatar">
                     </div>
                 </div>
                 
-                <!-- Info -->
                 <h3 id="auth-modal-name" class="text-2xl font-bold text-md-on-surface dark:text-md-dark-on-surface drop-shadow-sm">Guest User</h3>
                 <div class="inline-flex items-center gap-1 mt-1 px-3 py-1 rounded-full bg-md-surface-variant/50 dark:bg-md-dark-surface-variant/50 backdrop-blur-sm text-xs font-medium text-md-on-surface-variant dark:text-md-dark-on-surface-variant">
                     <span id="auth-status-icon" class="material-symbols-rounded text-[14px]">cloud_off</span>
                     <span id="auth-modal-email">Local Storage Mode</span>
                 </div>
 
-                <!-- Stats Row -->
                 <div class="flex items-center justify-around mt-6 mb-8 py-5 glass-panel rounded-[24px] shadow-sm">
                     <div class="flex flex-col items-center transform transition-transform hover:scale-110">
                         <span id="stat-total" class="text-2xl font-black text-md-on-surface dark:text-md-dark-on-surface">0</span>
@@ -677,7 +668,6 @@
                     </div>
                 </div>
 
-                <!-- Auth/Actions Buttons -->
                 <div id="auth-logged-out" class="space-y-3 relative z-20">
                     <button onclick="app.signInGoogle()" class="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-full bg-md-primary text-white font-medium text-sm transition-all shadow-md3-2 hover:shadow-md3-3 hover:-translate-y-1">
                         <i class="fab fa-google text-lg"></i> Connect Google Account
@@ -746,7 +736,7 @@
         };
 
         let db = null; let auth = null; let unsubscribeSnapshot = null;
-        // MATCH FIRESTORE RULE: match /artifacts/studyflow-pro/users/{userId}/{document=**}
+        // Fix: Force appId to be 'studyflow-pro' to match the specific Firestore rules.
         const appId = 'studyflow-pro';
 
         const escapeHtml = (unsafe) => {
@@ -754,7 +744,6 @@
             return unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         };
 
-        // Date formatter for history
         const formatTime = (isoString) => {
             const date = new Date(isoString);
             return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' - ' + date.toLocaleDateString([], { month: 'short', day: 'numeric' });
@@ -779,10 +768,8 @@
                 db = getFirestore(firebaseApp);
                 auth = getAuth(firebaseApp);
                 
-                // Ensure auth state persists across reloads explicitly
                 await setPersistence(auth, browserLocalPersistence);
 
-                // Check for custom token provided by the environment
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     try { 
                         await signInWithCustomToken(auth, __initial_auth_token); 
@@ -792,7 +779,6 @@
                 }
 
                 onAuthStateChanged(auth, async (user) => {
-                    // Fallback for completely logged out state
                     if (!user) {
                         try { await signInAnonymously(auth); } catch(e) {}
                         return;
@@ -813,7 +799,7 @@
 
         const startCloudSyncListener = () => {
             if (!db || !state.user) return;
-            // Path strict alignment with Firestore rules: artifacts/studyflow-pro/users/{userId}/definitions
+            // The precise path required by rule: /artifacts/studyflow-pro/users/{userId}
             const ref = collection(db, 'artifacts', appId, 'users', state.user.uid, 'definitions');
             unsubscribeSnapshot = onSnapshot(ref, (snap) => {
                 const cloudItems = [];
@@ -925,7 +911,6 @@
                 state.activeTab = tabId;
                 document.body.setAttribute('data-active-tab', tabId);
 
-                // Desktop Nav Update
                 ['explore', 'flashcards', 'bookmarks', 'settings'].forEach(id => {
                     const btn = document.getElementById(`nav-desk-${id}`);
                     if(!btn) return;
@@ -938,7 +923,6 @@
                     }
                 });
 
-                // Mobile Nav Update
                 ['explore', 'flashcards', 'bookmarks', 'settings'].forEach(id => {
                     const btn = document.getElementById(`nav-mob-${id}`);
                     if(!btn) return;
@@ -956,7 +940,6 @@
                     }
                 });
 
-                // View Toggles
                 ['explore', 'flashcards', 'bookmarks', 'settings', 'categories'].forEach(id => {
                     const el = document.getElementById(`view-${id}`);
                     if(id === tabId) {
@@ -969,7 +952,6 @@
                     }
                 });
 
-                // Header Titles
                 const titleMap = { 'explore': 'Explore', 'flashcards': 'Practice', 'bookmarks': 'Saved Terms', 'settings': 'Settings', 'categories': 'Manage Categories' };
                 const titleEl = document.getElementById('header-title');
                 titleEl.classList.add('opacity-0');
@@ -1195,7 +1177,7 @@
                 appWindow.closeModal('addModal');
                 appWindow.showToast(editId ? "Term updated successfully!" : "New term added!");
                 appWindow.renderCategories();
-                appWindow.renderExplore();
+                appWindow.renderCurrentView();
             },
 
             deleteDefinition: async (id) => {
@@ -1316,207 +1298,185 @@
 
                 grid.innerHTML = filtered.map(d => `
                     <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm hover:shadow-md3-3 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full group border border-transparent hover:border-md-outline-variant/30 dark:hover:border-md-dark-outline-variant/30">
-                        <div class="flex justify-between items-start mb-3 gap-2">
-                            <span class="text-xs font-bold tracking-wider text-md-primary dark:text-md-dark-primary px-3 py-1 rounded-full bg-md-primary/10 dark:bg-md-dark-primary/10 uppercase transition-colors">${escapeHtml(d.category)}</span>
-                            <div class="flex gap-1 transform translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300">
-                                <button onclick="app.openModal('addModal', '${d.id}')" class="p-1.5 rounded-full text-md-on-surface-variant hover:bg-md-surface-variant"><span class="material-symbols-rounded text-lg">edit</span></button>
-                                <button onclick="app.deleteDefinition('${d.id}')" class="p-1.5 rounded-full text-md-error hover:bg-md-error-container"><span class="material-symbols-rounded text-lg">delete</span></button>
-                                <button onclick="app.toggleBookmark('${d.id}')" class="p-1.5 rounded-full text-md-primary dark:text-md-dark-primary hover:bg-md-surface-variant transition-colors"><span class="material-symbols-rounded text-[22px] ${d.bookmarked ? 'fill' : ''}">${d.bookmarked ? 'bookmark' : 'bookmark_border'}</span></button>
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="inline-block px-3 py-1 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container text-xs font-medium">${escapeHtml(d.category)}</span>
+                            <div class="flex gap-1">
+                                <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors group/btn">
+                                    <span class="material-symbols-rounded text-lg ${d.bookmarked ? 'fill text-yellow-500' : 'text-md-on-surface-variant'} group-hover/btn:scale-110 transition-transform">bookmark</span>
+                                </button>
+                                <button onclick="app.openModal('addModal', '${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant text-md-on-surface-variant transition-colors"><span class="material-symbols-rounded text-lg">edit</span></button>
+                                <button onclick="app.deleteDefinition('${d.id}')" class="p-2 rounded-full hover:bg-md-error-container/50 text-md-error transition-colors"><span class="material-symbols-rounded text-lg">delete</span></button>
                             </div>
                         </div>
-                        <h3 class="text-2xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2 transition-colors">${escapeHtml(d.term)}</h3>
-                        <p class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1 leading-relaxed text-[15px] transition-colors">${escapeHtml(d.definition)}</p>
+                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(d.term)}</h3>
+                        <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1">${escapeHtml(d.definition)}</p>
                     </div>
-                `).join('') || `<div class="col-span-full py-12 text-center text-md-on-surface-variant dark:text-md-dark-on-surface-variant view-enter"><span class="material-symbols-rounded text-4xl mb-2 opacity-50 animate-pulse">search_off</span><p>No terms found.</p></div>`;
+                `).join('');
             },
 
             startNewSession: () => {
-                if (state.definitions.length === 0) return;
-                let arr = [...state.definitions].sort(() => Math.random() - 0.5);
-                state.sessionCards = arr;
-                state.sessionIndex = 0;
-                state.maxSessionIndex = state.sessionCards.length;
-                appWindow.renderFlashcard();
-            },
-
-            renderFlashcard: () => {
-                const emptyState = document.getElementById('fc-empty-state');
-                const compState = document.getElementById('fc-complete-state');
-                const cardCont = document.getElementById('fc-card-container');
-
                 if (state.definitions.length === 0) {
-                    emptyState.classList.remove('hidden'); cardCont.classList.add('hidden'); compState.classList.add('hidden');
+                    document.getElementById('fc-empty-state').classList.remove('hidden');
+                    document.getElementById('fc-complete-state').classList.add('hidden');
+                    document.getElementById('fc-card-container').classList.add('hidden');
                     return;
                 }
                 
-                if (state.sessionIndex >= state.maxSessionIndex || state.sessionCards.length === 0) {
-                    emptyState.classList.add('hidden'); cardCont.classList.add('hidden'); compState.classList.remove('hidden');
-                    return;
-                }
-
-                emptyState.classList.add('hidden'); compState.classList.add('hidden'); cardCont.remove('hidden');
-                
+                state.sessionCards = [...state.definitions].sort(() => 0.5 - Math.random());
+                state.sessionIndex = 0;
                 state.isCardFlipped = false;
-                const inner = document.getElementById('flashcard-inner');
-                inner.classList.remove('rotate-y-180');
                 
-                document.getElementById('fc-nav-controls').classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-                document.getElementById('fc-action-controls').classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-
-                const d = state.sessionCards[state.sessionIndex];
+                document.getElementById('fc-empty-state').classList.add('hidden');
+                document.getElementById('fc-complete-state').classList.add('hidden');
+                document.getElementById('fc-card-container').classList.remove('hidden');
                 
-                const termEl = document.getElementById('fc-term');
-                termEl.style.opacity = '0';
-                setTimeout(() => {
-                    termEl.textContent = d.term;
-                    document.getElementById('fc-category').textContent = d.category;
-                    document.getElementById('fc-def').textContent = d.definition;
-                    document.getElementById('fc-counter').textContent = `${state.sessionIndex + 1} / ${state.maxSessionIndex}`;
-                    termEl.style.opacity = '1';
-                    termEl.style.transition = 'opacity 0.3s ease';
-                }, 150);
+                appWindow.updateFlashcardUI();
             },
-
+            
+            updateFlashcardUI: () => {
+                if (state.sessionIndex >= state.sessionCards.length) {
+                    document.getElementById('fc-card-container').classList.add('hidden');
+                    document.getElementById('fc-complete-state').classList.remove('hidden');
+                    return;
+                }
+                const card = state.sessionCards[state.sessionIndex];
+                document.getElementById('fc-category').textContent = card.category;
+                document.getElementById('fc-term').textContent = card.term;
+                document.getElementById('fc-def').textContent = card.definition;
+                document.getElementById('fc-counter').textContent = `${state.sessionIndex + 1} / ${state.sessionCards.length}`;
+                
+                const inner = document.getElementById('flashcard-inner');
+                if(state.isCardFlipped) {
+                    inner.classList.add('rotate-y-180');
+                    document.getElementById('fc-action-controls').classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+                    document.getElementById('fc-nav-controls').classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                } else {
+                    inner.classList.remove('rotate-y-180');
+                    document.getElementById('fc-action-controls').classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+                    document.getElementById('fc-nav-controls').classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+                }
+            },
+            
             flipCard: () => {
                 state.isCardFlipped = !state.isCardFlipped;
-                document.getElementById('flashcard-inner').classList.toggle('rotate-y-180');
-                
-                const nav = document.getElementById('fc-nav-controls');
-                const acts = document.getElementById('fc-action-controls');
-                
-                if (state.isCardFlipped) {
-                    nav.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-                    acts.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-                } else {
-                    nav.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
-                    acts.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
-                }
+                appWindow.updateFlashcardUI();
             },
-
-            nextSessionCard: () => { state.sessionIndex++; appWindow.renderFlashcard(); },
-            prevSessionCard: (e) => { e.stopPropagation(); if (state.sessionIndex > 0) { state.sessionIndex--; appWindow.renderFlashcard(); } },
-            skipSessionCard: (e) => { e.stopPropagation(); appWindow.nextSessionCard(); },
             
-            markCorrect: (e) => {
-                e.stopPropagation();
-                const d = state.sessionCards[state.sessionIndex];
-                const glob = state.definitions.find(x => x.id === d.id);
-                if(glob) { 
-                    if (glob.learningStatus !== 'mastered') {
-                        appWindow.logActivity('Mastered', glob.term, 'text-[#146c2e]', 'school');
-                    }
-                    glob.learningStatus = 'mastered'; 
+            prevSessionCard: (e) => { 
+                e.stopPropagation(); 
+                if (state.sessionIndex > 0) { 
+                    state.sessionIndex--; 
+                    state.isCardFlipped = false; 
+                    appWindow.updateFlashcardUI(); 
+                } 
+            },
+            
+            skipSessionCard: (e) => { 
+                e.stopPropagation(); 
+                state.sessionIndex++; 
+                state.isCardFlipped = false; 
+                appWindow.updateFlashcardUI(); 
+            },
+            
+            updateLearningStatus: async (status) => {
+                const currentCard = state.sessionCards[state.sessionIndex];
+                const index = state.definitions.findIndex(d => d.id === currentCard.id);
+                if (index !== -1) {
+                    state.definitions[index].learningStatus = status;
                     appWindow.saveLocalState();
                     if (db && state.user && !state.user.isAnonymous) {
-                        setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', glob.id), glob).catch(err => {});
+                        try { await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', currentCard.id), state.definitions[index]); } catch(e) {}
                     }
                 }
-                appWindow.nextSessionCard();
+                state.sessionIndex++;
+                state.isCardFlipped = false;
+                appWindow.updateFlashcardUI();
             },
-            markWrong: (e) => {
-                e.stopPropagation();
-                const d = state.sessionCards[state.sessionIndex];
-                const glob = state.definitions.find(x => x.id === d.id);
-                if(glob) { 
-                    if (glob.learningStatus !== 'learning') {
-                        appWindow.logActivity('Learning', glob.term, 'text-md-error', 'menu_book');
-                    }
-                    glob.learningStatus = 'learning'; 
-                    appWindow.saveLocalState();
-                    if (db && state.user && !state.user.isAnonymous) {
-                        setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', glob.id), glob).catch(err => {});
-                    }
-                }
-                appWindow.nextSessionCard();
-            },
+            
+            markWrong: (e) => { e.stopPropagation(); appWindow.updateLearningStatus('learning'); },
+            markCorrect: (e) => { e.stopPropagation(); appWindow.updateLearningStatus('mastered'); },
 
             renderBookmarks: () => {
                 const grid = document.getElementById('bookmarks-grid');
-                const bks = state.definitions.filter(d => d.bookmarked);
+                const bookmarked = state.definitions.filter(d => d.bookmarked);
                 
-                grid.innerHTML = bks.map(d => `
-                    <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm hover:shadow-md3-2 border border-transparent hover:border-md-outline-variant/30 flex flex-col h-full group relative transition-all duration-300 transform hover:-translate-y-1">
-                        <div class="absolute right-4 top-4">
-                            <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full text-md-primary dark:text-md-dark-primary hover:bg-md-surface-variant transition-transform hover:scale-110"><span class="material-symbols-rounded fill text-2xl">bookmark</span></button>
+                if (bookmarked.length === 0) {
+                    grid.innerHTML = `<div class="col-span-full flex flex-col items-center justify-center p-12 text-md-on-surface-variant dark:text-md-dark-on-surface-variant">
+                        <span class="material-symbols-rounded text-6xl mb-4 opacity-50">bookmark_border</span>
+                        <p class="text-lg">No bookmarked terms yet.</p>
+                    </div>`;
+                    return;
+                }
+                
+                grid.innerHTML = bookmarked.map(d => `
+                    <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm hover:shadow-md3-3 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full group border border-transparent hover:border-md-outline-variant/30 dark:hover:border-md-dark-outline-variant/30">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="inline-block px-3 py-1 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container text-xs font-medium">${escapeHtml(d.category)}</span>
+                            <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors group/btn">
+                                <span class="material-symbols-rounded text-lg fill text-yellow-500 group-hover/btn:scale-110 transition-transform">bookmark</span>
+                            </button>
                         </div>
-                        <span class="text-xs font-bold tracking-wider text-md-primary dark:text-md-dark-primary px-3 py-1 rounded-full bg-md-primary/10 inline-block w-max mb-3 uppercase">${escapeHtml(d.category)}</span>
-                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2 pr-10">${escapeHtml(d.term)}</h3>
-                        <p class="text-md-on-surface-variant dark:text-md-dark-on-surface-variant leading-relaxed flex-1">${escapeHtml(d.definition)}</p>
+                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(d.term)}</h3>
+                        <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1">${escapeHtml(d.definition)}</p>
                     </div>
-                `).join('') || `<div class="col-span-full py-12 text-center text-md-on-surface-variant opacity-70 view-enter"><span class="material-symbols-rounded text-5xl mb-4 block animate-bounce">bookmark_border</span><p class="text-lg">No bookmarked terms yet.</p></div>`;
+                `).join('');
+            },
+
+            exportData: () => {
+                const dataStr = JSON.stringify(state.definitions, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'bioterms_backup.json';
+                a.click();
+                appWindow.logActivity('Exported', 'Data Backup', 'text-[#146c2e]', 'download');
+            },
+
+            importData: (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const imported = JSON.parse(event.target.result);
+                        if(Array.isArray(imported)) {
+                            state.definitions = imported;
+                            appWindow.saveLocalState();
+                            if (db && state.user && !state.user.isAnonymous) {
+                                imported.forEach(item => {
+                                    setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item);
+                                });
+                            }
+                            appWindow.showToast("Data imported successfully!");
+                            appWindow.logActivity('Imported', 'Data Backup', 'text-md-primary', 'upload');
+                            appWindow.renderCurrentView();
+                        }
+                    } catch(err) { appWindow.showToast("Invalid JSON file."); }
+                };
+                reader.readAsText(file);
+            },
+
+            resetData: () => {
+                // UI Modal or immediate action since no confirm() allowed
+                state.definitions = [...PRESET_DEFINITIONS];
+                state.customCategories = [...PRESET_CATEGORIES];
+                appWindow.saveLocalState();
+                appWindow.showToast("Data reset to factory defaults.");
+                appWindow.renderCurrentView();
             },
 
             renderCurrentView: () => {
                 if (state.activeTab === 'explore') appWindow.renderExplore();
-                else if (state.activeTab === 'flashcards' && state.sessionCards.length === 0) appWindow.startNewSession();
-                else if (state.activeTab === 'bookmarks') appWindow.renderBookmarks();
-                else if (state.activeTab === 'categories') appWindow.renderCategoryManagement();
-            },
-
-            exportData: () => {
-                const data = JSON.stringify({
-                    definitions: state.definitions,
-                    categories: state.customCategories,
-                    historyLogs: state.historyLogs
-                }, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url; a.download = `bioterms_backup_${new Date().toISOString().slice(0,10)}.json`;
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                appWindow.showToast("Backup exported successfully.");
-            },
-            
-            importData: (event) => {
-                const file = event.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        if(imported.definitions || Array.isArray(imported)) {
-                            state.definitions = imported.definitions || imported;
-                            if(imported.categories) state.customCategories = imported.categories;
-                            if(imported.historyLogs) state.historyLogs = imported.historyLogs;
-                            
-                            appWindow.saveLocalState();
-                            if (db && state.user && !state.user.isAnonymous) {
-                                for(const item of state.definitions) {
-                                    try { await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item); } catch(err){}
-                                }
-                            }
-                            appWindow.renderCategories(); appWindow.renderCurrentView(); appWindow.pickRandomDaily();
-                            appWindow.showToast("Backup imported successfully!");
-                        } else throw new Error("Invalid format");
-                    } catch (err) { appWindow.showToast("Failed to import. Invalid JSON file."); }
-                    event.target.value = '';
-                };
-                reader.readAsText(file);
-            },
-            
-            resetData: async () => {
-                if(!confirm("Are you sure you want to delete ALL terms? This cannot be undone.")) return;
-                const oldDefs = [...state.definitions];
-                state.definitions = []; 
-                state.customCategories = [...PRESET_CATEGORIES];
-                state.historyLogs = [];
-                appWindow.saveLocalState();
-                
-                if (db && state.user && !state.user.isAnonymous) {
-                    for (const item of oldDefs) {
-                        try { await deleteDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id)); } catch(err){}
-                    }
-                    appWindow.showToast("Local and Cloud data cleared.");
-                } else {
-                    appWindow.showToast("All data cleared.");
-                }
-                appWindow.renderCategories(); appWindow.renderCurrentView(); appWindow.pickRandomDaily();
+                if (state.activeTab === 'flashcards') appWindow.startNewSession();
+                if (state.activeTab === 'bookmarks') appWindow.renderBookmarks();
+                if (state.activeTab === 'categories') appWindow.renderCategoryManagement();
+                appWindow.renderCategories();
             }
         };
 
         window.app = appWindow;
-        window.addEventListener('DOMContentLoaded', () => { appWindow.init(); });
-
+        window.addEventListener('DOMContentLoaded', appWindow.init);
     </script>
 </body>
 </html>
