@@ -732,11 +732,11 @@
             darkMode: false, user: null, 
             sessionCards: [], sessionIndex: 0, isCardFlipped: false, maxSessionIndex: 0,
             customCategories: [...PRESET_CATEGORIES],
-            historyLogs: []
+            historyLogs: [],
+            longPressTimer: null
         };
 
         let db = null; let auth = null; let unsubscribeSnapshot = null;
-        // Fix: Force appId to be 'studyflow-pro' to match the specific Firestore rules.
         const appId = 'studyflow-pro';
 
         const escapeHtml = (unsafe) => {
@@ -799,19 +799,18 @@
 
         const startCloudSyncListener = () => {
             if (!db || !state.user) return;
-            // The precise path required by rule: /artifacts/studyflow-pro/users/{userId}
             const ref = collection(db, 'artifacts', appId, 'users', state.user.uid, 'definitions');
+            
+            // This snapshot listener purely mirrors the cloud data locally.
+            // When an item is deleted from another device, it will vanish from 'snap',
+            // allowing the local device to update automatically without retaining ghost items.
             unsubscribeSnapshot = onSnapshot(ref, (snap) => {
                 const cloudItems = [];
                 snap.forEach(d => cloudItems.push({ id: d.id, ...d.data() }));
                 
-                if (cloudItems.length > 0) {
-                    const customMap = new Map(cloudItems.map(i => [i.id, i]));
-                    state.definitions = state.definitions.map(i => customMap.get(i.id) || i);
-                    cloudItems.forEach(i => { if (!state.definitions.some(d => d.id === i.id)) state.definitions.push(i); });
-                    appWindow.saveLocalState();
-                    appWindow.renderCurrentView();
-                }
+                state.definitions = cloudItems;
+                appWindow.saveLocalState();
+                appWindow.renderCurrentView();
             }, e => console.warn("Sync err:", e.message));
         };
 
@@ -856,6 +855,42 @@
                         setTimeout(() => loader.remove(), 500);
                     }
                 }, 800);
+
+                // Add document level click listener to close open card context menus
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.card-actions') && !e.target.closest('.term-card')) {
+                        document.querySelectorAll('.card-actions').forEach(el => el.classList.add('hidden'));
+                    }
+                });
+            },
+
+            handleContextMenu: (e, id) => {
+                e.preventDefault();
+                appWindow.toggleCardOptions(id);
+            },
+            handleTouchStart: (e, id) => {
+                appWindow.cancelTouch();
+                state.longPressTimer = setTimeout(() => {
+                    appWindow.toggleCardOptions(id);
+                    if(navigator.vibrate) navigator.vibrate(50);
+                }, 500); // 500ms for long press
+            },
+            cancelTouch: () => {
+                if (state.longPressTimer) clearTimeout(state.longPressTimer);
+            },
+            handleTouchEnd: (e) => {
+                appWindow.cancelTouch();
+            },
+            toggleCardOptions: (id) => {
+                // Hide all other open option menus
+                document.querySelectorAll('.card-actions').forEach(el => {
+                    if (!el.id.includes(id)) el.classList.add('hidden');
+                });
+                // Toggle the target card's option menu
+                const targetExplore = document.getElementById(`actions-${id}`);
+                if (targetExplore) targetExplore.classList.toggle('hidden');
+                const targetBm = document.getElementById(`actions-bm-${id}`);
+                if (targetBm) targetBm.classList.toggle('hidden');
             },
 
             saveLocalState: () => {
@@ -1297,19 +1332,26 @@
                 document.getElementById('results-count').textContent = `Browse Definitions (${filtered.length})`;
 
                 grid.innerHTML = filtered.map(d => `
-                    <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm hover:shadow-md3-3 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full group border border-transparent hover:border-md-outline-variant/30 dark:hover:border-md-dark-outline-variant/30">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="term-card bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm hover:shadow-md3-3 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-[200px] group border border-transparent hover:border-md-outline-variant/30 dark:hover:border-md-dark-outline-variant/30 relative"
+                         oncontextmenu="app.handleContextMenu(event, '${d.id}')"
+                         ontouchstart="app.handleTouchStart(event, '${d.id}')"
+                         ontouchmove="app.cancelTouch()"
+                         ontouchend="app.handleTouchEnd(event)">
+                         
+                        <div class="flex justify-between items-start mb-4 relative z-10">
                             <span class="inline-block px-3 py-1 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container text-xs font-medium">${escapeHtml(d.category)}</span>
-                            <div class="flex gap-1">
-                                <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors group/btn">
+                            <div class="flex gap-1 items-center">
+                                <div id="actions-${d.id}" class="card-actions hidden flex gap-1 bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest rounded-full px-2 py-1 shadow-md absolute right-12 top-0 z-20">
+                                    <button onclick="app.openModal('addModal', '${d.id}'); document.getElementById('actions-${d.id}').classList.add('hidden');" class="p-1.5 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant text-md-on-surface-variant transition-colors"><span class="material-symbols-rounded text-[18px]">edit</span></button>
+                                    <button onclick="app.deleteDefinition('${d.id}')" class="p-1.5 rounded-full hover:bg-md-error-container/50 text-md-error transition-colors"><span class="material-symbols-rounded text-[18px]">delete</span></button>
+                                </div>
+                                <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors group/btn relative z-10">
                                     <span class="material-symbols-rounded text-lg ${d.bookmarked ? 'fill text-yellow-500' : 'text-md-on-surface-variant'} group-hover/btn:scale-110 transition-transform">bookmark</span>
                                 </button>
-                                <button onclick="app.openModal('addModal', '${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant text-md-on-surface-variant transition-colors"><span class="material-symbols-rounded text-lg">edit</span></button>
-                                <button onclick="app.deleteDefinition('${d.id}')" class="p-2 rounded-full hover:bg-md-error-container/50 text-md-error transition-colors"><span class="material-symbols-rounded text-lg">delete</span></button>
                             </div>
                         </div>
-                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(d.term)}</h3>
-                        <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1">${escapeHtml(d.definition)}</p>
+                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2 relative z-10 line-clamp-1">${escapeHtml(d.term)}</h3>
+                        <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1 line-clamp-3 relative z-10">${escapeHtml(d.definition)}</p>
                     </div>
                 `).join('');
             },
@@ -1409,74 +1451,90 @@
                 }
                 
                 grid.innerHTML = bookmarked.map(d => `
-                    <div class="bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm hover:shadow-md3-3 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-full group border border-transparent hover:border-md-outline-variant/30 dark:hover:border-md-dark-outline-variant/30">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="term-card bg-md-surface-container-high dark:bg-md-dark-surface-container-high rounded-[24px] p-6 shadow-sm hover:shadow-md3-3 transition-all duration-300 transform hover:-translate-y-1 flex flex-col h-[200px] group border border-transparent hover:border-md-outline-variant/30 dark:hover:border-md-dark-outline-variant/30 relative"
+                         oncontextmenu="app.handleContextMenu(event, '${d.id}')"
+                         ontouchstart="app.handleTouchStart(event, '${d.id}')"
+                         ontouchmove="app.cancelTouch()"
+                         ontouchend="app.handleTouchEnd(event)">
+                         
+                        <div class="flex justify-between items-start mb-4 relative z-10">
                             <span class="inline-block px-3 py-1 rounded-full bg-md-secondary-container dark:bg-md-dark-secondary-container text-md-on-secondary-container dark:text-md-dark-on-secondary-container text-xs font-medium">${escapeHtml(d.category)}</span>
-                            <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors group/btn">
-                                <span class="material-symbols-rounded text-lg fill text-yellow-500 group-hover/btn:scale-110 transition-transform">bookmark</span>
-                            </button>
+                            <div class="flex gap-1 items-center">
+                                <div id="actions-bm-${d.id}" class="card-actions hidden flex gap-1 bg-md-surface-container-highest dark:bg-md-dark-surface-container-highest rounded-full px-2 py-1 shadow-md absolute right-12 top-0 z-20">
+                                    <button onclick="app.openModal('addModal', '${d.id}'); document.getElementById('actions-bm-${d.id}').classList.add('hidden');" class="p-1.5 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant text-md-on-surface-variant transition-colors"><span class="material-symbols-rounded text-[18px]">edit</span></button>
+                                    <button onclick="app.deleteDefinition('${d.id}')" class="p-1.5 rounded-full hover:bg-md-error-container/50 text-md-error transition-colors"><span class="material-symbols-rounded text-[18px]">delete</span></button>
+                                </div>
+                                <button onclick="app.toggleBookmark('${d.id}')" class="p-2 rounded-full hover:bg-md-surface-variant dark:hover:bg-md-dark-surface-variant transition-colors group/btn relative z-10">
+                                    <span class="material-symbols-rounded text-lg fill text-yellow-500 group-hover/btn:scale-110 transition-transform">bookmark</span>
+                                </button>
+                            </div>
                         </div>
-                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2">${escapeHtml(d.term)}</h3>
-                        <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1">${escapeHtml(d.definition)}</p>
+                        <h3 class="text-xl font-medium text-md-on-surface dark:text-md-dark-on-surface mb-2 relative z-10 line-clamp-1">${escapeHtml(d.term)}</h3>
+                        <p class="text-sm text-md-on-surface-variant dark:text-md-dark-on-surface-variant flex-1 line-clamp-3 relative z-10">${escapeHtml(d.definition)}</p>
                     </div>
                 `).join('');
             },
 
-            exportData: () => {
-                const dataStr = JSON.stringify(state.definitions, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'bioterms_backup.json';
-                a.click();
-                appWindow.logActivity('Exported', 'Data Backup', 'text-[#146c2e]', 'download');
+            renderCurrentView: () => {
+                if (state.activeTab === 'explore') appWindow.renderExplore();
+                else if (state.activeTab === 'bookmarks') appWindow.renderBookmarks();
+                else if (state.activeTab === 'flashcards' && !document.getElementById('view-flashcards').classList.contains('hidden')) {
+                    // Automatically updates via state reactivity logic
+                }
             },
 
-            importData: (e) => {
-                const file = e.target.files[0];
+            exportData: () => {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.definitions));
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "bioterms_backup.json");
+                dlAnchorElem.click();
+            },
+            
+            importData: (event) => {
+                const file = event.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
-                reader.onload = (event) => {
+                reader.onload = (e) => {
                     try {
-                        const imported = JSON.parse(event.target.result);
+                        const imported = JSON.parse(e.target.result);
                         if(Array.isArray(imported)) {
                             state.definitions = imported;
                             appWindow.saveLocalState();
-                            if (db && state.user && !state.user.isAnonymous) {
-                                imported.forEach(item => {
-                                    setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item);
+                            appWindow.renderCategories();
+                            appWindow.renderCurrentView();
+                            appWindow.showToast("Data imported successfully!");
+                            if(db && state.user && !state.user.isAnonymous) {
+                                imported.forEach(async (item) => {
+                                    try { await setDoc(doc(db, 'artifacts', appId, 'users', state.user.uid, 'definitions', item.id), item); } catch(err) {}
                                 });
                             }
-                            appWindow.showToast("Data imported successfully!");
-                            appWindow.logActivity('Imported', 'Data Backup', 'text-md-primary', 'upload');
-                            appWindow.renderCurrentView();
+                        } else {
+                            appWindow.showToast("Invalid backup format.");
                         }
-                    } catch(err) { appWindow.showToast("Invalid JSON file."); }
+                    } catch(err) {
+                        appWindow.showToast("Error parsing backup file.");
+                    }
                 };
                 reader.readAsText(file);
+                event.target.value = '';
             },
 
             resetData: () => {
-                // UI Modal or immediate action since no confirm() allowed
-                state.definitions = [...PRESET_DEFINITIONS];
-                state.customCategories = [...PRESET_CATEGORIES];
-                appWindow.saveLocalState();
-                appWindow.showToast("Data reset to factory defaults.");
-                appWindow.renderCurrentView();
-            },
-
-            renderCurrentView: () => {
-                if (state.activeTab === 'explore') appWindow.renderExplore();
-                if (state.activeTab === 'flashcards') appWindow.startNewSession();
-                if (state.activeTab === 'bookmarks') appWindow.renderBookmarks();
-                if (state.activeTab === 'categories') appWindow.renderCategoryManagement();
-                appWindow.renderCategories();
+                if(confirm("Are you sure you want to delete all local data? This cannot be undone.")) {
+                    state.definitions = [...PRESET_DEFINITIONS];
+                    state.customCategories = [...PRESET_CATEGORIES];
+                    state.historyLogs = [];
+                    appWindow.saveLocalState();
+                    appWindow.renderCategories();
+                    appWindow.renderCurrentView();
+                    appWindow.showToast("Factory reset complete.");
+                }
             }
         };
 
         window.app = appWindow;
-        window.addEventListener('DOMContentLoaded', appWindow.init);
+        document.addEventListener('DOMContentLoaded', appWindow.init);
     </script>
 </body>
 </html>
