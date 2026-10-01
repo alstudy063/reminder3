@@ -300,8 +300,15 @@
   <!-- 1. Shortcuts Modal -->
   <div id="modalLinks" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
     <div class="modal-content w-[90%] max-w-[400px] rounded-[28px] p-6 shadow-2xl transform scale-95 transition-transform">
-      <h3 class="text-lg font-medium text-main mb-4">Edit shortcuts</h3>
-      <div id="linksList" class="flex flex-col gap-3 max-h-[50vh] overflow-y-auto mb-4 p-1">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-medium text-main">Edit shortcuts</h3>
+        <button id="addNewShortcutBtn" class="px-3 py-1.5 text-sm bg-chip hover-bg-search rounded-full text-accent-main m3-clickable flex items-center gap-1 font-medium"><span class="material-symbols-outlined text-[18px]">add</span> Add</button>
+      </div>
+      <div class="flex gap-4 mb-4">
+        <label class="flex-1 text-sm text-secondary flex items-center justify-between bg-search px-3 py-2 rounded-xl">Rows: <input type="number" id="cfgRows" class="w-12 bg-transparent text-main text-right focus:outline-none font-medium" min="1" max="5"></label>
+        <label class="flex-1 text-sm text-secondary flex items-center justify-between bg-search px-3 py-2 rounded-xl">Cols: <input type="number" id="cfgCols" class="w-12 bg-transparent text-main text-right focus:outline-none font-medium" min="3" max="10"></label>
+      </div>
+      <div id="linksList" class="flex flex-col gap-3 max-h-[40vh] overflow-y-auto mb-4 p-1">
         <!-- Injected via JS -->
       </div>
       <div class="flex justify-end gap-3 mt-4">
@@ -315,7 +322,7 @@
   <div id="modalTheme" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
     <div class="modal-content w-[90%] max-w-[320px] rounded-[28px] p-6 shadow-2xl transform scale-95 transition-transform">
       <h3 class="text-lg font-medium text-main mb-4">Choose Theme</h3>
-      <div class="flex flex-col gap-2 mb-6">
+      <div class="flex flex-col gap-2 mb-4">
         <label class="flex items-center gap-3 p-3 rounded-xl hover-bg-search cursor-pointer text-main">
           <input type="radio" name="themeSelector" value="auto" class="w-5 h-5 accent-[var(--accent)]"> System Default
         </label>
@@ -325,6 +332,16 @@
         <label class="flex items-center gap-3 p-3 rounded-xl hover-bg-search cursor-pointer text-main">
           <input type="radio" name="themeSelector" value="light" class="w-5 h-5 accent-[var(--accent)]"> Light Mode
         </label>
+      </div>
+      <div class="mb-6">
+        <h4 class="text-sm font-medium text-secondary mb-3">Material You Accent</h4>
+        <div class="flex items-center gap-3 flex-wrap">
+          <button class="w-8 h-8 rounded-full bg-[#b4f36e] accent-btn shadow-sm m3-clickable border border-surface" data-color="#b4f36e"></button>
+          <button class="w-8 h-8 rounded-full bg-[#a8c7fa] accent-btn shadow-sm m3-clickable border border-surface" data-color="#a8c7fa"></button>
+          <button class="w-8 h-8 rounded-full bg-[#fbbc05] accent-btn shadow-sm m3-clickable border border-surface" data-color="#fbbc05"></button>
+          <button class="w-8 h-8 rounded-full bg-[#ffb4ab] accent-btn shadow-sm m3-clickable border border-surface" data-color="#ffb4ab"></button>
+          <input type="color" id="customAccent" class="w-8 h-8 rounded-full border-0 p-0 cursor-pointer shadow-sm m3-clickable" title="Custom color">
+        </div>
       </div>
       <div class="flex justify-end">
         <button class="modal-close px-5 py-2 text-sm bg-accent text-accent-bg font-medium rounded-full shadow-md">Done</button>
@@ -353,17 +370,31 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // --- 1. Theme Management ---
+      
+      // Right click disable (except in shortcuts section)
+      document.addEventListener('contextmenu', (e) => {
+        if (!e.target.closest('#shortcutsContainer')) {
+          e.preventDefault();
+        }
+      });
+
+      // --- 1. Theme & Color Management ---
       const htmlEl = document.documentElement;
       const themeRadios = document.querySelectorAll('input[name="themeSelector"]');
       
+      const metaTheme = document.createElement('meta');
+      metaTheme.name = 'theme-color';
+      document.head.appendChild(metaTheme);
+
       const applyTheme = (theme) => {
+        let isLight = false;
         if (theme === 'auto') {
-          const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-          htmlEl.setAttribute('data-theme', prefersLight ? 'light' : 'dark');
+          isLight = window.matchMedia('(prefers-color-scheme: light)').matches;
         } else {
-          htmlEl.setAttribute('data-theme', theme);
+          isLight = (theme === 'light');
         }
+        htmlEl.setAttribute('data-theme', isLight ? 'light' : 'dark');
+        metaTheme.content = isLight ? '#f8fcf5' : '#12140e';
       };
 
       const loadTheme = () => {
@@ -381,7 +412,6 @@
         });
       });
 
-      // Auto-update if system changes and 'auto' is selected
       window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
         if (localStorage.getItem('chromeTheme') === 'auto' || !localStorage.getItem('chromeTheme')) {
           applyTheme('auto');
@@ -389,6 +419,44 @@
       });
 
       loadTheme();
+
+      const accentBtns = document.querySelectorAll('.accent-btn');
+      const customAccent = document.getElementById('customAccent');
+      
+      const applyAccent = (color) => {
+        if(!color) return;
+        document.documentElement.style.setProperty('--accent', color);
+        // Simple brightness calculation for adapting text color on accent buttons
+        const hex = color.replace('#', '');
+        if(hex.length === 6) {
+          const r = parseInt(hex.substr(0, 2), 16);
+          const g = parseInt(hex.substr(2, 2), 16);
+          const b = parseInt(hex.substr(4, 2), 16);
+          const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+          document.documentElement.style.setProperty('--accent-text', (yiq >= 128) ? '#12140e' : '#ffffff');
+        }
+      };
+
+      const loadColors = () => {
+        const savedAccent = localStorage.getItem('chromeAccent');
+        if (savedAccent) applyAccent(savedAccent);
+      };
+
+      accentBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const color = e.target.getAttribute('data-color');
+          localStorage.setItem('chromeAccent', color);
+          applyAccent(color);
+        });
+      });
+
+      customAccent.addEventListener('input', (e) => {
+        const color = e.target.value;
+        localStorage.setItem('chromeAccent', color);
+        applyAccent(color);
+      });
+
+      loadColors();
 
       // --- 2. Toast System (Replaces Alert) ---
       const toast = document.getElementById('toast');
@@ -422,6 +490,39 @@
         }
       });
 
+      const micBtn = document.querySelector('button[title="Voice Search"]');
+      const lensBtn = document.querySelector('button[title="Google Lens"]');
+
+      micBtn.addEventListener('click', () => {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+          const recognition = new SpeechRecognition();
+          recognition.onstart = () => showToast('Listening... Speak now.');
+          recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            searchInput.value = transcript;
+            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(transcript)}`;
+          };
+          recognition.onerror = () => showToast('Microphone error or permission denied.');
+          recognition.start();
+        } else {
+          showToast('Voice search not supported in this browser.');
+        }
+      });
+
+      lensBtn.addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = (e) => {
+          if(e.target.files.length > 0) {
+             showToast('Opening Google Lens...');
+             setTimeout(() => window.location.href = 'https://lens.google.com/', 1000);
+          }
+        };
+        fileInput.click();
+      });
+
       // --- 4. Incognito Button Logic ---
       document.getElementById('incognitoBtn').addEventListener('click', () => {
         // Browsers block JS from opening incognito windows for security.
@@ -430,38 +531,43 @@
 
       // --- 5. Dynamic Shortcuts Management ---
       const defaultShortcuts = [
-        { name: 'Google', url: 'https://google.com', icon: 'G', color: '#4285F4', isImage: false },
-        { name: 'Download Un...', url: '#', icon: 'M12 16l4-5h-3V4h-2v7H8l4 5zm9 2H3v2h18v-2z', color: '#ea580c', isImage: false, isSvg: true },
-        { name: 'ikman.lk', url: 'https://ikman.lk', icon: 'i', color: '#00a859', isImage: false },
-        { name: 'Facebook', url: 'https://facebook.com', icon: 'f', color: '#1877F2', isImage: false },
-        { name: 'YouTube', url: 'https://youtube.com', icon: '▶', color: '#FF0000', isImage: false }
+        { name: 'Google', url: 'https://google.com' },
+        { name: 'ikman.lk', url: 'https://ikman.lk' },
+        { name: 'Facebook', url: 'https://facebook.com' },
+        { name: 'YouTube', url: 'https://youtube.com' }
       ];
 
       let shortcuts = JSON.parse(localStorage.getItem('chromeShortcuts')) || defaultShortcuts;
+      let shortcutRows = parseInt(localStorage.getItem('chromeShortcutRows')) || 1;
+      let shortcutCols = parseInt(localStorage.getItem('chromeShortcutCols')) || 5;
+
       const shortcutsContainer = document.getElementById('shortcutsContainer');
       const linksList = document.getElementById('linksList');
+      const cfgRows = document.getElementById('cfgRows');
+      const cfgCols = document.getElementById('cfgCols');
 
       const renderShortcuts = () => {
         shortcutsContainer.innerHTML = '';
+        shortcutsContainer.className = 'bg-surface rounded-[28px] p-5 sm:p-7 mb-6 grid overflow-x-auto w-full max-w-[600px] border border-surface shadow-lg gap-4 sm:gap-6 justify-items-center justify-center transition-all';
+        shortcutsContainer.style.gridTemplateColumns = `repeat(${shortcutCols}, minmax(0, 1fr))`;
+        shortcutsContainer.style.gridTemplateRows = `repeat(${shortcutRows}, auto)`;
+
         shortcuts.forEach(link => {
           const wrapper = document.createElement('a');
           wrapper.href = link.url;
-          wrapper.className = 'm3-clickable flex flex-col items-center min-w-[66px] no-underline';
+          wrapper.className = 'm3-clickable flex flex-col items-center min-w-[66px] no-underline w-full max-w-[80px]';
           
-          let iconHtml = '';
-          if(link.isSvg) {
-            iconHtml = `<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="${link.icon}"/></svg>`;
-          } else {
-            iconHtml = `<span class="font-bold text-xl text-white">${link.icon.charAt(0)}</span>`;
-          }
+          let domain = 'google.com';
+          try {
+             domain = new URL(link.url).hostname;
+          } catch(e) {}
+          const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 
           wrapper.innerHTML = `
-            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-icon flex items-center justify-center mb-2 shadow-sm transition-transform">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-inner" style="background-color: ${link.color}">
-                ${iconHtml}
-              </div>
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-[24px] bg-icon flex items-center justify-center mb-2 shadow-sm transition-transform hover:scale-95 border border-surface">
+              <img src="${faviconUrl}" class="w-8 h-8 rounded-full object-contain" alt="${link.name}" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=128'">
             </div>
-            <span class="text-xs sm:text-sm text-secondary truncate max-w-[70px] text-center font-medium">${link.name}</span>
+            <span class="text-xs sm:text-sm text-secondary truncate w-full text-center font-medium">${link.name}</span>
           `;
           shortcutsContainer.appendChild(wrapper);
         });
@@ -469,25 +575,65 @@
 
       const renderEditLinks = () => {
         linksList.innerHTML = '';
+        cfgRows.value = shortcutRows;
+        cfgCols.value = shortcutCols;
+
         shortcuts.forEach((link, index) => {
+          let domain = 'google.com';
+          try {
+             domain = new URL(link.url).hostname;
+          } catch(e) {}
+          const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+
           const row = document.createElement('div');
-          row.className = 'flex flex-col gap-1 p-3 bg-search rounded-xl border border-surface';
+          row.className = 'flex items-center gap-3 p-3 bg-search rounded-xl border border-surface transition-colors';
           row.innerHTML = `
-            <input type="text" value="${link.name}" data-index="${index}" data-field="name" class="bg-transparent text-main text-sm font-medium focus:outline-none placeholder-muted" placeholder="Name">
-            <input type="text" value="${link.url}" data-index="${index}" data-field="url" class="bg-transparent text-secondary text-xs focus:outline-none placeholder-muted" placeholder="URL">
+            <img src="${faviconUrl}" class="w-6 h-6 rounded-full flex-shrink-0" onerror="this.src='https://www.google.com/s2/favicons?domain=google.com&sz=64'">
+            <div class="flex-1 flex flex-col gap-1 min-w-0">
+              <input type="text" value="${link.name}" data-index="${index}" data-field="name" class="bg-transparent text-main text-sm font-medium focus:outline-none placeholder-muted w-full truncate" placeholder="Name">
+              <input type="text" value="${link.url}" data-index="${index}" data-field="url" class="bg-transparent text-secondary text-xs focus:outline-none placeholder-muted w-full truncate" placeholder="URL">
+            </div>
+            <button data-delete="${index}" class="text-red-400 hover:text-red-500 p-2 m3-clickable flex-shrink-0 flex items-center"><span class="material-symbols-outlined text-[20px]">delete</span></button>
           `;
           linksList.appendChild(row);
         });
+
+        document.querySelectorAll('button[data-delete]').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const idx = e.currentTarget.getAttribute('data-delete');
+            shortcuts.splice(idx, 1);
+            renderEditLinks();
+          });
+        });
       };
 
+      document.getElementById('addNewShortcutBtn').addEventListener('click', () => {
+        shortcuts.push({ name: 'New Link', url: 'https://' });
+        renderEditLinks();
+        // scroll to bottom smoothly
+        setTimeout(() => linksList.scrollTop = linksList.scrollHeight, 100);
+      });
+
       document.getElementById('saveLinksBtn').addEventListener('click', () => {
-        const inputs = linksList.querySelectorAll('input');
+        const inputs = linksList.querySelectorAll('input[data-field]');
+        let saved = [];
+        for(let i=0; i<shortcuts.length; i++) {
+           saved.push({ name: '', url: '' });
+        }
         inputs.forEach(input => {
           const index = input.getAttribute('data-index');
           const field = input.getAttribute('data-field');
-          shortcuts[index][field] = input.value;
+          if(saved[index]) saved[index][field] = input.value;
         });
+        shortcuts = saved;
+        
+        shortcutRows = parseInt(cfgRows.value) || 1;
+        shortcutCols = parseInt(cfgCols.value) || 5;
+
         localStorage.setItem('chromeShortcuts', JSON.stringify(shortcuts));
+        localStorage.setItem('chromeShortcutRows', shortcutRows);
+        localStorage.setItem('chromeShortcutCols', shortcutCols);
+        
         renderShortcuts();
         closeAllModals();
         showToast("Shortcuts saved!");
