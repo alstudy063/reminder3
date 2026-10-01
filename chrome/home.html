@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Google Chrome - New Tab</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <style>
+    :root {
+      /* Default to Dark Theme Variables */
+      --bg: #12140e;
+      --surface: #1e201a;
+      --surface-hover: #282b22;
+      --search-bg: #2b3220;
+      --search-hover: #343c27;
+      --chip-bg: #2a3121;
+      --chip-hover: #323b28;
+      --text-main: #e2e3db;
+      --text-secondary: #c3c8bb;
+      --text-muted: #8d9286;
+      --accent: #b4f36e;
+      --accent-hover: #a6e85e;
+      --accent-text: #12140e;
+      --border-color: rgba(255,255,255,0.05);
+      --icon-bg: #2c2f28;
+      --modal-bg: #1e201a;
+      --modal-overlay: rgba(0,0,0,0.6);
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fcf5;
+      --surface: #ffffff;
+      --surface-hover: #f1f5f1;
+      --search-bg: #edf2e9;
+      --search-hover: #e4ebe0;
+      --chip-bg: #edf2e9;
+      --chip-hover: #e4ebe0;
+      --text-main: #1a1c18;
+      --text-secondary: #43483e;
+      --text-muted: #73796e;
+      --accent: #386a20;
+      --accent-hover: #2b5219;
+      --accent-text: #ffffff;
+      --border-color: rgba(0,0,0,0.08);
+      --icon-bg: #f1f5f1;
+      --modal-bg: #ffffff;
+      --modal-overlay: rgba(0,0,0,0.3);
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      overflow-x: hidden;
+      /* Disable text selection globally */
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Enable selection ONLY for inputs */
+    input, textarea {
+      user-select: auto;
+      -webkit-user-select: auto;
+    }
+
+    /* Custom Material 3 Ripple / Click scale */
+    .m3-clickable {
+      transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+      cursor: pointer;
+    }
+    .m3-clickable:active {
+      transform: scale(0.96);
+      opacity: 0.85;
+    }
+
+    /* Scrollbar hide for webkit */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Material 3 Scalloped Star for Chrome Tips */
+    .scalloped-badge {
+      width: 64px;
+      height: 64px;
+      background-color: var(--accent);
+      color: var(--accent-text);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 0 C53 8 61 14 70 14 C78 14 86 8 89 16 C92 24 88 33 93 40 C98 47 100 56 97 64 C94 72 85 76 80 83 C75 90 70 99 61 99 C52 99 46 91 38 92 C30 93 22 100 15 95 C8 90 10 80 6 73 C2 66 -1 57 1 49 C3 41 10 35 11 27 C12 19 8 10 15 5 C22 0 31 4 39 2 Z"/></svg>');
+      -webkit-mask-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 0 C53 8 61 14 70 14 C78 14 86 8 89 16 C92 24 88 33 93 40 C98 47 100 56 97 64 C94 72 85 76 80 83 C75 90 70 99 61 99 C52 99 46 91 38 92 C30 93 22 100 15 95 C8 90 10 80 6 73 C2 66 -1 57 1 49 C3 41 10 35 11 27 C12 19 8 10 15 5 C22 0 31 4 39 2 Z"/></svg>');
+      mask-size: contain;
+      -webkit-mask-size: contain;
+      mask-repeat: no-repeat;
+      -webkit-mask-repeat: no-repeat;
+      opacity: 0.8;
+    }
+
+    /* Utilities mapped to CSS variables for Tailwind integration */
+    .bg-surface { background-color: var(--surface); }
+    .bg-search { background-color: var(--search-bg); }
+    .hover-bg-search:hover { background-color: var(--search-hover); }
+    .bg-chip { background-color: var(--chip-bg); }
+    .hover-bg-chip:hover { background-color: var(--chip-hover); }
+    .bg-accent { background-color: var(--accent); }
+    .hover-bg-accent:hover { background-color: var(--accent-hover); }
+    .text-accent-main { color: var(--accent); }
+    .text-accent-bg { color: var(--accent-text); }
+    .border-surface { border-color: var(--border-color); }
+    .text-main { color: var(--text-main); }
+    .text-secondary { color: var(--text-secondary); }
+    .text-muted { color: var(--text-muted); }
+    .bg-icon { background-color: var(--icon-bg); }
+    
+    .logo-dark { display: block; filter: brightness(0) invert(1); }
+    .logo-light { display: none; }
+    
+    [data-theme="light"] .logo-dark { display: none; }
+    [data-theme="light"] .logo-light { display: block; }
+
+    /* Modals & Toast */
+    .modal-overlay {
+      background-color: var(--modal-overlay);
+      backdrop-filter: blur(2px);
+    }
+    .modal-content {
+      background-color: var(--modal-bg);
+      border: 1px solid var(--border-color);
+    }
+    
+    #toast {
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+
+<body class="flex flex-col items-center justify-start min-h-screen pt-[8vh] sm:pt-[12vh] pb-24 overflow-y-auto w-full">
+
+  <main class="w-full max-w-[700px] px-5 flex flex-col items-center flex-shrink-0">
+    
+    <div class="flex justify-center mb-8 w-full">
+      <!-- Dark mode logo (pure white) -->
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" 
+           alt="Google Logo" 
+           class="logo-dark h-[52px] sm:h-[68px] w-auto pointer-events-none select-none">
+      <!-- Light mode logo (colorful) -->
+      <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" 
+           alt="Google Logo" 
+           class="logo-light h-[52px] sm:h-[68px] w-auto pointer-events-none select-none">
+    </div>
+
+    <div class="w-full max-w-[600px] bg-search hover-bg-search rounded-full px-5 py-3.5 sm:py-4 flex items-center shadow-sm border border-surface mb-4 transition-colors">
+      <div class="mr-4 flex-shrink-0 pointer-events-none">
+        <svg class="w-[22px] h-[22px] sm:w-6 sm:h-6" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+          <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.24 21.3 7.33 24 12 24z"/>
+          <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.18 0 10.03 0 12s.46 3.82 1.26 5.42l4.02-3.15z"/>
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.24 2.7 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+        </svg>
+      </div>
+
+      <!-- Real Input field -->
+      <input type="text" id="searchInput" placeholder="Search Google or type URL" class="w-full bg-transparent text-main placeholder:text-muted text-[16px] focus:outline-none" autocomplete="off">
+
+      <div class="flex items-center gap-4 ml-2 text-main">
+        <button class="m3-clickable hover:opacity-80" title="Voice Search">
+          <svg class="w-[22px] h-[22px] sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+            <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+          </svg>
+        </button>
+        <button class="m3-clickable hover:opacity-80" title="Google Lens">
+          <svg class="w-[22px] h-[22px] sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h3l2-3h4l2 3h3a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+            <circle cx="12" cy="13" r="3" stroke-width="2.2"></circle>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3 w-full max-w-[600px] mb-8">
+      <a href="https://google.com/ai" class="m3-clickable bg-chip hover-bg-chip py-3.5 px-4 rounded-full flex items-center justify-center gap-2.5 text-sm sm:text-base font-medium text-main transition-colors no-underline">
+        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-accent-main" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z"/>
+        </svg>
+        AI Mode
+      </a>
+
+      <button id="incognitoBtn" class="m3-clickable bg-chip hover-bg-chip py-3.5 px-4 rounded-full flex items-center justify-center gap-2.5 text-sm sm:text-base font-medium text-main transition-colors">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-secondary" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zm0 13c-3.03 0-5.5-2.47-5.5-5.5S8.97 6.5 12 6.5s5.5 2.47 5.5 5.5-2.47 5.5-5.5 5.5zm0-9C10.07 8.5 8.5 10.07 8.5 12s1.57 3.5 3.5 3.5 3.5-1.57 3.5-3.5S13.93 8.5 12 8.5z"/>
+        </svg>
+        Incognito
+      </button>
+    </div>
+
+    <div id="shortcutsContainer" class="bg-surface rounded-[28px] p-5 sm:p-7 mb-6 flex justify-start sm:justify-center items-center gap-4 sm:gap-10 overflow-x-auto w-full max-w-[600px] border border-surface shadow-lg">
+      <!-- Shortcuts will be injected here by JS -->
+    </div>
+
+    <div id="tipsContainer" class="w-full max-w-[600px] flex flex-col gap-4">
+      <!-- Tip 1 -->
+      <div class="bg-surface rounded-[28px] p-5 sm:p-6 shadow-lg border border-surface transition-transform hover:opacity-90">
+        <div class="text-xs sm:text-sm font-medium text-secondary mb-4 tracking-wide uppercase">Chrome tips</div>
+        <div class="flex items-start gap-4 sm:gap-6">
+          <div class="scalloped-badge flex-shrink-0">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <rect x="4" y="3" width="12" height="18" rx="2" stroke-linecap="round"/>
+              <rect x="12" y="8" width="8" height="12" rx="1.5" stroke-linecap="round" fill="currentColor" fill-opacity="0.2"/>
+            </svg>
+          </div>
+          <div class="flex-1 pt-1">
+            <h2 class="text-[17px] sm:text-xl font-medium text-main mb-2 leading-snug">Browse across devices</h2>
+            <p class="text-[13px] sm:text-[15px] text-muted leading-relaxed mb-4 sm:mb-5">
+              Get your history on all your devices, so you can easily pick up where you left off.
+            </p>
+            <div class="flex justify-end">
+              <button class="m3-clickable bg-accent text-accent-bg text-sm font-semibold px-6 py-2.5 rounded-full shadow-md transition-colors">
+                Let's go
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tip 2 -->
+      <div class="bg-surface rounded-[28px] p-5 sm:p-6 shadow-lg border border-surface transition-transform hover:opacity-90">
+        <div class="flex items-start gap-4 sm:gap-6">
+          <div class="scalloped-badge flex-shrink-0" style="background-color: var(--chip-bg); color: var(--text-main);">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <div class="flex-1 pt-1">
+            <h2 class="text-[17px] sm:text-xl font-medium text-main mb-2 leading-snug">Enhanced Security</h2>
+            <p class="text-[13px] sm:text-[15px] text-muted leading-relaxed mb-4 sm:mb-5">
+              Keep your data safe with advanced protection against dangerous sites.
+            </p>
+            <div class="flex justify-end">
+              <button class="m3-clickable bg-search text-main hover-bg-chip text-sm font-semibold px-6 py-2.5 rounded-full shadow-md transition-colors">
+                Turn on
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination Dots -->
+    <div class="flex justify-center items-center gap-2 py-2 mb-2 mt-4" id="paginationDots">
+      <div class="w-2.5 h-2.5 rounded-full bg-accent"></div>
+      <div class="w-2 h-2 rounded-full bg-icon"></div>
+      <div class="w-2 h-2 rounded-full bg-icon"></div>
+    </div>
+  </main>
+
+  <div class="fixed bottom-6 right-6 sm:bottom-10 sm:right-10 flex flex-col items-end z-40">
+    <div id="settingsMenu" class="mb-4 w-64 bg-surface rounded-[24px] py-2 shadow-2xl border border-surface opacity-0 scale-95 translate-y-4 pointer-events-none transition-all duration-300 origin-bottom-right">
+      <div class="px-5 py-3 text-sm font-medium text-secondary border-b border-surface mb-1">
+        Customize Chrome
+      </div>
+      <div class="px-2 flex flex-col gap-1">
+        <button id="btnEditLinks" class="w-full text-left px-4 py-3 text-sm text-main hover-bg-search rounded-2xl flex items-center gap-3 transition-colors m3-clickable">
+          <span class="material-symbols-outlined text-[20px] text-accent-main">edit</span> 
+          Edit quick access links
+        </button>
+        <button id="btnChangeTheme" class="w-full text-left px-4 py-3 text-sm text-main hover-bg-search rounded-2xl flex items-center gap-3 transition-colors m3-clickable">
+          <span class="material-symbols-outlined text-[20px] text-accent-main">palette</span> 
+          Change colors & theme
+        </button>
+        <button id="btnManageCards" class="w-full text-left px-4 py-3 text-sm text-main hover-bg-search rounded-2xl flex items-center gap-3 transition-colors m3-clickable">
+          <span class="material-symbols-outlined text-[20px] text-accent-main">widgets</span> 
+          Manage cards
+        </button>
+      </div>
+    </div>
+
+    <button id="settingsBtn" class="bg-chip hover-bg-search text-secondary hover:opacity-80 rounded-[18px] w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shadow-lg border border-surface transition-all active:scale-90" aria-label="Settings">
+      <span class="material-symbols-outlined text-[26px] sm:text-[30px]">settings</span>
+    </button>
+  </div>
+
+  <!-- 1. Shortcuts Modal -->
+  <div id="modalLinks" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="modal-content w-[90%] max-w-[400px] rounded-[28px] p-6 shadow-2xl transform scale-95 transition-transform">
+      <h3 class="text-lg font-medium text-main mb-4">Edit shortcuts</h3>
+      <div id="linksList" class="flex flex-col gap-3 max-h-[50vh] overflow-y-auto mb-4 p-1">
+        <!-- Injected via JS -->
+      </div>
+      <div class="flex justify-end gap-3 mt-4">
+        <button class="modal-close px-4 py-2 text-sm text-secondary hover-bg-search rounded-full">Cancel</button>
+        <button id="saveLinksBtn" class="px-5 py-2 text-sm bg-accent text-accent-bg font-medium rounded-full shadow-md">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Theme Modal -->
+  <div id="modalTheme" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="modal-content w-[90%] max-w-[320px] rounded-[28px] p-6 shadow-2xl transform scale-95 transition-transform">
+      <h3 class="text-lg font-medium text-main mb-4">Choose Theme</h3>
+      <div class="flex flex-col gap-2 mb-6">
+        <label class="flex items-center gap-3 p-3 rounded-xl hover-bg-search cursor-pointer text-main">
+          <input type="radio" name="themeSelector" value="auto" class="w-5 h-5 accent-[var(--accent)]"> System Default
+        </label>
+        <label class="flex items-center gap-3 p-3 rounded-xl hover-bg-search cursor-pointer text-main">
+          <input type="radio" name="themeSelector" value="dark" class="w-5 h-5 accent-[var(--accent)]"> Dark Mode
+        </label>
+        <label class="flex items-center gap-3 p-3 rounded-xl hover-bg-search cursor-pointer text-main">
+          <input type="radio" name="themeSelector" value="light" class="w-5 h-5 accent-[var(--accent)]"> Light Mode
+        </label>
+      </div>
+      <div class="flex justify-end">
+        <button class="modal-close px-5 py-2 text-sm bg-accent text-accent-bg font-medium rounded-full shadow-md">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Manage Cards Modal -->
+  <div id="modalCards" class="fixed inset-0 modal-overlay z-50 flex items-center justify-center hidden opacity-0 transition-opacity">
+    <div class="modal-content w-[90%] max-w-[320px] rounded-[28px] p-6 shadow-2xl transform scale-95 transition-transform">
+      <h3 class="text-lg font-medium text-main mb-4">Manage Cards</h3>
+      <label class="flex items-center justify-between p-3 rounded-xl hover-bg-search cursor-pointer text-main mb-6">
+        <span>Show Chrome Tips</span>
+        <input type="checkbox" id="toggleTipsCheckbox" class="w-5 h-5 accent-[var(--accent)]">
+      </label>
+      <div class="flex justify-end">
+        <button class="modal-close px-5 py-2 text-sm bg-accent text-accent-bg font-medium rounded-full shadow-md">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-surface border border-surface shadow-2xl text-main px-6 py-3 rounded-full text-sm font-medium z-50 flex items-center gap-3 pointer-events-none">
+    <span class="material-symbols-outlined text-accent-main text-[20px]">info</span>
+    <span id="toastMessage">Message</span>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // --- 1. Theme Management ---
+      const htmlEl = document.documentElement;
+      const themeRadios = document.querySelectorAll('input[name="themeSelector"]');
+      
+      const applyTheme = (theme) => {
+        if (theme === 'auto') {
+          const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+          htmlEl.setAttribute('data-theme', prefersLight ? 'light' : 'dark');
+        } else {
+          htmlEl.setAttribute('data-theme', theme);
+        }
+      };
+
+      const loadTheme = () => {
+        const savedTheme = localStorage.getItem('chromeTheme') || 'auto';
+        applyTheme(savedTheme);
+        themeRadios.forEach(radio => {
+          radio.checked = (radio.value === savedTheme);
+        });
+      };
+      
+      themeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          localStorage.setItem('chromeTheme', e.target.value);
+          applyTheme(e.target.value);
+        });
+      });
+
+      // Auto-update if system changes and 'auto' is selected
+      window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+        if (localStorage.getItem('chromeTheme') === 'auto' || !localStorage.getItem('chromeTheme')) {
+          applyTheme('auto');
+        }
+      });
+
+      loadTheme();
+
+      // --- 2. Toast System (Replaces Alert) ---
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toastMessage');
+      let toastTimeout;
+
+      const showToast = (message) => {
+        toastMessage.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove('show');
+        }, 4000);
+      };
+
+      // --- 3. Search Functionality ---
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          let query = e.target.value.trim();
+          if (query !== '') {
+            // Basic regex to check if it's a URL
+            const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+            if (urlPattern.test(query) && !query.includes(' ')) {
+              if (!query.startsWith('http')) query = 'https://' + query;
+              window.location.href = query;
+            } else {
+              window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            }
+          }
+        }
+      });
+
+      // --- 4. Incognito Button Logic ---
+      document.getElementById('incognitoBtn').addEventListener('click', () => {
+        // Browsers block JS from opening incognito windows for security.
+        showToast("Browser restriction: Cannot open Incognito via scripts. Press Ctrl+Shift+N.");
+      });
+
+      // --- 5. Dynamic Shortcuts Management ---
+      const defaultShortcuts = [
+        { name: 'Google', url: 'https://google.com', icon: 'G', color: '#4285F4', isImage: false },
+        { name: 'Download Un...', url: '#', icon: 'M12 16l4-5h-3V4h-2v7H8l4 5zm9 2H3v2h18v-2z', color: '#ea580c', isImage: false, isSvg: true },
+        { name: 'ikman.lk', url: 'https://ikman.lk', icon: 'i', color: '#00a859', isImage: false },
+        { name: 'Facebook', url: 'https://facebook.com', icon: 'f', color: '#1877F2', isImage: false },
+        { name: 'YouTube', url: 'https://youtube.com', icon: '▶', color: '#FF0000', isImage: false }
+      ];
+
+      let shortcuts = JSON.parse(localStorage.getItem('chromeShortcuts')) || defaultShortcuts;
+      const shortcutsContainer = document.getElementById('shortcutsContainer');
+      const linksList = document.getElementById('linksList');
+
+      const renderShortcuts = () => {
+        shortcutsContainer.innerHTML = '';
+        shortcuts.forEach(link => {
+          const wrapper = document.createElement('a');
+          wrapper.href = link.url;
+          wrapper.className = 'm3-clickable flex flex-col items-center min-w-[66px] no-underline';
+          
+          let iconHtml = '';
+          if(link.isSvg) {
+            iconHtml = `<svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="${link.icon}"/></svg>`;
+          } else {
+            iconHtml = `<span class="font-bold text-xl text-white">${link.icon.charAt(0)}</span>`;
+          }
+
+          wrapper.innerHTML = `
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-icon flex items-center justify-center mb-2 shadow-sm transition-transform">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center shadow-inner" style="background-color: ${link.color}">
+                ${iconHtml}
+              </div>
+            </div>
+            <span class="text-xs sm:text-sm text-secondary truncate max-w-[70px] text-center font-medium">${link.name}</span>
+          `;
+          shortcutsContainer.appendChild(wrapper);
+        });
+      };
+
+      const renderEditLinks = () => {
+        linksList.innerHTML = '';
+        shortcuts.forEach((link, index) => {
+          const row = document.createElement('div');
+          row.className = 'flex flex-col gap-1 p-3 bg-search rounded-xl border border-surface';
+          row.innerHTML = `
+            <input type="text" value="${link.name}" data-index="${index}" data-field="name" class="bg-transparent text-main text-sm font-medium focus:outline-none placeholder-muted" placeholder="Name">
+            <input type="text" value="${link.url}" data-index="${index}" data-field="url" class="bg-transparent text-secondary text-xs focus:outline-none placeholder-muted" placeholder="URL">
+          `;
+          linksList.appendChild(row);
+        });
+      };
+
+      document.getElementById('saveLinksBtn').addEventListener('click', () => {
+        const inputs = linksList.querySelectorAll('input');
+        inputs.forEach(input => {
+          const index = input.getAttribute('data-index');
+          const field = input.getAttribute('data-field');
+          shortcuts[index][field] = input.value;
+        });
+        localStorage.setItem('chromeShortcuts', JSON.stringify(shortcuts));
+        renderShortcuts();
+        closeAllModals();
+        showToast("Shortcuts saved!");
+      });
+
+      renderShortcuts();
+
+      // --- 6. Manage Cards (Tips) ---
+      const tipsContainer = document.getElementById('tipsContainer');
+      const dots = document.getElementById('paginationDots');
+      const toggleTipsCheckbox = document.getElementById('toggleTipsCheckbox');
+      
+      const loadCardsState = () => {
+        const showCards = localStorage.getItem('chromeShowCards') !== 'false';
+        toggleTipsCheckbox.checked = showCards;
+        tipsContainer.style.display = showCards ? 'flex' : 'none';
+        dots.style.display = showCards ? 'flex' : 'none';
+      };
+
+      toggleTipsCheckbox.addEventListener('change', (e) => {
+        localStorage.setItem('chromeShowCards', e.target.checked);
+        loadCardsState();
+      });
+
+      loadCardsState();
+
+      // --- 7. Settings Menu & Modals Logic ---
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsMenu = document.getElementById('settingsMenu');
+      let isMenuOpen = false;
+
+      const toggleMenu = (e) => {
+        e.stopPropagation();
+        isMenuOpen = !isMenuOpen;
+        if (isMenuOpen) {
+          settingsMenu.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+          settingsMenu.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+        } else {
+          settingsMenu.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+          settingsMenu.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+        }
+      };
+
+      settingsBtn.addEventListener('click', toggleMenu);
+      document.addEventListener('click', (e) => {
+        if (isMenuOpen && !settingsMenu.contains(e.target) && !settingsBtn.contains(e.target)) {
+          toggleMenu(e);
+        }
+      });
+
+      const openModal = (id) => {
+        if (isMenuOpen) toggleMenu({stopPropagation:()=>{}}); // Close menu
+        const modal = document.getElementById(id);
+        modal.classList.remove('hidden');
+        // small delay for transition
+        setTimeout(() => {
+          modal.classList.remove('opacity-0');
+          modal.querySelector('.modal-content').classList.remove('scale-95');
+        }, 10);
+      };
+
+      const closeAllModals = () => {
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+          modal.classList.add('opacity-0');
+          modal.querySelector('.modal-content').classList.add('scale-95');
+          setTimeout(() => modal.classList.add('hidden'), 300);
+        });
+      };
+
+      document.getElementById('btnEditLinks').addEventListener('click', () => { renderEditLinks(); openModal('modalLinks'); });
+      document.getElementById('btnChangeTheme').addEventListener('click', () => openModal('modalTheme'));
+      document.getElementById('btnManageCards').addEventListener('click', () => openModal('modalCards'));
+
+      document.querySelectorAll('.modal-close').forEach(btn => {
+        btn.addEventListener('click', closeAllModals);
+      });
+      // Close on clicking outside content
+      document.querySelectorAll('.modal-overlay').forEach(overlay => {
+        overlay.addEventListener('click', (e) => {
+          if (e.target === overlay) closeAllModals();
+        });
+      });
+    });
+  </script>
+</body>
+</html>
