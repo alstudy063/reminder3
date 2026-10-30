@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CinePulse - M3 Movie & TV Series Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        m3: {
+                            bg: '#0f0f12',
+                            surface: '#18181c',
+                            surfaceContainer: '#222228',
+                            surfaceHigh: '#2b2b33',
+                            primary: '#E50914',
+                            primaryHover: '#f40612',
+                            onPrimary: '#ffffff',
+                            outline: '#3f3f46',
+                            muted: '#9ca3af'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'Roboto', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Universal Hide Scroll Bars */
+        ::-webkit-scrollbar { display: none; }
+        * { scrollbar-width: none; -ms-overflow-style: none; }
+        body { background-color: #0f0f12; color: #f3f4f6; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass-panel { background: rgba(24, 24, 28, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .modal-backdrop { background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+        .animate-fade-in { animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        /* Mobile Slide Transitions */
+        .mobile-full-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background-color: #0f0f12;
+            overflow-y: auto;
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        /* Custom Switch Styling */
+        .m3-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .m3-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .m3-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #3f3f46;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .m3-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .m3-slider {
+            background-color: #E50914;
+        }
+        input:checked + .m3-slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row relative">
+
+    <!-- Toast Notification Banner -->
+    <div id="toast" class="fixed bottom-20 md:bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="glass-panel px-5 py-3 rounded-xl shadow-2xl border-l-4 border-m3-primary flex items-center gap-3">
+            <i id="toast-icon" class="fa-solid fa-circle-check text-m3-primary text-lg"></i>
+            <span id="toast-msg" class="text-sm font-medium text-white">Action completed successfully.</span>
+        </div>
+    </div>
+
+    <!-- Modern Textless Icon-Only Navigation Sidebar (Desktop Layout >= 600px) -->
+    <aside class="hidden md:flex flex-col w-20 bg-m3-surface border-r border-m3-outline/40 h-screen sticky top-0 z-30 py-6 items-center select-none justify-between">
+        <div class="flex flex-col items-center gap-8 w-full">
+            <!-- Brand Icon -->
+            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-m3-primary to-rose-600 flex items-center justify-center shadow-lg shadow-m3-primary/30 cursor-pointer" title="CinePulse">
+                <i class="fa-solid fa-clapperboard text-white text-xl"></i>
+            </div>
+
+            <!-- Icon Navigation Tabs -->
+            <nav class="flex flex-col items-center gap-3 w-full px-2">
+                <button onclick="switchTab('home')" id="nav-home" class="nav-btn w-12 h-12 flex items-center justify-center rounded-2xl text-lg transition-all bg-m3-primary text-white shadow-md shadow-m3-primary/20" title="Home Feed">
+                    <i class="fa-solid fa-house"></i>
+                </button>
+                <button onclick="switchTab('watchlist')" id="nav-watchlist" class="nav-btn relative w-12 h-12 flex items-center justify-center rounded-2xl text-lg transition-all text-m3-muted hover:bg-m3-surfaceContainer hover:text-white" title="Watchlist">
+                    <i class="fa-solid fa-bookmark"></i>
+                    <span id="badge-watchlist" class="absolute top-1 right-1 bg-m3-primary text-[10px] w-4 h-4 rounded-full flex items-center justify-center text-white hidden">0</span>
+                </button>
+                <button onclick="switchTab('watched')" id="nav-watched" class="nav-btn relative w-12 h-12 flex items-center justify-center rounded-2xl text-lg transition-all text-m3-muted hover:bg-m3-surfaceContainer hover:text-white" title="Watched History">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span id="badge-watched" class="absolute top-1 right-1 bg-green-500 text-[10px] w-4 h-4 rounded-full flex items-center justify-center text-white hidden">0</span>
+                </button>
+                <button onclick="toggleNotificationDropdown()" class="relative w-12 h-12 flex items-center justify-center rounded-2xl text-lg transition-all text-m3-muted hover:bg-m3-surfaceContainer hover:text-white" title="Notifications">
+                    <i class="fa-solid fa-bell"></i>
+                    <span id="badge-notif" class="absolute top-1 right-1 bg-m3-primary text-[10px] w-4 h-4 rounded-full flex items-center justify-center text-white hidden">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- User Profile Avatar Action in Sidebar Footer -->
+        <div id="sidebar-user-section" class="flex flex-col items-center gap-3 pt-4 border-t border-m3-outline/30 w-full px-2">
+            <div id="user-avatar-container" onclick="openSettingsModal()" class="w-10 h-10 rounded-full bg-m3-surfaceHigh flex items-center justify-center text-white font-bold overflow-hidden border border-m3-outline cursor-pointer hover:border-m3-primary transition-colors" title="Account & Settings">
+                <i class="fa-solid fa-user text-m3-muted"></i>
+            </div>
+            <button onclick="handleAuthAction()" id="auth-action-btn" class="w-10 h-10 rounded-xl bg-m3-primary/10 text-m3-primary hover:bg-m3-primary hover:text-white flex items-center justify-center transition-colors" title="Sign In / Out">
+                <i class="fa-solid fa-right-to-bracket text-sm"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <main class="flex-1 flex flex-col min-w-0 pb-24 md:pb-0">
+        <!-- Top Sticky Header -->
+        <header class="sticky top-0 z-20 glass-panel border-b border-m3-outline/40 px-4 md:px-8 py-3.5 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3 md:hidden">
+                <div class="w-9 h-9 rounded-xl bg-m3-primary flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-clapperboard"></i>
+                </div>
+                <span class="font-bold text-base text-white tracking-wide">CinePulse</span>
+            </div>
+
+            <!-- Global Search Bar -->
+            <div class="flex-1 max-w-xl relative">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-m3-muted">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </span>
+                <input type="text" id="global-search-input" placeholder="Search movies, TV series, actors, directors..." 
+                    class="w-full bg-m3-surfaceContainer text-white text-sm rounded-xl pl-10 pr-4 py-2.5 border border-m3-outline/50 focus:outline-none focus:border-m3-primary transition-all shadow-inner">
+            </div>
+
+            <!-- Header Quick Actions (Desktop & Tablet) -->
+            <div class="hidden md:flex items-center gap-3 relative">
+                <button onclick="toggleNotificationDropdown()" id="notif-bell-btn" class="relative p-2.5 rounded-xl bg-m3-surfaceContainer text-m3-muted hover:text-white hover:bg-m3-surfaceHigh transition-colors" title="Notifications">
+                    <i class="fa-solid fa-bell text-sm"></i>
+                    <span id="header-notif-dot" class="absolute top-2 right-2 w-2 h-2 rounded-full bg-m3-primary hidden"></span>
+                </button>
+                <button onclick="openSettingsModal()" class="p-2.5 rounded-xl bg-m3-surfaceContainer text-m3-muted hover:text-white hover:bg-m3-surfaceHigh transition-colors" title="Settings">
+                    <i class="fa-solid fa-gear text-sm"></i>
+                </button>
+
+                <!-- High-Fidelity Notification Center Mini Dropdown -->
+                <div id="notif-dropdown" class="hidden absolute right-0 top-12 w-80 sm:w-96 bg-m3-surface border border-m3-outline/60 rounded-2xl shadow-2xl p-4 z-50 animate-fade-in space-y-3">
+                    <div class="flex items-center justify-between border-b border-m3-outline/40 pb-2.5">
+                        <h4 class="font-bold text-sm text-white">Release Notifications</h4>
+                        <button onclick="clearAllNotifications()" class="text-xs font-semibold text-m3-primary hover:text-m3-primaryHover transition-colors">Clear All</button>
+                    </div>
+                    <div id="notif-dropdown-list" class="max-h-64 overflow-y-auto space-y-2">
+                        <!-- Notification items injected here -->
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Views Container -->
+        <div id="view-container" class="p-4 md:p-8 flex-1">
+            <!-- HOME VIEW -->
+            <div id="tab-home" class="space-y-8 animate-fade-in">
+                <!-- Genre Quick Filter Tags (No Hero Section Above) -->
+                <div class="space-y-3">
+                    <h3 class="text-xs font-bold tracking-wider text-m3-muted uppercase">Browse by Genre</h3>
+                    <div id="genre-tags-row" class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+                        <!-- Dynamically populated genre pills -->
+                    </div>
+                </div>
+
+                <!-- Section 1: Trending Movies & TV Series -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-m3-primary"></i> Trending Masterpieces
+                        </h3>
+                        <span class="text-xs text-m3-muted">Updated Real-Time</span>
+                    </div>
+                    <div id="grid-trending" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        <!-- Card items injected here -->
+                    </div>
+                </div>
+
+                <!-- Section 2: Top Rated Masterpieces -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-award text-amber-400"></i> Top Rated Masterpieces
+                        </h3>
+                    </div>
+                    <div id="grid-top-rated" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        <!-- Top Rated items injected here -->
+                    </div>
+                </div>
+
+                <!-- Section 3: Anticipated Upcoming Releases -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-blue-400"></i> Anticipated Upcoming Releases
+                        </h3>
+                    </div>
+                    <div id="grid-upcoming" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                        <!-- Upcoming items injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- WATCHLIST VIEW -->
+            <div id="tab-watchlist" class="space-y-6 hidden animate-fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">My Watchlist</h2>
+                        <p class="text-xs text-m3-muted">Titles saved for future viewing sessions</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-m3-surfaceContainer px-3 py-1.5 rounded-xl border border-m3-outline/40">
+                        <span id="watchlist-count-lbl" class="text-xs font-bold text-m3-primary">0 Items</span>
+                    </div>
+                </div>
+                <div id="grid-watchlist" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <!-- Watchlist items -->
+                </div>
+                <div id="empty-watchlist" class="hidden text-center py-20 space-y-3">
+                    <i class="fa-solid fa-bookmark text-4xl text-m3-muted"></i>
+                    <p class="text-sm text-m3-muted">Your watchlist is currently empty. Explore the Home feed to add titles.</p>
+                </div>
+            </div>
+
+            <!-- WATCHED LIST VIEW -->
+            <div id="tab-watched" class="space-y-6 hidden animate-fade-in">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Watched History</h2>
+                        <p class="text-xs text-m3-muted">Titles you have completed watching</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-m3-surfaceContainer px-3 py-1.5 rounded-xl border border-m3-outline/40">
+                        <span id="watched-count-lbl" class="text-xs font-bold text-green-500">0 Completed</span>
+                    </div>
+                </div>
+                <div id="grid-watched" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    <!-- Watched items -->
+                </div>
+                <div id="empty-watched" class="hidden text-center py-20 space-y-3">
+                    <i class="fa-solid fa-circle-check text-4xl text-m3-muted"></i>
+                    <p class="text-sm text-m3-muted">No watched titles recorded yet. Mark titles as watched after viewing.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Mobile Bottom Navigation Bar (< 600px) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-m3-surface border-t border-m3-outline/50 px-3 py-2 flex items-center justify-around shadow-2xl">
+        <button onclick="switchTab('home')" id="mob-nav-home" class="mob-nav-btn flex flex-col items-center gap-1 text-m3-primary flex-1 py-1">
+            <i class="fa-solid fa-house text-lg"></i>
+            <span class="text-[10px] font-medium">Home</span>
+        </button>
+        <button onclick="switchTab('watchlist')" id="mob-nav-watchlist" class="mob-nav-btn flex flex-col items-center gap-1 text-m3-muted flex-1 py-1 relative">
+            <i class="fa-solid fa-bookmark text-lg"></i>
+            <span class="text-[10px] font-medium">Watchlist</span>
+            <span id="mob-badge-watchlist" class="absolute top-0 right-5 w-2 h-2 rounded-full bg-m3-primary hidden"></span>
+        </button>
+        <button onclick="switchTab('watched')" id="mob-nav-watched" class="mob-nav-btn flex flex-col items-center gap-1 text-m3-muted flex-1 py-1">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+            <span class="text-[10px] font-medium">Watched</span>
+        </button>
+        <button onclick="toggleMobileMoreSheet()" class="flex flex-col items-center gap-1 text-m3-muted flex-1 py-1">
+            <i class="fa-solid fa-ellipsis-vertical text-lg"></i>
+            <span class="text-[10px] font-medium">More</span>
+        </button>
+    </nav>
+
+    <!-- Mobile More Bottom Sheet Menu -->
+    <div id="mobile-more-sheet" class="fixed inset-0 z-50 modal-backdrop hidden flex flex-col justify-end animate-fade-in">
+        <div class="bg-m3-surface rounded-t-3xl border-t border-m3-outline p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between pb-2 border-b border-m3-outline/40">
+                <h3 class="font-bold text-white text-base">More Options</h3>
+                <button onclick="toggleMobileMoreSheet()" class="text-m3-muted hover:text-white p-2">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="toggleMobileMoreSheet(); toggleNotificationDropdown();" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-m3-surfaceContainer hover:bg-m3-surfaceHigh transition-colors text-white gap-2">
+                    <i class="fa-solid fa-bell text-xl text-m3-primary"></i>
+                    <span class="text-xs font-semibold">Notifications</span>
+                </button>
+                <button onclick="toggleMobileMoreSheet(); openSettingsModal();" class="flex flex-col items-center justify-center p-4 rounded-2xl bg-m3-surfaceContainer hover:bg-m3-surfaceHigh transition-colors text-white gap-2">
+                    <i class="fa-solid fa-gear text-xl text-blue-400"></i>
+                    <span class="text-xs font-semibold">Settings</span>
+                </button>
+                <button onclick="toggleMobileMoreSheet(); handleAuthAction();" class="col-span-2 flex items-center justify-center gap-3 p-4 rounded-2xl bg-m3-surfaceContainer hover:bg-m3-surfaceHigh transition-colors text-white">
+                    <i id="mob-auth-icon" class="fa-solid fa-right-to-bracket text-m3-primary"></i>
+                    <span id="mob-auth-label" class="text-xs font-semibold">Sign In with Google</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Sign-In Prompt Dialog -->
+    <div id="auth-modal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-4 animate-fade-in">
+        <div class="bg-m3-surface border border-m3-outline rounded-3xl p-6 md:p-8 max-w-md w-full space-y-6 shadow-2xl text-center relative">
+            <div class="w-16 h-16 rounded-2xl bg-m3-primary/10 border border-m3-primary/30 flex items-center justify-center mx-auto text-m3-primary text-2xl shadow-inner">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-xl font-bold text-white">Cloud Account Required</h3>
+                <p class="text-xs text-m3-muted leading-relaxed">Sign in with your Google account to securely sync your Watchlist and Watched History across all your devices via Cloud Firestore.</p>
+            </div>
+            <div class="space-y-3 pt-2">
+                <button onclick="performGoogleSignIn()" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-semibold py-3.5 px-6 rounded-2xl shadow-lg transition-all">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.11-6.72-4.95H1.2v3.15C3.18 21.31 7.23 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.25c-.25-.72-.38-1.49-.38-2.25s.13-1.53.38-2.25V6.6H1.2C.44 8.14 0 9.88 0 12s.44 3.86 1.2 5.4l4.08-3.15z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.18 2.69 1.2 6.6l4.08 3.15c.95-2.84 3.6-4.95 6.72-4.95z"/>
+                    </svg>
+                    <span>Sign in with Google</span>
+                </button>
+                <button onclick="closeAuthModal()" class="w-full py-2.5 text-xs text-m3-muted hover:text-white transition-colors">Continue browsing as Guest</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ultimate High-Fidelity Material 3 Settings Panel (Upgraded Layout & Extended Features) -->
+    <div id="settings-modal" class="fixed inset-0 z-50 modal-backdrop hidden flex items-center justify-center p-2 md:p-6 animate-fade-in">
+        <div class="bg-m3-surface border border-m3-outline rounded-3xl p-6 md:p-8 max-w-2xl w-full max-h-[92vh] overflow-y-auto space-y-6 shadow-2xl relative">
+            <div class="flex items-center justify-between pb-4 border-b border-m3-outline/40">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-gear"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg">App Settings</h3>
+                        <p class="text-xs text-m3-muted">Material 3 preferences & configurations</p>
+                    </div>
+                </div>
+                <button onclick="closeSettingsModal()" class="w-9 h-9 rounded-full bg-m3-surfaceContainer text-m3-muted hover:text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Profile Section Card Component -->
+                <div class="bg-m3-surfaceContainer p-5 rounded-2xl border border-m3-outline/40 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3.5">
+                        <div id="settings-user-avatar" class="w-12 h-12 rounded-full bg-m3-surfaceHigh flex items-center justify-center text-white font-bold overflow-hidden border border-m3-outline">
+                            <i class="fa-solid fa-user text-m3-muted"></i>
+                        </div>
+                        <div>
+                            <h4 id="settings-user-name" class="font-bold text-white text-sm">Guest Account</h4>
+                            <p id="settings-user-email" class="text-xs text-m3-muted">Local Guest Session</p>
+                        </div>
+                    </div>
+                    <button onclick="handleAuthAction()" id="settings-auth-btn" class="px-5 py-2.5 rounded-full bg-m3-primary text-white text-xs font-semibold shadow-md shadow-m3-primary/20 hover:bg-m3-primaryHover transition-all">
+                        Sign In
+                    </button>
+                </div>
+
+                <!-- Theme & UI Controls Card -->
+                <div class="bg-m3-surfaceContainer p-5 rounded-2xl border border-m3-outline/40 space-y-4">
+                    <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-palette text-m3-primary"></i> Theme & UI Controls
+                    </h4>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Dark-Red Theme (M3 Dark)</p>
+                            <p class="text-[11px] text-m3-muted">High-contrast cinematic aesthetic</p>
+                        </div>
+                        <label class="m3-switch">
+                            <input type="checkbox" checked disabled>
+                            <span class="m3-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Global Offline Caching</p>
+                            <p class="text-[11px] text-m3-muted">Store cached metadata in local storage</p>
+                        </div>
+                        <label class="m3-switch">
+                            <input type="checkbox" id="setting-cache" checked>
+                            <span class="m3-slider"></span>
+                        </label>
+                    </div>
+                    <div class="space-y-1.5 py-2 border-t border-m3-outline/30">
+                        <div class="flex justify-between items-center">
+                            <p class="text-xs font-semibold text-white">Grid Animation Speed</p>
+                            <span id="anim-speed-lbl" class="text-xs text-m3-primary font-bold">Fast (0.25s)</span>
+                        </div>
+                        <input type="range" min="0.1" max="0.8" step="0.05" value="0.25" oninput="document.getElementById('anim-speed-lbl').textContent = this.value + 's'" class="w-full accent-m3-primary bg-m3-surfaceHigh rounded-lg h-1.5 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Alerts & Notifications Management Card -->
+                <div class="bg-m3-surfaceContainer p-5 rounded-2xl border border-m3-outline/40 space-y-4">
+                    <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-bell text-amber-400"></i> Alerts & Notifications Management
+                    </h4>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Sound FX on Triggers</p>
+                            <p class="text-[11px] text-m3-muted">Play audio cue for watchlist additions</p>
+                        </div>
+                        <label class="m3-switch">
+                            <input type="checkbox" id="setting-sound" checked>
+                            <span class="m3-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Real-Time Email Alert Sync</p>
+                            <p class="text-[11px] text-m3-muted">Receive release dates on Google account</p>
+                        </div>
+                        <label class="m3-switch">
+                            <input type="checkbox" id="setting-email-alerts">
+                            <span class="m3-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Push Release Triggers to Device</p>
+                            <p class="text-[11px] text-m3-muted">Send web push alerts for upcoming media</p>
+                        </div>
+                        <label class="m3-switch">
+                            <input type="checkbox" id="setting-push-alerts" checked>
+                            <span class="m3-slider"></span>
+                        </label>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Reset Release Triggers</p>
+                            <p class="text-[11px] text-m3-muted">Clear active notification counters & cache</p>
+                        </div>
+                        <button onclick="resetNotificationLogs()" class="px-3.5 py-1.5 rounded-xl bg-m3-surfaceHigh hover:bg-rose-500/20 text-rose-400 text-xs font-semibold transition-colors">
+                            Wipe Logs
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Data Controls Card -->
+                <div class="bg-m3-surfaceContainer p-5 rounded-2xl border border-m3-outline/40 space-y-4">
+                    <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-database text-blue-400"></i> Advanced Data Controls
+                    </h4>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Backup Cloud Data to JSON</p>
+                            <p class="text-[11px] text-m3-muted">Export Watchlist & Watched History</p>
+                        </div>
+                        <button onclick="exportUserDataJSON()" class="px-3.5 py-1.5 rounded-xl bg-m3-surfaceHigh hover:bg-blue-500/20 text-blue-400 text-xs font-semibold transition-colors">
+                            Export JSON
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between py-2 border-t border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-semibold text-white">Wipe All Local Storage Data</p>
+                            <p class="text-[11px] text-m3-muted">Completely clear guest session cache</p>
+                        </div>
+                        <button onclick="wipeAllLocalData()" class="px-3.5 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-400 hover:text-white text-xs font-semibold transition-colors">
+                            Clear Cache
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Multi-Level Stack Dialog Container (Main Details & Actor Details) -->
+    <div id="modal-stack-container"></div>
+
+    <!-- Firebase SDK Modular Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA9DLfAHTUUGxCPn2j_k6godoTEopzaFAU",
+            authDomain: "studymaster-919ba.firebaseapp.com",
+            databaseURL: "https://studymaster-919ba-default-rtdb.firebaseio.com",
+            projectId: "studymaster-919ba",
+            storageBucket: "studymaster-919ba.firebasestorage.app",
+            messagingSenderId: "426684063256",
+            appId: "1:426684063256:web:52c17625a9450ea9662d6d",
+            measurementId: "G-CWQB2330GF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.googleProvider = provider;
+        window.signInWithPopupFn = signInWithPopup;
+        window.signOutFn = signOut;
+        window.docFn = doc;
+        window.getDocFn = getDoc;
+        window.setDocFn = setDoc;
+        window.updateDocFn = updateDoc;
+
+        onAuthStateChanged(auth, async (user) => {
+            currentUser = user;
+            if (user) {
+                updateUserUI(user);
+                await syncGuestDataToCloud(user.uid);
+                await loadCloudUserData(user.uid);
+            } else {
+                updateUserUI(null);
+                loadLocalUserData();
+            }
+            renderWatchlist();
+            renderWatched();
+            updateNotificationBadges();
+        });
+    </script>
+
+    <!-- Main Application JavaScript Logic -->
+    <script>
+        // TMDb API Key extracted from image
+        const TMDB_API_KEY = "ece3894811f0c7ad463e9da95f73412e";
+        const TMDB_BASE_URL = "https://api.themoviedb.org/3";
+
+        // Application State
+        let currentUser = null;
+        let watchlist = [];
+        let watchedList = [];
+        let notificationsList = [];
+        let modalStack = []; // Robust array-based navigation stack tracking active popup depth
+        let currentTab = 'home';
+        let genreMap = {};
+
+        // Genre Mapping Dictionary
+        const GENRES = {
+            28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy", 80: "Crime",
+            99: "Documentary", 18: "Drama", 10751: "Family", 14: "Fantasy", 36: "History",
+            27: "Horror", 10402: "Music", 9648: "Mystery", 10749: "Romance", 878: "Sci-Fi",
+            10770: "TV Movie", 53: "Thriller", 10752: "War", 37: "Western",
+            10759: "Action", 10762: "Kids", 10763: "News", 10764: "Reality",
+            10765: "Sci-Fi", 10766: "Soap", 10767: "Talk", 10768: "War"
+        };
+
+        // Fetch genres dynamically from TMDb API
+        async function fetchGenres() {
+            try {
+                const [movieGenresRes, tvGenresRes] = await Promise.all([
+                    fetch(`${TMDB_BASE_URL}/genre/movie/list?api_key=${TMDB_API_KEY}`),
+                    fetch(`${TMDB_BASE_URL}/genre/tv/list?api_key=${TMDB_API_KEY}`)
+                ]);
+                const movieGenres = await movieGenresRes.json();
+                const tvGenres = await tvGenresRes.json();
+                
+                const allGenres = [...(movieGenres.genres || []), ...(tvGenres.genres || [])];
+                allGenres.forEach(g => {
+                    genreMap[g.id] = g.name;
+                    GENRES[g.id] = g.name;
+                });
+            } catch (e) {
+                console.warn("Using fallback genres due to fetch issue:", e);
+            }
+        }
+
+        // Initialize Application on Window Load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchGenres();
+            await loadHomeFeedData();
+            setupEventListeners();
+            loadLocalUserData();
+            renderWatchlist();
+            renderWatched();
+            updateNotificationBadges();
+        });
+        // Helper function to detect mobile screen size
+        function isMobile() {
+            return window.innerWidth < 600;
+        }
+
+        // Open Main Details Popup Modal
+        async function openMainDetailsModal(item) {
+            const modalId = 'modal-' + Math.random().toString(36).substr(2, 9);
+            modalStack.push(modalId);
+            document.body.style.overflow = 'hidden';
+
+            const title = item.title || item.name || 'Untitled';
+            const originalTitle = item.original_title || item.original_name || title;
+            const overview = item.overview || 'No storyline overview available.';
+            const backdrop = item.backdrop_path ? `https://image.tmdb.org/t/p/w1280${item.backdrop_path}` : null;
+            const poster = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : `https://placehold.co/400x600/18181c/ffffff?text=${encodeURIComponent(title)}`;
+            const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+            const releaseDate = item.release_date || item.first_air_date || 'N/A';
+            const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+            const lang = (item.original_language || 'en').toUpperCase();
+
+            const inWatch = watchlist.some(w => w.id === item.id);
+            const isWatched = watchedList.some(w => w.id === item.id);
+
+            const container = document.createElement('div');
+            container.id = modalId;
+
+            if (isMobile()) {
+                container.className = "mobile-full-screen flex flex-col animate-fade-in";
+                container.innerHTML = `
+                    <div class="sticky top-0 z-30 bg-m3-surface border-b border-m3-outline/40 px-4 py-3 flex items-center justify-between shadow-lg">
+                        <button onclick="popModal()" class="flex items-center gap-2 text-m3-primary font-semibold text-sm">
+                            <i class="fa-solid fa-chevron-left text-base"></i> Back
+                        </button>
+                        <span class="font-bold text-white text-sm truncate max-w-[200px]">${title}</span>
+                        <div class="w-6"></div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 space-y-6 pb-12">
+                        <div class="relative rounded-2xl overflow-hidden aspect-video bg-m3-surfaceContainer border border-m3-outline/40">
+                            ${backdrop ? `<img src="${backdrop}" alt="${title}" class="w-full h-full object-cover">` : `<img src="${poster}" alt="${title}" class="w-full h-full object-cover">`}
+                            <div class="absolute inset-0 bg-gradient-to-t from-m3-bg via-transparent to-transparent"></div>
+                        </div>
+                        <div class="space-y-3">
+                            <h1 class="text-2xl font-extrabold text-white">${title}</h1>
+                            <div class="flex items-center gap-2 text-xs">
+                                <span class="bg-amber-400/20 text-amber-400 font-bold px-2.5 py-1 rounded-md border border-amber-400/30">
+                                    <i class="fa-solid fa-star mr-1"></i> ${rating}
+                                </span>
+                                <span class="bg-m3-primary text-white font-bold px-2.5 py-1 rounded-md uppercase">${mediaType}</span>
+                                <span class="text-m3-muted font-medium">${releaseDate.substring(0, 4)}</span>
+                                <span class="text-m3-primary font-semibold uppercase">${lang}</span>
+                            </div>
+                            <p class="text-xs text-m3-muted leading-relaxed">${overview}</p>
+                        </div>
+                        <div class="flex gap-3">
+                            <button onclick="toggleWatchlistState(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="flex-1 py-3 rounded-xl ${inWatch ? 'bg-m3-primary' : 'bg-m3-surfaceContainer'} border border-m3-outline/40 text-white font-bold text-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-bookmark"></i> ${inWatch ? 'In Watchlist' : '+ Watchlist'}
+                            </button>
+                            <button onclick="toggleWatchedState(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="flex-1 py-3 rounded-xl ${isWatched ? 'bg-green-600' : 'bg-m3-surfaceContainer'} border border-m3-outline/40 text-white font-bold text-xs flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-circle-check"></i> ${isWatched ? 'Watched' : 'Mark Watched'}
+                            </button>
+                        </div>
+                        <button onclick="openMoreInfoModal(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="w-full py-3.5 rounded-xl bg-m3-surfaceHigh hover:bg-m3-primary text-white font-bold text-xs transition-colors flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-[#E50914] fa-circle-info"></i> More Info, Cast & Trailer
+                        </button>
+                        <div class="space-y-3 pt-2">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Similar Masterpieces</h3>
+                            <div id="similar-list-${modalId}" class="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+                                <p class="text-xs text-m3-muted">Loading similar titles...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.className = "fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-2 md:p-6 animate-fade-in";
+                container.onclick = (e) => {
+                    if (e.target === container) popModal();
+                };
+                container.innerHTML = `
+                    <div class="bg-m3-surface border border-m3-outline rounded-3xl w-full max-w-[95vw] lg:max-w-[1200px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl relative">
+                        <div class="absolute top-4 right-4 z-30 flex items-center gap-2">
+                            <button onclick="popModal()" class="w-10 h-10 rounded-full bg-black/70 backdrop-blur-md text-white hover:bg-m3-primary flex items-center justify-center transition-colors shadow-lg">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                        <div class="relative h-64 md:h-80 w-full overflow-hidden bg-m3-surfaceContainer">
+                            ${backdrop ? `<img src="${backdrop}" alt="${title}" class="w-full h-full object-cover">` : ''}
+                            <div class="absolute inset-0 bg-gradient-to-t from-m3-surface via-m3-surface/60 to-transparent"></div>
+                            <div class="absolute bottom-6 left-6 right-6 flex items-end gap-6">
+                                <img src="${poster}" alt="${title}" class="w-28 md:w-40 aspect-[2/3] object-cover rounded-2xl shadow-2xl border-2 border-m3-outline/60 hidden sm:block">
+                                <div class="space-y-2 flex-1">
+                                    <span class="bg-m3-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">${mediaType}</span>
+                                    <h1 class="text-2xl md:text-4xl font-extrabold text-white">${title}</h1>
+                                    <p class="text-xs text-m3-muted">${originalTitle !== title ? originalTitle + ' • ' : ''} Released: ${releaseDate}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6 md:p-8 space-y-6">
+                            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-m3-outline/40 pb-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="bg-amber-400/20 text-amber-400 font-bold text-sm px-3 py-1.5 rounded-xl border border-amber-400/30">
+                                        <i class="fa-solid fa-star mr-1"></i> ${rating}
+                                    </span>
+                                    <span class="bg-m3-surfaceContainer text-white font-semibold text-xs px-3 py-1.5 rounded-xl border border-m3-outline/40 uppercase">
+                                        ${lang}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="toggleWatchlistState(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="px-5 py-2.5 rounded-xl ${inWatch ? 'bg-m3-primary' : 'bg-m3-surfaceContainer'} hover:bg-m3-primary text-white font-bold text-xs transition-colors flex items-center gap-2 border border-m3-outline/40">
+                                        <i class="fa-solid fa-bookmark"></i> ${inWatch ? 'In Watchlist' : 'Add to Watchlist'}
+                                    </button>
+                                    <button onclick="toggleWatchedState(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="px-5 py-2.5 rounded-xl ${isWatched ? 'bg-green-600' : 'bg-m3-surfaceContainer'} hover:bg-green-600 text-white font-bold text-xs transition-colors flex items-center gap-2 border border-m3-outline/40">
+                                        <i class="fa-solid fa-circle-check"></i> ${isWatched ? 'Watched' : 'Mark Watched'}
+                                    </button>
+                                    <button onclick="openMoreInfoModal(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="px-5 py-2.5 rounded-xl bg-m3-primary text-white font-bold text-xs hover:bg-m3-primaryHover transition-colors flex items-center gap-2 shadow-lg shadow-m3-primary/20">
+                                        <i class="fa-solid fa-circle-info"></i> More Info & Cast
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Storyline Overview</h3>
+                                <p class="text-xs md:text-sm text-m3-muted leading-relaxed">${overview}</p>
+                            </div>
+                            <div class="space-y-3 pt-2">
+                                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Similar Masterpieces</h3>
+                                <div id="similar-list-${modalId}" class="flex items-center gap-4 overflow-x-auto pb-2 scrollbar-none">
+                                    <p class="text-xs text-m3-muted">Loading similar titles...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modal-stack-container').appendChild(container);
+            fetchSimilarTitles(item.id, mediaType, `similar-list-${modalId}`);
+        }
+
+        // Home Feed Data Loader (Trending, Top Rated, Anticipated Upcoming)
+        async function loadHomeFeedData() {
+            try {
+                // 1. Trending
+                const trendRes = await fetch(`${TMDB_BASE_URL}/trending/all/week?api_key=${TMDB_API_KEY}`);
+                const trendData = await trendRes.json();
+                renderMediaGrid(trendData.results || [], 'grid-trending');
+
+                // 2. Top Rated
+                const topRes = await fetch(`${TMDB_BASE_URL}/movie/top_rated?api_key=${TMDB_API_KEY}`);
+                const topData = await topRes.json();
+                renderMediaGrid(topData.results || [], 'grid-top-rated');
+
+                // 3. Anticipated Upcoming
+                const upRes = await fetch(`${TMDB_BASE_URL}/movie/upcoming?api_key=${TMDB_API_KEY}`);
+                const upData = await upRes.json();
+                renderMediaGrid(upData.results || [], 'grid-upcoming');
+
+                // Populate Genre Filter Pills
+                renderGenrePills();
+            } catch (e) {
+                console.error("Error loading home feed:", e);
+                showToast("Failed to connect to TMDb API.", "error");
+            }
+        }
+
+        function renderGenrePills() {
+            const container = document.getElementById('genre-tags-row');
+            if (!container) return;
+            const defaultGenres = [
+                { id: 28, name: "Action" },
+                { id: 878, name: "Sci-Fi" },
+                { id: 27, name: "Horror" },
+                { id: 35, name: "Comedy" },
+                { id: 18, name: "Drama" },
+                { id: 12, name: "Adventure" },
+                { id: 53, name: "Thriller" },
+                { id: 16, name: "Animation" }
+            ];
+            container.innerHTML = defaultGenres.map(g => `
+                <button onclick="filterByGenre(${g.id}, '${g.name}')" class="whitespace-nowrap px-4 py-2 rounded-xl bg-m3-surfaceContainer hover:bg-m3-primary hover:text-white text-xs font-semibold text-m3-muted transition-all border border-m3-outline/40">
+                    ${g.name}
+                </button>
+            `).join('');
+        }
+
+        async function filterByGenre(genreId, genreName) {
+            try {
+                showToast(`Filtering by ${genreName}...`);
+                const res = await fetch(`${TMDB_BASE_URL}/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`);
+                const data = await res.json();
+                renderMediaGrid(data.results || [], 'grid-trending');
+            } catch (e) {
+                console.error("Filter error:", e);
+            }
+        }
+
+        // Render Media Card Grid
+        function renderMediaGrid(items, containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (items.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-center text-xs text-m3-muted py-8">No titles found.</p>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => {
+                const title = item.title || item.name || 'Untitled';
+                const poster = item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : `https://placehold.co/400x600/18181c/ffffff?text=${encodeURIComponent(title)}`;
+                const rating = item.vote_average ? item.vote_average.toFixed(1) : 'N/A';
+                const year = (item.release_date || item.first_air_date || '').substring(0, 4) || '2026';
+                const mediaType = item.media_type ? item.media_type.toUpperCase() : (item.first_air_date ? 'TV' : 'MOVIE');
+                const lang = (item.original_language || 'en').toUpperCase();
+                
+                const genreId = item.genre_ids && item.genre_ids.length > 0 ? item.genre_ids[0] : null;
+                const genreText = genreId && GENRES[genreId] ? GENRES[genreId] : 'Cinema';
+
+                const inWatch = watchlist.some(w => w.id === item.id);
+                const isWatched = watchedList.some(w => w.id === item.id);
+
+                return `
+                    <div class="group relative bg-m3-surface rounded-2xl overflow-hidden border border-m3-outline/40 hover:border-m3-primary/60 transition-all duration-300 shadow-lg flex flex-col justify-between">
+                        <div class="relative aspect-[2/3] overflow-hidden cursor-pointer" onclick="openMainDetailsModal(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                            <img src="${poster}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" onerror="this.src='https://placehold.co/400x600/18181c/ffffff?text=Image+Unavailable'">
+                            <div class="absolute inset-0 bg-gradient-to-t from-m3-bg via-transparent to-transparent opacity-80"></div>
+                            
+                            <!-- Badges -->
+                            <div class="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                                <span class="bg-black/60 backdrop-blur-md text-[10px] font-bold text-amber-400 px-2 py-0.5 rounded-full border border-white/10">
+                                    <i class="fa-solid fa-star mr-0.5"></i> ${rating}
+                                </span>
+                            </div>
+                            <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5">
+                                <span class="bg-m3-primary/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                    ${mediaType}
+                                </span>
+                            </div>
+
+                            <!-- State Action Buttons -->
+                            <div class="absolute bottom-2.5 right-2.5 flex items-center gap-1.5">
+                                <button onclick="event.stopPropagation(); toggleWatchlistState(${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    class="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md hover:bg-m3-primary text-white flex items-center justify-center transition-colors shadow-md"
+                                    title="Watchlist">
+                                    <i class="fa-solid fa-bookmark text-xs ${inWatch ? 'text-m3-primary group-hover:text-white' : ''}"></i>
+                                </button>
+                                <button onclick="event.stopPropagation(); toggleWatchedState(${JSON.stringify(item).replace(/"/g, '&quot;')})" 
+                                    class="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md hover:bg-green-500 text-white flex items-center justify-center transition-colors shadow-md"
+                                    title="Mark Watched">
+                                    <i class="fa-solid fa-circle-check text-xs ${isWatched ? 'text-green-500 group-hover:text-white' : ''}"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="p-3.5 space-y-1.5 flex-1 flex flex-col justify-between">
+                            <h4 class="font-bold text-xs text-white truncate cursor-pointer hover:text-m3-primary transition-colors" onclick="openMainDetailsModal(${JSON.stringify(item).replace(/"/g, '&quot;')})">
+                                ${title}
+                            </h4>
+                            <div class="flex items-center justify-between text-[10px] text-m3-muted">
+                                <span class="bg-m3-surfaceContainer px-2 py-0.5 rounded-md font-medium text-white/80">${genreText}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="uppercase font-semibold tracking-wider text-m3-primary">${lang}</span>
+                                    <span>${year}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function fetchSimilarTitles(id, mediaType, containerId) {
+            try {
+                const type = mediaType === 'tv' ? 'tv' : 'movie';
+                const res = await fetch(`${TMDB_BASE_URL}/${type}/${id}/similar?api_key=${TMDB_API_KEY}`);
+                const data = await res.json();
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                const results = data.results || [];
+                if (results.length === 0) {
+                    container.innerHTML = `<p class="text-xs text-m3-muted">No similar titles found.</p>`;
+                    return;
+                }
+
+                // Render similar items without triggering any window/modal auto-scroll jumps
+                container.innerHTML = results.slice(0, 10).map(item => {
+                    const title = item.title || item.name || 'Untitled';
+                    const poster = item.poster_path ? `https://image.tmdb.org/t/p/w300${item.poster_path}` : 'https://placehold.co/300x450/18181c/ffffff?text=Poster';
+                    return `
+                        <div onclick="popModal(); openMainDetailsModal(${JSON.stringify(item).replace(/"/g, '&quot;')})" class="flex-shrink-0 w-28 md:w-32 cursor-pointer group space-y-1.5">
+                            <div class="aspect-[2/3] rounded-xl overflow-hidden bg-m3-surfaceContainer border border-m3-outline/40">
+                                <img src="${poster}" alt="${title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                            </div>
+                            <p class="text-[11px] md:text-xs font-semibold text-white truncate group-hover:text-m3-primary">${title}</p>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error("Error fetching similar titles:", e);
+            }
+        }
+
+        // "More Info" Panel Expansion
+        async function openMoreInfoModal(item) {
+            const modalId = 'modal-' + Math.random().toString(36).substr(2, 9);
+            modalStack.push(modalId);
+            document.body.style.overflow = 'hidden';
+
+            const title = item.title || item.name || 'Untitled';
+            const mediaType = item.media_type || (item.first_air_date ? 'tv' : 'movie');
+
+            const container = document.createElement('div');
+            container.id = modalId;
+
+            if (isMobile()) {
+                container.className = "mobile-full-screen flex flex-col animate-fade-in";
+                container.innerHTML = `
+                    <div class="sticky top-0 z-30 bg-m3-surface border-b border-m3-outline/40 px-4 py-3 flex items-center justify-between shadow-lg">
+                        <button onclick="popModal()" class="flex items-center gap-2 text-m3-primary font-semibold text-sm">
+                            <i class="fa-solid fa-chevron-left text-base"></i> Back
+                        </button>
+                        <span class="font-bold text-white text-sm truncate max-w-[200px]">More Info</span>
+                        <div class="w-6"></div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 space-y-6 pb-12">
+                        <h2 class="text-xl font-extrabold text-white">${title}</h2>
+                        <div id="trailer-btn-container-${modalId}">
+                            <button id="trailer-btn-${modalId}" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-lg flex items-center justify-center gap-2 text-xs">
+                                <i class="fa-brands fa-youtube text-base"></i> Watch Official Trailer
+                            </button>
+                        </div>
+                        <div class="space-y-3">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Cast & Crew</h3>
+                            <div id="cast-grid-${modalId}" class="grid grid-cols-2 gap-3"></div>
+                        </div>
+                        <div id="tv-seasons-section-${modalId}" class="space-y-3 hidden">
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Seasons & Episodes</h3>
+                            <div id="tv-seasons-tabs-${modalId}" class="flex items-center gap-2 overflow-x-auto pb-2"></div>
+                            <div id="tv-episodes-list-${modalId}" class="space-y-2 bg-m3-surfaceContainer p-3 rounded-xl border border-m3-outline/40"></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.className = "fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-2 md:p-6 animate-fade-in";
+                container.onclick = (e) => {
+                    if (e.target === container) popModal(); // Click-Outside To Close
+                };
+                container.innerHTML = `
+                    <div class="bg-m3-surface border border-m3-outline rounded-3xl w-full max-w-[95vw] lg:max-w-[1100px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl relative">
+                        <div class="absolute top-4 right-4 z-30 flex items-center gap-2">
+                            <button onclick="popModal()" class="w-10 h-10 rounded-full bg-black/70 backdrop-blur-md text-white hover:bg-m3-primary flex items-center justify-center transition-colors shadow-lg">
+                                <i class="fa-solid fa-chevron-left text-sm"></i>
+                            </button>
+                            <button onclick="popModal()" class="w-10 h-10 rounded-full bg-black/70 backdrop-blur-md text-white hover:bg-m3-primary flex items-center justify-center transition-colors shadow-lg">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                        <div class="p-6 md:p-8 space-y-8">
+                            <div class="space-y-2">
+                                <span class="bg-m3-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Extended Hub</span>
+                                <h2 class="text-2xl md:text-3xl font-extrabold text-white">${title} - Production & Cast</h2>
+                            </div>
+                            <div id="trailer-btn-container-${modalId}">
+                                <button id="trailer-btn-${modalId}" class="w-full sm:w-auto bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl transition-all flex items-center justify-center gap-3">
+                                    <i class="fa-brands fa-youtube text-xl"></i> Watch Official Trailer on YouTube
+                                </button>
+                            </div>
+                            <div class="space-y-4">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-users text-m3-primary"></i> Cast & Crew
+                                </h3>
+                                <div id="cast-grid-${modalId}" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                    <p class="text-xs text-m3-muted">Loading cast...</p>
+                                </div>
+                            </div>
+                            <div id="tv-seasons-section-${modalId}" class="space-y-4 hidden">
+                                <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                                    <i class="fa-solid fa-tv text-blue-400"></i> Seasons & Episodes
+                                </h3>
+                                <div id="tv-seasons-tabs-${modalId}" class="flex items-center gap-2 overflow-x-auto pb-2"></div>
+                                <div id="tv-episodes-list-${modalId}" class="space-y-2 bg-m3-surfaceContainer p-4 rounded-2xl border border-m3-outline/40"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modal-stack-container').appendChild(container);
+            fetchExtendedDetails(item.id, mediaType, modalId, item);
+        }
+
+        async function fetchExtendedDetails(id, mediaType, modalId, item) {
+            try {
+                const type = mediaType === 'tv' ? 'tv' : 'movie';
+                const res = await fetch(`${TMDB_BASE_URL}/${type}/${id}?api_key=${TMDB_API_KEY}&append_to_response=credits,videos`);
+                const data = await res.json();
+
+                const videos = data.videos?.results || [];
+                const trailer = videos.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                const trailerBtn = document.getElementById(`trailer-btn-${modalId}`);
+                if (trailer) {
+                    trailerBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank');
+                } else if (trailerBtn) {
+                    trailerBtn.parentElement.innerHTML = `<p class="text-xs text-m3-muted italic">No official YouTube trailer available.</p>`;
+                }
+
+                const cast = data.credits?.cast || [];
+                const castContainer = document.getElementById(`cast-grid-${modalId}`);
+                if (cast.length === 0) {
+                    castContainer.innerHTML = `<p class="text-xs text-m3-muted">No cast information available.</p>`;
+                } else {
+                    castContainer.innerHTML = cast.slice(0, 12).map(person => {
+                        const profile = person.profile_path ? `https://image.tmdb.org/t/p/w200${person.profile_path}` : 'https://placehold.co/200x300/18181c/ffffff?text=Actor';
+                        return `
+                            <div onclick="openActorDetailsModal(${person.id})" class="bg-m3-surfaceContainer p-2.5 rounded-2xl border border-m3-outline/40 text-center cursor-pointer group hover:border-m3-primary transition-all space-y-1.5">
+                                <img src="${profile}" alt="${person.name}" class="w-full aspect-[3/4] object-cover rounded-xl group-hover:scale-105 transition-transform">
+                                <div>
+                                    <h5 class="text-[11px] md:text-xs font-bold text-white truncate">${person.name}</h5>
+                                    <p class="text-[9px] md:text-[10px] text-m3-muted truncate">${person.character || 'Actor'}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                if (type === 'tv' && data.seasons) {
+                    const tvSec = document.getElementById(`tv-seasons-section-${modalId}`);
+                    tvSec.classList.remove('hidden');
+                    const tabsContainer = document.getElementById(`tv-seasons-tabs-${modalId}`);
+                    tabsContainer.innerHTML = data.seasons.map((s, idx) => `
+                        <button onclick="fetchTvEpisodes(${id}, ${s.season_number}, '${modalId}')" class="whitespace-nowrap px-3.5 py-1.5 rounded-xl bg-m3-surfaceContainer hover:bg-m3-primary hover:text-white text-xs font-semibold text-m3-muted transition-all border border-m3-outline/40">
+                            ${s.name}
+                        </button>
+                    `).join('');
+                    if (data.seasons.length > 0) {
+                        fetchTvEpisodes(id, data.seasons[0].season_number, modalId);
+                    }
+                }
+            } catch (e) {
+                console.error("Error fetching extended details:", e);
+            }
+        }
+
+        async function fetchTvEpisodes(tvId, seasonNumber, modalId) {
+            try {
+                const res = await fetch(`${TMDB_BASE_URL}/tv/${tvId}/season/${seasonNumber}?api_key=${TMDB_API_KEY}`);
+                const data = await res.json();
+                const container = document.getElementById(`tv-episodes-list-${modalId}`);
+                const eps = data.episodes || [];
+                container.innerHTML = eps.map(ep => `
+                    <div class="flex items-center justify-between p-2.5 rounded-xl bg-m3-surface border border-m3-outline/30">
+                        <div>
+                            <p class="text-xs font-bold text-white">Ep ${ep.episode_number}: ${ep.name}</p>
+                            <p class="text-[10px] text-m3-muted">${ep.air_date || 'TBA'}</p>
+                        </div>
+                        <span class="text-xs font-bold text-amber-400"><i class="fa-solid fa-star mr-1"></i> ${ep.vote_average ? ep.vote_average.toFixed(1) : 'N/A'}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("Error fetching episodes:", e);
+            }
+        }
+
+        // Actor Details Modal Panel
+        async function openActorDetailsModal(personId) {
+            const modalId = 'modal-' + Math.random().toString(36).substr(2, 9);
+            modalStack.push(modalId);
+            document.body.style.overflow = 'hidden';
+
+            const container = document.createElement('div');
+            container.id = modalId;
+
+            if (isMobile()) {
+                container.className = "mobile-full-screen flex flex-col animate-fade-in";
+                container.innerHTML = `
+                    <div class="sticky top-0 z-30 bg-m3-surface border-b border-m3-outline/40 px-4 py-3 flex items-center justify-between shadow-lg">
+                        <button onclick="popModal()" class="flex items-center gap-2 text-m3-primary font-semibold text-sm">
+                            <i class="fa-solid fa-chevron-left text-base"></i> Back
+                        </button>
+                        <span class="font-bold text-white text-sm truncate max-w-[200px]">Actor Profile</span>
+                        <div class="w-6"></div>
+                    </div>
+                    <div id="actor-content-${modalId}" class="flex-1 overflow-y-auto p-4 space-y-6 pb-12">
+                        <p class="text-xs text-m3-muted">Loading actor details...</p>
+                    </div>
+                `;
+            } else {
+                container.className = "fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-2 md:p-6 animate-fade-in";
+                container.onclick = (e) => {
+                    if (e.target === container) popModal(); // Click-Outside To Close
+                };
+                container.innerHTML = `
+                    <div class="bg-m3-surface border border-m3-outline rounded-3xl w-full max-w-[95vw] lg:max-w-[950px] max-h-[92vh] overflow-y-auto flex flex-col shadow-2xl relative p-6 md:p-8 space-y-6">
+                        <div class="absolute top-4 right-4 z-30 flex items-center gap-2">
+                            <button onclick="popModal()" class="w-10 h-10 rounded-full bg-black/70 backdrop-blur-md text-white hover:bg-m3-primary flex items-center justify-center transition-colors shadow-lg">
+                                <i class="fa-solid fa-chevron-left text-sm"></i>
+                            </button>
+                            <button onclick="popModal()" class="w-10 h-10 rounded-full bg-black/70 backdrop-blur-md text-white hover:bg-m3-primary flex items-center justify-center transition-colors shadow-lg">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+                        <div id="actor-content-${modalId}" class="space-y-6">
+                            <p class="text-xs text-m3-muted">Loading actor details...</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('modal-stack-container').appendChild(container);
+
+            try {
+                const [personRes, creditsRes] = await Promise.all([
+                    fetch(`${TMDB_BASE_URL}/person/${personId}?api_key=${TMDB_API_KEY}`),
+                    fetch(`${TMDB_BASE_URL}/person/${personId}/movie_credits?api_key=${TMDB_API_KEY}`)
+                ]);
+                const person = await personRes.json();
+                const credits = await creditsRes.json();
+
+                const profile = person.profile_path ? `https://image.tmdb.org/t/p/w400${person.profile_path}` : 'https://placehold.co/400x600/18181c/ffffff?text=Actor';
+                const movies = credits.cast || [];
+
+                document.getElementById(`actor-content-${modalId}`).innerHTML = `
+                    <div class="flex flex-col md:flex-row gap-6 items-start">
+                        <img src="${profile}" alt="${person.name}" class="w-36 md:w-56 aspect-[3/4] object-cover rounded-2xl shadow-xl border border-m3-outline">
+                        <div class="space-y-3 flex-1">
+                            <h2 class="text-2xl md:text-3xl font-extrabold text-white">${person.name}</h2>
+                            <p class="text-xs text-m3-muted"><i class="fa-solid fa-cake-candles mr-1"></i> Born: ${person.birthday || 'N/A'}</p>
+                            <p class="text-xs text-m3-muted leading-relaxed line-clamp-6">${person.biography || 'No biography available.'}</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4 pt-4 border-t border-m3-outline/40">
+                        <h3 class="text-xs md:text-sm font-bold text-white uppercase tracking-wider">Filmography</h3>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+                            ${movies.slice(0, 10).map(m => {
+                                const poster = m.poster_path ? `https://image.tmdb.org/t/p/w200${m.poster_path}` : 'https://placehold.co/200x300/18181c/ffffff?text=Film';
+                                return `
+                                    <div onclick="popModal(); openMainDetailsModal(${JSON.stringify(m).replace(/"/g, '&quot;')})" class="cursor-pointer group space-y-1 bg-m3-surfaceContainer p-2 rounded-xl border border-m3-outline/40">
+                                        <img src="${poster}" alt="${m.title}" class="w-full aspect-[2/3] object-cover rounded-lg group-hover:scale-105 transition-transform">
+                                        <p class="text-[11px] font-semibold text-white truncate">${m.title || m.name}</p>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                console.error("Error fetching actor details:", e);
+            }
+        }
+
+        // Navigation Back-Stack System Logic
+        function popModal() {
+            if (modalStack.length > 0) {
+                const topId = modalStack.pop();
+                const el = document.getElementById(topId);
+                if (el) el.remove();
+            }
+            if (modalStack.length === 0) {
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Notification Center Dropdown Toggle & Click Outside Closing
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notif-dropdown');
+            dropdown.classList.toggle('hidden');
+            if (!dropdown.classList.contains('hidden')) {
+                renderNotificationDropdownList();
+            }
+        }
+
+        function renderNotificationDropdownList() {
+            const container = document.getElementById('notif-dropdown-list');
+            if (notificationsList.length === 0) {
+                container.innerHTML = `<p class="text-xs text-m3-muted text-center py-6">No release notifications pending.</p>`;
+                return;
+            }
+            container.innerHTML = notificationsList.map((n, idx) => `
+                <div class="bg-m3-surfaceContainer p-3 rounded-xl border border-m3-outline/40 flex items-center justify-between gap-3">
+                    <div class="space-y-0.5">
+                        <p class="text-xs font-bold text-white truncate">${n.title}</p>
+                        <p class="text-[10px] text-m3-muted">${n.message}</p>
+                    </div>
+                    <button onclick="dismissNotification(${idx})" class="text-rose-400 hover:text-rose-300 text-xs p-1">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function clearAllNotifications() {
+            notificationsList = [];
+            saveUserData();
+            renderNotificationDropdownList();
+            updateNotificationBadges();
+            showToast("Cleared all release notifications.");
+        }
+
+        function dismissNotification(index) {
+            notificationsList.splice(index, 1);
+            saveUserData();
+            renderNotificationDropdownList();
+            updateNotificationBadges();
+        }
+
+        function addSubscriptionNotification(item) {
+            const title = item.title || item.name || 'Title';
+            const date = item.release_date || item.first_air_date || 'Upcoming';
+            const notif = {
+                id: item.id,
+                title: title,
+                date: date,
+                message: `Release scheduled for ${date}.`,
+                timestamp: new Date().toISOString()
+            };
+            if (!notificationsList.some(n => n.id === item.id)) {
+                notificationsList.push(notif);
+                saveUserData();
+                updateNotificationBadges();
+            }
+        }
+
+        function updateNotificationBadges() {
+            const count = notificationsList.length;
+            const badge = document.getElementById('badge-notif');
+            const headerDot = document.getElementById('header-notif-dot');
+
+            if (count > 0) {
+                badge.textContent = count;
+                badge.classList.remove('hidden');
+                headerDot.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                headerDot.classList.add('hidden');
+            }
+        }
+
+        // Watchlist & Watched Management
+        function toggleWatchlistState(item) {
+            if (!currentUser) {
+                openAuthModal();
+                return;
+            }
+            const index = watchlist.findIndex(w => w.id === item.id);
+            if (index > -1) {
+                watchlist.splice(index, 1);
+                showToast(`Removed "${item.title || item.name}" from Watchlist.`, "warning");
+            } else {
+                watchlist.push(item);
+                showToast(`Added "${item.title || item.name}" to Watchlist.`);
+                addSubscriptionNotification(item);
+            }
+            saveUserData();
+            renderWatchlist();
+            updateNotificationBadges();
+        }
+
+        function toggleWatchedState(item) {
+            if (!currentUser) {
+                openAuthModal();
+                return;
+            }
+            const index = watchedList.findIndex(w => w.id === item.id);
+            if (index > -1) {
+                watchedList.splice(index, 1);
+                showToast(`Removed from Watched History.`, "warning");
+            } else {
+                watchedList.push(item);
+                showToast(`Marked "${item.title || item.name}" as Watched.`);
+            }
+            saveUserData();
+            renderWatched();
+        }
+
+        function renderWatchlist() {
+            const container = document.getElementById('grid-watchlist');
+            const empty = document.getElementById('empty-watchlist');
+            const countLbl = document.getElementById('watchlist-count-lbl');
+            const badge = document.getElementById('badge-watchlist');
+            const mobBadge = document.getElementById('mob-badge-watchlist');
+
+            countLbl.textContent = `${watchlist.length} Items`;
+            badge.textContent = watchlist.length;
+            if (watchlist.length > 0) {
+                badge.classList.remove('hidden');
+                mobBadge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+                mobBadge.classList.add('hidden');
+            }
+
+            if (watchlist.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+            renderMediaGrid(watchlist, 'grid-watchlist');
+        }
+
+        function renderWatched() {
+            const container = document.getElementById('grid-watched');
+            const empty = document.getElementById('empty-watched');
+            const countLbl = document.getElementById('watched-count-lbl');
+
+            countLbl.textContent = `${watchedList.length} Completed`;
+            if (watchedList.length === 0) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+            renderMediaGrid(watchedList, 'grid-watched');
+        }
+
+        // Local Storage & Cloud Sync Engine
+        function loadLocalUserData() {
+            const localWatch = localStorage.getItem('cinepulse_watchlist');
+            const localWatched = localStorage.getItem('cinepulse_watched');
+            const localNotif = localStorage.getItem('cinepulse_notifications');
+            if (localWatch) watchlist = JSON.parse(localWatch);
+            if (localWatched) watchedList = JSON.parse(localWatched);
+            if (localNotif) notificationsList = JSON.parse(localNotif);
+        }
+
+        function saveUserData() {
+            localStorage.setItem('cinepulse_watchlist', JSON.stringify(watchlist));
+            localStorage.setItem('cinepulse_watched', JSON.stringify(watchedList));
+            localStorage.setItem('cinepulse_notifications', JSON.stringify(notificationsList));
+
+            if (currentUser) {
+                saveCloudUserData(currentUser.uid);
+            }
+        }
+
+        async function saveCloudUserData(userId) {
+            try {
+                const docRef = window.docFn(window.firebaseDb, 'artifacts', 'studyflow-pro', 'users', userId, 'userData', 'lists');
+                await window.setDocFn(docRef, {
+                    watchlist: watchlist,
+                    watchedList: watchedList,
+                    notificationsList: notificationsList,
+                    updatedAt: new Date().toISOString()
+                }, { merge: true });
+            } catch (e) {
+                console.error("Error saving cloud user data:", e);
+            }
+        }
+
+        async function loadCloudUserData(userId) {
+            try {
+                const docRef = window.docFn(window.firebaseDb, 'artifacts', 'studyflow-pro', 'users', userId, 'userData', 'lists');
+                const snap = await window.getDocFn(docRef);
+                if (snap.exists()) {
+                    const data = snap.data();
+                    watchlist = data.watchlist || [];
+                    watchedList = data.watchedList || [];
+                    notificationsList = data.notificationsList || [];
+                    renderWatchlist();
+                    renderWatched();
+                    updateNotificationBadges();
+                }
+            } catch (e) {
+                console.error("Error loading cloud user data:", e);
+            }
+        }
+
+        async function syncGuestDataToCloud(userId) {
+            const localWatch = JSON.parse(localStorage.getItem('cinepulse_watchlist') || '[]');
+            const localWatched = JSON.parse(localStorage.getItem('cinepulse_watched') || '[]');
+            if (localWatch.length > 0 || localWatched.length > 0) {
+                try {
+                    const docRef = window.docFn(window.firebaseDb, 'artifacts', 'studyflow-pro', 'users', userId, 'userData', 'lists');
+                    const snap = await window.getDocFn(docRef);
+                    let cloudWatch = [];
+                    let cloudWatched = [];
+                    if (snap.exists()) {
+                        cloudWatch = snap.data().watchlist || [];
+                        cloudWatched = snap.data().watchedList || [];
+                    }
+                    const mergedWatch = Array.from(new Map([...cloudWatch, ...localWatch].map(item => [item.id, item])).values());
+                    const mergedWatched = Array.from(new Map([...cloudWatched, ...localWatched].map(item => [item.id, item])).values());
+                    
+                    watchlist = mergedWatch;
+                    watchedList = mergedWatched;
+
+                    await window.setDocFn(docRef, {
+                        watchlist: watchlist,
+                        watchedList: watchedList,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+
+                    localStorage.removeItem('cinepulse_watchlist');
+                    localStorage.removeItem('cinepulse_watched');
+                    showToast("Guest lists synced to cloud account!");
+                } catch (e) {
+                    console.error("Error syncing guest data:", e);
+                }
+            }
+        }
+
+        // Authentication Handlers
+        function handleAuthAction() {
+            if (currentUser) {
+                window.signOutFn(window.firebaseAuth).then(() => {
+                    currentUser = null;
+                    watchlist = [];
+                    watchedList = [];
+                    notificationsList = [];
+                    renderWatchlist();
+                    renderWatched();
+                    updateNotificationBadges();
+                    showToast("Signed out successfully.");
+                    closeSettingsModal();
+                });
+            } else {
+                openAuthModal();
+            }
+        }
+
+        function openAuthModal() {
+            document.getElementById('auth-modal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+        }
+
+        async function performGoogleSignIn() {
+            try {
+                closeAuthModal();
+                await window.signInWithPopupFn(window.firebaseAuth, window.googleProvider);
+                showToast("Signed in with Google!");
+            } catch (e) {
+                console.error("Google sign in error:", e);
+                showToast("Google sign in failed.", "error");
+            }
+        }
+
+        function updateUserUI(user) {
+            const avatarContainer = document.getElementById('user-avatar-container');
+            const nameDisplay = document.getElementById('user-name-display');
+            const statusDisplay = document.getElementById('user-status-display');
+            const authBtn = document.getElementById('auth-action-btn');
+
+            const settingsAvatar = document.getElementById('settings-user-avatar');
+            const settingsName = document.getElementById('settings-user-name');
+            const settingsEmail = document.getElementById('settings-user-email');
+            const settingsAuthBtn = document.getElementById('settings-auth-btn');
+
+            const mobAuthLabel = document.getElementById('mob-auth-label');
+            const mobAuthIcon = document.getElementById('mob-auth-icon');
+
+            if (user) {
+                const photo = user.photoURL;
+                const name = user.displayName || 'Google User';
+                const email = user.email || user.uid;
+
+                const avatarHtml = `<img src="${photo}" alt="${name}" class="w-full h-full object-cover">`;
+                if (avatarContainer) avatarContainer.innerHTML = avatarHtml;
+                if (settingsAvatar) settingsAvatar.innerHTML = avatarHtml;
+
+                if (nameDisplay) nameDisplay.textContent = name;
+                if (statusDisplay) statusDisplay.textContent = email;
+                if (authBtn) {
+                    authBtn.innerHTML = `<i class="fa-solid fa-right-from-bracket text-sm"></i>`;
+                    authBtn.title = "Sign Out";
+                }
+
+                if (settingsName) settingsName.textContent = name;
+                if (settingsEmail) settingsEmail.textContent = email;
+                if (settingsAuthBtn) {
+                    settingsAuthBtn.textContent = "Sign Out";
+                    settingsAuthBtn.className = "px-5 py-2.5 rounded-full bg-rose-600 text-white text-xs font-semibold shadow-md hover:bg-rose-700 transition-all";
+                }
+
+                if (mobAuthLabel) mobAuthLabel.textContent = "Sign Out (" + name + ")";
+                if (mobAuthIcon) mobAuthIcon.className = "fa-solid fa-right-from-bracket text-rose-500";
+            } else {
+                if (avatarContainer) avatarContainer.innerHTML = `<i class="fa-solid fa-user text-m3-muted"></i>`;
+                if (settingsAvatar) settingsAvatar.innerHTML = `<i class="fa-solid fa-user text-m3-muted"></i>`;
+
+                if (nameDisplay) nameDisplay.textContent = "Guest User";
+                if (statusDisplay) statusDisplay.textContent = "Local Storage Mode";
+                if (authBtn) {
+                    authBtn.innerHTML = `<i class="fa-solid fa-right-to-bracket text-sm"></i>`;
+                    authBtn.title = "Sign In";
+                }
+
+                if (settingsName) settingsName.textContent = "Guest Account";
+                if (settingsEmail) settingsEmail.textContent = "Local Guest Session";
+                if (settingsAuthBtn) {
+                    settingsAuthBtn.textContent = "Sign In";
+                    settingsAuthBtn.className = "px-5 py-2.5 rounded-full bg-m3-primary text-white text-xs font-semibold shadow-md shadow-m3-primary/20 hover:bg-m3-primaryHover transition-all";
+                }
+
+                if (mobAuthLabel) mobAuthLabel.textContent = "Sign in with Google";
+                if (mobAuthIcon) mobAuthIcon.className = "fa-solid fa-right-to-bracket text-m3-primary";
+            }
+        }
+
+        // Settings & Export Controls
+        function openSettingsModal() {
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
+
+        function resetNotificationLogs() {
+            notificationsList = [];
+            saveUserData();
+            updateNotificationBadges();
+            showToast("Notification logs wiped.");
+        }
+
+        function exportUserDataJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
+                watchlist: watchlist,
+                watchedList: watchedList,
+                exportDate: new Date().toISOString()
+            }, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `cinepulse_backup_${new Date().toISOString().substring(0,10)}.json`);
+            dlAnchorElem.click();
+            showToast("UserData exported to JSON file!");
+        }
+
+        function wipeAllLocalData() {
+            localStorage.clear();
+            watchlist = [];
+            watchedList = [];
+            notificationsList = [];
+            renderWatchlist();
+            renderWatched();
+            updateNotificationBadges();
+            showToast("All local cache wiped.", "warning");
+        }
+
+        function setupEventListeners() {
+            // Global Search Input Handler
+            const searchInput = document.getElementById('global-search-input');
+            if (searchInput) {
+                let debounceTimeout;
+                searchInput.addEventListener('input', (e) => {
+                    clearTimeout(debounceTimeout);
+                    const query = e.target.value.trim();
+                    if (!query) {
+                        loadHomeFeedData();
+                        return;
+                    }
+                    debounceTimeout = setTimeout(async () => {
+                        try {
+                            const [multiRes, personRes] = await Promise.all([
+                                fetch(`${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`),
+                                fetch(`${TMDB_BASE_URL}/search/person?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`)
+                            ]);
+                            const multiData = await multiRes.json();
+                            const personData = await personRes.json();
+
+                            let combined = multiData.results || [];
+                            const people = personData.results || [];
+                            if (people.length > 0 && people[0].known_for) {
+                                combined = [...combined, ...people[0].known_for];
+                            }
+
+                            const uniqueResults = Array.from(new Map(combined.map(item => [item.id, item])).values());
+                            renderMediaGrid(uniqueResults, 'grid-trending');
+                        } catch (err) {
+                            console.error("Search error:", err);
+                        }
+                    }, 400);
+                });
+            }
+
+            // Click outside notification dropdown
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('notif-dropdown');
+                const bell = document.getElementById('notif-bell-btn');
+                if (dropdown && !dropdown.classList.contains('hidden') && !dropdown.contains(e.target) && !bell.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            // Click outside auth modal or settings modal
+            const authModal = document.getElementById('auth-modal');
+            authModal.onclick = (e) => {
+                if (e.target === authModal) closeAuthModal();
+            };
+
+            const settingsModal = document.getElementById('settings-modal');
+            settingsModal.onclick = (e) => {
+                if (e.target === settingsModal) closeSettingsModal();
+            };
+
+            // Keyboard ESC handler
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    popModal();
+                    closeSettingsModal();
+                    closeAuthModal();
+                    document.getElementById('notif-dropdown').classList.add('hidden');
+                    document.getElementById('mobile-more-sheet').classList.add('hidden');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
